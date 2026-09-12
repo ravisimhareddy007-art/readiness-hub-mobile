@@ -92,7 +92,7 @@ const APPCSS = `
 .lp-main{flex:1;min-width:0;padding:24px 34px 40px;max-width:1160px;margin:0 auto;width:100%}
 .lp-cols2{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
 .lp-hero2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,1fr);gap:14px}
-@media(max-width:1020px){.lp-cols2{grid-template-columns:1fr}}
+@media(max-width:1020px){.lp-cols2{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:880px){.lp-hero2{grid-template-columns:1fr}}
 @media(max-width:760px){.lp-main{padding:16px 14px 30px}}
 .lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(4,1fr);gap:2px;background:rgba(11,18,32,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid #27324A;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
@@ -105,8 +105,12 @@ const APPCSS = `
 @keyframes lp-sheet-up{from{transform:translateY(24px);opacity:.4}to{transform:translateY(0);opacity:1}}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
-.lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom))}
+.lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
 input,select,textarea{font-size:16px !important}
+.lp-main h1{font-size:22px !important}
+.lp-act{flex-wrap:wrap;row-gap:2px}
+.lp-act-label{flex:1 1 100% !important;order:9;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;padding-left:19px;line-height:1.45}
+.lp-act-when{margin-left:auto}
 }
 `;
 /* ── helpers ── */
@@ -1810,6 +1814,7 @@ function Home({ store, go, toast }: any) {
                 {g.acts.slice(0, 4).map((a) => (
                   <div
                     key={a.id}
+                    className="lp-act"
                     onClick={() => go(g.to)}
                     style={{
                       display: "flex",
@@ -1830,6 +1835,7 @@ function Home({ store, go, toast }: any) {
                       </span>
                     )}
                     <span
+                      className="lp-act-label"
                       style={{
                         flex: 1,
                         fontSize: 13.5,
@@ -1843,6 +1849,7 @@ function Home({ store, go, toast }: any) {
                       {a.label}
                     </span>
                     <span
+                      className="lp-act-when"
                       style={{
                         fontSize: 11.5,
                         color: a.tone,
