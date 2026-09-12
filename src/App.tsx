@@ -103,6 +103,7 @@ const APPCSS = `
 .lp-sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:50px;padding:0 10px;background:none;border:none;border-radius:12px;color:#E6EBF5;font-size:15px;font-weight:600;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
 .lp-sheet-item:active{background:#1B2740}
 @keyframes lp-sheet-up{from{transform:translateY(24px);opacity:.4}to{transform:translateY(0);opacity:1}}
+.lp-dc-meta{display:contents}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
@@ -111,6 +112,11 @@ input,select,textarea{font-size:16px !important}
 .lp-act{flex-wrap:wrap;row-gap:2px}
 .lp-act-label{flex:1 1 100% !important;order:9;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;padding-left:19px;line-height:1.45}
 .lp-act-when{margin-left:auto}
+.lp-doc-min{min-width:0 !important}
+.lp-doc-head{display:none !important}
+.lp-doc-row{grid-template-columns:26px minmax(0,1fr) 18px !important;row-gap:8px !important}
+.lp-dc-meta{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;grid-column:2/4;min-width:0}
+.lp-pm-name{display:none !important}
 }
 `;
 /* ── helpers ── */
@@ -3298,8 +3304,9 @@ function Documents({ store, toast }: any) {
 
       <Card style={{ padding: 0, overflow: "hidden" }}>
         <div style={{ overflowX: "auto" }}>
-          <div style={{ minWidth: 780 }}>
+          <div className="lp-doc-min" style={{ minWidth: 780 }}>
             <div
+              className="lp-doc-head"
               style={{
                 display: "grid",
                 gridTemplateColumns: GRID,
@@ -3348,6 +3355,7 @@ function Documents({ store, toast }: any) {
                 return (
                   <div
                     key={d.id}
+                    className="lp-doc-row"
                     onClick={() => setOpen(d)}
                     style={{
                       display: "grid",
@@ -3410,6 +3418,7 @@ function Documents({ store, toast }: any) {
                         </span>
                       </span>
                     </span>
+                    <span className="lp-dc-meta">
                     <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                       <span
                         style={{ width: 8, height: 8, borderRadius: 9, background: colorOf(d.memberId), flexShrink: 0 }}
@@ -3434,6 +3443,7 @@ function Documents({ store, toast }: any) {
                       {fdate(d.addedAt)}
                     </span>
                     <span style={{ fontSize: 12.5, fontFamily: "ui-monospace, monospace" }}>{expiryCell(d)}</span>
+                    </span>
                     <ChevronRight size={15} color={active ? T.gold : T.faint} />
                   </div>
                 );
@@ -6070,6 +6080,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
           {initial}
         </span>
         <span
+          className="lp-pm-name"
           style={{
             fontSize: 13,
             fontWeight: 600,
@@ -6082,7 +6093,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
         >
           {name.split(" ")[0]}
         </span>
-        <ChevronDown size={14} color={T.muted} />
+        <ChevronDown className="lp-pm-name" size={14} color={T.muted} />
       </button>
       {open && (
         <>
