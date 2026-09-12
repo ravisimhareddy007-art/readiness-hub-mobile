@@ -47,7 +47,6 @@ import {
   IdCard,
   Settings as SettingsIcon,
   LogOut,
-  MoreHorizontal,
   Bell as BellIcon,
   Sun,
   Moon,
@@ -95,8 +94,8 @@ const APPCSS = `
 @media(max-width:1020px){.lp-cols2{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:880px){.lp-hero2{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:760px){.lp-main{padding:16px 14px 30px}}
-.lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(4,1fr);gap:2px;background:rgba(11,18,32,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid #27324A;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
-.lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:12px;font-size:10.5px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(5,1fr);gap:0;background:rgba(11,18,32,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid #27324A;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:12px;font-size:10px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lp-scrim{position:fixed;inset:0;z-index:65;background:rgba(4,8,16,.55)}
 .lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:#131C2E;border-top:1px solid #27324A;border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up .22s ease}
 .lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:#27324A;margin:4px auto 10px}
@@ -104,10 +103,9 @@ const APPCSS = `
 .lp-sheet-item:active{background:#1B2740}
 @keyframes lp-sheet-up{from{transform:translateY(24px);opacity:.4}to{transform:translateY(0);opacity:1}}
 .lp-dc-meta{display:contents}
-.lp-mh-rail{display:flex;gap:16px;overflow-x:auto;padding:6px 2px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.lp-mh-rail::-webkit-scrollbar{display:none}
-.lp-mh-mod{display:flex;flex-direction:column;align-items:center;gap:7px;background:none;border:none;cursor:pointer;min-width:66px;padding:0;-webkit-tap-highlight-color:transparent}
-.lp-mh-modlbl{font-size:11.5px;font-weight:600;color:#8A97AE}
+.lp-mh-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;justify-items:center;padding:6px 0 12px}
+.lp-mh-mod{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}
+.lp-mh-modlbl{font-size:10.5px;font-weight:600;color:#8A97AE}
 .lp-mh-insrail{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .lp-mh-insrail::-webkit-scrollbar{display:none}
 .lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:18px;border:none;display:grid;place-items:center;background:linear-gradient(135deg,#D9B86A,#ECCB82);box-shadow:0 12px 32px rgba(217,184,106,.35);cursor:pointer}
@@ -1716,8 +1714,8 @@ function Home({ store, go, toast }: any) {
           {mods.map((m) => (
             <button key={m.key} className="lp-mh-mod" onClick={() => go(m.key)}>
               <span style={{ position: "relative" }}>
-                <ModRing score={m.score} color={m.color}>
-                  <m.icon size={20} color={m.color} />
+                <ModRing score={m.score} color={m.color} size={50}>
+                  <m.icon size={18} color={m.color} />
                 </ModRing>
                 {!!m.badge && (
                   <span
@@ -7481,7 +7479,6 @@ export default function App() {
   const [route, setRoute] = useState("home");
   const [navOpen, setNavOpen] = useState(true);
   const isMobile = useIsMobile();
-  const [moreOpen, setMoreOpen] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth <= 760) setNavOpen(false);
   }, []);
@@ -7773,44 +7770,6 @@ export default function App() {
       </main>
       {query.trim() && <div onClick={() => setQuery("")} style={{ position: "fixed", inset: 0, zIndex: 30 }} />}
 
-      {isMobile && moreOpen && (
-        <>
-          <div className="lp-scrim" onClick={() => setMoreOpen(false)} />
-          <div className="lp-sheet" role="dialog" aria-label="More">
-            <div className="lp-sheet-grab" />
-            {(
-              [
-                ["health", "Health", HeartPulse],
-                ["wealth", "Wealth", Wallet],
-                ["trust", "Trust center", ShieldCheck],
-                ["settings", "Settings & usage", SettingsIcon],
-              ] as [string, string, any][]
-            ).map(([key, label, Ic]) => (
-              <button
-                key={key}
-                className="lp-sheet-item"
-                onClick={() => {
-                  setMoreOpen(false);
-                  setRoute(key);
-                }}
-              >
-                <Ic size={19} color={route === key ? T.gold : T.muted} /> {label}
-              </button>
-            ))}
-            <div style={{ height: 1, background: T.border, margin: "6px 10px" }} />
-            <button
-              className="lp-sheet-item"
-              style={{ color: T.coral }}
-              onClick={() => {
-                logout();
-                window.location.href = "/";
-              }}
-            >
-              <LogOut size={19} color={T.coral} /> Sign out
-            </button>
-          </div>
-        </>
-      )}
       {isMobile && (
         <nav className="lp-tabbar" aria-label="Primary">
           {(
@@ -7818,35 +7777,22 @@ export default function App() {
               ["home", "Home", LayoutGrid],
               ["documents", "Documents", FolderOpen],
               ["packages", "Packages", Plane],
+              ["health", "Health", HeartPulse],
+              ["wealth", "Wealth", Wallet],
             ] as [string, string, any][]
           ).map(([key, label, Ic]) => {
-            const on = route === key && !moreOpen;
+            const on = route === key;
             return (
               <button
                 key={key}
                 className="lp-tab"
                 style={{ color: on ? T.gold : T.muted }}
-                onClick={() => {
-                  setMoreOpen(false);
-                  setRoute(key);
-                }}
+                onClick={() => setRoute(key)}
               >
-                <Ic size={21} color={on ? T.gold : T.muted} /> {label}
+                <Ic size={20} color={on ? T.gold : T.muted} /> {label}
               </button>
             );
           })}
-          {(() => {
-            const on = moreOpen || ["health", "wealth", "trust", "settings"].includes(route);
-            return (
-              <button
-                className="lp-tab"
-                style={{ color: on ? T.gold : T.muted }}
-                onClick={() => setMoreOpen((v) => !v)}
-              >
-                <MoreHorizontal size={21} color={on ? T.gold : T.muted} /> More
-              </button>
-            );
-          })()}
         </nav>
       )}
 
