@@ -1849,7 +1849,7 @@ const CSS = `
 .lh-addpill{border-style:dashed}
 .lh-infobar{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:linear-gradient(180deg,rgba(216,178,90,.06),${C.panel});border:1px solid ${C.border};border-radius:12px;padding:12px 14px;cursor:pointer;font-family:inherit;margin-bottom:16px}
 .lh-infoshort{flex:1;font-size:14px;color:${C.text}}
-.lh-vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.lh-vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px}
 .lh-attnrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
 .lh-chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:6px 12px;cursor:pointer;font-family:inherit}
 .lh-chip:hover{background:rgba(255,255,255,.08)}
@@ -1916,7 +1916,7 @@ const CSS = `
 .lh-famnm{display:block;font-size:13.5px;font-weight:700;color:${C.text};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lh-famst{display:block;font-size:11.5px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #lh-print{display:none}
-@media(max-width:900px){.lh-grid3{grid-template-columns:1fr}.lh-grid-2-1{grid-template-columns:1fr}.lh-vgrid{grid-template-columns:1fr}}
+@media(max-width:900px){.lh-grid3{grid-template-columns:minmax(0,1fr)}.lh-grid-2-1{grid-template-columns:minmax(0,1fr)}.lh-vgrid{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media print{body *{visibility:hidden}#lh-print,#lh-print *{visibility:visible}#lh-print{display:block;position:absolute;inset:0}}
 `;

@@ -93,7 +93,7 @@ const APPCSS = `
 .lp-cols2{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
 .lp-hero2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,1fr);gap:14px}
 @media(max-width:1020px){.lp-cols2{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:880px){.lp-hero2{grid-template-columns:1fr}}
+@media(max-width:880px){.lp-hero2{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:760px){.lp-main{padding:16px 14px 30px}}
 .lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(4,1fr);gap:2px;background:rgba(11,18,32,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid #27324A;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
 .lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:12px;font-size:10.5px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
