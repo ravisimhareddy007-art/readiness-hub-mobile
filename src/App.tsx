@@ -120,6 +120,7 @@ input,select,textarea{font-size:16px !important}
 .lp-wrow{flex-wrap:wrap;row-gap:8px}
 .lp-wname{min-width:56% !important}
 .lp-wamt{order:2;margin-left:48px}
+.lp-wrow > select{order:2;margin-left:48px}
 .lp-wchips{order:3;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}
 .lp-wrow > button{order:3}
 }
@@ -4670,6 +4671,7 @@ function Trust({ store, toast }: any) {
         {store.members.map((m: Member) => (
           <div
             key={m.id}
+            className="lp-wrow"
             style={{
               display: "flex",
               alignItems: "center",
@@ -4692,7 +4694,7 @@ function Trust({ store, toast }: any) {
             >
               {m.name[0]}
             </span>
-            <span style={{ flex: 1, fontSize: 14, color: T.white }}>
+            <span className="lp-wname" style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.white }}>
               {m.name}
               <span style={{ color: T.muted, fontWeight: 400 }}> · {m.relation}</span>
             </span>
