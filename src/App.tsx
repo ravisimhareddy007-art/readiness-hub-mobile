@@ -1679,7 +1679,7 @@ function Home({ store, go, toast }: any) {
         const cards = picked.filter((id) => STARTERS[id]);
         if (!cards.length) return null;
         return (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 12, marginBottom: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(240px,100%),1fr))", gap: 12, marginBottom: 20 }}>
             {cards.map((id) => {
               const [title, docs3] = STARTERS[id];
               return (
@@ -2089,7 +2089,7 @@ function Packages({ store, toast }: any) {
           );
         })}
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(300px,100%),1fr))", gap: 12 }}>
         {list.map((e) => {
           const { score, got, total } = evalEvent(e, have);
           return (
