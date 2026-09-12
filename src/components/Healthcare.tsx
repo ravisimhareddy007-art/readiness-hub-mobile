@@ -1894,7 +1894,7 @@ const CSS = `
 .lh-lbl{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};font-family:'JetBrains Mono';margin-bottom:5px}
 .lh-in{width:100%;background:${C.panel2};border:1px solid ${C.border};border-radius:10px;padding:9px 11px;color:${C.text};font-size:14px;outline:none;font-family:inherit}
 .lh-in:focus{border-color:${C.gold}}
-.lh-overlay{position:fixed;inset:0;z-index:60;background:rgba(4,6,15,.62);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px}
+.lh-overlay{position:fixed;inset:0;z-index:72;background:rgba(4,6,15,.62);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px}
 .lh-modal{background:#111524;border:1px solid ${C.border};border-radius:18px;width:min(460px,100%);padding:22px;max-height:90vh;overflow:auto}
 .lh-preview{background:#f3f4f6;border-radius:10px;padding:10px}
 .lh-x{width:32px;height:32px;border-radius:9px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};cursor:pointer;display:grid;place-items:center}

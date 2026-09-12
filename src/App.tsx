@@ -121,6 +121,8 @@ input,select,textarea{font-size:16px !important}
 .lp-wname{min-width:56% !important}
 .lp-wamt{order:2;margin-left:48px}
 .lp-wrow > select{order:2;margin-left:48px}
+.lp-upmenu{left:0 !important;right:auto !important}
+.lp-searchdrop{left:0 !important;right:auto !important;width:calc(100vw - 28px) !important}
 .lp-wchips{order:3;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}
 .lp-wrow > button{order:3}
 }
@@ -2316,7 +2318,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 70,
+        zIndex: 72,
         background: "rgba(4,7,15,.62)",
         display: "flex",
         alignItems: "center",
@@ -2565,7 +2567,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 60,
+        zIndex: 72,
         background: "rgba(4,7,15,.6)",
         display: "flex",
         justifyContent: "flex-end",
@@ -3075,13 +3077,14 @@ function Documents({ store, toast }: any) {
             </button>
             {upMenu && (
               <>
-                <div onClick={() => setUpMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 45 }} />
+                <div onClick={() => setUpMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 72 }} />
                 <div
+                  className="lp-upmenu"
                   style={{
                     position: "absolute",
                     top: "calc(100% + 6px)",
                     right: 0,
-                    zIndex: 46,
+                    zIndex: 73,
                     width: 190,
                     background: T.panel,
                     border: `1px solid ${T.border}`,
@@ -3525,7 +3528,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
 
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(4,7,15,.5)" }} />
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 72, background: "rgba(4,7,15,.5)" }} />
       <aside
         style={{
           position: "fixed",
@@ -3533,7 +3536,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
           right: 0,
           bottom: 0,
           width: "min(430px, 94vw)",
-          zIndex: 65,
+          zIndex: 73,
           background: T.navy,
           borderLeft: `1px solid ${T.border}`,
           boxShadow: "-30px 0 80px rgba(0,0,0,.55)",
@@ -3786,7 +3789,7 @@ function AddMember({ onClose, save }: any) {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 70,
+        zIndex: 72,
         background: "rgba(4,7,15,.62)",
         display: "flex",
         alignItems: "center",
@@ -3801,6 +3804,8 @@ function AddMember({ onClose, save }: any) {
           border: `1px solid ${T.border}`,
           borderRadius: 16,
           width: "min(440px,100%)",
+          maxHeight: "88vh",
+          overflowY: "auto",
           padding: 22,
         }}
       >
@@ -5037,7 +5042,7 @@ function PinModal({ store, hasPin, onClose, toast }: any) {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 70,
+        zIndex: 72,
         background: "rgba(4,7,15,.62)",
         display: "flex",
         alignItems: "center",
@@ -5177,7 +5182,7 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 70,
+        zIndex: 72,
         background: "rgba(4,7,15,.62)",
         display: "flex",
         alignItems: "center",
@@ -5417,7 +5422,7 @@ function TransactionModal({ members, onClose, onSave }: any) {
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 70,
+        zIndex: 72,
         background: "rgba(4,7,15,.62)",
         display: "flex",
         alignItems: "center",
@@ -5855,6 +5860,8 @@ function NomineeModal({ holding, onClose, onSave }: any) {
           border: `1px solid ${T.border}`,
           borderRadius: 16,
           width: "min(420px,100%)",
+          maxHeight: "88vh",
+          overflowY: "auto",
           padding: 22,
         }}
       >
@@ -6108,13 +6115,13 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
       </button>
       {open && (
         <>
-          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 60 }} />
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 72 }} />
           <div
             style={{
               position: "absolute",
               top: "calc(100% + 8px)",
               right: 0,
-              zIndex: 61,
+              zIndex: 73,
               width: 264,
               background: T.panel,
               border: `1px solid ${T.border}`,
@@ -6356,7 +6363,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
       style={{
         position: "fixed",
         inset: 0,
-        zIndex: 70,
+        zIndex: 72,
         background: "rgba(4,7,15,.62)",
         display: "flex",
         alignItems: "center",
@@ -7285,6 +7292,7 @@ export default function App() {
             </div>
             {query.trim() && (
               <div
+                className="lp-searchdrop"
                 style={{
                   position: "absolute",
                   top: "calc(100% + 8px)",
