@@ -117,6 +117,11 @@ input,select,textarea{font-size:16px !important}
 .lp-doc-row{grid-template-columns:26px minmax(0,1fr) 18px !important;row-gap:8px !important}
 .lp-dc-meta{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;grid-column:2/4;min-width:0}
 .lp-pm-name{display:none !important}
+.lp-wrow{flex-wrap:wrap;row-gap:8px}
+.lp-wname{min-width:56% !important}
+.lp-wamt{order:2;margin-left:48px}
+.lp-wchips{order:3;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}
+.lp-wrow > button{order:3}
 }
 `;
 /* ── helpers ── */
@@ -4015,6 +4020,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
     const guardedKind = h.kind === "asset" || h.kind === "cover";
     return (
       <div
+        className="lp-wrow"
         onClick={() => setEdit(h)}
         style={{
           display: "flex",
@@ -4037,7 +4043,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
         >
           <Ic size={16} color={accent} />
         </span>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="lp-wname" style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 14.5, fontWeight: 600, color: T.white }}>{h.name}</div>
           <div style={{ fontSize: 12.5, color: T.muted }}>
             {h.type}
@@ -4046,6 +4052,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
           </div>
         </div>
         <span
+          className="lp-wamt"
           style={{
             fontFamily: "ui-monospace, monospace",
             fontSize: 15,
@@ -4057,7 +4064,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
           {money(h.value || 0)}
         </span>
         {guardedKind && (
-          <span style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
+          <span className="lp-wchips" style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
             <span
               onClick={(e) => {
                 e.stopPropagation();
@@ -4402,6 +4409,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
                     return (
                       <div
                         key={t.id}
+                        className="lp-wrow"
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -4423,7 +4431,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
                         >
                           <Receipt size={15} color={t.direction === "paid" ? T.coral : T.mint} />
                         </span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="lp-wname" style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 14, fontWeight: 600, color: T.white }}>{t.purpose}</div>
                           <div style={{ fontSize: 12.5, color: T.muted }}>
                             {t.counterparty ? `${t.counterparty} · ` : ""}
@@ -4434,6 +4442,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
                           </div>
                         </div>
                         <span
+                          className="lp-wamt"
                           style={{
                             fontFamily: "ui-monospace, monospace",
                             fontSize: 14.5,
