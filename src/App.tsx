@@ -115,7 +115,11 @@ const APPCSS = `
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
 input,select,textarea{font-size:16px !important}
-.lp-main h1{font-size:22px !important}
+.lp-main h1{font-size:20px !important}
+.lp-sh-sub{display:none !important}
+.lp-cardpad{padding:14px !important}
+.lp-chiprail{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap !important;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.lp-chiprail::-webkit-scrollbar{display:none}
 .lp-act{flex-wrap:wrap;row-gap:2px}
 .lp-act-label{flex:1 1 100% !important;order:9;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;padding-left:19px;line-height:1.45}
 .lp-act-when{margin-left:auto}
@@ -1347,8 +1351,12 @@ const evalEvent = (ev: { reqs: string[] }, have: Set<string>) => {
 
 /* ── primitives ── */
 function Card({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  const hasPad = style && "padding" in style;
   return (
-    <div style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 14, padding: 18, ...style }}>
+    <div
+      className={hasPad ? "lp-card" : "lp-card lp-cardpad"}
+      style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 14, padding: 18, ...style }}
+    >
       {children}
     </div>
   );
@@ -1374,7 +1382,7 @@ function SectionHead({ title, sub }: { title: string; sub: string }) {
   return (
     <div style={{ marginBottom: 22 }}>
       <h1 style={{ fontSize: 26, fontWeight: 800, color: T.white, margin: 0, letterSpacing: -0.5 }}>{title}</h1>
-      <p style={{ color: T.muted, fontSize: 14.5, marginTop: 6 }}>{sub}</p>
+      <p className="lp-sh-sub" style={{ color: T.muted, fontSize: 14.5, marginTop: 6 }}>{sub}</p>
     </div>
   );
 }
@@ -2277,6 +2285,169 @@ function Packages({ store, toast }: any) {
       (cat === "All" || e.cat === cat) &&
       (!needle || `${e.name} ${e.blurb} ${e.cat} ${e.reqs.join(" ")}`.toLowerCase().includes(needle)),
   );
+  const isMobile = useIsMobile();
+  if (isMobile)
+    return (
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 12px" }}>
+          <b style={{ fontSize: 18, fontWeight: 800, color: T.white }}>Packages</b>
+          <span style={pill(T.muted)}>{all.length}</span>
+          <span style={{ flex: 1 }} />
+          <button
+            onClick={() => setCreating(true)}
+            title="Create a custom pack"
+            style={{ ...btnGhost, padding: 10, borderRadius: 12 }}
+          >
+            <Plus size={17} />
+          </button>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 9,
+            background: T.panel,
+            border: `1px solid ${q ? T.gold + "66" : T.border}`,
+            borderRadius: 11,
+            padding: "7px 12px",
+            marginBottom: 10,
+          }}
+        >
+          <Search size={15} color={T.muted} />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Visa, loan, admission…"
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text }}
+          />
+          {q && (
+            <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, display: "flex" }}>
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <div className="lp-chiprail" style={{ marginBottom: 12 }}>
+          {cats.map((raw) => {
+            const c = raw.startsWith("My packs") ? "My packs" : raw;
+            const on = cat === c;
+            return (
+              <button
+                key={raw}
+                onClick={() => setCat(c)}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 99,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                  border: `1px solid ${on ? T.gold + "77" : T.border}`,
+                  background: on ? T.raised : "transparent",
+                  color: on ? T.white : T.muted,
+                }}
+              >
+                {raw}
+              </button>
+            );
+          })}
+        </div>
+        <div style={{ display: "grid", gap: 8 }}>
+          {list.map((e) => {
+            const { score, got, total } = evalEvent(e, have);
+            return (
+              <button
+                key={e.id}
+                onClick={() => setOpen(e)}
+                style={{
+                  textAlign: "left",
+                  cursor: "pointer",
+                  background: T.panel,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 13,
+                  padding: 11,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 11,
+                }}
+              >
+                <Ring score={score} size={40} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
+                    <e.icon size={14} color={e.accent} style={{ flexShrink: 0 }} />
+                    <b style={{ color: T.white, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</b>
+                    {e.custom && <span style={pill(T.gold)}>custom</span>}
+                  </div>
+                  <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
+                    {score === 100 ? "Everything in place" : `${total - got} missing · ${got} of ${total} ready`}
+                  </div>
+                </div>
+                {score === 100 ? <Stamp /> : <ChevronRight size={16} color={T.faint} />}
+              </button>
+            );
+          })}
+        </div>
+        {list.length === 0 && (
+          <Card style={{ textAlign: "center", padding: 24 }}>
+            <div style={{ color: T.text, fontWeight: 600, fontSize: 14 }}>
+              {cat === "My packs" && !q ? "You have not created a pack yet" : `No pack covers "${q}" yet`}
+            </div>
+            <button onClick={() => setCreating(true)} style={{ ...btnGold, margin: "12px auto 0" }}>
+              <Plus size={15} /> Create a custom pack
+            </button>
+          </Card>
+        )}
+        {open && (
+          <PackageDetail
+            ev={open}
+            store={store}
+            onClose={() => setOpen(null)}
+            onEdit={
+              open.custom
+                ? () => {
+                    setEditing(open);
+                    setOpen(null);
+                    setCreating(true);
+                  }
+                : undefined
+            }
+            toast={toast}
+          />
+        )}
+        {creating && (
+          <CustomPackModal
+            existing={editing}
+            have={have}
+            catalog={all.filter((p) => !p.custom)}
+            onClose={() => {
+              setCreating(false);
+              setEditing(null);
+            }}
+            onSave={(name: string, desc: string, reqs: string[]) => {
+              if (editing) {
+                store.updateCustomPack(editing.id, { name, desc, reqs });
+                toast("Custom pack updated");
+              } else {
+                store.addCustomPack({ name, desc, reqs });
+                toast("Custom pack created");
+              }
+              setCreating(false);
+              setEditing(null);
+            }}
+            onDelete={
+              editing
+                ? () => {
+                    store.removeCustomPack(editing.id);
+                    toast("Custom pack removed");
+                    setCreating(false);
+                    setEditing(null);
+                  }
+                : undefined
+            }
+          />
+        )}
+      </div>
+    );
   return (
     <div>
       <SectionHead
