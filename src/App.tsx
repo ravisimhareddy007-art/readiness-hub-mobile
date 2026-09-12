@@ -104,6 +104,13 @@ const APPCSS = `
 .lp-sheet-item:active{background:#1B2740}
 @keyframes lp-sheet-up{from{transform:translateY(24px);opacity:.4}to{transform:translateY(0);opacity:1}}
 .lp-dc-meta{display:contents}
+.lp-mh-rail{display:flex;gap:16px;overflow-x:auto;padding:6px 2px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.lp-mh-rail::-webkit-scrollbar{display:none}
+.lp-mh-mod{display:flex;flex-direction:column;align-items:center;gap:7px;background:none;border:none;cursor:pointer;min-width:66px;padding:0;-webkit-tap-highlight-color:transparent}
+.lp-mh-modlbl{font-size:11.5px;font-weight:600;color:#8A97AE}
+.lp-mh-insrail{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.lp-mh-insrail::-webkit-scrollbar{display:none}
+.lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:18px;border:none;display:grid;place-items:center;background:linear-gradient(135deg,#D9B86A,#ECCB82);box-shadow:0 12px 32px rgba(217,184,106,.35);cursor:pointer}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
@@ -1429,6 +1436,19 @@ function Stamp() {
     </div>
   );
 }
+function ModRing({ score, size = 58, color, children }: { score: number | null; size?: number; color: string; children: ReactNode }) {
+  const sw = 3.5, r = (size - sw) / 2, c = 2 * Math.PI * r;
+  const off = score == null ? 0 : c - (Math.max(0, Math.min(100, score)) / 100) * c;
+  return (
+    <span style={{ position: "relative", width: size, height: size, display: "inline-block", flexShrink: 0 }}>
+      <svg width={size} height={size} style={{ transform: "rotate(-90deg)", position: "absolute", inset: 0 }}>
+        <circle cx={size / 2} cy={size / 2} r={r} stroke={T.raised} strokeWidth={sw} fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={sw} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={off} />
+      </svg>
+      <span style={{ position: "absolute", inset: 6, borderRadius: 99, background: T.panel, display: "grid", placeItems: "center" }}>{children}</span>
+    </span>
+  );
+}
 const btnGold: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
@@ -1624,6 +1644,229 @@ function Home({ store, go, toast }: any) {
     { label: "Expiring < 60d", value: expiring.length, icon: Clock, c: A.gold, to: "documents" },
     { label: "Needs attention", value: totalActs, icon: Bell, c: A.pink, to: "health" },
   ];
+  const isMobile = useIsMobile();
+  const firstName = (store.members[0]?.name || "there").split(" ")[0];
+  const expiredCount = store.docs.filter((d: Doc) => d.expiry && daysTo(d.expiry) < 0).length;
+  const docsScore = store.docs.length ? Math.round(100 * (1 - expiredCount / store.docs.length)) : null;
+  const remAll = store.reminders || [];
+  const healthScore = remAll.length ? Math.round((100 * remAll.filter((r: Reminder) => r.done).length) / remAll.length) : null;
+  const guarded = store.holdings.filter((h: Holding) => h.kind === "asset" || h.kind === "cover");
+  const wealthMiss = guarded.reduce((n: number, h: Holding) => n + (h.docId ? 0 : 1) + (h.accessNote ? 0 : 1) + (h.nominee ? 0 : 1), 0);
+  const wealthScore = guarded.length ? Math.round(100 * (1 - wealthMiss / (guarded.length * 3))) : null;
+  const topActs = groups.flatMap((g) => g.acts.map((a) => ({ ...a, to: g.to, gcolor: g.color }))).slice(0, 3);
+  const welcomeCard =
+    store.dataMode === "empty" && store.docs.length === 0 ? (
+      <Card
+        style={{
+          padding: 20,
+          marginBottom: 16,
+          border: `1px solid ${T.gold}44`,
+          background: `linear-gradient(160deg, ${T.gold}12, ${T.panel})`,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}>
+          <Sparkles size={17} color={T.gold} />
+          <b style={{ color: T.white, fontSize: 16 }}>Welcome to ReadiNes</b>
+        </div>
+        <p style={{ fontSize: 13.5, color: T.muted, lineHeight: 1.6, margin: "0 0 14px", maxWidth: 560 }}>
+          Add one document and watch the whole app come to life: readiness scores fill in, packs start matching, and
+          the next big moment starts becoming the easy one.
+        </p>
+        <label style={{ ...btnGold, cursor: "pointer" }}>
+          <UploadCloud size={15} /> Add your first document
+          <input
+            type="file"
+            multiple
+            hidden
+            onChange={(e) => {
+              if (e.target.files?.length) {
+                store.addFiles(e.target.files);
+                toast(`${e.target.files.length} document(s) added`);
+              }
+              e.currentTarget.value = "";
+            }}
+          />
+        </label>
+      </Card>
+    ) : null;
+
+  if (isMobile) {
+    const mods: { key: string; label: string; icon: any; score: number | null; color: string; badge?: number }[] = [
+      { key: "documents", label: "Documents", icon: FolderOpen, score: docsScore, color: A.blue, badge: expiring.length },
+      { key: "packages", label: "Packages", icon: Plane, score: started.length ? overall : null, color: A.green },
+      { key: "health", label: "Health", icon: HeartPulse, score: healthScore, color: A.pink, badge: healthActs.length },
+      { key: "wealth", label: "Wealth", icon: Wallet, score: wealthScore, color: A.gold, badge: wealthActs.length },
+      { key: "trust", label: "Family", icon: Users, score: null, color: A.teal },
+    ];
+    return (
+      <div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: T.white, margin: "2px 0 14px" }}>
+          {hello}, {firstName}
+        </div>
+        {welcomeCard}
+        <div className="lp-mh-rail">
+          {mods.map((m) => (
+            <button key={m.key} className="lp-mh-mod" onClick={() => go(m.key)}>
+              <span style={{ position: "relative" }}>
+                <ModRing score={m.score} color={m.color}>
+                  <m.icon size={20} color={m.color} />
+                </ModRing>
+                {!!m.badge && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: -2,
+                      right: -2,
+                      minWidth: 18,
+                      height: 18,
+                      borderRadius: 99,
+                      background: T.gold,
+                      color: "#10182A",
+                      fontSize: 10.5,
+                      fontWeight: 800,
+                      display: "grid",
+                      placeItems: "center",
+                      padding: "0 4px",
+                    }}
+                  >
+                    {m.badge}
+                  </span>
+                )}
+              </span>
+              <span className="lp-mh-modlbl">{m.label}</span>
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => go("packages")}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            background: T.panel,
+            border: `1px solid ${T.border}`,
+            borderRadius: 16,
+            padding: 16,
+            cursor: "pointer",
+            textAlign: "left",
+            marginBottom: 16,
+          }}
+        >
+          <Ring score={overall} size={54} />
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: T.white }}>
+              {overall >= 90 ? "You're ready for what's next" : "Your readiness is building"}
+            </span>
+            <span style={{ display: "block", fontSize: 12.5, color: T.muted, marginTop: 2 }}>
+              {started.length
+                ? `${scored.filter((x) => x.score === 100).length} of ${started.length} started packs complete`
+                : "Pick a life moment to start preparing"}
+            </span>
+          </span>
+          <ChevronRight size={16} color={T.faint} />
+        </button>
+        {topActs.length > 0 && (
+          <>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.muted, letterSpacing: 0.4, margin: "0 0 8px 2px" }}>
+              For you today
+            </div>
+            <Card style={{ padding: 0, marginBottom: 16 }}>
+              {topActs.map((a: any, i: number) => (
+                <div
+                  key={a.id}
+                  onClick={() => go(a.to)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 11,
+                    padding: "13px 14px",
+                    borderTop: i ? `1px solid ${T.border}` : "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <span style={{ width: 8, height: 8, borderRadius: 9, background: a.tone, flexShrink: 0 }} />
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.text, lineHeight: 1.4 }}>
+                    {a.who ? `${a.who} · ` : ""}
+                    {a.label}
+                  </span>
+                  <span style={{ fontSize: 11.5, color: a.tone, fontFamily: "ui-monospace, monospace", whiteSpace: "nowrap" }}>
+                    {a.when}
+                  </span>
+                  {(a.rid || a.txId) && (
+                    <button
+                      title="Mark done"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        a.rid ? store.completeReminder(a.rid) : store.completeFollowUp(a.txId);
+                        toast("Marked done");
+                      }}
+                      style={{ ...btnGhost, padding: 8 }}
+                    >
+                      <CheckCircle2 size={15} color={T.mint} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </Card>
+          </>
+        )}
+        {topActs.length === 0 && store.docs.length > 0 && (
+          <Card style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+            <CheckCircle2 size={17} color={T.mint} />
+            <span style={{ fontSize: 13.5, color: T.muted }}>Nothing needs you today. Everything is in place.</span>
+          </Card>
+        )}
+        {insights.length > 0 && (
+          <div className="lp-mh-insrail">
+            {insights.slice(0, 3).map((ins, i) => (
+              <button
+                key={i}
+                onClick={() => go(ins.to)}
+                style={{
+                  flex: "0 0 82%",
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: 10,
+                  background: T.panel,
+                  border: `1px solid ${T.border}`,
+                  borderRadius: 14,
+                  padding: 13,
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+              >
+                <span style={{ display: "inline-flex", gap: 3, marginTop: 2, flexShrink: 0 }}>
+                  {ins.icons.map((Ic: any, j: number) => (
+                    <span key={j} style={{ display: "grid", placeItems: "center", width: 22, height: 22, borderRadius: 7, background: ins.tone + "1f" }}>
+                      <Ic size={12} color={ins.tone} />
+                    </span>
+                  ))}
+                </span>
+                <span style={{ flex: 1, fontSize: 12.5, color: T.text, lineHeight: 1.5 }}>{ins.text}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        <label className="lp-fab" title="Add a document">
+          <Plus size={24} color="#10182A" />
+          <input
+            type="file"
+            multiple
+            hidden
+            onChange={(e) => {
+              if (e.target.files?.length) {
+                store.addFiles(e.target.files);
+                toast(`${e.target.files.length} document(s) added`);
+              }
+              e.currentTarget.value = "";
+            }}
+          />
+        </label>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Eyebrow>Ready when you need them · private by design</Eyebrow>
