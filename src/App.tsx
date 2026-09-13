@@ -3462,6 +3462,12 @@ function Documents({ store, toast }: any) {
     clearSel();
   };
 
+  const expiryCell = (d: Doc) => {
+    if (!d.expiry) return <span style={{ color: T.faint }}>—</span>;
+    const n = daysTo(d.expiry);
+    const c = n < 0 ? T.coral : n < 60 ? T.gold : T.muted;
+    return <span style={{ color: c, fontWeight: n < 60 ? 700 : 400 }}>{n < 0 ? "expired" : `${n}d`}</span>;
+  };
   const panels = (
     <>
       {open && (
@@ -3764,12 +3770,6 @@ function Documents({ store, toast }: any) {
     padding: "8px 10px",
     fontSize: 13,
     outline: "none",
-  };
-  const expiryCell = (d: Doc) => {
-    if (!d.expiry) return <span style={{ color: T.faint }}>—</span>;
-    const n = daysTo(d.expiry);
-    const c = n < 0 ? T.coral : n < 60 ? T.gold : T.muted;
-    return <span style={{ color: c, fontWeight: n < 60 ? 700 : 400 }}>{n < 0 ? "expired" : `${n}d`}</span>;
   };
   const quickChips: { k: typeof quick; label: string; n: number; tone?: string }[] = [
     { k: "all", label: "All", n: docs.length },
