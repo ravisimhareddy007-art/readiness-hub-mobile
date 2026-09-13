@@ -47,6 +47,7 @@ import {
   IdCard,
   Settings as SettingsIcon,
   LogOut,
+  SlidersHorizontal,
   Bell as BellIcon,
   Sun,
   Moon,
@@ -1440,6 +1441,26 @@ function Stamp() {
     >
       READY
     </div>
+  );
+}
+function MSheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  return (
+    <>
+      <div className="lp-scrim" style={{ zIndex: 72 }} onClick={onClose} />
+      <div className="lp-sheet" style={{ zIndex: 73, maxHeight: "82vh", overflowY: "auto" }} role="dialog" aria-label={title}>
+        <div className="lp-sheet-grab" />
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
+          <b style={{ color: T.white, fontSize: 15.5, flex: 1 }}>{title}</b>
+          <button
+            onClick={onClose}
+            style={{ background: "none", border: "none", color: T.gold, fontWeight: 700, fontSize: 13.5, cursor: "pointer", padding: "8px 4px" }}
+          >
+            Done
+          </button>
+        </div>
+        {children}
+      </div>
+    </>
   );
 }
 function ModRing({ score, size = 58, color, children }: { score: number | null; size?: number; color: string; children: ReactNode }) {
@@ -3382,6 +3403,9 @@ function Documents({ store, toast }: any) {
   const [open, setOpen] = useState<Doc | null>(null);
   const [preview, setPreview] = useState<Doc | null>(null);
   const [upMenu, setUpMenu] = useState(false);
+  const [fSheet, setFSheet] = useState(false);
+  const [addSheet, setAddSheet] = useState(false);
+  const isMobile = useIsMobile();
 
   const nameOf = (mid?: string) => store.members.find((m: Member) => m.id === mid)?.name || "Unassigned";
   const colorOf = (mid?: string) => store.members.find((m: Member) => m.id === mid)?.color || T.faint;
@@ -3437,6 +3461,300 @@ function Documents({ store, toast }: any) {
     toast(`${sel.size} document(s) assigned to ${nameOf(mid)}`);
     clearSel();
   };
+
+  const panels = (
+    <>
+      {open && (
+        <DocContextPanel
+          key={open.id}
+          d={store.docs.find((x: Doc) => x.id === open.id) || open}
+          store={store}
+          toast={toast}
+          onClose={() => setOpen(null)}
+          onPreview={() => setPreview(store.docs.find((x: Doc) => x.id === open.id) || open)}
+          onDeleted={() => setOpen(null)}
+        />
+      )}
+      {preview && <DocViewer doc={preview} store={store} onClose={() => setPreview(null)} />}
+    </>
+  );
+
+  const catsAll = ["All", ...Array.from(new Set(docs.map((d) => d.category)))];
+  const addAndToast = (files: FileList | null, msg: string) => {
+    if (files?.length) {
+      store.addFiles(files);
+      toast(msg.replace("{n}", String(files.length)));
+    }
+  };
+  if (isMobile) {
+    const Opt = ({ on, onClick, children }: any) => (
+      <button
+        onClick={onClick}
+        style={{
+          padding: "7px 13px",
+          borderRadius: 99,
+          fontSize: 12.5,
+          fontWeight: 600,
+          cursor: "pointer",
+          border: `1px solid ${on ? T.gold + "77" : T.border}`,
+          background: on ? T.raised : "transparent",
+          color: on ? T.white : T.muted,
+        }}
+      >
+        {children}
+      </button>
+    );
+    const Sec = ({ label, children }: any) => (
+      <div style={{ margin: "12px 0" }}>
+        <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>{children}</div>
+      </div>
+    );
+    const activeChips: { label: string; clear: () => void }[] = [];
+    if (quick !== "all") activeChips.push({ label: { expiring: "Expiring soon", expired: "Expired", recent: "Added this week", proofs: "Proofs" }[quick]!, clear: () => setQuick("all") });
+    if (cat !== "All") activeChips.push({ label: cat, clear: () => setCat("All") });
+    if (person !== "All") activeChips.push({ label: nameOf(person), clear: () => setPerson("All") });
+    if (sort !== "newest") activeChips.push({ label: { oldest: "Oldest first", name: "By name", expiry: "By expiry" }[sort]!, clear: () => setSort("newest") });
+    return (
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 12px" }}>
+          <b style={{ fontSize: 18, fontWeight: 800, color: T.white }}>Documents</b>
+          <span style={pill(T.muted)}>{docs.length}</span>
+          <span style={{ flex: 1 }} />
+          <button onClick={() => setAddSheet(true)} title="Add documents" style={{ ...btnGhost, padding: 10, borderRadius: 12 }}>
+            <Plus size={17} />
+          </button>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 9,
+            background: T.panel,
+            border: `1px solid ${q ? T.gold + "66" : T.border}`,
+            borderRadius: 11,
+            padding: "7px 12px",
+            marginBottom: 10,
+          }}
+        >
+          <Search size={15} color={T.muted} />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search documents…"
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text }}
+          />
+          {q && (
+            <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, display: "flex" }}>
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 10 }}>
+          <span style={{ fontSize: 12.5, color: T.muted }}>
+            {filtered.length === docs.length ? `${docs.length} documents` : `${filtered.length} of ${docs.length}`}
+          </span>
+          {activeChips.map((c, i) => (
+            <button
+              key={i}
+              onClick={c.clear}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "4px 9px",
+                borderRadius: 99,
+                fontSize: 11.5,
+                fontWeight: 600,
+                border: `1px solid ${T.gold}55`,
+                background: T.raised,
+                color: T.white,
+                cursor: "pointer",
+              }}
+            >
+              {c.label} <X size={11} />
+            </button>
+          ))}
+          <span style={{ flex: 1 }} />
+          <button
+            onClick={() => setFSheet(true)}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: T.gold, fontSize: 13, fontWeight: 700, cursor: "pointer", padding: "6px 2px" }}
+          >
+            <SlidersHorizontal size={14} /> Filter
+          </button>
+        </div>
+        <Card style={{ padding: 0, overflow: "hidden" }}>
+          {filtered.length === 0 ? (
+            <div style={{ padding: 26, textAlign: "center", color: T.muted, fontSize: 13.5 }}>
+              {docs.length === 0 ? "Your vault is empty. Add your first document." : "Nothing matches. Try clearing a filter."}
+            </div>
+          ) : (
+            filtered.map((d, i) => {
+              const col = CAT_META[d.category as Category].color;
+              const Ic = CAT_META[d.category as Category].icon;
+              const checked = sel.has(d.id);
+              return (
+                <div
+                  key={d.id}
+                  onClick={() => setOpen(d)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 11,
+                    padding: "12px 13px",
+                    borderTop: i ? `1px solid ${T.border}` : "none",
+                    cursor: "pointer",
+                    background: checked ? T.raised : "transparent",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={() => toggle(d.id)}
+                    style={{ accentColor: T.gold, width: 16, height: 16, flexShrink: 0 }}
+                  />
+                  <span
+                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 9, background: col + "22", flexShrink: 0 }}
+                  >
+                    <Ic size={15} color={col} />
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {d.docType}
+                    </span>
+                    <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {nameOf(d.memberId)} · {d.expiry ? <>{expiryCell(d)}</> : fdate(d.addedAt)}
+                    </span>
+                  </span>
+                  <ChevronRight size={15} color={T.faint} style={{ flexShrink: 0 }} />
+                </div>
+              );
+            })
+          )}
+        </Card>
+        {sel.size > 0 && (
+          <div
+            style={{
+              position: "fixed",
+              left: 10,
+              right: 10,
+              bottom: "calc(74px + env(safe-area-inset-bottom))",
+              zIndex: 56,
+              display: "flex",
+              alignItems: "center",
+              gap: 9,
+              background: T.raised,
+              border: `1px solid ${T.gold}55`,
+              borderRadius: 14,
+              padding: "9px 12px",
+              boxShadow: "0 14px 40px rgba(0,0,0,.5)",
+            }}
+          >
+            <b style={{ fontSize: 13, color: T.white }}>{sel.size} selected</b>
+            <select
+              onChange={(e) => e.target.value && bulkAssign(e.target.value)}
+              defaultValue=""
+              style={{ flex: 1, background: T.panel, color: T.text, border: `1px solid ${T.border}`, borderRadius: 9, padding: "7px 8px", fontSize: 13 }}
+            >
+              <option value="" disabled>
+                Assign to…
+              </option>
+              {store.members.map((m: Member) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+            <button onClick={bulkDelete} title="Delete selected" style={{ ...btnGhost, padding: 9, color: T.coral }}>
+              <Trash2 size={15} color={T.coral} />
+            </button>
+            <button onClick={clearSel} title="Clear selection" style={{ ...btnGhost, padding: 9 }}>
+              <X size={15} />
+            </button>
+          </div>
+        )}
+        {addSheet && (
+          <MSheet title="Add documents" onClose={() => setAddSheet(false)}>
+            <label className="lp-sheet-item">
+              <FileText size={19} color={T.muted} /> Upload files
+              <input
+                type="file"
+                multiple
+                hidden
+                onChange={(e) => {
+                  addAndToast(e.target.files, "{n} document(s) added");
+                  e.currentTarget.value = "";
+                  setAddSheet(false);
+                }}
+              />
+            </label>
+            <label className="lp-sheet-item">
+              <ImageIcon size={19} color={T.muted} /> From gallery
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={(e) => {
+                  addAndToast(e.target.files, "{n} image(s) added");
+                  e.currentTarget.value = "";
+                  setAddSheet(false);
+                }}
+              />
+            </label>
+            <label className="lp-sheet-item">
+              <Camera size={19} color={T.muted} /> Scan with camera
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                hidden
+                onChange={(e) => {
+                  addAndToast(e.target.files, "Scan captured and classified");
+                  e.currentTarget.value = "";
+                  setAddSheet(false);
+                }}
+              />
+            </label>
+          </MSheet>
+        )}
+        {fSheet && (
+          <MSheet title="Filters" onClose={() => setFSheet(false)}>
+            <Sec label="Status">
+              <Opt on={quick === "all"} onClick={() => setQuick("all")}>All</Opt>
+              <Opt on={quick === "expiring"} onClick={() => setQuick("expiring")}>Expiring soon · {expiring.length}</Opt>
+              <Opt on={quick === "expired"} onClick={() => setQuick("expired")}>Expired · {expired.length}</Opt>
+              <Opt on={quick === "recent"} onClick={() => setQuick("recent")}>Added this week · {recent.length}</Opt>
+              <Opt on={quick === "proofs"} onClick={() => setQuick("proofs")}>Proofs</Opt>
+            </Sec>
+            <Sec label="Category">
+              {catsAll.map((c) => (
+                <Opt key={c} on={cat === c} onClick={() => setCat(c)}>
+                  {c}
+                </Opt>
+              ))}
+            </Sec>
+            <Sec label="Person">
+              <Opt on={person === "All"} onClick={() => setPerson("All")}>Everyone</Opt>
+              {store.members.map((m: Member) => (
+                <Opt key={m.id} on={person === m.id} onClick={() => setPerson(m.id)}>
+                  {m.name.split(" ")[0]}
+                </Opt>
+              ))}
+            </Sec>
+            <Sec label="Sort">
+              <Opt on={sort === "newest"} onClick={() => setSort("newest")}>Newest first</Opt>
+              <Opt on={sort === "oldest"} onClick={() => setSort("oldest")}>Oldest first</Opt>
+              <Opt on={sort === "name"} onClick={() => setSort("name")}>By name</Opt>
+              <Opt on={sort === "expiry"} onClick={() => setSort("expiry")}>By expiry</Opt>
+            </Sec>
+          </MSheet>
+        )}
+        {panels}
+      </div>
+    );
+  }
 
   const selStyle: CSSProperties = {
     background: T.raised,
@@ -3874,18 +4192,7 @@ function Documents({ store, toast }: any) {
         </div>
       </Card>
 
-      {open && (
-        <DocContextPanel
-          key={open.id}
-          d={store.docs.find((x: Doc) => x.id === open.id) || open}
-          store={store}
-          toast={toast}
-          onClose={() => setOpen(null)}
-          onPreview={() => setPreview(store.docs.find((x: Doc) => x.id === open.id) || open)}
-          onDeleted={() => setOpen(null)}
-        />
-      )}
-      {preview && <DocViewer doc={preview} store={store} onClose={() => setPreview(null)} />}
+      {panels}
     </div>
   );
 }
