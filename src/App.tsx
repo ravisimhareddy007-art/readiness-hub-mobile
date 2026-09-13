@@ -87,18 +87,18 @@ const T_DARK = {
   white: "#FFFFFF",
 };
 const T_LIGHT = {
-  navy: "#F6F7F9",
+  navy: "#F8F5EF",
   panel: "#FFFFFF",
-  raised: "#EEF1F6",
-  border: "#E3E7EE",
-  gold: "#A97E22",
+  raised: "#F3EEE4",
+  border: "#EDE7DA",
+  gold: "#AD7F1F",
   goldBright: "#8F6A1C",
   mint: "#178A5E",
   coral: "#C6473C",
-  text: "#3A4459",
-  muted: "#5B6577",
-  faint: "#8B94A6",
-  white: "#0E1626",
+  text: "#39424F",
+  muted: "#6E7480",
+  faint: "#9AA0AB",
+  white: "#20293A",
 };
 const A_DARK = { blue: "#5B8DEF", purple: "#9B7BE8", teal: "#3FB9C7", pink: "#E86A9B", green: "#4FCB95", gold: "#D9B86A" };
 const A_LIGHT = { blue: "#2F6FD6", purple: "#7A5CD6", teal: "#15839B", pink: "#C74B7E", green: "#178A5E", gold: "#A97E22" };
@@ -115,7 +115,10 @@ function applyTheme(theme: string) {
 
 const APPCSS = `
 :root{--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
-[data-theme="light"]{--lpv-bg:#F6F7F9;--lpv-panel:#FFFFFF;--lpv-raised:#EEF1F6;--lpv-border:#E3E7EE;--lpv-text:#1C2536;--lpv-muted:#5B6577;--lpv-gold:#A97E22;--lpv-goldb:#C9A24B;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(250,251,253,.96);--lpv-scrim:rgba(15,23,42,.35);--lpv-fabshadow:rgba(169,126,34,.30)}
+[data-theme="light"]{--lpv-bg:#F8F5EF;--lpv-panel:#FFFFFF;--lpv-raised:#F3EEE4;--lpv-border:#EDE7DA;--lpv-text:#20293A;--lpv-muted:#6E7480;--lpv-gold:#AD7F1F;--lpv-goldb:#C9A24B;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(252,250,245,.96);--lpv-scrim:rgba(30,26,16,.35);--lpv-fabshadow:rgba(173,127,31,.28)}
+[data-theme="light"] .lp-card{box-shadow:0 1px 2px rgba(60,48,20,.04),0 10px 28px rgba(97,76,26,.07)}
+[data-theme="light"] .lp-tabbar{box-shadow:0 -8px 26px rgba(97,76,26,.09);border-top-color:transparent}
+[data-theme="light"] .lp-sheet{box-shadow:0 -14px 44px rgba(60,48,20,.18)}
 body{background:var(--lpv-bg)}
 .lp-main{flex:1;min-width:0;padding:24px 34px 40px;max-width:1160px;margin:0 auto;width:100%}
 .lp-cols2{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
@@ -124,7 +127,7 @@ body{background:var(--lpv-bg)}
 @media(max-width:880px){.lp-hero2{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:760px){.lp-main{padding:16px 14px 30px}}
 .lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(5,1fr);gap:0;background:var(--lpv-barbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--lpv-border);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
-.lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:12px;font-size:10px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:14px;font-size:10px;margin:0 3px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lp-scrim{position:fixed;inset:0;z-index:65;background:var(--lpv-scrim)}
 .lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up .22s ease}
 .lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:var(--lpv-border);margin:4px auto 10px}
@@ -1746,32 +1749,45 @@ function Home({ store, go, toast }: any) {
     ) : null;
 
   if (isMobile) {
-    const mods: { key: string; label: string; icon: any; score: number | null; color: string; badge?: number }[] = [
-      { key: "documents", label: "Documents", icon: FolderOpen, score: docsScore, color: A.blue, badge: expiring.length },
-      { key: "packages", label: "Packages", icon: Plane, score: started.length ? overall : null, color: A.green },
-      { key: "health", label: "Health", icon: HeartPulse, score: healthScore, color: A.pink, badge: healthActs.length },
-      { key: "wealth", label: "Wealth", icon: Wallet, score: wealthScore, color: A.gold, badge: wealthActs.length },
-      { key: "trust", label: "Family", icon: Users, score: null, color: A.teal },
+    const inProgress = started.filter((x: any) => x.score < 100).length;
+    const mods: { key: string; label: string; sub: string; icon: any; color: string; badge?: number }[] = [
+      { key: "documents", label: "Documents", sub: `${store.docs.length} total`, icon: FolderOpen, color: A.blue, badge: expiring.length },
+      { key: "packages", label: "Packages", sub: inProgress ? `${inProgress} in progress` : "Explore", icon: Plane, color: A.green },
+      { key: "health", label: "Health", sub: healthActs.length ? `${healthActs.length} due soon` : "Up to date", icon: HeartPulse, color: A.pink, badge: healthActs.length },
+      { key: "wealth", label: "Wealth", sub: wealthScore == null ? "Start" : wealthScore >= 80 ? "On track" : `${wealthActs.length || wealthMiss} to review`, icon: Wallet, color: A.gold, badge: wealthActs.length },
+      { key: "trust", label: "Family", sub: `${store.members.length} member${store.members.length === 1 ? "" : "s"}`, icon: Users, color: A.purple },
     ];
     return (
       <div>
-        <div style={{ fontSize: 20, fontWeight: 800, color: T.white, margin: "2px 0 14px" }}>
-          {hello}, {firstName}
+        <div style={{ margin: "2px 0 14px" }}>
+          <div style={{ fontSize: 21, fontWeight: 800, color: T.white }}>
+            {hello}, {firstName}
+          </div>
+          <div style={{ fontSize: 12.5, color: T.muted, marginTop: 2 }}>Small steps today. A more ready tomorrow.</div>
         </div>
         {welcomeCard}
         <div className="lp-mh-rail">
           {mods.map((m) => (
             <button key={m.key} className="lp-mh-mod" onClick={() => go(m.key)}>
               <span style={{ position: "relative" }}>
-                <ModRing score={m.score} color={m.color} size={50}>
-                  <m.icon size={18} color={m.color} />
-                </ModRing>
+                <span
+                  style={{
+                    width: 54,
+                    height: 54,
+                    borderRadius: 18,
+                    background: m.color + "1F",
+                    display: "grid",
+                    placeItems: "center",
+                  }}
+                >
+                  <m.icon size={22} color={m.color} />
+                </span>
                 {!!m.badge && (
                   <span
                     style={{
                       position: "absolute",
-                      top: -2,
-                      right: -2,
+                      top: -5,
+                      right: -5,
                       minWidth: 18,
                       height: 18,
                       borderRadius: 99,
@@ -1782,13 +1798,15 @@ function Home({ store, go, toast }: any) {
                       display: "grid",
                       placeItems: "center",
                       padding: "0 4px",
+                      boxShadow: "0 2px 6px rgba(0,0,0,.18)",
                     }}
                   >
                     {m.badge}
                   </span>
                 )}
               </span>
-              <span className="lp-mh-modlbl">{m.label}</span>
+              <span className="lp-mh-modlbl" style={{ color: T.text }}>{m.label}</span>
+              <span style={{ fontSize: 9.5, color: T.muted, marginTop: -3 }}>{m.sub}</span>
             </button>
           ))}
         </div>
@@ -1827,7 +1845,10 @@ function Home({ store, go, toast }: any) {
               For you today
             </div>
             <Card style={{ padding: 0, marginBottom: 16 }}>
-              {topActs.map((a: any, i: number) => (
+              {topActs.map((a: any, i: number) => {
+                const ChipIc = a.to === "health" ? HeartPulse : a.to === "wealth" ? Wallet : FileText;
+                const chipC = a.to === "health" ? A.pink : a.to === "wealth" ? A.gold : A.blue;
+                return (
                 <div
                   key={a.id}
                   onClick={() => go(a.to)}
@@ -1835,17 +1856,36 @@ function Home({ store, go, toast }: any) {
                     display: "flex",
                     alignItems: "center",
                     gap: 11,
-                    padding: "13px 14px",
+                    padding: "12px 13px",
                     borderTop: i ? `1px solid ${T.border}` : "none",
                     cursor: "pointer",
                   }}
                 >
-                  <span style={{ width: 8, height: 8, borderRadius: 9, background: a.tone, flexShrink: 0 }} />
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.text, lineHeight: 1.4 }}>
-                    {a.who ? `${a.who} · ` : ""}
-                    {a.label}
+                  <span
+                    style={{ width: 36, height: 36, borderRadius: 12, background: chipC + "1F", display: "grid", placeItems: "center", flexShrink: 0 }}
+                  >
+                    <ChipIc size={16} color={chipC} />
                   </span>
-                  <span style={{ fontSize: 11.5, color: a.tone, fontFamily: "ui-monospace, monospace", whiteSpace: "nowrap" }}>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.text, lineHeight: 1.4 }}>
+                    {a.who ? (
+                      <>
+                        <b style={{ color: T.white }}>{a.who}</b> · {a.label}
+                      </>
+                    ) : (
+                      a.label
+                    )}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: a.tone,
+                      background: a.tone + "1C",
+                      borderRadius: 99,
+                      padding: "4px 9px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {a.when}
                   </span>
                   {(a.rid || a.txId) && (
@@ -1862,7 +1902,7 @@ function Home({ store, go, toast }: any) {
                     </button>
                   )}
                 </div>
-              ))}
+              );})}
             </Card>
           </>
         )}
@@ -1903,8 +1943,25 @@ function Home({ store, go, toast }: any) {
             ))}
           </div>
         )}
-        <label className="lp-fab" title="Add a document">
-          <Plus size={24} style={{ color: "var(--lpv-golddark)" }} />
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 9,
+            width: "100%",
+            marginTop: 14,
+            padding: "15px 0",
+            borderRadius: 16,
+            background: "linear-gradient(135deg,var(--lpv-gold),var(--lpv-goldb))",
+            color: "var(--lpv-golddark)",
+            fontSize: 15,
+            fontWeight: 800,
+            cursor: "pointer",
+            boxShadow: "0 10px 26px var(--lpv-fabshadow)",
+          }}
+        >
+          <Plus size={19} /> Add a record or document
           <input
             type="file"
             multiple
@@ -8121,7 +8178,7 @@ export default function App() {
               <button
                 key={key}
                 className="lp-tab"
-                style={{ color: on ? T.gold : T.muted }}
+                style={{ color: on ? T.gold : T.muted, background: on ? T.raised : "none" }}
                 onClick={() => setRoute(key)}
               >
                 <Ic size={20} color={on ? T.gold : T.muted} /> {label}
