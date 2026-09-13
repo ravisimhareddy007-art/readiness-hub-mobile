@@ -71,8 +71,8 @@ import { getPackRequirements } from "@/lib/requirements";
 import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-/* ── theme ── */
-const T = {
+/* ── design system: semantic tokens, two first-class themes ── */
+const T_DARK = {
   navy: "#0B1220",
   panel: "#131C2E",
   raised: "#1B2740",
@@ -86,30 +86,58 @@ const T = {
   faint: "#5C6B80",
   white: "#FFFFFF",
 };
-const A = { blue: "#5B8DEF", purple: "#9B7BE8", teal: "#3FB9C7", pink: "#E86A9B", green: "#4FCB95", gold: "#D9B86A" };
+const T_LIGHT = {
+  navy: "#F6F7F9",
+  panel: "#FFFFFF",
+  raised: "#EEF1F6",
+  border: "#E3E7EE",
+  gold: "#A97E22",
+  goldBright: "#8F6A1C",
+  mint: "#178A5E",
+  coral: "#C6473C",
+  text: "#3A4459",
+  muted: "#5B6577",
+  faint: "#8B94A6",
+  white: "#0E1626",
+};
+const A_DARK = { blue: "#5B8DEF", purple: "#9B7BE8", teal: "#3FB9C7", pink: "#E86A9B", green: "#4FCB95", gold: "#D9B86A" };
+const A_LIGHT = { blue: "#2F6FD6", purple: "#7A5CD6", teal: "#15839B", pink: "#C74B7E", green: "#178A5E", gold: "#A97E22" };
+const T: typeof T_DARK = { ...T_DARK };
+const A: typeof A_DARK = { ...A_DARK };
+let _appliedTheme = "";
+function applyTheme(theme: string) {
+  if (theme === _appliedTheme) return;
+  _appliedTheme = theme;
+  Object.assign(T, theme === "light" ? T_LIGHT : T_DARK);
+  Object.assign(A, theme === "light" ? A_LIGHT : A_DARK);
+  if (typeof document !== "undefined") document.documentElement.dataset.theme = theme === "light" ? "light" : "dark";
+}
 
 const APPCSS = `
+:root{--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
+[data-theme="light"]{--lpv-bg:#F6F7F9;--lpv-panel:#FFFFFF;--lpv-raised:#EEF1F6;--lpv-border:#E3E7EE;--lpv-text:#1C2536;--lpv-muted:#5B6577;--lpv-gold:#A97E22;--lpv-goldb:#C9A24B;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(250,251,253,.96);--lpv-scrim:rgba(15,23,42,.35);--lpv-fabshadow:rgba(169,126,34,.30)}
+body{background:var(--lpv-bg)}
 .lp-main{flex:1;min-width:0;padding:24px 34px 40px;max-width:1160px;margin:0 auto;width:100%}
 .lp-cols2{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
 .lp-hero2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,1fr);gap:14px}
 @media(max-width:1020px){.lp-cols2{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:880px){.lp-hero2{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:760px){.lp-main{padding:16px 14px 30px}}
-.lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(5,1fr);gap:0;background:rgba(11,18,32,.96);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid #27324A;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(5,1fr);gap:0;background:var(--lpv-barbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--lpv-border);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
 .lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:12px;font-size:10px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.lp-scrim{position:fixed;inset:0;z-index:65;background:rgba(4,8,16,.55)}
-.lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:#131C2E;border-top:1px solid #27324A;border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up .22s ease}
-.lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:#27324A;margin:4px auto 10px}
-.lp-sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:50px;padding:0 10px;background:none;border:none;border-radius:12px;color:#E6EBF5;font-size:15px;font-weight:600;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
-.lp-sheet-item:active{background:#1B2740}
+.lp-scrim{position:fixed;inset:0;z-index:65;background:var(--lpv-scrim)}
+.lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up .22s ease}
+.lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:var(--lpv-border);margin:4px auto 10px}
+.lp-sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:50px;padding:0 10px;background:none;border:none;border-radius:12px;color:var(--lpv-text);font-size:15px;font-weight:600;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
+.lp-sheet-item:active{background:var(--lpv-raised)}
 @keyframes lp-sheet-up{from{transform:translateY(24px);opacity:.4}to{transform:translateY(0);opacity:1}}
 .lp-dc-meta{display:contents}
 .lp-mh-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;justify-items:center;padding:6px 0 12px}
 .lp-mh-mod{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}
-.lp-mh-modlbl{font-size:10.5px;font-weight:600;color:#8A97AE}
+.lp-mh-modlbl{font-size:10.5px;font-weight:600;color:var(--lpv-muted)}
 .lp-mh-insrail{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .lp-mh-insrail::-webkit-scrollbar{display:none}
-.lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:18px;border:none;display:grid;place-items:center;background:linear-gradient(135deg,#D9B86A,#ECCB82);box-shadow:0 12px 32px rgba(217,184,106,.35);cursor:pointer}
+.lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:18px;border:none;display:grid;place-items:center;background:linear-gradient(135deg,var(--lpv-gold),var(--lpv-goldb));box-shadow:0 12px 32px var(--lpv-fabshadow);cursor:pointer}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
@@ -1481,7 +1509,7 @@ const btnGold: CSSProperties = {
   alignItems: "center",
   gap: 8,
   background: T.gold,
-  color: "#10182A",
+  color: "var(--lpv-golddark)",
   border: "none",
   borderRadius: 10,
   padding: "10px 15px",
@@ -1748,7 +1776,7 @@ function Home({ store, go, toast }: any) {
                       height: 18,
                       borderRadius: 99,
                       background: T.gold,
-                      color: "#10182A",
+                      color: "var(--lpv-golddark)",
                       fontSize: 10.5,
                       fontWeight: 800,
                       display: "grid",
@@ -1876,7 +1904,7 @@ function Home({ store, go, toast }: any) {
           </div>
         )}
         <label className="lp-fab" title="Add a document">
-          <Plus size={24} color="#10182A" />
+          <Plus size={24} style={{ color: "var(--lpv-golddark)" }} />
           <input
             type="file"
             multiple
@@ -7243,7 +7271,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
                       cursor: "pointer",
                       border: "none",
                       background: store.theme === t ? T.gold : "transparent",
-                      color: store.theme === t ? "#10182A" : T.muted,
+                      color: store.theme === t ? "var(--lpv-golddark)" : T.muted,
                     }}
                   >
                     {t === "dark" ? "Dark" : "Light"}
@@ -7840,6 +7868,7 @@ export default function App() {
     (toast as any)._t = window.setTimeout(() => setToastMsg(null), 2400);
   };
   const go = (r: string) => setRoute(r);
+  applyTheme(store.theme);
 
   return (
     <div
@@ -7849,7 +7878,6 @@ export default function App() {
         background: T.navy,
         fontFamily: "Inter, system-ui, sans-serif",
         color: T.text,
-        filter: store.theme === "light" ? "invert(0.93) hue-rotate(180deg)" : "none",
       }}
     >
       <style>{APPCSS}</style>
@@ -7894,7 +7922,7 @@ export default function App() {
               flexShrink: 0,
             }}
           >
-            <FileText size={20} color="#10182A" />
+            <FileText size={20} style={{ color: "var(--lpv-golddark)" }} />
           </span>
           {navOpen && (
             <div style={{ minWidth: 0 }}>
@@ -7979,7 +8007,7 @@ export default function App() {
           style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, position: "relative", zIndex: 40 }}
         >
           <div
-            style={{ flex: 1, display: route === "documents" ? "none" : "block", position: "relative", maxWidth: 300 }}
+            style={{ flex: 1, display: route === "documents" || (isMobile && route === "packages") ? "none" : "block", position: "relative", maxWidth: 300 }}
           >
             <div
               style={{
