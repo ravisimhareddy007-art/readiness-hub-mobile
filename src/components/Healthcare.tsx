@@ -1,6 +1,8 @@
 import { useState, useMemo, useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  ChevronRight,
   Plus,
   X,
   Download,
@@ -180,6 +182,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
   };
 
   const [sel, setSel] = useState(s.members[0]?.id || "you");
+  const isMobile = useIsMobile();
+  const [mView, setMView] = useState<"family" | "person">("family");
   const [tab, setTab] = useState<"overview" | "timeline" | "meds" | "records">("overview");
   const [modal, setModal] = useState<
     null | "reading" | "member" | "med" | "reminder" | "profile" | "emergency" | "visit"
@@ -438,9 +442,187 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       </div>
     );
 
+  const upcomingAppts = s.reminders
+    .filter((r) => !r.done && r.kind === "appointment" && daysTo(r.due) >= 0)
+    .sort((a, b) => a.due.localeCompare(b.due))
+    .slice(0, 3);
+  const openPerson = (mid: string) => {
+    setSel(mid);
+    setTab("overview");
+    setMView("person");
+  };
+  if (isMobile && mView === "family")
+    return (
+      <div className="lh-root">
+        <style>{CSS}</style>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 12px" }}>
+          <h1 className="lh-h1" style={{ fontSize: 18 }}>Health</h1>
+          <span style={{ flex: 1 }} />
+          <button className="lh-btn-g" style={{ padding: 10, borderRadius: 12 }} onClick={() => setModal("member")} title="Add a family member">
+            <UserPlus size={16} />
+          </button>
+        </div>
+        <div className="lh-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
+          {s.members.map((mm, i) => {
+            const st = memberStatus(mm.id);
+            return (
+              <button
+                key={mm.id}
+                onClick={() => openPerson(mm.id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  width: "100%",
+                  padding: "13px 14px",
+                  background: "none",
+                  border: "none",
+                  borderTop: i ? `1px solid ${C.border}` : "none",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  fontFamily: "inherit",
+                }}
+              >
+                <span className="lh-famav" style={{ background: mm.color + "26", color: mm.color, border: `1.5px solid ${mm.color}55` }}>
+                  {mm.name[0]}
+                </span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 14.5, fontWeight: 700, color: C.text }}>{mm.name.split(" ")[0]}</span>
+                  <span style={{ display: "block", fontSize: 12, marginTop: 1, color: st.c }}>{st.txt}</span>
+                </span>
+                <ChevronRight size={15} color={C.faint} />
+              </button>
+            );
+          })}
+        </div>
+        {upcomingAppts.length > 0 && (
+          <>
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.5, color: C.faint, textTransform: "uppercase", margin: "0 0 8px 2px" }}>
+              Upcoming
+            </div>
+            <div className="lh-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
+              {upcomingAppts.map((r, i) => {
+                const mm = s.members.find((x) => x.id === r.memberId);
+                return (
+                  <button
+                    key={r.id}
+                    onClick={() => openPerson(r.memberId)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 11,
+                      width: "100%",
+                      padding: "12px 14px",
+                      background: "none",
+                      border: "none",
+                      borderTop: i ? `1px solid ${C.border}` : "none",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    <CalendarClock size={16} color={C.gold} style={{ flexShrink: 0 }} />
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: C.text }}>{r.title}</span>
+                      <span style={{ display: "block", fontSize: 12, color: C.sub, marginTop: 1 }}>
+                        {fmt(r.due)} · in {daysTo(r.due)}d · {mm?.name.split(" ")[0]}
+                      </span>
+                    </span>
+                    <ChevronRight size={15} color={C.faint} />
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+        {familyActions.length > 0 && (
+          <>
+            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.5, color: C.faint, textTransform: "uppercase", margin: "0 0 8px 2px" }}>
+              Needs attention
+            </div>
+            <div className="lh-card" style={{ padding: 0, overflow: "hidden" }}>
+              {familyActions.slice(0, 4).map((a, i) => (
+                <button
+                  key={i}
+                  onClick={() => openPerson(a.mid)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 11,
+                    width: "100%",
+                    padding: "12px 14px",
+                    background: "none",
+                    border: "none",
+                    borderTop: i ? `1px solid ${C.border}` : "none",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  <a.icon size={15} color={a.iconC} style={{ flexShrink: 0 }} />
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: C.text }}>
+                    <b style={{ color: a.color }}>{a.name}</b> · {a.label}
+                  </span>
+                  <span style={{ fontSize: 11.5, color: a.iconC, whiteSpace: "nowrap" }}>{a.when}</span>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        {modal === "member" && (
+          <AddMember
+            onClose={() => setModal(null)}
+            save={(mm: Member) => {
+              s.addMember(mm);
+              s.updateCare(mm.id, {
+                conditions: [],
+                medications: [],
+                allergies: "None recorded",
+                doctor: "",
+                emergency: "",
+              });
+              setSel(mm.id);
+              toast("Member added");
+              setModal(null);
+            }}
+          />
+        )}
+        {!extToast && (
+          <AnimatePresence>
+            {localToast && (
+              <motion.div className="lh-toast" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}>
+                <CheckCircle2 size={17} color={C.emerald} /> {localToast}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
+      </div>
+    );
+
   return (
     <div className="lh-root">
       <style>{CSS}</style>
+      {isMobile && (
+        <button
+          onClick={() => setMView("family")}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            background: "none",
+            border: "none",
+            color: C.sub,
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+            padding: "2px 0 10px",
+            fontFamily: "inherit",
+          }}
+        >
+          <ChevronRight size={14} style={{ transform: "rotate(180deg)" }} /> Family
+        </button>
+      )}
+      {!isMobile && (
       <div className="lh-head">
         <div className="lh-headrow">
           <h1 className="lh-h1">Health</h1>
@@ -456,7 +638,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         </p>
       </div>
 
+      )}
       {/* member switcher — status cards, not bare pills */}
+      {!isMobile && (
       <div className="lh-famgrid">
         {s.members.map((mm) => {
           const st = memberStatus(mm.id);
@@ -494,6 +678,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           <span style={{ fontSize: 13, fontWeight: 700, color: C.gold }}>Add</span>
         </button>
       </div>
+      )}
 
       {/* selected member — slim identity bar; actions live with their context */}
       <div className="lh-pbar">
