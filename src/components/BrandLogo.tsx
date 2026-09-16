@@ -22,14 +22,14 @@ export function BrandMark({
   return (
     <svg
       width={size}
-      height={size * (190 / 147)}
-      viewBox="41 25 147 190"
+      height={size * (199 / 147)}
+      viewBox="41 25 147 199"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label={title}
     >
       <path
-        d="M70.4 106.7 L144.2 200.8"
+        d="M70.4 106.7 L152.2 211"
         fill="none"
         stroke={color}
         strokeLinecap="round"

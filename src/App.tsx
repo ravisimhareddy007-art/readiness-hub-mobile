@@ -7718,6 +7718,14 @@ function AuthScreen({
   };
   const submit = () => {
     setErr("");
+    /* DEV ONLY — remove before release: Sign In with both fields empty creates/uses a local test session */
+    if (mode === "signin" && !email.trim() && !pw) {
+      const r = login("[email protected]", "readines-dev");
+      if (r.ok) return onAuthed(r.account, false);
+      const su = signup("Ravi", "[email protected]", "readines-dev");
+      if (su.ok) return onAuthed(su.account, false);
+      return setErr(su.error);
+    }
     if (mode === "signup") {
       if (pw !== pw2) return setErr("Passwords do not match.");
       const r = signup(name, email, pw);
@@ -8092,35 +8100,8 @@ export default function App() {
     );
   if (!account)
     return (
-      <div style={{ minHeight: "100vh", background: T.navy, position: "relative" }}>
+      <div style={{ minHeight: "100vh", background: T.navy }}>
         <style>{APPCSS}</style>
-        {/* DEV ONLY — remove before release: bypasses sign-in with a local test session */}
-        <button
-          title="Skip sign-in (testing only)"
-          onClick={() => {
-            const r = login("[email protected]", "readines-dev");
-            const a = r.ok ? r.account : (signup("Ravi", "[email protected]", "readines-dev") as any).account;
-            setAccount(a || getSession());
-            setRoute("home");
-          }}
-          style={{
-            position: "absolute",
-            top: "calc(12px + env(safe-area-inset-top))",
-            right: 14,
-            zIndex: 5,
-            width: 38,
-            height: 38,
-            borderRadius: 99,
-            display: "grid",
-            placeItems: "center",
-            background: "transparent",
-            border: `1px solid ${T.border}`,
-            color: T.faint,
-            cursor: "pointer",
-          }}
-        >
-          <ChevronRight size={17} />
-        </button>
         <AuthScreen
           defaultMode="signin"
           onAuthed={(a: Account, isNew: boolean) => {
