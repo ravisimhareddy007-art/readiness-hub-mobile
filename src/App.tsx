@@ -102,20 +102,31 @@ const T_LIGHT = {
 };
 const A_DARK = { blue: "#5B8DEF", purple: "#9B7BE8", teal: "#3FB9C7", pink: "#E86A9B", green: "#4FCB95", gold: "#D9B86A" };
 const A_LIGHT = { blue: "#2F6FD6", purple: "#7A5CD6", teal: "#15839B", pink: "#C74B7E", green: "#178A5E", gold: "#A97E22" };
+/* role-locked: navy=foundation · teal=action · gold=readiness highlight · semantics stay calm */
+const SEM_DARK = { action: "#35A7A0", success: "#2FB68A", warning: "#D98A2B", attention: "#E8736A", info: "#5B8DEF" };
+const SEM_LIGHT = { action: "#087F8C", success: "#2E8B68", warning: "#B06F1E", attention: "#D66B5D", info: "#4387B5" };
+const DS = {
+  space: [4, 8, 12, 16, 20, 24, 32, 40, 48, 64],
+  radius: { sm: 8, control: 10, card: 16, cardLg: 20, sheet: 24 },
+  type: { display: 32, h1: 28, h2: 22, h3: 18, body: 16, small: 14, caption: 12 },
+  motion: { fast: "120ms", standard: "200ms", slow: "320ms" },
+};
 const T: typeof T_DARK = { ...T_DARK };
 const A: typeof A_DARK = { ...A_DARK };
+const SEM: typeof SEM_DARK = { ...SEM_DARK };
 let _appliedTheme = "";
 function applyTheme(theme: string) {
   if (theme === _appliedTheme) return;
   _appliedTheme = theme;
   Object.assign(T, theme === "light" ? T_LIGHT : T_DARK);
   Object.assign(A, theme === "light" ? A_LIGHT : A_DARK);
+  Object.assign(SEM, theme === "light" ? SEM_LIGHT : SEM_DARK);
   if (typeof document !== "undefined") document.documentElement.dataset.theme = theme === "light" ? "light" : "dark";
 }
 
 const APPCSS = `
-:root{--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
-[data-theme="light"]{--lpv-bg:#F8F5EF;--lpv-panel:#FFFFFF;--lpv-raised:#F3EEE4;--lpv-border:#EDE7DA;--lpv-text:#20293A;--lpv-muted:#6E7480;--lpv-gold:#AD7F1F;--lpv-goldb:#C9A24B;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(252,250,245,.96);--lpv-scrim:rgba(30,26,16,.35);--lpv-fabshadow:rgba(173,127,31,.28)}
+:root{--lpv-action:#35A7A0;--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
+[data-theme="light"]{--lpv-action:#087F8C;--lpv-bg:#F8F5EF;--lpv-panel:#FFFFFF;--lpv-raised:#F3EEE4;--lpv-border:#EDE7DA;--lpv-text:#20293A;--lpv-muted:#6E7480;--lpv-gold:#AD7F1F;--lpv-goldb:#C9A24B;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(252,250,245,.96);--lpv-scrim:rgba(30,26,16,.35);--lpv-fabshadow:rgba(173,127,31,.28)}
 [data-theme="light"] .lp-card{box-shadow:0 1px 2px rgba(60,48,20,.04),0 10px 28px rgba(97,76,26,.07)}
 [data-theme="light"] .lp-tabbar{box-shadow:0 -8px 26px rgba(97,76,26,.09);border-top-color:transparent}
 [data-theme="light"] .lp-sheet{box-shadow:0 -14px 44px rgba(60,48,20,.18)}
@@ -6859,6 +6870,145 @@ const FAQS: [string, string][] = [
   ],
 ];
 
+function DesignSystem({ store }: any) {
+  const Sw = ({ c, l }: { c: string; l: string }) => (
+    <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+      <span style={{ width: 44, height: 44, borderRadius: 12, background: c, border: `1px solid ${T.border}` }} />
+      <span style={{ fontSize: 10, color: T.muted }}>{l}</span>
+    </span>
+  );
+  const Sec = ({ t, children }: any) => (
+    <Card style={{ marginBottom: 14 }}>
+      <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 12 }}>{t}</div>
+      {children}
+    </Card>
+  );
+  return (
+    <div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 14px" }}>
+        <b style={{ fontSize: 18, fontWeight: 800, color: T.white }}>Design system</b>
+        <span style={{ flex: 1 }} />
+        {(["dark", "light"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => store.setTheme(t)}
+            style={{
+              padding: "7px 14px",
+              borderRadius: 99,
+              fontSize: 12.5,
+              fontWeight: 700,
+              cursor: "pointer",
+              border: `1px solid ${store.theme === t ? SEM.action : T.border}`,
+              background: store.theme === t ? SEM.action + "1F" : "transparent",
+              color: store.theme === t ? SEM.action : T.muted,
+            }}
+          >
+            {t === "dark" ? "Dark" : "Light"}
+          </button>
+        ))}
+      </div>
+      <Sec t="Color roles">
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <Sw c={T.navy} l="Foundation" />
+          <Sw c={T.panel} l="Surface" />
+          <Sw c={SEM.action} l="Action" />
+          <Sw c={T.gold} l="Readiness" />
+          <Sw c={SEM.success} l="Success" />
+          <Sw c={SEM.warning} l="Warning" />
+          <Sw c={SEM.attention} l="Attention" />
+          <Sw c={SEM.info} l="Info" />
+        </div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 12 }}>
+          <Sw c={A.blue} l="Documents" />
+          <Sw c={A.green} l="Packages" />
+          <Sw c={A.pink} l="Health" />
+          <Sw c={A.gold} l="Wealth" />
+          <Sw c={A.purple} l="Family" />
+        </div>
+      </Sec>
+      <Sec t="Typography">
+        {(
+          [
+            ["Display", DS.type.display, 800],
+            ["Heading 1", DS.type.h1, 800],
+            ["Heading 2", DS.type.h2, 700],
+            ["Heading 3", DS.type.h3, 700],
+            ["Body", DS.type.body, 400],
+            ["Small", DS.type.small, 400],
+            ["Caption", DS.type.caption, 400],
+          ] as [string, number, number][]
+        ).map(([l, sz, w]) => (
+          <div key={l} style={{ fontSize: sz, fontWeight: w, color: T.text, lineHeight: 1.3, marginBottom: 6 }}>
+            {l} · {sz}px
+          </div>
+        ))}
+      </Sec>
+      <Sec t="Spacing · 8-point">
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+          {DS.space.map((v) => (
+            <span key={v} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+              <span style={{ width: 14, height: v, background: SEM.action + "55", borderRadius: 3 }} />
+              <span style={{ fontSize: 9, color: T.faint }}>{v}</span>
+            </span>
+          ))}
+        </div>
+      </Sec>
+      <Sec t="Radius">
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          {Object.entries(DS.radius).map(([k, v]) => (
+            <span key={k} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+              <span style={{ width: 52, height: 40, borderRadius: v, border: `1.5px solid ${SEM.action}`, background: SEM.action + "14" }} />
+              <span style={{ fontSize: 10, color: T.muted }}>{k} · {v}</span>
+            </span>
+          ))}
+        </div>
+      </Sec>
+      <Sec t="Buttons">
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button style={{ padding: "11px 18px", borderRadius: DS.radius.control, border: "none", background: SEM.action, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            Primary action
+          </button>
+          <button style={{ ...btnGold, cursor: "pointer" }}>Readiness moment</button>
+          <button style={{ ...btnGhost, cursor: "pointer" }}>Secondary</button>
+        </div>
+      </Sec>
+      <Sec t="Status language">
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {(
+            [
+              ["Ready", SEM.success],
+              ["Due soon", SEM.warning],
+              ["Needs attention", SEM.attention],
+              ["On track", SEM.info],
+            ] as [string, string][]
+          ).map(([l, c]) => (
+            <span key={l} style={{ padding: "5px 11px", borderRadius: 99, fontSize: 12, fontWeight: 700, color: c, background: c + "1C" }}>
+              {l}
+            </span>
+          ))}
+        </div>
+      </Sec>
+      <Sec t="List item">
+        <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+          <span style={{ width: 36, height: 36, borderRadius: 12, background: A.pink + "1F", display: "grid", placeItems: "center" }}>
+            <HeartPulse size={16} color={A.pink} />
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.white }}>Annual health checkup</span>
+            <span style={{ display: "block", fontSize: 12, color: T.muted }}>Nov 21 · Dr. Reyes</span>
+          </span>
+          <span style={{ padding: "4px 9px", borderRadius: 99, fontSize: 11, fontWeight: 700, color: SEM.success, background: SEM.success + "1C" }}>in 69d</span>
+          <ChevronRight size={15} color={T.faint} />
+        </div>
+      </Sec>
+      <p style={{ fontSize: 11.5, color: T.faint, lineHeight: 1.6 }}>
+        Roles are locked; hex values tune against real UI. Gold appears only where readiness is the message. Changes land at the
+        highest reusable level: token → theme → component → pattern → screen.
+      </p>
+    </div>
+  );
+}
+
 function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
   const [open, setOpen] = useState(false);
   const you = store.members.find((m: Member) => m.id === "you");
@@ -7044,6 +7194,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
               {[
                 ["Profile and settings", SettingsIcon, () => go("settings")],
                 ["Family", Users, () => go("trust")],
+                ["Design system", Sparkles, () => go("design")],
               ].map(([label, Ic, fn]: any, i) => (
                 <button
                   key={i}
@@ -7918,6 +8069,7 @@ export default function App() {
   }, [booted, store.notifications]);
   const needsOnboarding = booted && !store.onboarded;
   const [query, setQuery] = useState("");
+  const [mSearch, setMSearch] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const toast = (m: string) => {
     setToastMsg(m);
@@ -8064,7 +8216,7 @@ export default function App() {
           style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, position: "relative", zIndex: 40 }}
         >
           <div
-            style={{ flex: 1, display: route === "documents" || (isMobile && route === "packages") ? "none" : "block", position: "relative", maxWidth: 300 }}
+            style={{ flex: 1, display: route === "documents" || isMobile ? "none" : "block", position: "relative", maxWidth: 300 }}
           >
             <div
               style={{
@@ -8123,6 +8275,25 @@ export default function App() {
             )}
           </div>
           <div style={{ flex: 1 }} />
+          {isMobile && (
+            <button
+              onClick={() => setMSearch(true)}
+              title="Search"
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 99,
+                display: "grid",
+                placeItems: "center",
+                background: T.panel,
+                border: `1px solid ${T.border}`,
+                cursor: "pointer",
+                marginLeft: "auto",
+              }}
+            >
+              <Search size={16} color={T.muted} />
+            </button>
+          )}
           <ProfileMenu
             store={store}
             account={account}
@@ -8142,6 +8313,7 @@ export default function App() {
           <Wealth store={store} go={go} toast={toast} unlocked={wealthOpen} onUnlock={() => setWealthOpen(true)} />
         )}
         {route === "trust" && <Trust store={store} toast={toast} />}
+        {route === "design" && <DesignSystem store={store} />}
         {route === "settings" && (
           <SettingsPage
             store={store}
@@ -8162,6 +8334,64 @@ export default function App() {
       </main>
       {query.trim() && <div onClick={() => setQuery("")} style={{ position: "fixed", inset: 0, zIndex: 30 }} />}
 
+      {isMobile && mSearch && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 85, background: T.navy, display: "flex", flexDirection: "column", padding: "calc(10px + env(safe-area-inset-top)) 14px 14px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+            <button
+              onClick={() => {
+                setMSearch(false);
+                setQuery("");
+              }}
+              style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 8 }}
+            >
+              <ChevronRight size={18} color={T.muted} style={{ transform: "rotate(180deg)" }} />
+            </button>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                gap: 9,
+                background: T.panel,
+                border: `1px solid ${T.gold}55`,
+                borderRadius: 12,
+                padding: "8px 12px",
+              }}
+            >
+              <Search size={15} color={T.muted} />
+              <input
+                autoFocus
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search everything…"
+                style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text }}
+              />
+              {query && (
+                <button onClick={() => setQuery("")} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, display: "flex" }}>
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </div>
+          <div style={{ flex: 1, overflowY: "auto" }}>
+            {query.trim() ? (
+              <SearchResults
+                store={store}
+                query={query}
+                go={(r: string) => {
+                  setQuery("");
+                  setMSearch(false);
+                  go(r);
+                }}
+              />
+            ) : (
+              <div style={{ color: T.faint, fontSize: 13, textAlign: "center", marginTop: 40 }}>
+                Documents, packs, people, holdings — one search.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {isMobile && (
         <nav className="lp-tabbar" aria-label="Primary">
           {(
@@ -8178,10 +8408,10 @@ export default function App() {
               <button
                 key={key}
                 className="lp-tab"
-                style={{ color: on ? T.gold : T.muted, background: on ? T.raised : "none" }}
+                style={{ color: on ? SEM.action : T.muted, background: on ? T.raised : "none" }}
                 onClick={() => setRoute(key)}
               >
-                <Ic size={20} color={on ? T.gold : T.muted} /> {label}
+                <Ic size={20} color={on ? SEM.action : T.muted} /> {label}
               </button>
             );
           })}
