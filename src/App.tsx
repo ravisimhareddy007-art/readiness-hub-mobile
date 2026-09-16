@@ -7716,16 +7716,18 @@ function AuthScreen({
     outline: "none",
     marginTop: 9,
   };
+  /* DEV ONLY — remove before release: one-tap test session */
+  const devSkip = () => {
+    const r = login("[email protected]", "readines-dev");
+    if (r.ok) return onAuthed(r.account, false);
+    const su = signup("Ravi", "[email protected]", "readines-dev");
+    if (su.ok) return onAuthed(su.account, false);
+    setErr(su.error);
+  };
   const submit = () => {
     setErr("");
     /* DEV ONLY — remove before release: Sign In with both fields empty creates/uses a local test session */
-    if (mode === "signin" && !email.trim() && !pw) {
-      const r = login("[email protected]", "readines-dev");
-      if (r.ok) return onAuthed(r.account, false);
-      const su = signup("Ravi", "[email protected]", "readines-dev");
-      if (su.ok) return onAuthed(su.account, false);
-      return setErr(su.error);
-    }
+    if (mode === "signin" && !email.trim() && !pw) return devSkip();
     if (mode === "signup") {
       if (pw !== pw2) return setErr("Passwords do not match.");
       const r = signup(name, email, pw);
@@ -7812,6 +7814,28 @@ function AuthScreen({
         {err && <div style={{ color: T.coral, fontSize: 12.5, marginTop: 10 }}>{err}</div>}
         <button onClick={submit} style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 14 }}>
           {mode === "signin" ? "Sign in" : "Create account"} <ArrowRight size={15} />
+        </button>
+        {/* DEV ONLY — remove before release: visible skip into the app for testing */}
+        <button
+          onClick={devSkip}
+          style={{
+            width: "100%",
+            marginTop: 10,
+            padding: "12px 0",
+            borderRadius: 12,
+            border: `1.5px solid ${T.gold}`,
+            background: T.gold + "1F",
+            color: T.gold,
+            fontWeight: 800,
+            fontSize: 14,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+          }}
+        >
+          Skip sign-in (testing) <ArrowRight size={16} />
         </button>
         <p style={{ fontSize: 11.5, color: T.faint, textAlign: "center", marginTop: 12, lineHeight: 1.5 }}>
           Prototype accounts live on this device only. Production replaces this with server-side auth.
