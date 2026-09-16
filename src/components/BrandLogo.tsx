@@ -28,7 +28,13 @@ export function BrandMark({
       role="img"
       aria-label={title}
     >
-      <path d="M 60.20,114.70 L 80.66,98.67 L 168.71,211.00 L 135.67,211.00 Z" fill={color} />
+      <path
+        d="M70.4 106.7 L144.2 200.8"
+        fill="none"
+        stroke={color}
+        strokeLinecap="round"
+        strokeWidth={26}
+      />
       <g transform="translate(139.84,174.26) rotate(51.9)">
         <rect x="0" y="-24" width="17" height="26" rx="3" fill={color} />
         <rect x="3.5" y="-18" width="10" height="2.4" rx="1.2" fill={carve} />
@@ -39,7 +45,8 @@ export function BrandMark({
         <rect x="3.5" y="-18" width="10" height="2.4" rx="1.2" fill={carve} />
         <rect x="3.5" y="-13" width="7.5" height="2.4" rx="1.2" fill={carve} />
       </g>
-      <path d="M58 29 V211" fill="none" stroke={color} strokeLinecap="butt" strokeWidth={26} />
+      <path d="M58 29 V198" fill="none" stroke={color} strokeLinecap="butt" strokeWidth={26} />
+      <circle cx="58" cy="198" r="13" fill={color} />
       <path d="M45 29 H112 C164 29 164 135 112 135 H45 Z" fill={color} />
       <circle cx="102" cy="68" r="18" fill={carve} />
       <path d="M94 78 L84 114 H120 L110 78 Z" fill={carve} />

@@ -77,6 +77,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "theme-color", content: "#0B1220" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { title: "ReadiNes — Be ready for life's important moments" },
       { name: "description", content: "ReadiNes keeps your family's documents organized and event-ready. Be ready for life's important moments." },
       { name: "author", content: "ReadiNes" },
@@ -90,7 +93,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", type: "image/svg+xml", href: "data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%201024%201024%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Crect%20width%3D%221024%22%20height%3D%221024%22%20rx%3D%22232%22%20fill%3D%22%231E242B%22/%3E%3Cg%20transform%3D%22translate%28126.8%2C80%29%20scale%283.6%29%22%3E%3Cpath%20d%3D%22M%2060.20%2C114.70%20L%2080.66%2C98.67%20L%20168.71%2C211.00%20L%20135.67%2C211.00%20Z%22%20fill%3D%22none%22%20stroke%3D%22%23D9A441%22%20stroke-linecap%3D%22butt%22%20stroke-width%3D%2228%22/%3E%3Cg%20transform%3D%22translate%28140.64%2C173.66%29%20rotate%2851.9%29%22%3E%3Crect%20x%3D%220%22%20y%3D%22-26%22%20width%3D%2219%22%20height%3D%2228%22%20rx%3D%224%22%20fill%3D%22%23D9A441%22/%3E%3C/g%3E%3Cg%20transform%3D%22translate%28155.44%2C192.56%29%20rotate%2851.9%29%22%3E%3Crect%20x%3D%220%22%20y%3D%22-26%22%20width%3D%2219%22%20height%3D%2228%22%20rx%3D%224%22%20fill%3D%22%23D9A441%22/%3E%3C/g%3E%3Cpath%20d%3D%22M58%2029%20V211%22%20fill%3D%22none%22%20stroke%3D%22%23D9A441%22%20stroke-linecap%3D%22butt%22%20stroke-width%3D%2228%22/%3E%3Cpath%20d%3D%22M45%2029%20H112%20C164%2029%20164%20135%20112%20135%20H45%20Z%22%20fill%3D%22%23D9A441%22/%3E%3Ccircle%20cx%3D%22102%22%20cy%3D%2272%22%20r%3D%2224%22%20fill%3D%22%231E242B%22/%3E%3Cpath%20d%3D%22M92%2084%20L82%20120%20H122%20L112%2084%20Z%22%20fill%3D%22%231E242B%22/%3E%3C/g%3E%3C/svg%3E" },
+      { rel: "icon", type: "image/svg+xml", href: "/icons/favicon.svg" },
+      { rel: "icon", type: "image/png", sizes: "32x32", href: "/icons/favicon-32.png" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
