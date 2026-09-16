@@ -24,23 +24,24 @@ export function BrandMark({
       width={size}
       height={size * (199 / 147)}
       viewBox="41 25 147 199"
+      overflow="visible"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
       aria-label={title}
     >
       <path
-        d="M70.4 106.7 L152.2 211"
+        d="M70.4 106.7 L142 198"
         fill="none"
         stroke={color}
         strokeLinecap="round"
         strokeWidth={26}
       />
-      <g transform="translate(139.84,174.26) rotate(51.9)">
+      <g transform="translate(130.9,162.9) rotate(51.9)">
         <rect x="0" y="-24" width="17" height="26" rx="3" fill={color} />
         <rect x="3.5" y="-18" width="10" height="2.4" rx="1.2" fill={carve} />
         <rect x="3.5" y="-13" width="7.5" height="2.4" rx="1.2" fill={carve} />
       </g>
-      <g transform="translate(155.94,194.66) rotate(51.9)">
+      <g transform="translate(147,183.3) rotate(51.9)">
         <rect x="0" y="-24" width="17" height="26" rx="3" fill={color} />
         <rect x="3.5" y="-18" width="10" height="2.4" rx="1.2" fill={carve} />
         <rect x="3.5" y="-13" width="7.5" height="2.4" rx="1.2" fill={carve} />
