@@ -8031,9 +8031,11 @@ export default function App() {
   const [wealthOpen, setWealthOpen] = useState(false);
   const [booted, setBooted] = useState(false);
   const [account, setAccount] = useState<Account | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   useEffect(() => {
     const sess = getSession();
     setAccount(sess);
+    setAuthChecked(true);
     if (sess && sessionStorage.getItem("lp-new-account") === "1") {
       sessionStorage.removeItem("lp-new-account");
       store.setDataMode("empty"); // a new account starts genuinely empty
@@ -8080,6 +8082,32 @@ export default function App() {
   };
   const go = (r: string) => setRoute(r);
   applyTheme(store.theme);
+
+  if (!authChecked)
+    return (
+      <div style={{ minHeight: "100vh", background: T.navy, display: "grid", placeItems: "center" }}>
+        <style>{APPCSS}</style>
+        <BrandMark size={56} />
+      </div>
+    );
+  if (!account)
+    return (
+      <div style={{ minHeight: "100vh", background: T.navy }}>
+        <style>{APPCSS}</style>
+        <AuthScreen
+          defaultMode="signin"
+          onAuthed={(a: Account, isNew: boolean) => {
+            if (isNew) {
+              store.setDataMode("empty");
+              store.setOnboarded(false);
+              store.updateMember("you", { name: a.name });
+            }
+            setAccount(a);
+            setRoute("home");
+          }}
+        />
+      </div>
+    );
 
   return (
     <div

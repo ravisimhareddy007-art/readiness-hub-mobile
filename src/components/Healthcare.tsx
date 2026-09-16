@@ -2124,6 +2124,12 @@ const CSS = () => `
 .lh-famst{display:block;font-size:11.5px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #lh-print{display:none}
 @media(max-width:900px){.lh-grid3{grid-template-columns:minmax(0,1fr)}.lh-grid-2-1{grid-template-columns:minmax(0,1fr)}.lh-vgrid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:767px){
+.lh-pbar{row-gap:10px}
+.lh-pbar>div{min-width:calc(100% - 58px)}
+.lh-pbar .lh-btn-g{flex:1 1 45%;justify-content:center;min-height:44px}
+.lh-h2{font-size:17px !important;letter-spacing:-0.015em}
+}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media print{body *{visibility:hidden}#lh-print,#lh-print *{visibility:visible}#lh-print{display:block;position:absolute;inset:0}}
 `;
