@@ -8092,8 +8092,35 @@ export default function App() {
     );
   if (!account)
     return (
-      <div style={{ minHeight: "100vh", background: T.navy }}>
+      <div style={{ minHeight: "100vh", background: T.navy, position: "relative" }}>
         <style>{APPCSS}</style>
+        {/* DEV ONLY — remove before release: bypasses sign-in with a local test session */}
+        <button
+          title="Skip sign-in (testing only)"
+          onClick={() => {
+            const r = login("[email protected]", "readines-dev");
+            const a = r.ok ? r.account : (signup("Ravi", "[email protected]", "readines-dev") as any).account;
+            setAccount(a || getSession());
+            setRoute("home");
+          }}
+          style={{
+            position: "absolute",
+            top: "calc(12px + env(safe-area-inset-top))",
+            right: 14,
+            zIndex: 5,
+            width: 38,
+            height: 38,
+            borderRadius: 99,
+            display: "grid",
+            placeItems: "center",
+            background: "transparent",
+            border: `1px solid ${T.border}`,
+            color: T.faint,
+            cursor: "pointer",
+          }}
+        >
+          <ChevronRight size={17} />
+        </button>
         <AuthScreen
           defaultMode="signin"
           onAuthed={(a: Account, isNew: boolean) => {
