@@ -41,7 +41,7 @@ import DocViewer from "./DocViewer";
 import type { Doc, Member, LabLog, Medication, ReminderKind } from "../lib/types";
 
 /* ── theme ── */
-const C = {
+const C_DARK = {
   panel: "rgba(255,255,255,0.035)",
   panel2: "rgba(255,255,255,0.055)",
   border: "rgba(255,255,255,0.08)",
@@ -55,6 +55,27 @@ const C = {
   pink: "#F472B6",
   cyan: "#6E8BFF",
 };
+const C_LIGHT = {
+  panel: "#FFFFFF",
+  panel2: "#F3EEE4",
+  border: "#EDE7DA",
+  text: "#20293A",
+  sub: "#6E7480",
+  faint: "#9AA0AB",
+  gold: "#AD7F1F",
+  emerald: "#178A5E",
+  red: "#C6473C",
+  violet: "#7A5CD6",
+  pink: "#C74B7E",
+  cyan: "#2F6FD6",
+};
+const C: typeof C_DARK = { ...C_DARK };
+let _cTheme = "";
+function applyC(theme: string) {
+  if (theme === _cTheme) return;
+  _cTheme = theme;
+  Object.assign(C, theme === "light" ? C_LIGHT : C_DARK);
+}
 const rel = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
 const uid = () => Math.random().toString(36).slice(2, 9);
 const today = () => new Date().toISOString().slice(0, 10);
@@ -171,6 +192,7 @@ const RECORD_TYPES: { label: string; short: string; icon: any; c: string; overri
 
 export default function Healthcare({ toast: extToast }: { toast?: (m: string) => void }) {
   const s = useStore();
+  applyC(s.theme);
   const [localToast, setLocalToast] = useState<string | null>(null);
   const toast = (m: string) => {
     if (extToast) extToast(m);
@@ -437,7 +459,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
   if (!m)
     return (
       <div className="lh-root">
-        <style>{CSS}</style>
+        <style>{CSS()}</style>
         <p style={{ color: C.sub }}>No family members yet.</p>
       </div>
     );
@@ -454,7 +476,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
   if (isMobile && mView === "family")
     return (
       <div className="lh-root">
-        <style>{CSS}</style>
+        <style>{CSS()}</style>
         <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 12px" }}>
           <h1 className="lh-h1" style={{ fontSize: 18 }}>Health</h1>
           <span style={{ flex: 1 }} />
@@ -601,7 +623,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
 
   return (
     <div className="lh-root">
-      <style>{CSS}</style>
+      <style>{CSS()}</style>
       {isMobile && (
         <button
           onClick={() => setMView("family")}
@@ -2001,7 +2023,7 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
 }
 
 /* ── styles ── */
-const CSS = `
+const CSS = () => `
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 .lh-root{font-family:'Inter',system-ui,sans-serif;color:${C.text}}
 .lh-root *{box-sizing:border-box}
