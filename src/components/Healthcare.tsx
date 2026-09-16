@@ -57,11 +57,11 @@ const C_DARK = {
 };
 const C_LIGHT = {
   panel: "#FFFFFF",
-  panel2: "#F3EEE4",
-  border: "#EDE7DA",
-  text: "#20293A",
-  sub: "#6E7480",
-  faint: "#9AA0AB",
+  panel2: "#EAECF0",
+  border: "#E3E6EA",
+  text: "#1B2431",
+  sub: "#697180",
+  faint: "#98A0AC",
   gold: "#AD7F1F",
   emerald: "#178A5E",
   red: "#C6473C",

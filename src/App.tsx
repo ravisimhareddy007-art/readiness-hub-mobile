@@ -87,18 +87,18 @@ const T_DARK = {
   white: "#FFFFFF",
 };
 const T_LIGHT = {
-  navy: "#F8F5EF",
+  navy: "#F2F3F5",
   panel: "#FFFFFF",
-  raised: "#F3EEE4",
-  border: "#EDE7DA",
+  raised: "#EAECF0",
+  border: "#E3E6EA",
   gold: "#AD7F1F",
   goldBright: "#8F6A1C",
   mint: "#178A5E",
   coral: "#C6473C",
   text: "#39424F",
-  muted: "#6E7480",
-  faint: "#9AA0AB",
-  white: "#20293A",
+  muted: "#697180",
+  faint: "#98A0AC",
+  white: "#1B2431",
 };
 const A_DARK = { blue: "#5B8DEF", purple: "#9B7BE8", teal: "#3FB9C7", pink: "#E86A9B", green: "#4FCB95", gold: "#D9B86A" };
 const A_LIGHT = { blue: "#2F6FD6", purple: "#7A5CD6", teal: "#15839B", pink: "#C74B7E", green: "#178A5E", gold: "#A97E22" };
@@ -126,11 +126,13 @@ function applyTheme(theme: string) {
 
 const APPCSS = `
 :root{--lpv-action:#35A7A0;--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
-[data-theme="light"]{--lpv-action:#087F8C;--lpv-bg:#F8F5EF;--lpv-panel:#FFFFFF;--lpv-raised:#F3EEE4;--lpv-border:#EDE7DA;--lpv-text:#20293A;--lpv-muted:#6E7480;--lpv-gold:#AD7F1F;--lpv-goldb:#C9A24B;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(252,250,245,.96);--lpv-scrim:rgba(30,26,16,.35);--lpv-fabshadow:rgba(173,127,31,.28)}
-[data-theme="light"] .lp-card{box-shadow:0 1px 2px rgba(60,48,20,.04),0 10px 28px rgba(97,76,26,.07)}
-[data-theme="light"] .lp-tabbar{box-shadow:0 -8px 26px rgba(97,76,26,.09);border-top-color:transparent}
-[data-theme="light"] .lp-sheet{box-shadow:0 -14px 44px rgba(60,48,20,.18)}
+[data-theme="light"]{--lpv-action:#087F8C;--lpv-bg:#F2F3F5;--lpv-panel:#FFFFFF;--lpv-raised:#EAECF0;--lpv-border:#E3E6EA;--lpv-text:#1B2431;--lpv-muted:#697180;--lpv-gold:#AD7F1F;--lpv-goldb:#C9A24B;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(247,248,250,.96);--lpv-scrim:rgba(18,22,30,.38);--lpv-fabshadow:rgba(173,127,31,.28)}
+[data-theme="light"] .lp-card{box-shadow:0 1px 2px rgba(16,24,40,.04),0 10px 28px rgba(16,24,40,.06)}
+[data-theme="light"] .lp-tabbar{box-shadow:0 -8px 26px rgba(16,24,40,.08);border-top-color:transparent}
+[data-theme="light"] .lp-sheet{box-shadow:0 -14px 44px rgba(16,24,40,.18)}
 body{background:var(--lpv-bg)}
+.lp-main{font-variant-numeric:tabular-nums}
+.lp-main b,.lp-main h1,.lp-main h2,.lp-main h3{letter-spacing:-0.015em}
 .lp-main{flex:1;min-width:0;padding:24px 34px 40px;max-width:1160px;margin:0 auto;width:100%}
 .lp-cols2{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
 .lp-hero2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,1fr);gap:14px}
@@ -156,7 +158,7 @@ body{background:var(--lpv-bg)}
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
 input,select,textarea{font-size:16px !important}
-.lp-main h1{font-size:20px !important}
+.lp-main h1{font-size:18px !important;letter-spacing:-0.02em}
 .lp-sh-sub{display:none !important}
 .lp-cardpad{padding:14px !important}
 .lp-chiprail{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap !important;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px}
@@ -1771,7 +1773,7 @@ function Home({ store, go, toast }: any) {
     return (
       <div>
         <div style={{ margin: "2px 0 14px" }}>
-          <div style={{ fontSize: 21, fontWeight: 800, color: T.white }}>
+          <div style={{ fontSize: 19, fontWeight: 800, color: T.white, letterSpacing: -0.3 }}>
             {hello}, {firstName}
           </div>
           <div style={{ fontSize: 12.5, color: T.muted, marginTop: 2 }}>Small steps today. A more ready tomorrow.</div>
@@ -8085,7 +8087,7 @@ export default function App() {
         display: "flex",
         minHeight: "100vh",
         background: T.navy,
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         color: T.text,
       }}
     >
