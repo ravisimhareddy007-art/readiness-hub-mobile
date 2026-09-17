@@ -545,7 +545,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                       fontFamily: "inherit",
                     }}
                   >
-                    <CalendarClock size={16} color={C.gold} style={{ flexShrink: 0 }} />
+                    <span className="lh-ic" style={{ background: C.gold + "22", flexShrink: 0 }}>
+                      <CalendarClock size={16} color={C.gold} />
+                    </span>
                     <span style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: C.text }}>{r.title}</span>
                       <span style={{ display: "block", fontSize: 12, color: C.sub, marginTop: 1 }}>
@@ -583,7 +585,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     fontFamily: "inherit",
                   }}
                 >
-                  <a.icon size={15} color={a.iconC} style={{ flexShrink: 0 }} />
+                  <span className="lh-ic" style={{ background: a.iconC + "22", flexShrink: 0 }}>
+                    <a.icon size={15} color={a.iconC} />
+                  </span>
                   <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: C.text }}>
                     <b style={{ color: a.color }}>{a.name}</b> · {a.label}
                   </span>

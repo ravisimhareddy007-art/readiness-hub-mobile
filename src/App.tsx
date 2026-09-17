@@ -2527,7 +2527,9 @@ function Packages({ store, toast }: any) {
                 <Ring score={score} size={40} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
-                    <e.icon size={14} color={e.accent} style={{ flexShrink: 0 }} />
+                    <span style={{ width: 22, height: 22, borderRadius: 7, display: "grid", placeItems: "center", flexShrink: 0, background: e.accent + "1F" }}>
+                      <e.icon size={12} color={e.accent} />
+                    </span>
                     <b style={{ color: T.white, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</b>
                     {e.custom && <span style={pill(T.gold)}>custom</span>}
                   </div>
@@ -3804,7 +3806,7 @@ function Documents({ store, toast }: any) {
                       {d.docType}
                     </span>
                     <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {nameOf(d.memberId)} · {d.expiry ? <>{expiryCell(d)}</> : fdate(d.addedAt)}
+                      {nameOf(d.memberId).split(" ")[0]} · {d.expiry ? <>{expiryCell(d)}</> : fdate(d.addedAt)}
                     </span>
                   </span>
                   <ChevronRight size={15} color={T.faint} style={{ flexShrink: 0 }} />
@@ -7457,8 +7459,20 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
         textAlign: "left",
       }}
     >
-      <Ic size={16} color={danger ? T.coral : T.muted} />
-      <span style={{ flex: 1 }}>
+      <span
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: 10,
+          display: "grid",
+          placeItems: "center",
+          flexShrink: 0,
+          background: (danger ? T.coral : SEM.action) + "1F",
+        }}
+      >
+        <Ic size={15} color={danger ? T.coral : SEM.action} />
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: danger ? T.coral : T.text }}>
           {label}
         </span>
@@ -7548,8 +7562,20 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
         textAlign: "left",
       }}
     >
-      <Ic size={16} color={danger ? T.coral : T.muted} />
-      <span style={{ flex: 1 }}>
+      <span
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: 10,
+          display: "grid",
+          placeItems: "center",
+          flexShrink: 0,
+          background: (danger ? T.coral : SEM.action) + "1F",
+        }}
+      >
+        <Ic size={15} color={danger ? T.coral : SEM.action} />
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: danger ? T.coral : T.text }}>
           {label}
         </span>
