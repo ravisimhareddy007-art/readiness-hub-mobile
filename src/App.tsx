@@ -1784,7 +1784,7 @@ function Home({ store, go, toast }: any) {
     ];
     return (
       <div>
-        <MNav left={<BrandWordmark size={17} />} />
+        <MNav left={<BrandWordmark size={17} color={T.white} />} />
         <div style={{ margin: "2px 0 14px" }}>
           <div style={{ fontSize: 19, fontWeight: 800, color: T.white, letterSpacing: -0.3 }}>
             {hello}, {firstName}
