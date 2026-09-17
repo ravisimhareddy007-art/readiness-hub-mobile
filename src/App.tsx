@@ -189,6 +189,13 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-upmenu{left:0 !important;right:auto !important}
 .lp-searchdrop{left:0 !important;right:auto !important;width:calc(100vw - 28px) !important}
 .lp-vdiv{display:none}
+.lp-readystrip{display:grid !important;grid-template-columns:1fr auto;grid-template-areas:"label pct" "bar bar" "sum how" "cta cta";gap:10px 12px !important;padding:16px !important;border-radius:16px !important}
+.lp-es-label{grid-area:label}
+.lp-es-pct{grid-area:pct;font-size:30px !important;line-height:1;letter-spacing:-0.02em}
+.lp-es-bar{grid-area:bar;min-width:0 !important;height:8px !important}
+.lp-es-sum{grid-area:sum;white-space:normal !important;font-size:12.5px !important;align-self:center}
+.lp-es-how{grid-area:how;justify-self:end}
+.lp-es-cta{grid-area:cta;width:100%;justify-content:center;padding:12px 14px !important;font-size:14px !important}
 .lp-networth{display:grid !important;grid-template-columns:1fr 1fr;gap:14px 16px !important;font-family:inherit !important;padding:14px 16px !important}
 .lp-metric{display:flex;flex-direction:column;gap:3px;font-size:12px}
 .lp-metric b{font-size:20px;font-family:ui-monospace,monospace;letter-spacing:-0.02em}
@@ -4789,6 +4796,8 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
   const [viewDoc, setViewDoc] = useState<Doc | null>(null);
   const [edit, setEdit] = useState<Holding | null>(null);
   const [addH, setAddH] = useState(false);
+  const [actSheet, setActSheet] = useState(false);
+  const isMobile = useIsMobile();
   const [addTx, setAddTx] = useState(false);
   const [sos, setSos] = useState(false);
   const [nomineeFor, setNomineeFor] = useState<Holding | null>(null);
@@ -5007,11 +5016,53 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
         </>
       ) : (
         <>
-          <SectionHead
-            title="Wealth"
-            sub="Not a balance sheet: whether your family could access all of it if something happened to you."
-          />
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "0 0 28px" }}>
+          {isMobile ? (
+            <MNav
+              title="Wealth"
+              right={
+                <button onClick={() => setActSheet(true)} title="Actions" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
+                  <Plus size={17} />
+                </button>
+              }
+            />
+          ) : (
+            <SectionHead
+              title="Wealth"
+              sub="Not a balance sheet: whether your family could access all of it if something happened to you."
+            />
+          )}
+          {actSheet && (
+            <MSheet title="Wealth actions" onClose={() => setActSheet(false)}>
+              <button
+                className="lp-sheet-item"
+                onClick={() => {
+                  setActSheet(false);
+                  setAddH(true);
+                }}
+              >
+                <Plus size={19} color={T.muted} /> Add a holding
+              </button>
+              <button
+                className="lp-sheet-item"
+                onClick={() => {
+                  setActSheet(false);
+                  setAddTx(true);
+                }}
+              >
+                <Receipt size={19} color={T.muted} /> Capture proof of payment
+              </button>
+              <button
+                className="lp-sheet-item"
+                onClick={() => {
+                  setActSheet(false);
+                  setSos(true);
+                }}
+              >
+                <Siren size={19} color={T.coral} /> <span style={{ color: T.coral }}>SOS handoff</span>
+              </button>
+            </MSheet>
+          )}
+          <div hidden={isMobile} style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "0 0 28px" }}>
             <button onClick={() => setAddH(true)} style={btnGhost}>
               <Plus size={15} /> Add holding
             </button>
@@ -5085,14 +5136,15 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
               marginBottom: 12,
             }}
           >
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <span className="lp-es-label" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
               <KeyRound size={15} color={T.muted} />
               <b style={{ color: T.white, fontSize: 13.5 }}>Estate readiness</b>
             </span>
-            <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 24, fontWeight: 800, color: readyColor }}>
+            <span className="lp-es-pct" style={{ fontFamily: "ui-monospace, monospace", fontSize: 24, fontWeight: 800, color: readyColor }}>
               {readiness}%
             </span>
             <span
+              className="lp-es-bar"
               style={{
                 flex: "1 1 140px",
                 minWidth: 120,
@@ -5113,7 +5165,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
                 }}
               />
             </span>
-            <span style={{ fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>
+            <span className="lp-es-sum" style={{ fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>
               {missDoc + missAcc + missNom === 0
                 ? "everything reachable"
                 : [
@@ -5124,11 +5176,11 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
                     .filter(Boolean)
                     .join(" · ") + " missing"}
             </span>
-            <button onClick={() => setShowMath((v) => !v)} style={{ ...btnGhost, padding: "6px 11px", fontSize: 12 }}>
+            <button className="lp-es-how" onClick={() => setShowMath((v) => !v)} style={{ ...btnGhost, padding: "6px 11px", fontSize: 12 }}>
               {showMath ? "Hide math" : "How?"}
             </button>
             <span className="lp-vdiv" style={{ width: 1, alignSelf: "stretch", background: T.border }} />
-            <button onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13 }}>
+            <button className="lp-es-cta" onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13 }}>
               <FileText size={14} /> Estate summary <ArrowRight size={13} />
             </button>
           </div>
