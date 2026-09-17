@@ -1797,10 +1797,11 @@ function Home({ store, go, toast }: any) {
     ) : null;
 
   if (isMobile) {
-    const inProgress = started.filter((x: any) => x.score < 100).length;
+    const readyPacks = scored.filter((x: any) => x.score === 100).length;
+    const nearPacks = scored.filter((x: any) => x.score >= 70 && x.score < 100).length;
     const mods: { key: string; label: string; sub: string; icon: any; color: string; badge?: number }[] = [
       { key: "documents", label: "Documents", sub: `${store.docs.length} total`, icon: FolderOpen, color: A.blue, badge: expiring.length },
-      { key: "packages", label: "Packages", sub: inProgress ? `${inProgress} in progress` : "Explore", icon: Plane, color: A.green },
+      { key: "packages", label: "Packages", sub: readyPacks ? `${readyPacks} ready` : nearPacks ? `${nearPacks} nearly there` : "Explore", icon: Plane, color: A.green },
       { key: "health", label: "Health", sub: healthActs.length ? `${healthActs.length} due soon` : "Up to date", icon: HeartPulse, color: A.pink, badge: healthActs.length },
       { key: "wealth", label: "Wealth", sub: wealthScore == null ? "Start" : wealthScore >= 80 ? "On track" : `${wealthActs.length || wealthMiss} to review`, icon: Wallet, color: A.gold, badge: wealthActs.length },
       { key: "trust", label: "Family", sub: `${store.members.length} member${store.members.length === 1 ? "" : "s"}`, icon: Users, color: A.purple },
@@ -1881,8 +1882,8 @@ function Home({ store, go, toast }: any) {
               {overall >= 90 ? "You're ready for what's next" : "Your readiness is building"}
             </span>
             <span style={{ display: "block", fontSize: 12.5, color: T.muted, marginTop: 2 }}>
-              {started.length
-                ? `${scored.filter((x) => x.score === 100).length} of ${started.length} started packs complete`
+              {readyPacks || nearPacks
+                ? `${readyPacks} pack${readyPacks === 1 ? "" : "s"} ready · ${nearPacks} nearly there`
                 : "Pick a life moment to start preparing"}
             </span>
           </span>

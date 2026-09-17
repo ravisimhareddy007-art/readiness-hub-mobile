@@ -997,7 +997,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       {tab === "timeline" && (
         <div className="lh-pane">
           <div className="lh-card" style={{ padding: 22 }}>
-            <div className="lh-sechead">
+            <div className="lh-sechead lh-sechead-tab">
               <CalendarClock size={16} color={C.sub} /> Health timeline
             </div>
             {timeline.length === 0 ? (
@@ -1103,7 +1103,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       {tab === "records" && (
         <div className="lh-pane">
           <div className="lh-card" style={{ padding: 20 }}>
-            <div className="lh-sechead">
+            <div className="lh-sechead lh-sechead-tab">
               <Stethoscope size={16} color={C.sub} /> Records
             </div>
             <div className="lh-uprow">
@@ -2148,6 +2148,12 @@ const CSS = () => `
 .lh-h2{font-size:17px !important;letter-spacing:-0.015em}
 .lh-tab{font-size:13px;padding:9px 8px;gap:0}
 .lh-tab>svg{display:none}
+.lh-pane .lh-card{padding:14px !important}
+.lh-sechead-tab{display:none}
+.lh-tlrow{padding:7px 0}
+.lh-tlmon{margin:10px 0 4px}
+.lh-rec{padding:8px 0}
+.lh-med{padding:10px 0}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media print{body *{visibility:hidden}#lh-print,#lh-print *{visibility:visible}#lh-print{display:block;position:absolute;inset:0}}
