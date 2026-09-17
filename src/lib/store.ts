@@ -771,6 +771,10 @@ export function useStore() {
     state = { ...state, holdings: state.holdings.map((h) => (h.id === hid ? { ...h, ...patch } : h)) };
     persist();
   }, []);
+  const addHolding = useCallback((h: Holding) => {
+    state = { ...state, holdings: [h, ...state.holdings] };
+    persist();
+  }, []);
   const removeHolding = useCallback((hid: string) => {
     state = { ...state, holdings: state.holdings.filter((h) => h.id !== hid) };
     persist();
@@ -932,6 +936,7 @@ export function useStore() {
     completeReminder,
     removeReminder,
     updateHolding,
+    addHolding,
     removeHolding,
     attachDocToHolding,
     addTransaction,

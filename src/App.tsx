@@ -3728,9 +3728,37 @@ function Documents({ store, toast }: any) {
         </div>
         <Card style={{ padding: 0, overflow: "hidden" }}>
           {filtered.length === 0 ? (
-            <div style={{ padding: 26, textAlign: "center", color: T.muted, fontSize: 13.5 }}>
-              {docs.length === 0 ? "Your vault is empty. Add your first document." : "Nothing matches. Try clearing a filter."}
-            </div>
+            docs.length === 0 ? (
+              <div style={{ padding: "28px 20px", textAlign: "center" }}>
+                <span
+                  style={{ width: 52, height: 52, borderRadius: 16, background: A.blue + "1F", display: "inline-grid", placeItems: "center", marginBottom: 12 }}
+                >
+                  <FolderOpen size={22} color={A.blue} />
+                </span>
+                <div style={{ fontSize: 15.5, fontWeight: 700, color: T.white }}>No documents yet</div>
+                <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 280 }}>
+                  Add a passport, a policy, or a payslip. ReadiNes files it and watches its expiry for you.
+                </p>
+                <button onClick={() => setAddSheet(true)} style={{ ...btnGold, margin: "0 auto" }}>
+                  <Plus size={15} /> Add your first document
+                </button>
+              </div>
+            ) : (
+              <div style={{ padding: 26, textAlign: "center" }}>
+                <div style={{ color: T.muted, fontSize: 13.5 }}>Nothing matches these filters.</div>
+                <button
+                  onClick={() => {
+                    setQuick("all");
+                    setCat("All");
+                    setPerson("All");
+                    setQ("");
+                  }}
+                  style={{ ...btnGhost, margin: "12px auto 0" }}
+                >
+                  Clear filters
+                </button>
+              </div>
+            )
           ) : (
             filtered.map((d, i) => {
               const col = CAT_META[d.category as Category].color;
@@ -4760,6 +4788,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
   const [showMath, setShowMath] = useState(false);
   const [viewDoc, setViewDoc] = useState<Doc | null>(null);
   const [edit, setEdit] = useState<Holding | null>(null);
+  const [addH, setAddH] = useState(false);
   const [addTx, setAddTx] = useState(false);
   const [sos, setSos] = useState(false);
   const [nomineeFor, setNomineeFor] = useState<Holding | null>(null);
@@ -4983,6 +5012,9 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
             sub="Not a balance sheet: whether your family could access all of it if something happened to you."
           />
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "0 0 28px" }}>
+            <button onClick={() => setAddH(true)} style={btnGhost}>
+              <Plus size={15} /> Add holding
+            </button>
             <button onClick={() => setAddTx(true)} style={btnGhost}>
               <Receipt size={15} /> Capture proof
             </button>
@@ -5234,6 +5266,22 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
 
           <div className="lp-cols2">
             <div style={{ display: "grid", gap: 16 }}>
+              {store.holdings.length === 0 && (
+                <Card style={{ textAlign: "center", padding: "26px 20px" }}>
+                  <span
+                    style={{ width: 52, height: 52, borderRadius: 16, background: A.gold + "1F", display: "inline-grid", placeItems: "center", marginBottom: 12 }}
+                  >
+                    <Wallet size={22} color={A.gold} />
+                  </span>
+                  <div style={{ fontSize: 15.5, fontWeight: 700, color: T.white }}>Nothing recorded yet</div>
+                  <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 300 }}>
+                    Add an account, a policy, or a loan. ReadiNes tracks whether your family could reach each one.
+                  </p>
+                  <button onClick={() => setAddH(true)} style={{ ...btnGold, margin: "0 auto" }}>
+                    <Plus size={15} /> Add your first holding
+                  </button>
+                </Card>
+              )}
               {groups.map(([label, arr]) =>
                 arr.length > 0 ? (
                   <Card key={label} style={{ padding: 0 }}>
@@ -5431,21 +5479,34 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
               e.currentTarget.value = "";
             }}
           />
-          {edit && (
+          {(edit || addH) && (
             <HoldingModal
               holding={edit}
               members={store.members}
-              onClose={() => setEdit(null)}
+              onClose={() => {
+                setEdit(null);
+                setAddH(false);
+              }}
               onSave={(h: Holding) => {
-                store.updateHolding(h.id, h);
-                toast("Holding updated");
+                if (edit) {
+                  store.updateHolding(h.id, h);
+                  toast("Holding updated");
+                } else {
+                  store.addHolding(h);
+                  toast("Holding added");
+                }
                 setEdit(null);
+                setAddH(false);
               }}
-              onDelete={() => {
-                store.removeHolding(edit.id);
-                toast("Holding removed");
-                setEdit(null);
-              }}
+              onDelete={
+                edit
+                  ? () => {
+                      store.removeHolding(edit.id);
+                      toast("Holding removed");
+                      setEdit(null);
+                    }
+                  : undefined
+              }
             />
           )}
           {addTx && (
@@ -7804,9 +7865,12 @@ function AuthScreen({
       }}
     >
       <div style={{ width: "min(400px,100%)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, justifyContent: "center" }}>
-          <BrandMark size={34} carve={T.navy} />
-          <BrandWordmark size={18} color={T.white} gold={T.gold} />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginBottom: 22 }}>
+          <BrandMark size={48} carve={T.navy} />
+          <BrandWordmark size={22} color={T.white} gold={T.gold} />
+          <div style={{ fontSize: 13.5, color: T.muted, textAlign: "center", marginTop: 2 }}>
+            Be ready for life's important moments.
+          </div>
         </div>
         <div
           style={{
@@ -7863,7 +7927,7 @@ function AuthScreen({
           />
         )}
         {err && <div style={{ color: T.coral, fontSize: 12.5, marginTop: 10 }}>{err}</div>}
-        <button onClick={submit} style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 14 }}>
+        <button onClick={submit} style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 14, padding: "13px 16px" }}>
           {mode === "signin" ? "Sign in" : "Create account"} <ArrowRight size={15} />
         </button>
         {/* DEV ONLY — remove before release: visible skip into the app for testing */}
@@ -7888,8 +7952,8 @@ function AuthScreen({
         >
           Skip sign-in (testing) <ArrowRight size={16} />
         </button>
-        <p style={{ fontSize: 11.5, color: T.faint, textAlign: "center", marginTop: 12, lineHeight: 1.5 }}>
-          Prototype accounts live on this device only. Production replaces this with server-side auth.
+        <p style={{ fontSize: 12, color: T.faint, textAlign: "center", marginTop: 14, lineHeight: 1.5 }}>
+          Your documents stay encrypted on your device.
         </p>
       </div>
     </div>
