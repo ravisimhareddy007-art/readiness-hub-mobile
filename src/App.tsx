@@ -143,11 +143,21 @@ body{background:var(--lpv-bg)}
 .lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(5,1fr);gap:0;background:var(--lpv-barbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--lpv-border);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
 .lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:14px;font-size:10px;margin:0 3px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lp-scrim{position:fixed;inset:0;z-index:65;background:var(--lpv-scrim)}
-.lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up .22s ease}
+.lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up 280ms cubic-bezier(.2,.9,.3,1.08)}
 .lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:var(--lpv-border);margin:4px auto 10px}
 .lp-sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:50px;padding:0 10px;background:none;border:none;border-radius:12px;color:var(--lpv-text);font-size:15px;font-weight:600;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
 .lp-sheet-item:active{background:var(--lpv-raised)}
-@keyframes lp-sheet-up{from{transform:translateY(24px);opacity:.4}to{transform:translateY(0);opacity:1}}
+@keyframes lp-sheet-up{from{transform:translateY(36px);opacity:.6}to{transform:translateY(0);opacity:1}}
+@keyframes lp-fade{from{opacity:0}to{opacity:1}}
+@keyframes lp-screen{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.lp-scrim{animation:lp-fade var(--m-std) ease}
+.lp-screen{animation:lp-screen var(--m-std) cubic-bezier(.22,.9,.3,1)}
+.lp-tab{transition:background var(--m-std) ease,color var(--m-std) ease,transform var(--m-fast) ease}
+.lp-tab:active,.lp-mh-mod:active{transform:scale(.94)}
+.lp-card{transition:transform var(--m-fast) ease}
+.lp-press:active{transform:scale(.985)}
+.lp-bar{transition:width 600ms cubic-bezier(.22,.9,.3,1)}
+@media(prefers-reduced-motion:reduce){.lp-scrim,.lp-screen,.lp-sheet{animation:none!important}.lp-tab,.lp-card,.lp-bar,circle{transition:none!important}}
 .lp-dc-meta{display:contents}
 .lp-mh-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;justify-items:center;padding:6px 0 12px}
 .lp-mh-mod{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}
@@ -1445,8 +1455,13 @@ function Ring({ score, size = 56, color }: { score: number; size?: number; color
   const sw = size >= 56 ? 5 : 4,
     r = (size - sw) / 2,
     c = 2 * Math.PI * r,
-    off = c - (score / 100) * c,
+    target = c - (Math.max(0, Math.min(100, score)) / 100) * c,
     col = color || toneFor(score);
+  const [off, setOff] = useState(c);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setOff(target));
+    return () => cancelAnimationFrame(id);
+  }, [target]);
   return (
     <div style={{ position: "relative", width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
@@ -1461,6 +1476,7 @@ function Ring({ score, size = 56, color }: { score: number; size?: number; color
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={off}
+          style={{ transition: "stroke-dashoffset 700ms cubic-bezier(.22,.9,.3,1)" }}
         />
       </svg>
       <div
@@ -5055,6 +5071,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
               }}
             >
               <span
+                className="lp-bar"
                 style={{
                   display: "block",
                   width: `${readiness}%`,
@@ -8401,6 +8418,7 @@ export default function App() {
             ),
           }}
         >
+        <div key={route} className="lp-screen">
         {route === "home" && <Home store={store} go={go} toast={toast} />}
         {route === "packages" && <Packages store={store} toast={toast} />}
         {route === "documents" && <Documents store={store} toast={toast} />}
@@ -8410,6 +8428,7 @@ export default function App() {
         )}
         {route === "trust" && <Trust store={store} toast={toast} />}
         {route === "design" && <DesignSystem store={store} />}
+        </div>
         </MobileNavCtx.Provider>
         {route === "settings" && (
           <SettingsPage

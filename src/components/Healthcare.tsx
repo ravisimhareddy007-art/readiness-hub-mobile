@@ -959,7 +959,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         overflow: "hidden",
                       }}
                     >
-                      <div style={{ width: `${pct}%`, height: "100%", background: pc, borderRadius: 9 }} />
+                      <div style={{ width: `${pct}%`, height: "100%", background: pc, borderRadius: 9, transition: "width 600ms cubic-bezier(.22,.9,.3,1)" }} />
                     </div>
                     {items.map(([label, ok]) => (
                       <div
