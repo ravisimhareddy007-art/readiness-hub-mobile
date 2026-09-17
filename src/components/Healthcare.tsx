@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MNav } from "./MobileNav";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight,
@@ -477,13 +478,14 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     return (
       <div className="lh-root">
         <style>{CSS()}</style>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 12px" }}>
-          <h1 className="lh-h1" style={{ fontSize: 18 }}>Health</h1>
-          <span style={{ flex: 1 }} />
-          <button className="lh-btn-g" style={{ padding: 10, borderRadius: 12 }} onClick={() => setModal("member")} title="Add a family member">
-            <UserPlus size={16} />
-          </button>
-        </div>
+        <MNav
+          title="Health"
+          right={
+            <button className="lh-btn-g" style={{ padding: 9, borderRadius: 99 }} onClick={() => setModal("member")} title="Add a family member">
+              <UserPlus size={16} />
+            </button>
+          }
+        />
         <div className="lh-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
           {s.members.map((mm, i) => {
             const st = memberStatus(mm.id);
@@ -625,24 +627,28 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     <div className="lh-root">
       <style>{CSS()}</style>
       {isMobile && (
-        <button
-          onClick={() => setMView("family")}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            background: "none",
-            border: "none",
-            color: C.sub,
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: "pointer",
-            padding: "2px 0 10px",
-            fontFamily: "inherit",
-          }}
-        >
-          <ChevronRight size={14} style={{ transform: "rotate(180deg)" }} /> Family
-        </button>
+        <MNav
+          left={
+            <button
+              onClick={() => setMView("family")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                background: "none",
+                border: "none",
+                color: C.sub,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+                padding: "6px 6px 6px 0",
+                fontFamily: "inherit",
+              }}
+            >
+              <ChevronRight size={16} style={{ transform: "rotate(180deg)" }} /> Family
+            </button>
+          }
+        />
       )}
       {!isMobile && (
       <div className="lh-head">
@@ -761,10 +767,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             <CalendarClock size={16} color={C.gold} />
             <div style={{ flex: 1, minWidth: 220 }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>
-                {nextVisit
-                  ? `${nextVisit.title} · in ${daysTo(nextVisit.due)} days · ${fmt(nextVisit.due)}`
-                  : "No visit scheduled"}
+                {nextVisit ? nextVisit.title : "No visit scheduled"}
               </div>
+              {nextVisit && (
+                <div style={{ fontSize: 12.5, color: C.gold, marginTop: 1, fontWeight: 600 }}>
+                  {fmt(nextVisit.due)} · in {daysTo(nextVisit.due)} days
+                </div>
+              )}
               <div style={{ fontSize: 12.5, color: C.sub, marginTop: 2 }}>
                 Bring {meds.length} medication{meds.length !== 1 ? "s" : ""},{" "}
                 {records.filter((r) => r.medType === "lab_report").length} recent report
@@ -1664,7 +1673,9 @@ function AddReminder({ onClose, save }: any) {
             onChange={(e) => setF({ ...f, kind: e.target.value as ReminderKind })}
           >
             {["appointment", "refill", "vaccination", "insurance", "other"].map((k) => (
-              <option key={k}>{k}</option>
+              <option key={k} value={k}>
+                {k[0].toUpperCase() + k.slice(1)}
+              </option>
             ))}
           </select>
         </div>
@@ -2131,6 +2142,8 @@ const CSS = () => `
 .lh-pbar .lh-btn-g{flex:1 1 45%;justify-content:center;min-height:44px}
 .lh-root input,.lh-root select,.lh-root textarea{min-width:0}
 .lh-h2{font-size:17px !important;letter-spacing:-0.015em}
+.lh-tab{font-size:13px;padding:9px 8px;gap:0}
+.lh-tab>svg{display:none}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media print{body *{visibility:hidden}#lh-print,#lh-print *{visibility:visible}#lh-print{display:block;position:absolute;inset:0}}

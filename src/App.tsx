@@ -70,6 +70,7 @@ import DocViewer from "@/components/DocViewer";
 import { getPackRequirements } from "@/lib/requirements";
 import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MNav, MobileNavCtx } from "./components/MobileNav";
 
 /* ── design system: semantic tokens, two first-class themes ── */
 const T_DARK = {
@@ -177,6 +178,15 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-wrow > select{order:2;margin-left:48px}
 .lp-upmenu{left:0 !important;right:auto !important}
 .lp-searchdrop{left:0 !important;right:auto !important;width:calc(100vw - 28px) !important}
+.lp-vdiv{display:none}
+.lp-networth{display:grid !important;grid-template-columns:1fr 1fr;gap:14px 16px !important;font-family:inherit !important;padding:14px 16px !important}
+.lp-metric{display:flex;flex-direction:column;gap:3px;font-size:12px}
+.lp-metric b{font-size:20px;font-family:ui-monospace,monospace;letter-spacing:-0.02em}
+.lp-truststats{grid-template-columns:repeat(3,1fr) !important;gap:8px !important}
+.lp-truststats .lp-card{padding:12px 10px !important;text-align:center}
+.lp-truststats .lp-card>span{margin:0 auto}
+.lp-ts-t{font-size:13px !important;margin-top:8px !important;line-height:1.25}
+.lp-ts-s{display:none}
 .lp-wchips{order:3;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}
 .lp-wrow > button{order:3}
 }
@@ -200,7 +210,7 @@ const fmtDays = (expiry?: string) => {
 const daysTo = (s: string) => Math.ceil((+new Date(s) - Date.now()) / 86400000);
 const money = (v: number) =>
   v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `$${(v / 1e3).toFixed(0)}K` : `$${v}`;
-const toneFor = (n: number) => (n >= 90 ? T.mint : n >= 70 ? T.gold : T.coral);
+const toneFor = (n: number) => (n >= 80 ? T.mint : n >= 40 ? T.gold : T.coral);
 
 const CAT_META: Record<Category, { icon: any; color: string }> = {
   Identity: { icon: Fingerprint, color: A.blue },
@@ -1422,6 +1432,8 @@ function Eyebrow({ children }: { children: ReactNode }) {
   );
 }
 function SectionHead({ title, sub }: { title: string; sub: string }) {
+  const isMobile = useIsMobile();
+  if (isMobile) return <MNav title={title} />;
   return (
     <div style={{ marginBottom: 22 }}>
       <h1 style={{ fontSize: 26, fontWeight: 800, color: T.white, margin: 0, letterSpacing: -0.5 }}>{title}</h1>
@@ -1772,6 +1784,7 @@ function Home({ store, go, toast }: any) {
     ];
     return (
       <div>
+        <MNav left={<BrandWordmark size={17} />} />
         <div style={{ margin: "2px 0 14px" }}>
           <div style={{ fontSize: 19, fontWeight: 800, color: T.white, letterSpacing: -0.3 }}>
             {hello}, {firstName}
@@ -2406,18 +2419,18 @@ function Packages({ store, toast }: any) {
   if (isMobile)
     return (
       <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 12px" }}>
-          <b style={{ fontSize: 18, fontWeight: 800, color: T.white }}>Packages</b>
-          <span style={pill(T.muted)}>{all.length}</span>
-          <span style={{ flex: 1 }} />
-          <button
-            onClick={() => setCreating(true)}
-            title="Create a custom pack"
-            style={{ ...btnGhost, padding: 10, borderRadius: 12 }}
-          >
-            <Plus size={17} />
-          </button>
-        </div>
+        <MNav
+          title={
+            <>
+              Packages <span style={pill(T.muted)}>{all.length}</span>
+            </>
+          }
+          right={
+            <button onClick={() => setCreating(true)} title="Create a custom pack" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
+              <Plus size={17} />
+            </button>
+          }
+        />
         <div
           style={{
             display: "flex",
@@ -3503,6 +3516,7 @@ function Documents({ store, toast }: any) {
   const [upMenu, setUpMenu] = useState(false);
   const [fSheet, setFSheet] = useState(false);
   const [addSheet, setAddSheet] = useState(false);
+  const [selMode, setSelMode] = useState(false);
   const isMobile = useIsMobile();
 
   const nameOf = (mid?: string) => store.members.find((m: Member) => m.id === mid)?.name || "Unassigned";
@@ -3621,14 +3635,14 @@ function Documents({ store, toast }: any) {
     if (sort !== "newest") activeChips.push({ label: { oldest: "Oldest first", name: "By name", expiry: "By expiry" }[sort]!, clear: () => setSort("newest") });
     return (
       <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 12px" }}>
-          <b style={{ fontSize: 18, fontWeight: 800, color: T.white }}>Documents</b>
-          <span style={pill(T.muted)}>{docs.length}</span>
-          <span style={{ flex: 1 }} />
-          <button onClick={() => setAddSheet(true)} title="Add documents" style={{ ...btnGhost, padding: 10, borderRadius: 12 }}>
-            <Plus size={17} />
-          </button>
-        </div>
+        <MNav
+          title="Documents"
+          right={
+            <button onClick={() => setAddSheet(true)} title="Add documents" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
+              <Plus size={17} />
+            </button>
+          }
+        />
         <div
           style={{
             display: "flex",
@@ -3681,8 +3695,17 @@ function Documents({ store, toast }: any) {
           ))}
           <span style={{ flex: 1 }} />
           <button
+            onClick={() => {
+              if (selMode) clearSel();
+              setSelMode((v) => !v);
+            }}
+            style={{ background: "none", border: "none", color: SEM.action, fontSize: 13, fontWeight: 700, cursor: "pointer", padding: "6px 8px" }}
+          >
+            {selMode ? "Done" : "Select"}
+          </button>
+          <button
             onClick={() => setFSheet(true)}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: T.gold, fontSize: 13, fontWeight: 700, cursor: "pointer", padding: "6px 2px" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: SEM.action, fontSize: 13, fontWeight: 700, cursor: "pointer", padding: "6px 2px" }}
           >
             <SlidersHorizontal size={14} /> Filter
           </button>
@@ -3700,7 +3723,7 @@ function Documents({ store, toast }: any) {
               return (
                 <div
                   key={d.id}
-                  onClick={() => setOpen(d)}
+                  onClick={() => (selMode ? toggle(d.id) : setOpen(d))}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -3711,13 +3734,15 @@ function Documents({ store, toast }: any) {
                     background: checked ? T.raised : "transparent",
                   }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={() => toggle(d.id)}
-                    style={{ accentColor: T.gold, width: 16, height: 16, flexShrink: 0 }}
-                  />
+                  {selMode && (
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => toggle(d.id)}
+                      style={{ accentColor: SEM.action, width: 18, height: 18, flexShrink: 0 }}
+                    />
+                  )}
                   <span
                     style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 9, background: col + "22", flexShrink: 0 }}
                   >
@@ -4337,7 +4362,14 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
       }}
     >
       <span style={{ fontSize: 12.5, color: T.muted }}>{label}</span>
-      <span style={{ fontSize: 12.5, color: T.text, fontFamily: "ui-monospace, monospace", textAlign: "right" }}>
+      <span
+        style={{
+          fontSize: 12.5,
+          color: T.text,
+          fontFamily: /\d/.test(String(value)) ? "ui-monospace, monospace" : "inherit",
+          textAlign: "right",
+        }}
+      >
         {value}
       </span>
     </div>
@@ -4352,7 +4384,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
           top: 0,
           right: 0,
           bottom: 0,
-          width: "min(430px, 94vw)",
+          width: "min(430px, 100vw)",
           zIndex: 73,
           background: T.navy,
           borderLeft: `1px solid ${T.border}`,
@@ -4736,7 +4768,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
   const missDoc = guarded.filter((h) => !h.docId).length;
   const missAcc = guarded.filter((h) => !h.accessNote).length;
   const fixMins = missNom * 2 + missDoc * 3 + missAcc * 2;
-  const readyColor = readiness >= 80 ? T.mint : readiness >= 50 ? T.gold : T.coral;
+  const readyColor = readiness >= 80 ? T.mint : readiness >= 40 ? T.gold : T.coral;
   const trusted = store.members.filter((m: Member) => m.access === "Full member" || m.access === "Emergency access");
   const linkedDoc = (h: Holding) => store.docs.find((d: Doc) => d.id === h.docId) || null;
 
@@ -5046,7 +5078,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
             <button onClick={() => setShowMath((v) => !v)} style={{ ...btnGhost, padding: "6px 11px", fontSize: 12 }}>
               {showMath ? "Hide math" : "How?"}
             </button>
-            <span style={{ width: 1, alignSelf: "stretch", background: T.border }} />
+            <span className="lp-vdiv" style={{ width: 1, alignSelf: "stretch", background: T.border }} />
             <button onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13 }}>
               <FileText size={14} /> Estate summary <ArrowRight size={13} />
             </button>
@@ -5099,6 +5131,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
             </Card>
           )}
           <div
+            className="lp-networth"
             style={{
               display: "flex",
               gap: 22,
@@ -5113,16 +5146,16 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
               fontSize: 13.5,
             }}
           >
-            <span style={{ color: T.muted }}>
+            <span className="lp-metric" style={{ color: T.muted }}>
               Net worth <b style={{ color: T.white }}>{money(net)}</b>
             </span>
-            <span style={{ color: T.muted }}>
+            <span className="lp-metric" style={{ color: T.muted }}>
               Assets <b style={{ color: T.mint }}>{money(totalAssets)}</b>
             </span>
-            <span style={{ color: T.muted }}>
+            <span className="lp-metric" style={{ color: T.muted }}>
               Liabilities <b style={{ color: T.coral }}>{money(totalLiab)}</b>
             </span>
-            <span style={{ color: T.muted }}>
+            <span className="lp-metric" style={{ color: T.muted }}>
               Protection <b style={{ color: A.teal }}>{money(totalCover)}</b>
             </span>
           </div>
@@ -5151,21 +5184,17 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
                 >
                   <span
                     style={{
-                      fontSize: 10,
-                      fontWeight: 800,
-                      letterSpacing: 1,
-                      fontFamily: "ui-monospace, monospace",
+                      fontSize: 12,
+                      fontWeight: 600,
                       color: SEVC[g.sev],
-                      border: `1px solid ${SEVC[g.sev]}55`,
-                      background: SEVC[g.sev] + "14",
-                      borderRadius: 6,
-                      padding: "3px 7px",
+                      display: "inline-flex",
+                      alignItems: "center",
                       flexShrink: 0,
-                      width: 86,
-                      textAlign: "center",
+                      width: 84,
                     }}
                   >
-                    {g.sev.toUpperCase()}
+                    <span style={{ width: 7, height: 7, borderRadius: 9, background: SEVC[g.sev], display: "inline-block", marginRight: 6 }} />
+                    {g.sev[0].toUpperCase() + g.sev.slice(1)}
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>
                     <span style={{ display: "block", fontSize: 14, color: T.text, fontWeight: 600 }}>{g.label}</span>
@@ -5453,6 +5482,7 @@ function Trust({ store, toast }: any) {
         sub="In plain language: what is protected, who is in your archive, and what each person can reach."
       />
       <div
+        className="lp-truststats"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
@@ -5478,8 +5508,8 @@ function Trust({ store, toast }: any) {
             >
               <x.icon size={17} color={T.mint} />
             </span>
-            <div style={{ fontSize: 15.5, fontWeight: 700, color: T.white, marginTop: 12 }}>{x.t}</div>
-            <div style={{ fontSize: 13, color: T.muted, marginTop: 3 }}>{x.s}</div>
+            <div className="lp-ts-t" style={{ fontSize: 15.5, fontWeight: 700, color: T.white, marginTop: 12 }}>{x.t}</div>
+            <div className="lp-ts-s" style={{ fontSize: 13, color: T.muted, marginTop: 3 }}>{x.s}</div>
           </Card>
         ))}
       </div>
@@ -6873,6 +6903,7 @@ const FAQS: [string, string][] = [
 ];
 
 function DesignSystem({ store }: any) {
+  const isMobile = useIsMobile();
   const Sw = ({ c, l }: { c: string; l: string }) => (
     <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
       <span style={{ width: 44, height: 44, borderRadius: 12, background: c, border: `1px solid ${T.border}` }} />
@@ -6887,8 +6918,9 @@ function DesignSystem({ store }: any) {
   );
   return (
     <div>
+      {isMobile && <MNav title="Design system" />}
       <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 14px" }}>
-        <b style={{ fontSize: 18, fontWeight: 800, color: T.white }}>Design system</b>
+        {!isMobile && <b style={{ fontSize: 18, fontWeight: 800, color: T.white }}>Design system</b>}
         <span style={{ flex: 1 }} />
         {(["dark", "light"] as const).map((t) => (
           <button
@@ -8277,6 +8309,7 @@ export default function App() {
 
       <main className="lp-main">
         <div
+          hidden={isMobile}
           style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20, position: "relative", zIndex: 40 }}
         >
           <div
@@ -8339,25 +8372,6 @@ export default function App() {
             )}
           </div>
           <div style={{ flex: 1 }} />
-          {isMobile && (
-            <button
-              onClick={() => setMSearch(true)}
-              title="Search"
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 99,
-                display: "grid",
-                placeItems: "center",
-                background: T.panel,
-                border: `1px solid ${T.border}`,
-                cursor: "pointer",
-                marginLeft: "auto",
-              }}
-            >
-              <Search size={16} color={T.muted} />
-            </button>
-          )}
           <ProfileMenu
             store={store}
             account={account}
@@ -8369,6 +8383,24 @@ export default function App() {
             toast={toast}
           />
         </div>
+        <MobileNavCtx.Provider
+          value={{
+            openSearch: () => setMSearch(true),
+            tokens: T,
+            profile: (
+              <ProfileMenu
+                store={store}
+                account={account}
+                go={go}
+                onSignOut={() => {
+                  logout();
+                  window.location.href = "/";
+                }}
+                toast={toast}
+              />
+            ),
+          }}
+        >
         {route === "home" && <Home store={store} go={go} toast={toast} />}
         {route === "packages" && <Packages store={store} toast={toast} />}
         {route === "documents" && <Documents store={store} toast={toast} />}
@@ -8378,6 +8410,7 @@ export default function App() {
         )}
         {route === "trust" && <Trust store={store} toast={toast} />}
         {route === "design" && <DesignSystem store={store} />}
+        </MobileNavCtx.Provider>
         {route === "settings" && (
           <SettingsPage
             store={store}
