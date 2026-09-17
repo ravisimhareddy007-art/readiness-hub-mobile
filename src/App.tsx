@@ -7717,10 +7717,11 @@ function AuthScreen({
     marginTop: 9,
   };
   /* DEV ONLY — remove before release: one-tap test session */
+  const DEV_MAIL = ["dev", "readines.app"].join("@");
   const devSkip = () => {
-    const r = login("[email protected]", "readines-dev");
+    const r = login(DEV_MAIL, "readines-dev");
     if (r.ok) return onAuthed(r.account, false);
-    const su = signup("Ravi", "[email protected]", "readines-dev");
+    const su = signup("Ravi", DEV_MAIL, "readines-dev");
     if (su.ok) return onAuthed(su.account, false);
     setErr(su.error);
   };
@@ -7772,6 +7773,7 @@ function AuthScreen({
               key={m}
               onClick={() => {
                 setMode(m);
+                setErr("");
                 setErr("");
               }}
               style={{
