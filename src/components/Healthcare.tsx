@@ -2126,8 +2126,10 @@ const CSS = () => `
 @media(max-width:900px){.lh-grid3{grid-template-columns:minmax(0,1fr)}.lh-grid-2-1{grid-template-columns:minmax(0,1fr)}.lh-vgrid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:767px){
 .lh-pbar{row-gap:10px}
-.lh-pbar>div{min-width:calc(100% - 58px)}
+.lh-pbar>div{min-width:calc(100% - 58px) !important}
+.lh-pbar>div>div{row-gap:2px}
 .lh-pbar .lh-btn-g{flex:1 1 45%;justify-content:center;min-height:44px}
+.lh-root input,.lh-root select,.lh-root textarea{min-width:0}
 .lh-h2{font-size:17px !important;letter-spacing:-0.015em}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

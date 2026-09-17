@@ -157,7 +157,7 @@ body{background:var(--lpv-bg)}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
-input,select,textarea{font-size:16px !important}
+input,select,textarea{font-size:16px !important;min-width:0}
 .lp-main h1{font-size:18px !important;letter-spacing:-0.02em}
 .lp-sh-sub{display:none !important}
 .lp-cardpad{padding:14px !important}
@@ -1951,7 +1951,7 @@ function Home({ store, go, toast }: any) {
                     </span>
                   ))}
                 </span>
-                <span style={{ flex: 1, fontSize: 12.5, color: T.text, lineHeight: 1.5 }}>{ins.text}</span>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: T.text, lineHeight: 1.5 }}>{ins.text}</span>
               </button>
             ))}
           </div>
@@ -2320,7 +2320,7 @@ function Home({ store, go, toast }: any) {
                   </span>
                 ))}
               </span>
-              <span style={{ flex: 1, fontSize: 13, color: T.text, lineHeight: 1.55 }}>{ins.text}</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: T.text, lineHeight: 1.55 }}>{ins.text}</span>
               <ChevronRight size={14} color={T.faint} style={{ marginTop: 4 }} />
             </button>
           ))}
