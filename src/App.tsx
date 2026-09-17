@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, lazy, Suspense } from "react";
 import type { ReactNode, CSSProperties } from "react";
 import {
   LayoutGrid,
@@ -62,7 +62,7 @@ import {
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { Category, Doc, Member, Access, Holding, Transaction, Reminder } from "@/lib/types";
-import Healthcare from "@/components/Healthcare";
+const Healthcare = lazy(() => import("@/components/Healthcare"));
 import { buildZip } from "@/lib/zip";
 import { getSession, signup, login, logout, deleteAccount, updateAccountName, type Account } from "@/lib/auth";
 import { ensureVaultReady } from "@/lib/session";
@@ -150,6 +150,7 @@ body{background:var(--lpv-bg)}
 .lp-sheet-item:active{background:var(--lpv-raised)}
 @keyframes lp-sheet-up{from{transform:translateY(36px);opacity:.6}to{transform:translateY(0);opacity:1}}
 @keyframes lp-fade{from{opacity:0}to{opacity:1}}
+@keyframes lp-pulse{0%,100%{opacity:1}50%{opacity:.55}}
 @keyframes lp-screen{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .lp-scrim{animation:lp-fade var(--m-std) ease}
 .lp-screen{animation:lp-screen var(--m-std) cubic-bezier(.22,.9,.3,1)}
@@ -8299,7 +8300,8 @@ export default function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [booted, store.notifications]);
-  const needsOnboarding = booted && !store.onboarded;
+  const [freshAccount, setFreshAccount] = useState(false);
+  const needsOnboarding = booted && !store.onboarded && freshAccount;
   const [query, setQuery] = useState("");
   const [mSearch, setMSearch] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -8313,9 +8315,13 @@ export default function App() {
 
   if (!authChecked)
     return (
-      <div style={{ minHeight: "100vh", background: T.navy, display: "grid", placeItems: "center" }}>
+      <div style={{ minHeight: "100vh", background: T.navy, display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }}>
         <style>{APPCSS}</style>
-        <BrandMark size={56} />
+        <div style={{ width: "min(400px,100%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, animation: "lp-pulse 1.6s ease-in-out infinite" }}>
+          <BrandMark size={48} carve={T.navy} />
+          <BrandWordmark size={22} color={T.white} gold={T.gold} />
+          <div style={{ fontSize: 13.5, color: T.muted, textAlign: "center", marginTop: 2 }}>Be ready for life's important moments.</div>
+        </div>
       </div>
     );
   if (!account)
@@ -8329,6 +8335,7 @@ export default function App() {
               store.setDataMode("empty");
               store.setOnboarded(false);
               store.updateMember("you", { name: a.name });
+              setFreshAccount(true);
             }
             setAccount(a);
             setRoute("home");
@@ -8351,7 +8358,10 @@ export default function App() {
       {needsOnboarding && (
         <OnboardingWizard
           store={store}
-          onDone={() => setRoute("home")}
+          onDone={() => {
+            setFreshAccount(false);
+            setRoute("home");
+          }}
         />
       )}
       <aside
@@ -8567,7 +8577,11 @@ export default function App() {
         {route === "home" && <Home store={store} go={go} toast={toast} />}
         {route === "packages" && <Packages store={store} toast={toast} />}
         {route === "documents" && <Documents store={store} toast={toast} />}
-        {route === "health" && <Healthcare toast={toast} />}
+        {route === "health" && (
+          <Suspense fallback={<div style={{ minHeight: 200 }} />}>
+            <Healthcare toast={toast} />
+          </Suspense>
+        )}
         {route === "wealth" && (
           <Wealth store={store} go={go} toast={toast} unlocked={wealthOpen} onUnlock={() => setWealthOpen(true)} />
         )}
