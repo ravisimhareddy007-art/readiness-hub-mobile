@@ -61,14 +61,14 @@ const C_LIGHT = {
   panel2: "#EAECF0",
   border: "#E3E6EA",
   text: "#1B2431",
-  sub: "#697180",
-  faint: "#98A0AC",
-  gold: "#AD7F1F",
-  emerald: "#178A5E",
-  red: "#C6473C",
-  violet: "#7A5CD6",
-  pink: "#C74B7E",
-  cyan: "#2F6FD6",
+  sub: "#5E6674",
+  faint: "#666D7A",
+  gold: "#866318",
+  emerald: "#277759",
+  red: "#BA4238",
+  violet: "#7256C9",
+  pink: "#AF416E",
+  cyan: "#2C68C9",
 };
 const C: typeof C_DARK = { ...C_DARK };
 let _cTheme = "";
@@ -479,9 +479,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       <div className="lh-root">
         <style>{CSS()}</style>
         <MNav
-          title="Health"
+          title="Health" aria-label="Health"
           right={
-            <button className="lh-btn-g" style={{ padding: 9, borderRadius: 99 }} onClick={() => setModal("member")} title="Add a family member">
+            <button className="lh-btn-g" style={{ padding: 9, borderRadius: 99 }} onClick={() => setModal("member")} title="Add a family member" aria-label="Add a family member">
               <UserPlus size={16} />
             </button>
           }
@@ -1244,7 +1244,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         )}
         {modal === "emergency" && (
           <SheetModal
-            title="Emergency card"
+            title="Emergency card" aria-label="Emergency card"
             onClose={() => setModal(null)}
             html={emergHTML}
             onExport={() => {
@@ -1539,7 +1539,7 @@ function AddMember({ onClose, save }: any) {
   const [f, setF] = useState({ name: "", relation: "Parent", dob: "1960-01-01", bloodGroup: "O+" });
   const colors = [C.cyan, C.emerald, C.pink, C.violet, C.gold];
   return (
-    <Modal title="Add a family member" onClose={onClose}>
+    <Modal title="Add a family member" aria-label="Add a family member" onClose={onClose}>
       <Lbl>Name</Lbl>
       <input
         className="lh-in"
@@ -1597,7 +1597,7 @@ function AddMember({ onClose, save }: any) {
 function AddMed({ onClose, save }: any) {
   const [f, setF] = useState({ name: "", dose: "", freq: "Once daily", refillBy: rel(30), remaining: 30 });
   return (
-    <Modal title="Add medication" onClose={onClose}>
+    <Modal title="Add medication" aria-label="Add medication" onClose={onClose}>
       <div style={{ display: "flex", gap: 10 }}>
         <div style={{ flex: 2 }}>
           <Lbl>Name</Lbl>
@@ -1660,7 +1660,7 @@ function AddReminder({ onClose, save }: any) {
     due: rel(14),
   });
   return (
-    <Modal title="Add reminder" onClose={onClose}>
+    <Modal title="Add reminder" aria-label="Add reminder" onClose={onClose}>
       <Lbl>Title</Lbl>
       <input
         className="lh-in"

@@ -84,7 +84,7 @@ const T_DARK = {
   coral: "#E8736A",
   text: "#E6EBF5",
   muted: "#8A97AE",
-  faint: "#5C6B80",
+  faint: "#7C8799",
   white: "#FFFFFF",
 };
 const T_LIGHT = {
@@ -92,20 +92,20 @@ const T_LIGHT = {
   panel: "#FFFFFF",
   raised: "#EAECF0",
   border: "#E3E6EA",
-  gold: "#AD7F1F",
-  goldBright: "#8F6A1C",
-  mint: "#178A5E",
-  coral: "#C6473C",
+  gold: "#866318",
+  goldBright: "#9C7420",
+  mint: "#147952",
+  coral: "#BA4238",
   text: "#39424F",
-  muted: "#697180",
-  faint: "#98A0AC",
+  muted: "#5E6674",
+  faint: "#666D7A",
   white: "#1B2431",
 };
 const A_DARK = { blue: "#5B8DEF", purple: "#9B7BE8", teal: "#3FB9C7", pink: "#E86A9B", green: "#4FCB95", gold: "#D9B86A" };
-const A_LIGHT = { blue: "#2F6FD6", purple: "#7A5CD6", teal: "#15839B", pink: "#C74B7E", green: "#178A5E", gold: "#A97E22" };
+const A_LIGHT = { blue: "#2C68C9", purple: "#7256C9", teal: "#12758B", pink: "#AF416E", green: "#277759", gold: "#866318" };
 /* role-locked: navy=foundation · teal=action · gold=readiness highlight · semantics stay calm */
 const SEM_DARK = { action: "#35A7A0", success: "#2FB68A", warning: "#D98A2B", attention: "#E8736A", info: "#5B8DEF" };
-const SEM_LIGHT = { action: "#087F8C", success: "#2E8B68", warning: "#B06F1E", attention: "#D66B5D", info: "#4387B5" };
+const SEM_LIGHT = { action: "#077480", success: "#277759", warning: "#935D19", attention: "#A25146", info: "#366E94" };
 const DS = {
   space: [4, 8, 12, 16, 20, 24, 32, 40, 48, 64],
   radius: { sm: 8, control: 10, card: 16, cardLg: 20, sheet: 24 },
@@ -126,12 +126,13 @@ function applyTheme(theme: string) {
 }
 
 const APPCSS = `
-:root{--lpv-action:#35A7A0;--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
-[data-theme="light"]{--lpv-action:#087F8C;--lpv-bg:#F2F3F5;--lpv-panel:#FFFFFF;--lpv-raised:#EAECF0;--lpv-border:#E3E6EA;--lpv-text:#1B2431;--lpv-muted:#697180;--lpv-gold:#AD7F1F;--lpv-goldb:#C9A24B;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(247,248,250,.96);--lpv-scrim:rgba(18,22,30,.38);--lpv-fabshadow:rgba(173,127,31,.28)}
+:root{--lpv-action:#35A7A0;--lpv-actionink:#0B1220;--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
+[data-theme="light"]{--lpv-action:#077480;--lpv-actionink:#FFFFFF;--lpv-bg:#F2F3F5;--lpv-panel:#FFFFFF;--lpv-raised:#EAECF0;--lpv-border:#E3E6EA;--lpv-text:#1B2431;--lpv-muted:#5E6674;--lpv-gold:#866318;--lpv-goldb:#9C7420;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(247,248,250,.96);--lpv-scrim:rgba(18,22,30,.38);--lpv-fabshadow:rgba(173,127,31,.28)}
 [data-theme="light"] .lp-card{box-shadow:0 1px 2px rgba(16,24,40,.04),0 10px 28px rgba(16,24,40,.06)}
 [data-theme="light"] .lp-tabbar{box-shadow:0 -8px 26px rgba(16,24,40,.08);border-top-color:transparent}
 [data-theme="light"] .lp-sheet{box-shadow:0 -14px 44px rgba(16,24,40,.18)}
 body{background:var(--lpv-bg)}
+:focus-visible{outline:2px solid var(--lpv-action);outline-offset:2px;border-radius:6px}
 .lp-main{font-variant-numeric:tabular-nums}
 .lp-main b,.lp-main h1,.lp-main h2,.lp-main h3{letter-spacing:-0.015em}
 .lp-main{flex:1;min-width:0;padding:24px 34px 40px;max-width:1160px;margin:0 auto;width:100%}
@@ -1450,7 +1451,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
 }
 function SectionHead({ title, sub }: { title: string; sub: string }) {
   const isMobile = useIsMobile();
-  if (isMobile) return <MNav title={title} />;
+  if (isMobile) return <MNav title={title} aria-label={title} />;
   return (
     <div style={{ marginBottom: 22 }}>
       <h1 style={{ fontSize: 26, fontWeight: 800, color: T.white, margin: 0, letterSpacing: -0.5 }}>{title}</h1>
@@ -1940,7 +1941,7 @@ function Home({ store, go, toast }: any) {
                   </span>
                   {(a.rid || a.txId) && (
                     <button
-                      title="Mark done"
+                      title="Mark done" aria-label="Mark done"
                       onClick={(e) => {
                         e.stopPropagation();
                         a.rid ? store.completeReminder(a.rid) : store.completeFollowUp(a.txId);
@@ -2280,7 +2281,7 @@ function Home({ store, go, toast }: any) {
                     </span>
                     {(a.rid || a.txId) && (
                       <button
-                        title="Mark done"
+                        title="Mark done" aria-label="Mark done"
                         onClick={(e) => {
                           e.stopPropagation();
                           a.rid ? store.completeReminder(a.rid) : store.completeFollowUp(a.txId);
@@ -2450,7 +2451,7 @@ function Packages({ store, toast }: any) {
             </>
           }
           right={
-            <button onClick={() => setCreating(true)} title="Create a custom pack" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
+            <button onClick={() => setCreating(true)} title="Create a custom pack" aria-label="Create a custom pack" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
               <Plus size={17} />
             </button>
           }
@@ -2607,7 +2608,7 @@ function Packages({ store, toast }: any) {
   return (
     <div>
       <SectionHead
-        title="Packages"
+        title="Packages" aria-label="Packages"
         sub={`${all.length} real-world situations. ReadiNes matches your archive against each one and shows how ready you already are.`}
       />
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "0 0 18px" }}>
@@ -3013,7 +3014,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                     onChange={(e) => setReqs(reqs.map((x, j) => (j === i ? e.target.value : x)))}
                   />
                   <span
-                    title={onFile ? "Already in your archive" : "Not in your archive yet"}
+                    title={onFile ? "Already in your archive" : "Not in your archive yet"} aria-label={onFile ? "Already in your archive" : "Not in your archive yet"}
                     style={{
                       width: 20,
                       textAlign: "center",
@@ -3027,7 +3028,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                   <button
                     onClick={() => setReqs(reqs.filter((_, j) => j !== i))}
                     style={{ ...btnGhost, padding: "0 11px" }}
-                    title="Remove"
+                    title="Remove" aria-label="Remove"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -3662,9 +3663,9 @@ function Documents({ store, toast }: any) {
     return (
       <div>
         <MNav
-          title="Documents"
+          title="Documents" aria-label="Documents"
           right={
-            <button onClick={() => setAddSheet(true)} title="Add documents" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
+            <button onClick={() => setAddSheet(true)} title="Add documents" aria-label="Add documents" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
               <Plus size={17} />
             </button>
           }
@@ -3849,16 +3850,16 @@ function Documents({ store, toast }: any) {
                 </option>
               ))}
             </select>
-            <button onClick={bulkDelete} title="Delete selected" style={{ ...btnGhost, padding: 9, color: T.coral }}>
+            <button onClick={bulkDelete} title="Delete selected" aria-label="Delete selected" style={{ ...btnGhost, padding: 9, color: T.coral }}>
               <Trash2 size={15} color={T.coral} />
             </button>
-            <button onClick={clearSel} title="Clear selection" style={{ ...btnGhost, padding: 9 }}>
+            <button onClick={clearSel} title="Clear selection" aria-label="Clear selection" style={{ ...btnGhost, padding: 9 }}>
               <X size={15} />
             </button>
           </div>
         )}
         {addSheet && (
-          <MSheet title="Add documents" onClose={() => setAddSheet(false)}>
+          <MSheet title="Add documents" aria-label="Add documents" onClose={() => setAddSheet(false)}>
             <label className="lp-sheet-item">
               <FileText size={19} color={T.muted} /> Upload files
               <input
@@ -3903,7 +3904,7 @@ function Documents({ store, toast }: any) {
           </MSheet>
         )}
         {fSheet && (
-          <MSheet title="Filters" onClose={() => setFSheet(false)}>
+          <MSheet title="Filters" aria-label="Filters" onClose={() => setFSheet(false)}>
             <Sec label="Status">
               <Opt on={quick === "all"} onClick={() => setQuick("all")}>All</Opt>
               <Opt on={quick === "expiring"} onClick={() => setQuick("expiring")}>Expiring soon · {expiring.length}</Opt>
@@ -3974,7 +3975,7 @@ function Documents({ store, toast }: any) {
         }}
       >
         <SectionHead
-          title="Documents"
+          title="Documents" aria-label="Documents"
           sub={`${docs.length} records in your archive. Search, filter, and open any row for full context.`}
         />
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
@@ -4983,7 +4984,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
                 d ? setViewDoc(d) : attach(h);
               }}
               style={{ cursor: "pointer" }}
-              title={d ? "View document" : "Attach document"}
+              title={d ? "View document" : "Attach document"} aria-label={d ? "View document" : "Attach document"}
             >
               <Chip ok={!!d} label="Doc" />
             </span>
@@ -4993,7 +4994,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
                 if (!h.nominee) setNomineeFor(h);
               }}
               style={{ cursor: h.nominee ? "default" : "pointer" }}
-              title={h.nominee ? h.nomineeName || "Nominee named" : "Add nominee"}
+              title={h.nominee ? h.nomineeName || "Nominee named" : "Add nominee"} aria-label={h.nominee ? h.nomineeName || "Nominee named" : "Add nominee"}
             >
               <Chip ok={!!h.nominee} label="Nominee" />
             </span>
@@ -5014,28 +5015,28 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
     <div>
       {store.wealthPin && !unlocked ? (
         <>
-          <SectionHead title="Wealth" sub="Locked" />
+          <SectionHead title="Wealth" aria-label="Wealth" sub="Locked" />
           <WealthLock store={store} onUnlock={onUnlock} toast={toast} />
         </>
       ) : (
         <>
           {isMobile ? (
             <MNav
-              title="Wealth"
+              title="Wealth" aria-label="Wealth"
               right={
-                <button onClick={() => setActSheet(true)} title="Actions" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
+                <button onClick={() => setActSheet(true)} title="Actions" aria-label="Actions" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
                   <Plus size={17} />
                 </button>
               }
             />
           ) : (
             <SectionHead
-              title="Wealth"
+              title="Wealth" aria-label="Wealth"
               sub="Not a balance sheet: whether your family could access all of it if something happened to you."
             />
           )}
           {actSheet && (
-            <MSheet title="Wealth actions" onClose={() => setActSheet(false)}>
+            <MSheet title="Wealth actions" aria-label="Wealth actions" onClose={() => setActSheet(false)}>
               <button
                 className="lp-sheet-item"
                 onClick={() => {
@@ -5451,7 +5452,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
                             store.removeTransaction(t.id);
                             toast("Transaction removed");
                           }}
-                          title="Remove"
+                          title="Remove" aria-label="Remove"
                           style={{ ...btnGhost, padding: 7 }}
                         >
                           <Trash2 size={13} />
@@ -5611,7 +5612,7 @@ function Trust({ store, toast }: any) {
   return (
     <div>
       <SectionHead
-        title="Trust center"
+        title="Trust center" aria-label="Trust center"
         sub="In plain language: what is protected, who is in your archive, and what each person can reach."
       />
       <div
@@ -5835,7 +5836,7 @@ function SearchResults({ store, query, go }: any) {
             key={d.id}
             icon={CAT_META[d.category].icon}
             color={CAT_META[d.category].color}
-            title={d.docType}
+            title={d.docType} aria-label={d.docType}
             sub={`${d.category}${d.memberId && nameOf(d.memberId) ? " · " + nameOf(d.memberId).split(" ")[0] : ""}`}
             onClick={() => go("documents")}
           />
@@ -5847,7 +5848,7 @@ function SearchResults({ store, query, go }: any) {
             key={m.id}
             icon={Stethoscope}
             color={A.teal}
-            title={store.care[m.id]?.doctor}
+            title={store.care[m.id]?.doctor} aria-label={store.care[m.id]?.doctor}
             sub={nameOf(m.id).split(" ")[0]}
             onClick={() => go("health")}
           />
@@ -5871,7 +5872,7 @@ function SearchResults({ store, query, go }: any) {
             key={i}
             icon={HeartPulse}
             color={A.green}
-            title={x.c}
+            title={x.c} aria-label={x.c}
             sub={nameOf(x.m.id).split(" ")[0]}
             onClick={() => go("health")}
           />
@@ -5883,7 +5884,7 @@ function SearchResults({ store, query, go }: any) {
             key={r.id}
             icon={Bell}
             color={T.gold}
-            title={r.title}
+            title={r.title} aria-label={r.title}
             sub={`${nameOf(r.memberId).split(" ")[0]} · in ${daysTo(r.due)}d`}
             onClick={() => go("health")}
           />
@@ -6795,7 +6796,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete }: any) {
           {onDelete && (
             <button
               onClick={onDelete}
-              title="Remove"
+              title="Remove" aria-label="Remove"
               style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55", padding: "10px 14px" }}
             >
               <Trash2 size={15} />
@@ -7051,7 +7052,7 @@ function DesignSystem({ store }: any) {
   );
   return (
     <div>
-      {isMobile && <MNav title="Design system" />}
+      {isMobile && <MNav title="Design system" aria-label="Design system" />}
       <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 14px" }}>
         {!isMobile && <b style={{ fontSize: 18, fontWeight: 800, color: T.white }}>Design system</b>}
         <span style={{ flex: 1 }} />
@@ -7132,7 +7133,7 @@ function DesignSystem({ store }: any) {
       </Sec>
       <Sec t="Buttons">
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <button style={{ padding: "11px 18px", borderRadius: DS.radius.control, border: "none", background: SEM.action, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+          <button style={{ padding: "11px 18px", borderRadius: DS.radius.control, border: "none", background: SEM.action, color: "var(--lpv-actionink)", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
             Primary action
           </button>
           <button style={{ ...btnGold, cursor: "pointer" }}>Readiness moment</button>
@@ -7191,6 +7192,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
   return (
     <div style={{ position: "relative" }}>
       <button
+        aria-label="Account menu"
         onClick={() => setOpen((v) => !v)}
         style={{
           display: "flex",
@@ -7588,7 +7590,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
   );
   return (
     <div>
-      <SectionHead title="Settings" sub="Your account, your family, and how ReadiNes behaves." />
+      <SectionHead title="Settings" aria-label="Settings" sub="Your account, your family, and how ReadiNes behaves." />
       <div className="lp-cols2">
         <div>
           <Section label="Account">
@@ -7804,7 +7806,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
         <PinModal store={store} hasPin={!!store.wealthPin} onClose={() => setPinModal(false)} toast={toast} />
       )}
       {modal === "whatsnew" && (
-        <Overlay title="What's new">
+        <Overlay title="What's new" aria-label="What's new">
           {CHANGELOG.map(([t, b], i) => (
             <div key={i} style={{ padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{t}</div>
@@ -7814,7 +7816,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
         </Overlay>
       )}
       {modal === "faq" && (
-        <Overlay title="Help and FAQs">
+        <Overlay title="Help and FAQs" aria-label="Help and FAQs">
           {FAQS.map(([q, a], i) => (
             <div key={i} style={{ padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{q}</div>
@@ -7824,7 +7826,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
         </Overlay>
       )}
       {modal === "feedback" && (
-        <Overlay title="Send feedback">
+        <Overlay title="Send feedback" aria-label="Send feedback">
           <textarea
             autoFocus
             value={fb}
@@ -7853,7 +7855,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
         </Overlay>
       )}
       {modal === "about" && (
-        <Overlay title="About ReadiNes">
+        <Overlay title="About ReadiNes" aria-label="About ReadiNes">
           <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.7, margin: 0 }}>
             ReadiNes keeps your family ready for life's important moments: it understands the documents you save, knows
             what a hundred real-world situations require, shows how ready you already are, and assembles the pack when
@@ -7863,7 +7865,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
         </Overlay>
       )}
       {modal === "delete" && (
-        <Overlay title="Delete account?">
+        <Overlay title="Delete account?" aria-label="Delete account?">
           <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.6, margin: 0 }}>
             This removes your account and erases the archive stored on this device: documents, holdings, packs,
             everything. There is no undo.
@@ -8415,7 +8417,7 @@ export default function App() {
               <button
                 key={key}
                 onClick={() => setRoute(key)}
-                title={label}
+                title={label} aria-label={label}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -8440,7 +8442,7 @@ export default function App() {
         </nav>
         <button
           onClick={() => setNavOpen((v) => !v)}
-          title={navOpen ? "Collapse menu" : "Expand menu"}
+          title={navOpen ? "Collapse menu" : "Expand menu"} aria-label={navOpen ? "Collapse menu" : "Expand menu"}
           style={{
             marginTop: "auto",
             display: "flex",
