@@ -8550,7 +8550,8 @@ export default function App() {
             go={go}
             onSignOut={() => {
               logout();
-              window.location.href = "/";
+              setAccount(null);
+              setRoute("home");
             }}
             toast={toast}
           />
@@ -8566,7 +8567,8 @@ export default function App() {
                 go={go}
                 onSignOut={() => {
                   logout();
-                  window.location.href = "/";
+                  setAccount(null);
+                  setRoute("home");
                 }}
                 toast={toast}
               />
@@ -8597,7 +8599,8 @@ export default function App() {
             toast={toast}
             onSignOut={() => {
               logout();
-              window.location.href = "/";
+              setAccount(null);
+              setRoute("home");
             }}
             onDeleteAccount={() => {
               deleteAccount();

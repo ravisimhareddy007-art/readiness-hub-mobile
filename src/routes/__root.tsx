@@ -96,6 +96,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#0B1220" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "ReadiNes" },
+      { name: "application-name", content: "ReadiNes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { title: "ReadiNes — Be ready for life's important moments" },
       { name: "description", content: "ReadiNes keeps your family's documents organized and event-ready. Be ready for life's important moments." },

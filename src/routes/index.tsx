@@ -1,10 +1,9 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import App from "@/App";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [{ title: "ReadiNes" }],
   }),
-  beforeLoad: () => {
-    throw redirect({ to: "/app" });
-  },
+  component: () => <App />,
 });

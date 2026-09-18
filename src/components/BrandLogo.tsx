@@ -35,12 +35,12 @@ export function BrandMark({
         strokeLinecap="round"
         strokeWidth={26}
       />
-      <g transform="translate(121.35,150.62) rotate(51.9)">
+      <g transform="translate(124.44,154.56) rotate(51.9)">
         <rect x="0" y="-24" width="17" height="26" rx="3" fill={color} />
         <rect x="3.5" y="-18" width="10" height="2.4" rx="1.2" fill={carve} />
         <rect x="3.5" y="-13" width="7.5" height="2.4" rx="1.2" fill={carve} />
       </g>
-      <g transform="translate(137.39,171.08) rotate(51.9)">
+      <g transform="translate(140.48,175.02) rotate(51.9)">
         <rect x="0" y="-24" width="17" height="26" rx="3" fill={color} />
         <rect x="3.5" y="-18" width="10" height="2.4" rx="1.2" fill={carve} />
         <rect x="3.5" y="-13" width="7.5" height="2.4" rx="1.2" fill={carve} />
