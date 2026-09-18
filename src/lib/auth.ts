@@ -77,6 +77,31 @@ export function deleteAccount() {
   }
 }
 
+export function changePassword(current: string, next: string): { ok: true } | { ok: false; error: string } {
+  const s = load();
+  const a = s.accounts.find((x) => x.email === s.session);
+  if (!a) return { ok: false, error: "Not signed in." };
+  if (a.hash !== hash(current)) return { ok: false, error: "Current password is wrong." };
+  if (next.length < 6) return { ok: false, error: "New password needs at least 6 characters." };
+  a.hash = hash(next);
+  save(s);
+  return { ok: true };
+}
+
+export function changeEmail(nextEmail: string, password: string): { ok: true; account: Account } | { ok: false; error: string } {
+  const e = nextEmail.trim().toLowerCase();
+  const s = load();
+  const a = s.accounts.find((x) => x.email === s.session);
+  if (!a) return { ok: false, error: "Not signed in." };
+  if (a.hash !== hash(password)) return { ok: false, error: "Password is wrong." };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) return { ok: false, error: "That does not look like an email address." };
+  if (e !== a.email && s.accounts.some((x) => x.email === e)) return { ok: false, error: "That email already has an account." };
+  a.email = e;
+  s.session = e;
+  save(s);
+  return { ok: true, account: a };
+}
+
 export function updateAccountName(name: string) {
   const s = load();
   const a = s.accounts.find((x) => x.email === s.session);

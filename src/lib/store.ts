@@ -46,7 +46,6 @@ interface State {
   transactions: Transaction[];
   handoff: Handoff | null;
   customPacks: CustomPack[];
-  wealthPin: string | null; // djb2 hash of the app-lock passcode; a lock on the door, not encryption
   theme: "dark" | "light";
   notifications: boolean;
   dataMode: "sample" | "empty"; // empty = 1Shelf-style day-0; sample = seeded family
@@ -478,7 +477,7 @@ const seedCare: Record<string, CareProfile> = {
 };
 
 const emptyOwner: Member = { id: "you", name: "You", relation: "Self", color: "#5B8DEF", access: "Owner" };
-const EMPTY: Omit<State, "theme" | "notifications" | "wealthPin" | "onboarded" | "dataMode"> = {
+const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode"> = {
   members: [emptyOwner],
   docs: [],
   labs: [],
@@ -490,7 +489,7 @@ const EMPTY: Omit<State, "theme" | "notifications" | "wealthPin" | "onboarded" |
   handoff: null,
   customPacks: [],
 };
-const SAMPLE: Omit<State, "theme" | "notifications" | "wealthPin" | "onboarded" | "dataMode"> = {
+const SAMPLE: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode"> = {
   members: seedMembers,
   docs: seedDocs,
   labs: seedLabs,
@@ -515,12 +514,11 @@ const DEFAULT: State = {
   transactions: seedTransactions,
   handoff: null,
   customPacks: [],
-  wealthPin: null,
   theme: "dark",
   notifications: false,
 };
 // user-scoped bundles preserved across a mode switch (so switching back is instant and lossless)
-type Bundle = Omit<State, "theme" | "notifications" | "wealthPin" | "onboarded" | "dataMode">;
+type Bundle = Omit<State, "theme" | "notifications" | "onboarded" | "dataMode">;
 const BUNDLE_KEYS: (keyof Bundle)[] = [
   "members",
   "docs",
@@ -622,7 +620,6 @@ function load(): State {
         transactions: p.transactions ?? DEFAULT.transactions,
         handoff: p.handoff ?? null,
         customPacks: p.customPacks ?? [],
-        wealthPin: p.wealthPin ?? null,
         theme: p.theme ?? "dark",
         notifications: p.notifications ?? false,
         dataMode: p.dataMode ?? "empty",
@@ -886,10 +883,6 @@ export function useStore() {
     state = { ...state, notifications: v };
     persist();
   }, []);
-  const setWealthPin = useCallback((hash: string | null) => {
-    state = { ...state, wealthPin: hash };
-    persist();
-  }, []);
   const addCustomPack = useCallback((cp: Omit<CustomPack, "id" | "createdAt">) => {
     state = { ...state, customPacks: [...state.customPacks, { ...cp, id: id(), createdAt: new Date().toISOString() }] };
     persist();
@@ -946,7 +939,6 @@ export function useStore() {
     setDataMode,
     setTheme,
     setNotifications,
-    setWealthPin,
     addCustomPack,
     updateCustomPack,
     removeCustomPack,

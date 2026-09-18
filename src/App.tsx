@@ -47,6 +47,7 @@ import {
   IdCard,
   Settings as SettingsIcon,
   LogOut,
+  Mail,
   SlidersHorizontal,
   Bell as BellIcon,
   Sun,
@@ -64,7 +65,7 @@ import { useStore } from "@/lib/store";
 import type { Category, Doc, Member, Access, Holding, Transaction, Reminder } from "@/lib/types";
 const Healthcare = lazy(() => import("@/components/Healthcare"));
 import { buildZip } from "@/lib/zip";
-import { getSession, signup, login, logout, deleteAccount, updateAccountName, type Account } from "@/lib/auth";
+import { getSession, signup, login, logout, deleteAccount, updateAccountName, changePassword, changeEmail, type Account } from "@/lib/auth";
 import { ensureVaultReady } from "@/lib/session";
 import DocViewer from "@/components/DocViewer";
 import { getPackRequirements } from "@/lib/requirements";
@@ -4795,8 +4796,7 @@ function AddMember({ onClose, save }: any) {
 }
 
 /* ═══════════════ WEALTH (derived from documents with value) ═══════════════ */
-function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
-  const [pinModal, setPinModal] = useState(false);
+function Wealth({ store, go, toast }: any) {
   const [showMath, setShowMath] = useState(false);
   const [viewDoc, setViewDoc] = useState<Doc | null>(null);
   const [edit, setEdit] = useState<Holding | null>(null);
@@ -5014,12 +5014,7 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
 
   return (
     <div>
-      {store.wealthPin && !unlocked ? (
-        <>
-          <SectionHead title="Wealth" aria-label="Wealth" sub="Locked" />
-          <WealthLock store={store} onUnlock={onUnlock} toast={toast} />
-        </>
-      ) : (
+      {(
         <>
           {isMobile ? (
             <MNav
@@ -5591,9 +5586,6 @@ function Wealth({ store, go, toast, unlocked, onUnlock }: any) {
           {sos && <SOSHandoffModal store={store} toast={toast} onClose={() => setSos(false)} />}
           {estate && <EstateSheet store={store} onClose={() => setEstate(false)} toast={toast} />}
           {viewDoc && <DocViewer doc={viewDoc} store={store} onClose={() => setViewDoc(null)} />}
-          {pinModal && (
-            <PinModal store={store} hasPin={!!store.wealthPin} onClose={() => setPinModal(false)} toast={toast} />
-          )}
         </>
       )}
     </div>
@@ -5895,225 +5887,6 @@ function SearchResults({ store, query, go }: any) {
   );
 }
 
-const pinHash = (pin: string) => {
-  let h = 5381;
-  const salted = "lifepack|" + pin;
-  for (let i = 0; i < salted.length; i++) h = ((h << 5) + h + salted.charCodeAt(i)) >>> 0;
-  return h.toString(36);
-};
-
-function WealthLock({ store, onUnlock, toast }: any) {
-  const [pin, setPin] = useState("");
-  const [err, setErr] = useState(false);
-  const tryUnlock = () => {
-    if (pinHash(pin) === store.wealthPin) onUnlock();
-    else {
-      setErr(true);
-      setPin("");
-    }
-  };
-  return (
-    <div style={{ maxWidth: 380, margin: "60px auto", textAlign: "center" }}>
-      <span
-        style={{
-          display: "grid",
-          placeItems: "center",
-          width: 54,
-          height: 54,
-          borderRadius: 15,
-          background: T.gold + "1a",
-          margin: "0 auto 14px",
-        }}
-      >
-        <Lock size={22} color={T.gold} />
-      </span>
-      <h2 style={{ color: T.white, fontSize: 20, margin: 0 }}>Wealth is locked</h2>
-      <p style={{ color: T.muted, fontSize: 13, margin: "8px 0 18px" }}>
-        Enter your passcode. This is an app lock for shared screens, separate from your account.
-      </p>
-      <input
-        autoFocus
-        type="password"
-        inputMode="numeric"
-        maxLength={6}
-        value={pin}
-        onChange={(e) => {
-          setErr(false);
-          setPin(e.target.value.replace(/\D/g, ""));
-        }}
-        onKeyDown={(e) => e.key === "Enter" && pin.length >= 4 && tryUnlock()}
-        style={{
-          width: 180,
-          textAlign: "center",
-          letterSpacing: 8,
-          fontSize: 22,
-          fontFamily: "ui-monospace, monospace",
-          background: T.raised,
-          border: `1px solid ${err ? T.coral : T.border}`,
-          borderRadius: 11,
-          padding: "12px 14px",
-          color: T.white,
-          outline: "none",
-        }}
-      />
-      {err && <div style={{ color: T.coral, fontSize: 12.5, marginTop: 8 }}>That passcode is not right.</div>}
-      <button
-        disabled={pin.length < 4}
-        onClick={tryUnlock}
-        style={{
-          ...btnGold,
-          width: 180,
-          justifyContent: "center",
-          margin: "16px auto 0",
-          opacity: pin.length >= 4 ? 1 : 0.4,
-        }}
-      >
-        Unlock
-      </button>
-    </div>
-  );
-}
-
-function PinModal({ store, hasPin, onClose, toast }: any) {
-  const [cur, setCur] = useState("");
-  const [pin, setPin] = useState("");
-  const [pin2, setPin2] = useState("");
-  const [err, setErr] = useState("");
-  const inp: CSSProperties = {
-    width: "100%",
-    textAlign: "center",
-    letterSpacing: 6,
-    fontSize: 18,
-    fontFamily: "ui-monospace, monospace",
-    background: T.raised,
-    border: `1px solid ${T.border}`,
-    borderRadius: 10,
-    padding: "10px 12px",
-    color: T.white,
-    outline: "none",
-  };
-  const lbl: CSSProperties = {
-    fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    color: T.muted,
-    fontFamily: "ui-monospace, monospace",
-    margin: "12px 0 5px",
-    display: "block",
-    textAlign: "left",
-  };
-  const digits = (v: string) => v.replace(/\D/g, "").slice(0, 6);
-  const save = () => {
-    if (hasPin && pinHash(cur) !== store.wealthPin) return setErr("Current passcode is wrong.");
-    if (pin.length < 4) return setErr("Use 4 to 6 digits.");
-    if (pin !== pin2) return setErr("The two entries do not match.");
-    store.setWealthPin(pinHash(pin));
-    toast(hasPin ? "Passcode changed" : "Wealth passcode set");
-    onClose();
-  };
-  const remove = () => {
-    if (pinHash(cur) !== store.wealthPin) return setErr("Current passcode is wrong.");
-    store.setWealthPin(null);
-    toast("Passcode removed");
-    onClose();
-  };
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 72,
-        background: "rgba(4,7,15,.62)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 18,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: T.panel,
-          border: `1px solid ${T.border}`,
-          borderRadius: 16,
-          width: "min(360px,100%)",
-          padding: 22,
-          textAlign: "center",
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 17 }}>{hasPin ? "Change passcode" : "Lock Wealth with a passcode"}</b>
-          <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
-            <X size={15} />
-          </button>
-        </div>
-        <p style={{ fontSize: 12, color: T.muted, margin: "0 0 6px", textAlign: "left" }}>
-          An app lock for shared screens and curious eyes. It is not encryption and does not protect the underlying
-          data.
-        </p>
-        {hasPin && (
-          <>
-            <label style={lbl}>Current passcode</label>
-            <input
-              type="password"
-              inputMode="numeric"
-              style={inp}
-              value={cur}
-              onChange={(e) => {
-                setErr("");
-                setCur(digits(e.target.value));
-              }}
-            />
-          </>
-        )}
-        <label style={lbl}>New passcode (4–6 digits)</label>
-        <input
-          type="password"
-          inputMode="numeric"
-          style={inp}
-          value={pin}
-          onChange={(e) => {
-            setErr("");
-            setPin(digits(e.target.value));
-          }}
-        />
-        <label style={lbl}>Repeat it</label>
-        <input
-          type="password"
-          inputMode="numeric"
-          style={inp}
-          value={pin2}
-          onChange={(e) => {
-            setErr("");
-            setPin2(digits(e.target.value));
-          }}
-          onKeyDown={(e) => e.key === "Enter" && save()}
-        />
-        {err && <div style={{ color: T.coral, fontSize: 12.5, marginTop: 8 }}>{err}</div>}
-        <button onClick={save} style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 16 }}>
-          {hasPin ? "Change passcode" : "Set passcode"}
-        </button>
-        {hasPin && (
-          <button
-            onClick={remove}
-            style={{
-              ...btnGhost,
-              width: "100%",
-              justifyContent: "center",
-              marginTop: 8,
-              color: T.coral,
-              borderColor: T.coral + "55",
-            }}
-          >
-            Remove passcode
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function SOSHandoffModal({ store, toast, onClose }: any) {
   const recipients: Member[] = store.members.filter(
@@ -7419,9 +7192,19 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
   );
 }
 
-function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }: any) {
-  const [pinModal, setPinModal] = useState(false);
-  const [modal, setModal] = useState<null | "whatsnew" | "faq" | "feedback" | "about" | "delete" | "privacy">(null);
+function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, onAccountUpdated }: any) {
+  const [modal, setModal] = useState<null | "whatsnew" | "faq" | "feedback" | "about" | "delete" | "privacy" | "email" | "password">(null);
+  const [f1, setF1] = useState("");
+  const [f2, setF2] = useState("");
+  const [f3, setF3] = useState("");
+  const [fErr, setFErr] = useState("");
+  const closeForm = () => {
+    setModal(null);
+    setF1("");
+    setF2("");
+    setF3("");
+    setFErr("");
+  };
   const [name, setName] = useState(account?.name || store.members.find((m: Member) => m.id === "you")?.name || "");
   const [fb, setFb] = useState("");
   const you = store.members.find((m: Member) => m.id === "you");
@@ -7639,13 +7422,8 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
               sub="Members, access levels, emergency contacts, and SOS handoff"
               onClick={() => go("trust")}
             />
-            <Row
-              icon={Lock}
-              label="Protect Wealth with a PIN"
-              sub="Require a passcode before opening financial documents"
-              value={store.wealthPin ? "On" : "Off"}
-              onClick={() => setPinModal(true)}
-            />
+            <Row icon={Mail} label="Change email" sub={account?.email || "Add an email to sign in on other devices"} onClick={() => setModal("email")} />
+            <Row icon={Lock} label="Change password" onClick={() => setModal("password")} />
           </Section>
           <Section label="Preferences">
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
@@ -7715,48 +7493,6 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
               </button>
             </div>
           </Section>
-          <Section label="Archive">
-            <Row
-              icon={Users}
-              label="Sample family"
-              sub={store.dataMode === "sample" ? "Showing demo data. Switch off to see your own archive." : "Explore ReadiNes with a demo family before adding your own documents"}
-              value={store.dataMode === "sample" ? "On" : "Off"}
-              onClick={() => {
-                const next = store.dataMode === "sample" ? "empty" : "sample";
-                store.setDataMode(next);
-                toast(next === "sample" ? "Showing the sample family" : "Showing your archive");
-              }}
-            />
-            {store.dataMode === "sample" && (
-              <Row
-                icon={RefreshCw}
-                label="Reset sample family"
-                sub="Restore the demo to its original state"
-                onClick={() => {
-                  store.setDataMode("sample");
-                  toast("Sample family restored");
-                }}
-              />
-            )}
-            <Row
-              icon={HardDrive}
-              label="Storage"
-              value={`${docCount} docs · ${storageMB} MB`}
-              sub="Everything in your current archive on this device"
-              first
-            />
-            <Row
-              icon={Download}
-              label="Export archive"
-              sub="Download all documents as a zip"
-              onClick={async () => {
-                await buildZip("ReadiNes_Archive", store.docs);
-                toast("Archive exported");
-              }}
-            />
-          </Section>
-        </div>
-        <div>
           <Section label="Support">
             <Row
               icon={Sparkles}
@@ -7808,9 +7544,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
           </div>
         </div>
       </div>
-      {pinModal && (
-        <PinModal store={store} hasPin={!!store.wealthPin} onClose={() => setPinModal(false)} toast={toast} />
-      )}
+
       {modal === "whatsnew" && (
         <Overlay title="What's new" aria-label="What's new">
           {CHANGELOG.map(([t, b], i) => (
@@ -7870,12 +7604,71 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
           <p style={{ fontSize: 12, color: T.muted, marginTop: 10 }}>
             Version 0.9 ·{" "}
             <button
+              onClick={() => {
+                const next = store.dataMode === "sample" ? "empty" : "sample";
+                store.setDataMode(next);
+                toast(next === "sample" ? "Showing the sample family" : "Showing your archive");
+              }}
+              style={{ background: "none", border: "none", color: T.faint, fontSize: 12, cursor: "pointer", padding: 0, textDecoration: "underline", marginRight: 8 }}
+            >
+              {store.dataMode === "sample" ? "Use my archive" : "Use sample family"}
+            </button>
+            <button
               onClick={() => go("design")}
               style={{ background: "none", border: "none", color: T.faint, fontSize: 12, cursor: "pointer", padding: 0, textDecoration: "underline" }}
             >
               Design system
             </button>
           </p>
+        </Overlay>
+      )}
+      {modal === "email" && (
+        <Overlay title="Change email" aria-label="Change email">
+          <input value={f1} onChange={(e) => setF1(e.target.value)} placeholder="New email" style={inp} />
+          <input value={f2} onChange={(e) => setF2(e.target.value)} placeholder="Current password" type="password" style={{ ...inp, marginTop: 10 }} />
+          {fErr && <div style={{ color: T.coral, fontSize: 12.5, marginTop: 8 }}>{fErr}</div>}
+          <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+            <button
+              onClick={() => {
+                const r = changeEmail(f1, f2);
+                if (!r.ok) return setFErr(r.error);
+                onAccountUpdated?.(r.account);
+                toast("Email updated");
+                closeForm();
+              }}
+              style={{ ...btnGold, flex: 1, justifyContent: "center" }}
+            >
+              Save
+            </button>
+            <button onClick={closeForm} style={btnGhost}>
+              Cancel
+            </button>
+          </div>
+        </Overlay>
+      )}
+      {modal === "password" && (
+        <Overlay title="Change password" aria-label="Change password">
+          <input value={f1} onChange={(e) => setF1(e.target.value)} placeholder="Current password" type="password" style={inp} />
+          <input value={f2} onChange={(e) => setF2(e.target.value)} placeholder="New password" type="password" style={{ ...inp, marginTop: 10 }} />
+          <input value={f3} onChange={(e) => setF3(e.target.value)} placeholder="Repeat new password" type="password" style={{ ...inp, marginTop: 10 }} />
+          {fErr && <div style={{ color: T.coral, fontSize: 12.5, marginTop: 8 }}>{fErr}</div>}
+          <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+            <button
+              onClick={() => {
+                if (f2 !== f3) return setFErr("New passwords do not match.");
+                const r = changePassword(f1, f2);
+                if (!r.ok) return setFErr(r.error);
+                toast("Password updated");
+                closeForm();
+              }}
+              style={{ ...btnGold, flex: 1, justifyContent: "center" }}
+            >
+              Save
+            </button>
+            <button onClick={closeForm} style={btnGhost}>
+              Cancel
+            </button>
+          </div>
         </Overlay>
       )}
       {modal === "privacy" && (
@@ -8282,7 +8075,6 @@ export default function App() {
     if (typeof window !== "undefined" && window.innerWidth <= 760) setNavOpen(false);
   }, []);
   useEffect(() => { ensureVaultReady(); }, []);
-  const [wealthOpen, setWealthOpen] = useState(false);
   const [booted, setBooted] = useState(false);
   const [account, setAccount] = useState<Account | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -8624,7 +8416,7 @@ export default function App() {
           </Suspense>
         )}
         {route === "wealth" && (
-          <Wealth store={store} go={go} toast={toast} unlocked={wealthOpen} onUnlock={() => setWealthOpen(true)} />
+          <Wealth store={store} go={go} toast={toast} />
         )}
         {route === "trust" && <Trust store={store} toast={toast} />}
         {route === "design" && <DesignSystem store={store} />}
@@ -8641,6 +8433,7 @@ export default function App() {
               setAccount(null);
               setRoute("home");
             }}
+            onAccountUpdated={(a: Account) => setAccount(a)}
             onDeleteAccount={() => {
               deleteAccount();
               localStorage.removeItem("lifepack.v3");
