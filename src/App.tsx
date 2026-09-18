@@ -4804,6 +4804,8 @@ function Wealth({ store, go, toast }: any) {
   const [edit, setEdit] = useState<Holding | null>(null);
   const [addH, setAddH] = useState(false);
   const [actSheet, setActSheet] = useState(false);
+  const [docPick, setDocPick] = useState(false);
+  const [draft, setDraft] = useState<Partial<Holding> | null>(null);
   const isMobile = useIsMobile();
   const [addTx, setAddTx] = useState(false);
   const [sos, setSos] = useState(false);
@@ -4822,8 +4824,13 @@ function Wealth({ store, go, toast }: any) {
     net = totalAssets - totalLiab,
     totalCover = sum(covers);
   const guarded = H.filter((h) => h.kind === "asset" || h.kind === "cover");
+  const txs: Transaction[] = store.transactions || [];
+  const openTx = txs.filter((t) => !t.followUpDone);
+  const txReady = openTx.filter((t) => t.docId && (t.counterparty || "").trim());
   const readiness = Math.round(
-    (sum(guarded.filter((h) => h.nominee && h.docId && h.accessNote)) / (sum(guarded) || 1)) * 100,
+    ((sum(guarded.filter((h) => h.nominee && h.docId && h.accessNote)) + txReady.reduce((a, t) => a + t.amount, 0)) /
+      ((sum(guarded) + openTx.reduce((a, t) => a + t.amount, 0)) || 1)) *
+      100,
   );
   const missNom = guarded.filter((h) => !h.nominee).length;
   const missDoc = guarded.filter((h) => !h.docId).length;
@@ -4837,7 +4844,8 @@ function Wealth({ store, go, toast }: any) {
   const SEVC: Record<Sev, string> = { critical: T.coral, important: T.gold, info: A.blue };
   const gaps: {
     h: Holding;
-    kind: "nominee" | "doc" | "renewal" | "maturity" | "access";
+    t?: Transaction;
+    kind: "nominee" | "doc" | "renewal" | "maturity" | "access" | "evidence" | "contact";
     sev: Sev;
     label: string;
     impact: string;
@@ -4878,6 +4886,28 @@ function Wealth({ store, go, toast }: any) {
         impact: "decide renewal or reinvestment",
       });
   });
+  openTx.forEach((t) => {
+    const who = t.counterparty || "someone";
+    const dir = t.direction === "paid" ? "lent to" : "borrowed from";
+    if (!t.docId)
+      gaps.push({
+        h: {} as Holding,
+        t,
+        kind: "evidence",
+        sev: t.amount >= 50000 ? "critical" : "important",
+        label: `${money(t.amount)} ${dir} ${who} · no evidence`,
+        impact: "with nothing to show, this money is lost to the family",
+      });
+    if (!(t.counterparty || "").trim())
+      gaps.push({
+        h: {} as Holding,
+        t,
+        kind: "contact",
+        sev: "important",
+        label: `${money(t.amount)} ${t.direction === "paid" ? "lent" : "borrowed"} · no contact recorded`,
+        impact: "the family would not know whom to ask",
+      });
+  });
   covers.forEach((c) => {
     if (c.renewalDate && daysTo(c.renewalDate) < 60)
       gaps.push({
@@ -4890,13 +4920,25 @@ function Wealth({ store, go, toast }: any) {
   });
   const sevRank: Record<Sev, number> = { critical: 0, important: 1, info: 2 };
   gaps.sort((a, b) => sevRank[a.sev] - sevRank[b.sev]);
-  const txs: Transaction[] = store.transactions || [];
 
   const attach = (h: Holding) => {
     pending.current = h;
+    pendingTx.current = null;
+    attachRef.current?.click();
+  };
+  const pendingTx = useRef<Transaction | null>(null);
+  const attachTx = (t: Transaction) => {
+    pendingTx.current = t;
+    pending.current = null;
     attachRef.current?.click();
   };
   const onAttachFiles = (files: FileList) => {
+    if (pendingTx.current && files.length) {
+      store.attachEvidenceToTransaction(pendingTx.current.id, files);
+      toast("Evidence attached");
+      pendingTx.current = null;
+      return;
+    }
     const h = pending.current;
     if (!h || !files.length) return;
     const cat: Category = h.kind === "cover" ? "Insurance" : h.type === "Property" ? "Property" : "Finance";
@@ -5009,10 +5051,11 @@ function Wealth({ store, go, toast }: any) {
     );
   };
   const groups: [string, Holding[]][] = [
-    ["Assets", assets],
-    ["Liabilities", liabilities],
-    ["Protection", covers],
+    ["Accounts and investments", assets],
+    ["Loans", liabilities],
+    ["Insurance", covers],
   ];
+  const [wg, setWg] = useState<"all" | "Accounts and investments" | "Loans" | "Insurance" | "Lent and borrowed">("all");
 
   return (
     <div>
@@ -5039,10 +5082,19 @@ function Wealth({ store, go, toast }: any) {
                 className="lp-sheet-item"
                 onClick={() => {
                   setActSheet(false);
+                  setDocPick(true);
+                }}
+              >
+                <FileText size={19} color={T.muted} /> Add from a document
+              </button>
+              <button
+                className="lp-sheet-item"
+                onClick={() => {
+                  setActSheet(false);
                   setAddH(true);
                 }}
               >
-                <Plus size={19} color={T.muted} /> Add a holding
+                <Plus size={19} color={T.muted} /> Add an account or policy
               </button>
               <button
                 className="lp-sheet-item"
@@ -5051,7 +5103,7 @@ function Wealth({ store, go, toast }: any) {
                   setAddTx(true);
                 }}
               >
-                <Receipt size={19} color={T.muted} /> Capture proof of payment
+                <Coins size={19} color={T.muted} /> Record money lent or borrowed
               </button>
               <button
                 className="lp-sheet-item"
@@ -5140,7 +5192,7 @@ function Wealth({ store, go, toast }: any) {
           >
             <span className="lp-es-label" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
               <KeyRound size={15} color={T.muted} />
-              <b style={{ color: T.white, fontSize: 13.5 }}>Estate readiness</b>
+              <b style={{ color: T.white, fontSize: 13.5 }}>Family access readiness</b>
             </span>
             <span className="lp-es-pct" style={{ fontVariantNumeric: "tabular-nums", fontSize: 24, fontWeight: 800, color: readyColor }}>
               {readiness}%
@@ -5183,14 +5235,15 @@ function Wealth({ store, go, toast }: any) {
             </button>
             <span className="lp-vdiv" style={{ width: 1, alignSelf: "stretch", background: T.border }} />
             <button className="lp-es-cta" onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13 }}>
-              <FileText size={14} /> Estate summary <ArrowRight size={13} />
+              <FileText size={14} /> Family summary <ArrowRight size={13} />
             </button>
           </div>
           {showMath && (
             <Card style={{ marginBottom: 12, padding: "12px 16px" }}>
               <p style={{ fontSize: 12, color: T.muted, margin: "0 0 8px", lineHeight: 1.6 }}>
-                Each asset and cover counts as family-reachable only when all three are true: a document on file, a
-                nominee named, and access instructions written. Weighted by value, so the home matters more than the FD.
+                Each account and policy counts as family-reachable only when all three are true: a document on file, a
+                nominee named, and access instructions written. Money lent or borrowed counts when it has evidence and a
+                contact. Weighted by amount, so the home matters more than the FD.
                 Liabilities are excluded. Nothing else is scored.
               </p>
               {guarded.map((h) => {
@@ -5233,35 +5286,6 @@ function Wealth({ store, go, toast }: any) {
               })}
             </Card>
           )}
-          <div
-            className="lp-networth"
-            style={{
-              display: "flex",
-              gap: 22,
-              flexWrap: "wrap",
-              alignItems: "center",
-              padding: "10px 16px",
-              border: `1px solid ${T.border}`,
-              borderRadius: 12,
-              background: T.panel,
-              marginBottom: 24,
-              fontVariantNumeric: "tabular-nums",
-              fontSize: 13.5,
-            }}
-          >
-            <span className="lp-metric" style={{ color: T.muted }}>
-              Net worth <b style={{ color: T.white }}>{money(net)}</b>
-            </span>
-            <span className="lp-metric" style={{ color: T.muted }}>
-              Assets <b style={{ color: T.mint }}>{money(totalAssets)}</b>
-            </span>
-            <span className="lp-metric" style={{ color: T.muted }}>
-              Liabilities <b style={{ color: T.coral }}>{money(totalLiab)}</b>
-            </span>
-            <span className="lp-metric" style={{ color: T.muted }}>
-              Protection <b style={{ color: A.teal }}>{money(totalCover)}</b>
-            </span>
-          </div>
 
           {gaps.length > 0 && (
             <Card style={{ padding: 0, marginBottom: 18 }}>
@@ -5274,7 +5298,13 @@ function Wealth({ store, go, toast }: any) {
                 <div
                   key={i}
                   onClick={() =>
-                    g.kind === "nominee" ? setNomineeFor(g.h) : g.kind === "doc" ? attach(g.h) : setEdit(g.h)
+                    g.kind === "evidence" || g.kind === "contact"
+                      ? attachTx(g.t!)
+                      : g.kind === "nominee"
+                        ? setNomineeFor(g.h)
+                        : g.kind === "doc"
+                          ? attach(g.h)
+                          : setEdit(g.h)
                   }
                   style={{
                     display: "flex",
@@ -5304,7 +5334,9 @@ function Wealth({ store, go, toast }: any) {
                     <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 1 }}>{g.impact}</span>
                   </span>
                   <span style={{ fontSize: 12.5, color: SEVC[g.sev], fontWeight: 700, flexShrink: 0 }}>
-                    {g.kind === "nominee"
+                    {g.kind === "evidence" || g.kind === "contact"
+                      ? "Attach"
+                      : g.kind === "nominee"
                       ? "Add nominee"
                       : g.kind === "doc"
                         ? "Attach"
@@ -5336,8 +5368,35 @@ function Wealth({ store, go, toast }: any) {
                   </button>
                 </Card>
               )}
+              {isMobile && (
+                <div className="lp-chiprail" style={{ marginBottom: 10 }}>
+                  {(["all", ...groups.map(([l]) => l), "Lent and borrowed"] as const).map((k) => {
+                    const on = wg === k;
+                    return (
+                      <button
+                        key={k}
+                        onClick={() => setWg(k as any)}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: 99,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                          flexShrink: 0,
+                          border: `1px solid ${on ? SEM.action + "77" : T.border}`,
+                          background: on ? SEM.action + "1A" : "transparent",
+                          color: on ? SEM.action : T.muted,
+                        }}
+                      >
+                        {k === "all" ? "All" : k}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               {groups.map(([label, arr]) =>
-                arr.length > 0 ? (
+                arr.length > 0 && (wg === "all" || wg === label) ? (
                   <Card key={label} style={{ padding: 0 }}>
                     <div
                       style={{
@@ -5358,25 +5417,30 @@ function Wealth({ store, go, toast }: any) {
                   </Card>
                 ) : null,
               )}
+              {(wg === "all" || wg === "Lent and borrowed") && (
               <Card style={{ padding: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
-                  <Receipt size={16} color={T.muted} />
-                  <b style={{ color: T.white, fontSize: 14.5 }}>Proof of payments</b>
+                  <Coins size={16} color={T.muted} />
+                  <b style={{ color: T.white, fontSize: 14.5 }}>Lent and borrowed</b>
+                  {openTx.length > 0 && <span style={pill(T.muted)}>{openTx.length} open</span>}
                   <button
                     onClick={() => setAddTx(true)}
                     style={{ ...btnGhost, marginLeft: "auto", padding: "6px 12px", fontSize: 12.5 }}
                   >
-                    <Plus size={13} /> Add
+                    <Plus size={13} /> Record
                   </button>
                 </div>
                 {txs.length === 0 ? (
                   <p style={{ color: T.muted, fontSize: 13, padding: "0 16px 14px" }}>
-                    Record a payment or receipt with its evidence attached, and a follow-up if one is needed.
+                    Money lent to or borrowed from people, with the screenshot or chat that proves it. Nothing a bank
+                    would ever tell your family.
                   </p>
                 ) : (
-                  txs.map((t) => {
+                  [...openTx, ...txs.filter((t) => t.followUpDone)].map((t) => {
                     const ev = store.docs.find((d: Doc) => d.id === t.docId);
-                    const overdueFu = t.followUpOn && !t.followUpDone;
+                    const settled = !!t.followUpDone;
+                    const overdueFu = t.followUpOn && !settled;
+                    const lent = t.direction === "paid";
                     return (
                       <div
                         key={t.id}
@@ -5396,20 +5460,25 @@ function Wealth({ store, go, toast }: any) {
                             width: 34,
                             height: 34,
                             borderRadius: 9,
-                            background: (t.direction === "paid" ? T.coral : T.mint) + "22",
+                            background: (settled ? T.faint : lent ? T.mint : T.coral) + "22",
                             flexShrink: 0,
                           }}
                         >
-                          <Receipt size={15} color={t.direction === "paid" ? T.coral : T.mint} />
+                          <Coins size={15} color={settled ? T.faint : lent ? T.mint : T.coral} />
                         </span>
-                        <div className="lp-wname" style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: 600, color: T.white }}>{t.purpose}</div>
+                        <div className="lp-wname" style={{ flex: 1, minWidth: 0, opacity: settled ? 0.6 : 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: T.white }}>
+                            {t.counterparty || (lent ? "Lent" : "Borrowed")}
+                          </div>
                           <div style={{ fontSize: 12.5, color: T.muted }}>
-                            {t.counterparty ? `${t.counterparty} · ` : ""}
+                            {t.purpose}
+                            {" · "}
                             {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                            {overdueFu
-                              ? ` · follow up ${daysTo(t.followUpOn!) <= 0 ? "today" : `in ${daysTo(t.followUpOn!)}d`}${t.followUpNote ? `: ${t.followUpNote}` : ""}`
-                              : ""}
+                            {settled
+                              ? " · settled"
+                              : overdueFu
+                                ? ` · follow up ${daysTo(t.followUpOn!) <= 0 ? "today" : `in ${daysTo(t.followUpOn!)}d`}`
+                                : ""}
                           </div>
                         </div>
                         <span
@@ -5418,31 +5487,40 @@ function Wealth({ store, go, toast }: any) {
                             fontVariantNumeric: "tabular-nums",
                             fontSize: 14.5,
                             fontWeight: 700,
-                            color: t.direction === "paid" ? T.coral : T.mint,
+                            color: settled ? T.faint : lent ? T.mint : T.coral,
+                            textDecoration: settled ? "line-through" : "none",
                           }}
                         >
-                          {t.direction === "paid" ? "\u2212" : "+"}
                           {money(t.amount)}
+                          <span style={{ fontSize: 11, fontWeight: 600, marginLeft: 6, color: T.muted, textDecoration: "none" }}>
+                            {settled ? "" : lent ? "owed to you" : "you owe"}
+                          </span>
                         </span>
-                        {ev ? (
-                          <button
-                            onClick={() => setViewDoc(ev)}
-                            style={{ ...btnGhost, padding: "6px 10px", fontSize: 12 }}
-                          >
-                            <Paperclip size={12} /> Evidence
-                          </button>
-                        ) : (
-                          <span style={pill(T.gold)}>no evidence</span>
+                        {!settled && (
+                          <span className="lp-wchips" style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                ev ? setViewDoc(ev) : attachTx(t);
+                              }}
+                              style={{ ...pill(ev ? T.mint : T.coral), cursor: "pointer" }}
+                            >
+                              {ev ? "✓ Evidence" : "✗ Evidence"}
+                            </span>
+                            <span style={pill((t.counterparty || "").trim() ? T.mint : T.coral)}>
+                              {(t.counterparty || "").trim() ? "✓ Contact" : "✗ Contact"}
+                            </span>
+                          </span>
                         )}
-                        {overdueFu && (
+                        {!settled && (
                           <button
                             onClick={() => {
                               store.completeFollowUp(t.id);
-                              toast("Follow-up done");
+                              toast("Marked as settled");
                             }}
                             style={{ ...btnGhost, padding: "6px 10px", fontSize: 12 }}
                           >
-                            <Check size={12} /> Done
+                            <Check size={12} /> Settled
                           </button>
                         )}
                         <button
@@ -5460,68 +5538,8 @@ function Wealth({ store, go, toast }: any) {
                   })
                 )}
               </Card>
+              )}
             </div>
-            <Card>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <KeyRound size={16} color={T.muted} />
-                <b style={{ color: T.white, fontSize: 15 }}>Legacy handoff</b>
-              </div>
-              <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 14px" }}>
-                Who steps in, and whether nothing is lost if you are gone.
-              </p>
-              <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 14 }}>
-                <Ring
-                  score={readiness}
-                  size={54}
-                  color={readiness >= 80 ? T.mint : readiness >= 50 ? T.gold : T.coral}
-                />
-                <div style={{ fontSize: 13, color: T.muted }}>
-                  of documented value has a document, a nominee, and access instructions on file
-                </div>
-              </div>
-              {trusted.map((m: Member) => (
-                <div
-                  key={m.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    padding: "8px 0",
-                    borderTop: `1px solid ${T.border}`,
-                  }}
-                >
-                  <span
-                    style={{
-                      display: "grid",
-                      placeItems: "center",
-                      width: 30,
-                      height: 30,
-                      borderRadius: 8,
-                      background: m.color + "26",
-                      color: inkOf(m.color),
-                      fontWeight: 800,
-                      fontSize: 13,
-                    }}
-                  >
-                    {m.name[0]}
-                  </span>
-                  <span style={{ flex: 1, fontSize: 13.5, color: T.text }}>{m.name}</span>
-                  <span style={pill(m.access === "Full member" ? T.mint : A.blue)}>{m.access}</span>
-                </div>
-              ))}
-              <button
-                onClick={() => setEstate(true)}
-                style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 14 }}
-              >
-                <FileText size={15} /> Prepare estate summary
-              </button>
-              <button
-                onClick={() => go("trust")}
-                style={{ ...btnGhost, width: "100%", justifyContent: "center", marginTop: 8 }}
-              >
-                Manage trusted people <ArrowRight size={14} />
-              </button>
-            </Card>
           </div>
 
           <input
@@ -5533,13 +5551,51 @@ function Wealth({ store, go, toast }: any) {
               e.currentTarget.value = "";
             }}
           />
+          {docPick && (
+            <MSheet title="Add from a document" onClose={() => setDocPick(false)}>
+              {store.docs.filter((d: Doc) => ["Finance", "Insurance", "Property", "Tax"].includes(d.category)).length === 0 && (
+                <p style={{ fontSize: 13, color: T.muted, padding: "6px 10px 12px" }}>
+                  No financial documents in your vault yet. Add a statement, policy, or deed under Documents first.
+                </p>
+              )}
+              {store.docs
+                .filter((d: Doc) => ["Finance", "Insurance", "Property", "Tax"].includes(d.category))
+                .map((d: Doc) => (
+                  <button
+                    key={d.id}
+                    className="lp-sheet-item"
+                    onClick={() => {
+                      setDocPick(false);
+                      setDraft({
+                        name: d.docType,
+                        docId: d.id,
+                        memberId: d.memberId,
+                        kind: d.category === "Insurance" ? "cover" : "asset",
+                        type: d.category === "Insurance" ? "Insurance" : d.category === "Property" ? "Property" : "Bank account",
+                      });
+                      setAddH(true);
+                    }}
+                  >
+                    <FileText size={18} color={CAT_META[d.category as Category].color} />
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ display: "block", fontSize: 14.5 }}>{d.docType}</span>
+                      <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 500 }}>
+                        {store.members.find((m: Member) => m.id === d.memberId)?.name || "Unassigned"} · {d.category}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+            </MSheet>
+          )}
           {(edit || addH) && (
             <HoldingModal
               holding={edit}
+              initial={draft}
               members={store.members}
               onClose={() => {
                 setEdit(null);
                 setAddH(false);
+                setDraft(null);
               }}
               onSave={(h: Holding) => {
                 if (edit) {
@@ -5547,10 +5603,11 @@ function Wealth({ store, go, toast }: any) {
                   toast("Holding updated");
                 } else {
                   store.addHolding(h);
-                  toast("Holding added");
+                  toast("Added to your registry");
                 }
                 setEdit(null);
                 setAddH(false);
+                setDraft(null);
               }}
               onDelete={
                 edit
@@ -6078,7 +6135,7 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
           }}
         >
           <div style={{ color: T.text, fontWeight: 700, marginBottom: 4 }}>They receive</div>
-          <div style={{ color: T.mint }}>✓ Estate summary with first steps for the family</div>
+          <div style={{ color: T.mint }}>✓ Family summary with first steps</div>
           <div style={{ color: T.mint }}>✓ {wealthDocs.length} wealth documents (deeds, policies, statements)</div>
           <div style={{ color: T.mint }}>✓ Access instructions per holding</div>
           <div style={{ color: T.muted, marginTop: 4 }}>
@@ -6200,13 +6257,13 @@ function TransactionModal({ members, onClose, onSave }: any) {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 18 }}>Capture proof</b>
+          <b style={{ color: T.white, fontSize: 18 }}>Record money lent or borrowed</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
         <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 14px" }}>
-          "I paid this." Attach the screenshot or receipt, confirm three details, done.
+          Attach the UPI screenshot, chat, or statement line, confirm who and how much, done. Cash with no record is fine too; say so.
         </p>
         <label
           style={{
@@ -6246,12 +6303,12 @@ function TransactionModal({ members, onClose, onSave }: any) {
             onChange={(e) => onProof(e.target.files?.[0] || null)}
           />
         </label>
-        <label style={lbl}>What was it</label>
+        <label style={lbl}>What for</label>
         <input
           style={inp}
           value={f.purpose}
           onChange={(e) => setF({ ...f, purpose: e.target.value })}
-          placeholder="e.g. LIC premium, advance to contractor"
+          placeholder="e.g. car down payment, hospital bill, wedding advance"
         />
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1.2 }}>
@@ -6266,17 +6323,17 @@ function TransactionModal({ members, onClose, onSave }: any) {
             />
           </div>
           <div style={{ flex: 1 }}>
-            <label style={lbl}>Direction</label>
+            <label style={lbl}>Which way</label>
             <select
               style={inp}
               value={f.direction}
               onChange={(e) => setF({ ...f, direction: e.target.value as "paid" | "received" })}
             >
               <option value="paid" style={{ color: "#000" }}>
-                Paid
+                I lent
               </option>
               <option value="received" style={{ color: "#000" }}>
-                Received
+                I borrowed
               </option>
             </select>
           </div>
@@ -6302,17 +6359,17 @@ function TransactionModal({ members, onClose, onSave }: any) {
           }}
         >
           <ChevronDown size={13} style={{ transform: more ? "rotate(180deg)" : "none", transition: ".15s" }} />
-          {more ? "Fewer details" : "More details (who, follow-up)"}
+          {more ? "Fewer details" : "Who and when to follow up"}
         </button>
         {more && (
           <>
             <div>
-              <label style={lbl}>Who (any person or institution)</label>
+              <label style={lbl}>Who</label>
               <input
                 style={inp}
                 value={f.counterparty}
                 onChange={(e) => setF({ ...f, counterparty: e.target.value })}
-                placeholder="e.g. Ramesh (contractor), Aegis Life, landlord"
+                placeholder="e.g. Rohan K (friend), Meera (sister)"
               />
             </div>
             <div style={{ display: "flex", gap: 10 }}>
@@ -6372,7 +6429,7 @@ function TransactionModal({ members, onClose, onSave }: any) {
   );
 }
 
-function HoldingModal({ holding, members, onClose, onSave, onDelete }: any) {
+function HoldingModal({ holding, members, onClose, onSave, onDelete, initial }: any) {
   const [f, setF] = useState<any>(
     holding || {
       name: "",
@@ -6385,6 +6442,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete }: any) {
       nomineeName: "",
       renewalDate: "",
       memberId: members[0]?.id || "you",
+      ...(initial || {}),
     },
   );
   const inp: CSSProperties = {
@@ -6660,7 +6718,7 @@ function EstateSheet({ store, onClose, toast }: any) {
     a.download = "Estate_Summary.html";
     a.click();
     URL.revokeObjectURL(u);
-    toast("Estate summary exported");
+    toast("Family summary exported");
   };
   const printH = () => {
     const w = window.open("", "_blank");
@@ -6712,7 +6770,7 @@ function EstateSheet({ store, onClose, toast }: any) {
             >
               What your family would need
             </div>
-            <b style={{ color: T.white, fontSize: 19 }}>Estate summary</b>
+            <b style={{ color: T.white, fontSize: 19 }}>Family summary</b>
           </div>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
@@ -6748,17 +6806,19 @@ function buildEstate(store: any): string {
   const th = (t: string) => `<th style="text-align:left;padding:6px 10px;font-size:11px;color:#6b7280">${t}</th>`;
   const secTable = (title: string, arr: Holding[], showNom: boolean) =>
     `<h3 style="margin:18px 0 6px;font-size:14px;color:#111827">${title}</h3><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Holding")}${th("Type")}${th("Where")}${th("Value")}${showNom ? th("Nominee") : ""}${th("Document")}${th("How to access")}</tr>${arr.map((h) => `<tr><td style="padding:6px 10px;font-weight:600">${h.name}</td><td style="padding:6px 10px">${h.type}</td><td style="padding:6px 10px;color:#6b7280">${h.institution || ""} ${h.accountRef || ""}</td><td style="padding:6px 10px">${m2(h.value)}</td>${showNom ? `<td style="padding:6px 10px;color:${h.nominee ? "#111827" : "#b91c1c"};font-weight:${h.nominee ? 400 : 700}">${h.nominee ? h.nomineeName || "named" : "NOT NAMED"}</td>` : ""}<td style="padding:6px 10px;color:#6b7280">${dn(h.docId)}</td><td style="padding:6px 10px;color:#374151">${h.accessNote || "\u2014"}</td></tr>`).join("") || `<tr><td colspan="6" style="padding:6px 10px;color:#9ca3af">None</td></tr>`}</table>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Estate Summary</title></head><body style="font-family:Inter,Arial,sans-serif;color:#111827;max-width:760px;margin:20px auto;padding:0 20px;background:#fff">
-  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #D8B25A;padding-bottom:12px"><div><div style="font-weight:800;font-size:20px">ReadiNes · Estate Summary</div><div style="color:#6b7280;font-size:13px">What your family would need to find and claim everything</div></div><div style="text-align:right;color:#6b7280;font-size:12px">Prepared ${new Date().toLocaleString()}</div></div>
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Family Summary</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111827;max-width:760px;margin:20px auto;padding:0 20px;background:#fff">
+  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #D8B25A;padding-bottom:12px"><div><div style="font-weight:800;font-size:20px">ReadiNes · Family Summary</div><div style="color:#6b7280;font-size:13px">What your family would need to find and claim everything</div></div><div style="text-align:right;color:#6b7280;font-size:12px">Prepared ${new Date().toLocaleString()}</div></div>
   <div style="display:flex;gap:26px;margin-top:16px">
     <div><div style="font-size:12px;color:#6b7280">Net worth (documented)</div><div style="font-size:22px;font-weight:800">${m2(net)}</div></div>
     <div><div style="font-size:12px;color:#6b7280">Assets</div><div style="font-size:18px;font-weight:700">${m2(s(A_))}</div></div>
     <div><div style="font-size:12px;color:#6b7280">Liabilities</div><div style="font-size:18px;font-weight:700">${m2(s(L_))}</div></div>
     <div><div style="font-size:12px;color:#6b7280">Protection</div><div style="font-size:18px;font-weight:700">${m2(s(C_))}</div></div>
   </div>
-  ${secTable("Assets", A_, true)}
-  ${secTable("Liabilities", L_, false)}
-  ${secTable("Insurance & protection", C_, true)}
+  ${secTable("Accounts and investments", A_, true)}
+  ${secTable("Loans", L_, false)}
+  ${secTable("Insurance", C_, true)}
+  <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">Money between people</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Who")}${th("What for")}${th("Amount")}${th("Direction")}${th("Evidence")}</tr>${(store.transactions || []).filter((t: Transaction) => !t.followUpDone).map((t: Transaction) => `<tr><td style="padding:6px 10px;font-weight:600">${t.counterparty || "\u2014"}</td><td style="padding:6px 10px">${t.purpose}</td><td style="padding:6px 10px">${m2(t.amount)}</td><td style="padding:6px 10px">${t.direction === "paid" ? "owed to the family" : "the family owes"}</td><td style="padding:6px 10px;color:${t.docId ? "#111827" : "#b91c1c"};font-weight:${t.docId ? 400 : 700}">${t.docId ? dn(t.docId) : "NONE"}</td></tr>`).join("") || `<tr><td colspan="5" style="padding:6px 10px;color:#9ca3af">None recorded</td></tr>`}</table>
   <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">If something happens: first steps for the family</h3>
   <ol style="margin:0;padding-left:18px;line-height:1.8;color:#374151;font-size:13px">
     ${C_.map((c) => `<li>File the ${c.type.toLowerCase()} claim with <b>${c.institution || "the insurer"}</b>${c.accessNote ? ` — ${c.accessNote}` : ""}${c.nominee ? ` (nominee: ${c.nomineeName || "named"})` : ` <span style="color:#b91c1c;font-weight:700">(no nominee — expect a legal-heir process)</span>`}</li>`).join("")}
@@ -6782,7 +6842,7 @@ function buildEstate(store: any): string {
 const CHANGELOG: [string, string][] = [
   ["Semantic document ontology", "One Aadhaar now satisfies Address Proof across all 34 packs that ask for it."],
   ["100 curated packs", "Requirements gathered from published government, bank, embassy, and insurer checklists."],
-  ["Estate readiness, explained", "The score now shows its own math, holding by holding."],
+  ["Family access readiness, explained", "The score shows its own math, holding by holding."],
   [
     "SOS handoff",
     "Release the estate summary, documents, and access instructions to your emergency contacts, with reason and revoke.",

@@ -317,42 +317,41 @@ const seedTransactions: Transaction[] = [
   {
     id: id(),
     memberId: "you",
-    purpose: "Life insurance premium",
-    counterparty: "Aegis Life",
+    purpose: "Loan for his car down payment",
+    counterparty: "Rohan K (friend)",
     direction: "paid",
-    amount: 48000,
+    amount: 150000,
+    date: rel(-40),
+    docId: dId("Transaction Evidence"),
+    followUpOn: rel(50),
+    followUpNote: "Agreed: repay by end of the quarter",
+    followUpDone: false,
+    addedAt: iso(-40),
+  },
+  {
+    id: id(),
+    memberId: "you",
+    purpose: "Helped with hospital bill",
+    counterparty: "Meera (sister)",
+    direction: "received",
+    amount: 60000,
     date: rel(-12),
-    docId: dId("Life Insurance"),
-    followUpOn: rel(6),
-    followUpNote: "Confirm premium receipt reflects on policy portal",
+    followUpOn: rel(78),
+    followUpNote: "Return once the bonus comes in",
     followUpDone: false,
     addedAt: iso(-12),
   },
   {
     id: id(),
     memberId: "you",
-    purpose: "Property tax payment",
-    counterparty: "Municipal office",
+    purpose: "Advance for the wedding photographer",
+    counterparty: "Studio Verve",
     direction: "paid",
-    amount: 22500,
-    date: rel(-30),
-    docId: dId("Property Tax"),
-    followUpDone: false,
-    addedAt: iso(-30),
-  },
-  {
-    id: id(),
-    memberId: "you",
-    purpose: "Lent to Rohan (friend)",
-    counterparty: "Rohan K",
-    direction: "paid",
-    amount: 5000,
-    date: rel(-4),
+    amount: 25000,
+    date: rel(-90),
     docId: dId("Transaction Evidence"),
-    followUpOn: rel(10),
-    followUpNote: "Ask about repayment when we meet",
-    followUpDone: false,
-    addedAt: iso(-4),
+    followUpDone: true,
+    addedAt: iso(-90),
   },
 ];
 
@@ -841,6 +840,39 @@ export function useStore() {
     state = { ...state, transactions: [tx, ...state.transactions] };
     persist();
   }, []);
+  const attachEvidenceToTransaction = useCallback(async (txId: string, files: FileList | File[]) => {
+    const file = Array.from(files)[0];
+    const t = state.transactions.find((x) => x.id === txId);
+    if (!file || !t) return;
+    await ensureVaultReady();
+    const key = "f_" + Math.random().toString(36).slice(2) + Date.now();
+    const recipients = recipientsFor("Finance", state.members);
+    let meta: DocCrypto | undefined;
+    try { meta = await putEncrypted(key, file, recipients); } catch {}
+    const d: Doc = {
+      id: key,
+      name: file.name,
+      category: "Finance",
+      docType: "Transaction Evidence",
+      source: "Upload",
+      mime: file.type || "application/octet-stream",
+      sizeKB: Math.max(1, Math.round(file.size / 1024)),
+      addedAt: new Date().toISOString(),
+      docDate: t.date,
+      memberId: t.memberId || "you",
+      fileKey: key,
+      notes: t.purpose,
+      iv: meta?.iv,
+      wrappedKeys: meta?.wrappedKeys,
+      enc: !!meta,
+    };
+    state = {
+      ...state,
+      docs: [d, ...state.docs],
+      transactions: state.transactions.map((x) => (x.id === txId ? { ...x, docId: key } : x)),
+    };
+    persist();
+  }, []);
   const updateTransaction = useCallback((tid: string, patch: Partial<Transaction>) => {
     state = { ...state, transactions: state.transactions.map((t) => (t.id === tid ? { ...t, ...patch } : t)) };
     persist();
@@ -933,6 +965,7 @@ export function useStore() {
     removeHolding,
     attachDocToHolding,
     addTransaction,
+    attachEvidenceToTransaction,
     updateTransaction,
     removeTransaction,
     completeFollowUp,
