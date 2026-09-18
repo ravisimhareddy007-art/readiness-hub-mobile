@@ -128,10 +128,10 @@ function applyTheme(theme: string) {
 }
 
 const APPCSS = `
-:root{--lpv-action:#35A7A0;--lpv-actionink:#0B1220;--lpv-shadow:rgba(0,0,0,.5);--lpv-shadow-soft:rgba(0,0,0,.18);--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
-[data-theme="light"]{--lpv-action:#077480;--lpv-actionink:#FFFFFF;--lpv-shadow:rgba(16,24,40,.18);--lpv-shadow-soft:rgba(16,24,40,.08);--lpv-bg:#F2F3F5;--lpv-panel:#FFFFFF;--lpv-raised:#EAECF0;--lpv-border:#E3E6EA;--lpv-text:#1B2431;--lpv-muted:#5E6674;--lpv-gold:#866318;--lpv-goldb:#9C7420;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(247,248,250,.96);--lpv-scrim:rgba(18,22,30,.38);--lpv-fabshadow:rgba(173,127,31,.28)}
+:root{--lpv-action:#35A7A0;--lpv-actionink:#0B1220;--lpv-shadow:rgba(0,0,0,.5);--lpv-shadow-soft:rgba(0,0,0,.18);--lpv-band:#16233D;--lpv-bandtext:#FFFFFF;--lpv-bandsub:rgba(255,255,255,.66);--lpv-bandbtn:rgba(255,255,255,.08);--lpv-bandbtnb:rgba(255,255,255,.16);--lpv-bandicon:#C9D1DE;--lpv-bartext:#8A97AE;--lpv-baractive:#35A7A0;--lpv-barpill:#1B2740;--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
+[data-theme="light"]{--lpv-action:#077480;--lpv-actionink:#FFFFFF;--lpv-shadow:rgba(16,24,40,.18);--lpv-shadow-soft:rgba(16,24,40,.08);--lpv-band:#0B1220;--lpv-bandtext:#FFFFFF;--lpv-bandsub:rgba(255,255,255,.66);--lpv-bandbtn:rgba(255,255,255,.14);--lpv-bandbtnb:rgba(255,255,255,.22);--lpv-bandicon:#FFFFFF;--lpv-bartext:rgba(255,255,255,.72);--lpv-baractive:#5FD0C8;--lpv-barpill:rgba(255,255,255,.12);--lpv-bg:#F2F3F5;--lpv-panel:#FFFFFF;--lpv-raised:#EAECF0;--lpv-border:#E3E6EA;--lpv-text:#1B2431;--lpv-muted:#5E6674;--lpv-gold:#866318;--lpv-goldb:#9C7420;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(11,18,32,.97);--lpv-scrim:rgba(18,22,30,.38);--lpv-fabshadow:rgba(173,127,31,.28)}
 [data-theme="light"] .lp-card{box-shadow:0 1px 2px rgba(16,24,40,.04),0 10px 28px rgba(16,24,40,.06)}
-[data-theme="light"] .lp-tabbar{box-shadow:0 -8px 26px rgba(16,24,40,.08);border-top-color:transparent}
+[data-theme="light"] .lp-tabbar{border-top-color:transparent}
 [data-theme="light"] .lp-sheet{box-shadow:0 -14px 44px rgba(16,24,40,.18)}
 body{background:var(--lpv-bg)}
 :focus-visible{outline:2px solid var(--lpv-action);outline-offset:2px;border-radius:6px}
@@ -156,6 +156,9 @@ body{background:var(--lpv-bg)}
 @keyframes lp-screen{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .lp-scrim{animation:lp-fade var(--m-std) ease}
 .lp-screen{animation:lp-screen var(--m-std) cubic-bezier(.22,.9,.3,1)}
+@media(max-width:767px){
+.lp-screen{margin:-14px -14px 0;padding:14px 14px 0;background:linear-gradient(180deg,var(--lpv-band) 0,var(--lpv-band) var(--band-h,96px),transparent var(--band-h,96px))}
+}
 .lp-tab{transition:background var(--m-std) ease,color var(--m-std) ease,transform var(--m-fast) ease}
 .lp-tab:active,.lp-mh-mod:active{transform:scale(.94)}
 .lp-card{transition:transform var(--m-fast) ease}
@@ -1812,12 +1815,12 @@ function Home({ store, go, toast }: any) {
     ];
     return (
       <div>
-        <MNav left={<BrandWordmark size={17} color={T.white} />} />
+        <MNav left={<BrandWordmark size={17} color="var(--lpv-bandtext)" />} />
         <div style={{ margin: "2px 0 14px" }}>
-          <div style={{ fontSize: 19, fontWeight: 800, color: T.white, letterSpacing: -0.3 }}>
+          <div style={{ fontSize: 19, fontWeight: 800, color: "var(--lpv-bandtext)", letterSpacing: -0.3 }}>
             {hello}, {firstName}
           </div>
-          <div style={{ fontSize: 12.5, color: T.muted, marginTop: 2 }}>Small steps today. A more ready tomorrow.</div>
+          <div style={{ fontSize: 12.5, color: "var(--lpv-bandsub)", marginTop: 2 }}>Small steps today. A more ready tomorrow.</div>
         </div>
         {welcomeCard}
         <div className="lp-mh-rail">
@@ -1829,7 +1832,7 @@ function Home({ store, go, toast }: any) {
                     width: 54,
                     height: 54,
                     borderRadius: 18,
-                    background: m.color + "1F",
+                    background: `color-mix(in srgb, ${m.color} 20%, var(--lpv-panel))`,
                     display: "grid",
                     placeItems: "center",
                   }}
@@ -8376,9 +8379,9 @@ export default function App() {
                   width: 38,
                   height: 38,
                   borderRadius: 99,
-                  border: `1px solid ${route === "settings" ? T.gold + "88" : T.border}`,
-                  background: T.gold + "1F",
-                  color: T.gold,
+                  border: `1px solid ${route === "settings" ? T.gold + "88" : "var(--lpv-bandbtnb)"}`,
+                  background: "var(--lpv-bandbtn)",
+                  color: route === "settings" ? T.gold : "var(--lpv-bandtext)",
                   fontWeight: 800,
                   fontSize: 14,
                   cursor: "pointer",
@@ -8414,7 +8417,7 @@ export default function App() {
             ),
           }}
         >
-        <div key={route} className="lp-screen">
+        <div key={route} className="lp-screen" style={{ ["--band-h" as any]: route === "home" ? "148px" : "96px" }}>
         {route === "home" && <Home store={store} go={go} toast={toast} />}
         {route === "packages" && <Packages store={store} toast={toast} />}
         {route === "documents" && <Documents store={store} toast={toast} />}
@@ -8526,10 +8529,10 @@ export default function App() {
               <button
                 key={key}
                 className="lp-tab"
-                style={{ color: on ? SEM.action : T.muted, background: on ? T.raised : "none" }}
+                style={{ color: on ? "var(--lpv-baractive)" : "var(--lpv-bartext)", background: on ? "var(--lpv-barpill)" : "none" }}
                 onClick={() => setRoute(key)}
               >
-                <Ic size={20} color={on ? SEM.action : T.muted} /> {label}
+                <Ic size={20} color={on ? "var(--lpv-baractive)" : "var(--lpv-bartext)"} /> {label}
               </button>
             );
           })}

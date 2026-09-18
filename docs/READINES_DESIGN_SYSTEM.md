@@ -47,6 +47,10 @@ Module identities: Documents `A.blue`, Packages `A.green`, Health `A.pink`, Weal
 - CSS variables (`--lpv-*`, `--m-*`, `--r-*`) mirror the tokens for stylesheet rules; `[data-theme="light"]` carries light values.
 - The living laboratory is the **Design system** screen (avatar menu → Design system, route `design`). Every new component appears there before it appears on a product screen.
 
+## One structure, two modes
+
+Dark and light are the same screens with the same components in the same places; only surface and text values change. Nothing exists in one mode that does not exist in the other. Every app screen is framed by the brand: a navy band across the top (nav bar, and the greeting on Home) with white text, and a navy tab bar with teal for the active item. In dark the band is a shade lifted from the canvas; in light it is the brand navy. Cards float in the lit space between. Tints on tiles and chips are mixed from the module color into the surface color, so they read correctly on both canvases without mode-specific values.
+
 ## Mobile grammar
 
 Every screen: compact one-line contextual header (Level 1, tiny) → primary content immediately (Level 2, large) → prominent primary action (Level 3) → compact secondary controls (Level 4) → content (Level 5). Search is contextual, never permanent chrome; global search is an icon in the nav area opening a full-screen overlay. Filters, sorts, upload options and secondary actions live in bottom sheets. Descriptive prose lives in onboarding or help, never permanently on screen. Bottom navigation: five fixed destinations (Home, Documents, Packages, Health, Wealth), visually quiet, active state is a soft pill in teal.
