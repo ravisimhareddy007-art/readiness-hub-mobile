@@ -7421,7 +7421,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
 
 function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }: any) {
   const [pinModal, setPinModal] = useState(false);
-  const [modal, setModal] = useState<null | "whatsnew" | "faq" | "feedback" | "about" | "delete">(null);
+  const [modal, setModal] = useState<null | "whatsnew" | "faq" | "feedback" | "about" | "delete" | "privacy">(null);
   const [name, setName] = useState(account?.name || store.members.find((m: Member) => m.id === "you")?.name || "");
   const [fb, setFb] = useState("");
   const you = store.members.find((m: Member) => m.id === "you");
@@ -7635,8 +7635,8 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
             </div>
             <Row
               icon={Users}
-              label="Manage family members"
-              sub="Who is in your ReadiNes and what each can see"
+              label="Family and access"
+              sub="Members, access levels, emergency contacts, and SOS handoff"
               onClick={() => go("trust")}
             />
             <Row
@@ -7645,13 +7645,6 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
               sub="Require a passcode before opening financial documents"
               value={store.wealthPin ? "On" : "Off"}
               onClick={() => setPinModal(true)}
-            />
-            <Row
-              icon={ShieldCheck}
-              label="Family & Trust center"
-              sub="Access levels, emergency contacts and SOS handoff"
-              value=""
-              onClick={() => go("trust")}
             />
           </Section>
           <Section label="Preferences">
@@ -7724,6 +7717,28 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
           </Section>
           <Section label="Archive">
             <Row
+              icon={Users}
+              label="Sample family"
+              sub={store.dataMode === "sample" ? "Showing demo data. Switch off to see your own archive." : "Explore ReadiNes with a demo family before adding your own documents"}
+              value={store.dataMode === "sample" ? "On" : "Off"}
+              onClick={() => {
+                const next = store.dataMode === "sample" ? "empty" : "sample";
+                store.setDataMode(next);
+                toast(next === "sample" ? "Showing the sample family" : "Showing your archive");
+              }}
+            />
+            {store.dataMode === "sample" && (
+              <Row
+                icon={RefreshCw}
+                label="Reset sample family"
+                sub="Restore the demo to its original state"
+                onClick={() => {
+                  store.setDataMode("sample");
+                  toast("Sample family restored");
+                }}
+              />
+            )}
+            <Row
               icon={HardDrive}
               label="Storage"
               value={`${docCount} docs · ${storageMB} MB`}
@@ -7763,6 +7778,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
               sub="Tell us what is broken or missing"
               onClick={() => setModal("feedback")}
             />
+            <Row icon={ShieldCheck} label="Privacy and terms" sub="How your data is handled" onClick={() => setModal("privacy")} />
             <Row icon={Info} label="About ReadiNes" onClick={() => setModal("about")} />
           </Section>
           <div style={{ marginBottom: 20 }}>
@@ -7781,17 +7797,6 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
             </div>
             <Card style={{ padding: 0, overflow: "hidden", border: `1px solid ${T.coral}44` }}>
               <Row icon={LogOut} label="Sign out" sub="Your archive stays on this device" onClick={onSignOut} first />
-              <Row
-                icon={RefreshCw}
-                label="Reset demo data"
-                sub="Restore the sample family to its original state"
-                onClick={() => {
-                  store.setDataMode("sample");
-                  localStorage.removeItem("lifepack.v3.saved");
-                  toast("Sample data reset");
-                  go("home");
-                }}
-              />
               <Row
                 icon={Trash2}
                 label="Delete account"
@@ -7862,7 +7867,27 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount }:
             what a hundred real-world situations require, shows how ready you already are, and assembles the pack when
             the moment comes.
           </p>
-          <p style={{ fontSize: 12, color: T.muted, marginTop: 10 }}>Prototype build v0.9 · Jul 2026</p>
+          <p style={{ fontSize: 12, color: T.muted, marginTop: 10 }}>
+            Version 0.9 ·{" "}
+            <button
+              onClick={() => go("design")}
+              style={{ background: "none", border: "none", color: T.faint, fontSize: 12, cursor: "pointer", padding: 0, textDecoration: "underline" }}
+            >
+              Design system
+            </button>
+          </p>
+        </Overlay>
+      )}
+      {modal === "privacy" && (
+        <Overlay title="Privacy and terms" aria-label="Privacy and terms">
+          <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.7, margin: 0 }}>
+            Your documents are encrypted on your device with keys that never leave it. ReadiNes reads your documents to
+            classify them and to check them against life moments, and it never sells, shares, or trains on your data.
+            You can export your archive at any time, and deleting your account removes it from this device.
+          </p>
+          <p style={{ fontSize: 12, color: T.muted, marginTop: 10 }}>
+            The full privacy policy and terms of service are published with the app in the store listing.
+          </p>
         </Overlay>
       )}
       {modal === "delete" && (
@@ -8544,34 +8569,48 @@ export default function App() {
             )}
           </div>
           <div style={{ flex: 1 }} />
-          <ProfileMenu
-            store={store}
-            account={account}
-            go={go}
-            onSignOut={() => {
-              logout();
-              setAccount(null);
-              setRoute("home");
-            }}
-            toast={toast}
-          />
+          <button
+                aria-label="Settings"
+                onClick={() => go("settings")}
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 99,
+                  border: `1px solid ${route === "settings" ? T.gold + "88" : T.border}`,
+                  background: T.gold + "1F",
+                  color: T.gold,
+                  fontWeight: 800,
+                  fontSize: 14,
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
+              >
+                {(store.members.find((m: Member) => m.id === "you")?.name || account?.name || "?")[0]}
+              </button>
         </div>
         <MobileNavCtx.Provider
           value={{
             openSearch: () => setMSearch(true),
             tokens: T,
             profile: (
-              <ProfileMenu
-                store={store}
-                account={account}
-                go={go}
-                onSignOut={() => {
-                  logout();
-                  setAccount(null);
-                  setRoute("home");
+              <button
+                aria-label="Settings"
+                onClick={() => go("settings")}
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 99,
+                  border: `1px solid ${route === "settings" ? T.gold + "88" : T.border}`,
+                  background: T.gold + "1F",
+                  color: T.gold,
+                  fontWeight: 800,
+                  fontSize: 14,
+                  cursor: "pointer",
+                  flexShrink: 0,
                 }}
-                toast={toast}
-              />
+              >
+                {(store.members.find((m: Member) => m.id === "you")?.name || account?.name || "?")[0]}
+              </button>
             ),
           }}
         >
