@@ -33,7 +33,7 @@ export function MNav({ title, left, right }: { title?: ReactNode; left?: ReactNo
             minWidth: 0,
             fontSize: 20,
             fontWeight: 800,
-            color: "var(--lpv-bandtext)",
+            color: t.white,
             letterSpacing: -0.3,
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -58,13 +58,13 @@ export function MNav({ title, left, right }: { title?: ReactNode; left?: ReactNo
           borderRadius: 99,
           display: "grid",
           placeItems: "center",
-          background: "var(--lpv-bandbtn)",
-          border: "1px solid var(--lpv-bandbtnb)",
+          background: t.panel,
+          border: `1px solid ${t.border}`,
           cursor: "pointer",
           flexShrink: 0,
         }}
       >
-        <Search size={16} color="var(--lpv-bandicon)" />
+        <Search size={16} color={t.muted} />
       </button>
       {ctx.profile}
     </div>

@@ -949,7 +949,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   <>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                       <span
-                        style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 24, fontWeight: 800, color: pc }}
+                        style={{ fontVariantNumeric: "tabular-nums", fontSize: 24, fontWeight: 800, color: pc }}
                       >
                         {pct}%
                       </span>
@@ -1359,7 +1359,7 @@ function MiniChart({ arr, metric, color }: { arr: LabLog[]; metric: string; colo
   const last = arr[arr.length - 1];
   const bandTop = band ? Math.max(pt, Y(band[1])) : 0;
   const bandBot = band ? Math.min(H - pb, Y(band[0])) : 0;
-  const mono = "'JetBrains Mono',monospace";
+  const mono = "inherit";
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: 96 }}>
       {band && bandBot > bandTop && (
@@ -1406,7 +1406,7 @@ function MiniChart({ arr, metric, color }: { arr: LabLog[]; metric: string; colo
 const StatusPill = ({ s }: { s: Status }) => (
   <span
     style={{
-      fontFamily: "'JetBrains Mono',monospace",
+      fontVariantNumeric: "tabular-nums",
       fontSize: 11,
       fontWeight: 600,
       color: SM[s].c,
@@ -1825,7 +1825,7 @@ function buildVisitCover(
     .join("");
   const sec = (t: string, body: string) =>
     `<h3 style="margin:16px 0 6px;font-size:13.5px;color:#111827">${t}</h3>${body}`;
-  return `<div style="font-family:Inter,Arial,sans-serif;color:#111827;background:#fff;padding:24px;max-width:680px;margin:0 auto">
+  return `<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111827;background:#fff;padding:24px;max-width:680px;margin:0 auto">
   <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #D8B25A;padding-bottom:10px">
     <div><div style="font-weight:800;font-size:18px">ReadiNes · Visit Pack</div><div style="color:#6b7280;font-size:12.5px">${visitLabel}</div></div>
     <div style="text-align:right"><div style="font-weight:800;font-size:15px">${m.name}</div><div style="color:#6b7280;font-size:12px">${m.relation}${a != null ? ` · ${a}y` : ""}${m.bloodGroup ? ` · ${m.bloodGroup}` : ""}</div></div>
@@ -2018,7 +2018,7 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
   const medDocs = docs.filter((d) => d.category === "Medical" && d.memberId === m.id).length;
   const row = (a: string, b: string, warn?: boolean) =>
     `<tr><td style="padding:7px 12px;color:#6b7280;font-size:12px;width:140px">${a}</td><td style="padding:7px 12px;font-weight:700;font-size:14px;color:${warn ? "#b91c1c" : "#111827"}">${b}</td></tr>`;
-  return `<div style="font-family:Inter,Arial,sans-serif;max-width:460px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb">
+  return `<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:460px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb">
   <div style="background:#b91c1c;color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
     <div style="font-weight:800;font-size:15px;letter-spacing:1px">EMERGENCY INFO</div><div style="font-size:12px;opacity:.9">ReadiNes</div>
   </div>
@@ -2040,18 +2040,17 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
 
 /* ── styles ── */
 const CSS = () => `
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-.lh-root{font-family:'Inter',system-ui,sans-serif;color:${C.text}}
+.lh-root{font-variant-numeric:tabular-nums;font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;color:${C.text}}
 .lh-root *{box-sizing:border-box}
 .lh-head{margin-bottom:18px}
-.lh-eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:${C.gold};margin-bottom:8px}
-.lh-h1{font-family:'Space Grotesk';font-weight:700;font-size:27px;letter-spacing:-.5px;margin:0;color:${C.text}}
-.lh-h2{font-family:'Space Grotesk';font-weight:700;margin:0;color:${C.text}}
+.lh-eyebrow{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:${C.gold};margin-bottom:8px}
+.lh-h1{letter-spacing:-0.015em;font-weight:700;font-size:27px;letter-spacing:-.5px;margin:0;color:${C.text}}
+.lh-h2{letter-spacing:-0.015em;font-weight:700;margin:0;color:${C.text}}
 .lh-card{background:${C.panel};border:1px solid ${C.border};border-radius:16px}
 .lh-insight{background:linear-gradient(180deg,rgba(216,178,90,.06),${C.panel})}
 .lh-switch{display:flex;align-items:center;gap:16px;overflow-x:auto;padding:2px 2px 16px}
 .lh-mm{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;cursor:pointer;flex-shrink:0;padding:0}
-.lh-av{position:relative;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:700;font-size:18px;border:2px solid transparent;font-family:'Space Grotesk';transition:.15s}
+.lh-av{position:relative;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:700;font-size:18px;border:2px solid transparent;letter-spacing:-0.015em;transition:.15s}
 .lh-mm.on .lh-av{transform:translateY(-1px)}
 .lh-av.lg{width:52px;height:52px;font-size:22px}
 .lh-dot{position:absolute;top:-2px;right:-2px;width:11px;height:11px;border-radius:9px;border:2px solid var(--lpv-panel)}
@@ -2059,7 +2058,7 @@ const CSS = () => `
 .lh-addm .lh-av{background:${C.panel2}}
 .lh-famline{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 2px;margin-bottom:2px}
 .lh-famtitle{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:${C.text}}
-.lh-famsum{font-family:'JetBrains Mono';font-size:12.5px;color:${C.sub};white-space:nowrap}
+.lh-famsum{font-size:12.5px;color:${C.sub};white-space:nowrap}
 .lh-hero{background:linear-gradient(180deg,rgba(216,178,90,.05),${C.panel});border:1px solid ${C.border};border-radius:16px;padding:18px;margin-bottom:20px}
 .lh-herotop{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .lh-heronext{display:flex;align-items:center;gap:9px;margin-top:16px;padding-top:14px;border-top:1px solid ${C.border}}
@@ -2084,7 +2083,7 @@ const CSS = () => `
 .lh-tabs{display:flex;gap:6px;border-bottom:1px solid ${C.border};margin-bottom:18px;overflow-x:auto}
 .lh-tab{display:inline-flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;color:${C.sub};font-size:14px;font-weight:600;padding:10px 12px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-bottom:-1px}
 .lh-tab.on{color:${C.text};border-bottom-color:${C.gold}}
-.lh-tc{font-family:'JetBrains Mono';font-size:11px;background:${C.panel2};border-radius:9px;padding:1px 6px;color:${C.sub}}
+.lh-tc{font-size:11px;background:${C.panel2};border-radius:9px;padding:1px 6px;color:${C.sub}}
 .lh-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .lh-grid-2-1{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px}
 .lh-sechead{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:700;color:${C.text};margin-bottom:12px}
@@ -2094,7 +2093,7 @@ const CSS = () => `
 .lh-ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
 .lh-ib{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;border:1px solid ${C.border};background:transparent;cursor:pointer;flex-shrink:0}
 .lh-ib:hover{background:var(--lpv-raised)}
-.lh-tag{font-family:'JetBrains Mono';font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+.lh-tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
 .lh-info{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid ${C.border}}
 .lh-info:first-of-type{border-top:0}
 .lh-med{padding:12px 0;border-top:1px solid ${C.border}}
@@ -2111,10 +2110,10 @@ const CSS = () => `
 .lh-rec:first-of-type{border-top:0}
 .lh-tl{position:relative;padding-left:20px}
 .lh-tl:before{content:"";position:absolute;left:5px;top:24px;bottom:8px;width:1px;background:${C.border}}
-.lh-tlmon{font-family:'JetBrains Mono';font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${C.gold};margin:14px 0 6px}
+.lh-tlmon{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${C.gold};margin:14px 0 6px}
 .lh-tlrow{position:relative;display:flex;align-items:center;gap:11px;padding:8px 0}
 .lh-tldot{position:absolute;left:-15px;top:18px;width:9px;height:9px;border-radius:9px}
-.lh-lbl{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};font-family:'JetBrains Mono';margin-bottom:5px}
+.lh-lbl{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};margin-bottom:5px}
 .lh-in{width:100%;background:${C.panel2};border:1px solid ${C.border};border-radius:10px;padding:9px 11px;color:${C.text};font-size:14px;outline:none;font-family:inherit}
 .lh-in:focus{border-color:${C.gold}}
 .lh-overlay{position:fixed;inset:0;z-index:72;background:var(--lpv-scrim);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px}
@@ -2135,7 +2134,7 @@ const CSS = () => `
 .lh-famcard{display:flex;align-items:center;gap:10px;text-align:left;background:${C.panel};border:1px solid ${C.border};border-radius:13px;padding:11px 12px;cursor:pointer;font-family:inherit;transition:.15s}
 .lh-famcard:hover{background:${C.panel2}}
 .lh-famcard.on{border-color:${C.gold}77;background:linear-gradient(180deg,rgba(216,178,90,.08),${C.panel})}
-.lh-famav{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-weight:700;font-size:15px;font-family:'Space Grotesk';flex-shrink:0}
+.lh-famav{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-weight:700;font-size:15px;letter-spacing:-0.015em;flex-shrink:0}
 .lh-famnm{display:block;font-size:13.5px;font-weight:700;color:${C.text};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lh-famst{display:block;font-size:11.5px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #lh-print{display:none}

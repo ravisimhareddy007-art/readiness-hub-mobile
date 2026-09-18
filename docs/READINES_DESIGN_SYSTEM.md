@@ -36,7 +36,7 @@ Module identities: Documents `A.blue`, Packages `A.green`, Health `A.pink`, Weal
 ## Scales
 
 - Spacing (8-point): 4, 8, 12, 16, 20, 24, 32, 40, 48, 64. No arbitrary values.
-- Typeface: the platform system font, always (`-apple-system` → SF Pro on iOS, Roboto on Android, Segoe on Windows). Inter and other web-default faces are banned from product UI — they read as template. Headings and bold text carry -0.015em tracking; all numbers render tabular (`font-variant-numeric: tabular-nums`). JetBrains Mono only for deliberate monospace moments.
+- Typeface: the platform system font, always (`-apple-system` → SF Pro on iOS, Roboto on Android, Segoe on Windows). Inter and other web-default faces are banned from product UI — they read as template. Headings and bold text carry -0.015em tracking; all numbers render tabular (`font-variant-numeric: tabular-nums`). No monospace in product UI; numbers align through tabular figures in the system face.
 - Type: Display 32 · H1 28 · H2 22 · H3 18 · Body 16 · Small 14 · Caption 12 (mobile screen titles 18). No random sizes. Inputs never below 16px on mobile (iOS zoom).
 - Radius: sm 8 · control 10 · card 16 · large card 20 · sheet 24. Pills are reserved for status, filters, compact metadata and selected states — not for buttons.
 - Motion: fast 120ms · standard 200ms · slow 320ms. Calm motion only: gentle expansion, animated rings, spring sheets, subtle settle on completion. Nothing flashy.
@@ -46,10 +46,6 @@ Module identities: Documents `A.blue`, Packages `A.green`, Health `A.pink`, Weal
 - Tokens live in `src/App.tsx`: `T` (surfaces/text), `A` (module identities), `SEM` (action + status), `DS` (space/type/radius/motion), with `*_DARK` / `*_LIGHT` palettes and `applyTheme()`. Health consumes the same system through `C` + `applyC()` in `src/components/Healthcare.tsx`.
 - CSS variables (`--lpv-*`, `--m-*`, `--r-*`) mirror the tokens for stylesheet rules; `[data-theme="light"]` carries light values.
 - The living laboratory is the **Design system** screen (avatar menu → Design system, route `design`). Every new component appears there before it appears on a product screen.
-
-## One structure, two modes
-
-Dark and light are the same screens with the same components in the same places; only surface and text values change. Nothing exists in one mode that does not exist in the other. Every app screen is framed by the brand: a navy band across the top (nav bar, and the greeting on Home) with white text, and a navy tab bar with teal for the active item. In dark the band is a shade lifted from the canvas; in light it is the brand navy. Cards float in the lit space between. Tints on tiles and chips are mixed from the module color into the surface color, so they read correctly on both canvases without mode-specific values.
 
 ## Mobile grammar
 

@@ -128,13 +128,14 @@ function applyTheme(theme: string) {
 }
 
 const APPCSS = `
-:root{--lpv-action:#35A7A0;--lpv-actionink:#0B1220;--lpv-shadow:rgba(0,0,0,.5);--lpv-shadow-soft:rgba(0,0,0,.18);--lpv-band:#16233D;--lpv-bandtext:#FFFFFF;--lpv-bandsub:rgba(255,255,255,.66);--lpv-bandbtn:rgba(255,255,255,.08);--lpv-bandbtnb:rgba(255,255,255,.16);--lpv-bandicon:#C9D1DE;--lpv-bartext:#8A97AE;--lpv-baractive:#35A7A0;--lpv-barpill:#1B2740;--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
-[data-theme="light"]{--lpv-action:#077480;--lpv-actionink:#FFFFFF;--lpv-shadow:rgba(16,24,40,.18);--lpv-shadow-soft:rgba(16,24,40,.08);--lpv-band:#0B1220;--lpv-bandtext:#FFFFFF;--lpv-bandsub:rgba(255,255,255,.66);--lpv-bandbtn:rgba(255,255,255,.14);--lpv-bandbtnb:rgba(255,255,255,.22);--lpv-bandicon:#FFFFFF;--lpv-bartext:rgba(255,255,255,.72);--lpv-baractive:#5FD0C8;--lpv-barpill:rgba(255,255,255,.12);--lpv-bg:#F2F3F5;--lpv-panel:#FFFFFF;--lpv-raised:#EAECF0;--lpv-border:#E3E6EA;--lpv-text:#1B2431;--lpv-muted:#5E6674;--lpv-gold:#866318;--lpv-goldb:#9C7420;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(11,18,32,.97);--lpv-scrim:rgba(18,22,30,.38);--lpv-fabshadow:rgba(173,127,31,.28)}
+:root{--lpv-action:#35A7A0;--lpv-actionink:#0B1220;--lpv-shadow:rgba(0,0,0,.5);--lpv-shadow-soft:rgba(0,0,0,.18);--lpv-bandtext:#FFFFFF;--lpv-bandsub:#8A97AE;--lpv-bandbtn:#131C2E;--lpv-bandbtnb:#27324A;--lpv-bandicon:#8A97AE;--lpv-bartext:#8A97AE;--lpv-baractive:#35A7A0;--lpv-barpill:#1B2740;--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
+[data-theme="light"]{--lpv-action:#077480;--lpv-actionink:#FFFFFF;--lpv-shadow:rgba(16,24,40,.18);--lpv-shadow-soft:rgba(16,24,40,.08);--lpv-bandtext:#1B2431;--lpv-bandsub:#5E6674;--lpv-bandbtn:#FFFFFF;--lpv-bandbtnb:#E3E6EA;--lpv-bandicon:#5E6674;--lpv-bartext:#5E6674;--lpv-baractive:#077480;--lpv-barpill:#EAECF0;--lpv-bg:#F2F3F5;--lpv-panel:#FFFFFF;--lpv-raised:#EAECF0;--lpv-border:#E3E6EA;--lpv-text:#1B2431;--lpv-muted:#5E6674;--lpv-gold:#866318;--lpv-goldb:#9C7420;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(247,248,250,.96);--lpv-scrim:rgba(18,22,30,.38);--lpv-fabshadow:rgba(173,127,31,.28)}
 [data-theme="light"] .lp-card{box-shadow:0 1px 2px rgba(16,24,40,.04),0 10px 28px rgba(16,24,40,.06)}
-[data-theme="light"] .lp-tabbar{border-top-color:transparent}
+[data-theme="light"] .lp-tabbar{box-shadow:0 -8px 26px rgba(16,24,40,.08);border-top-color:transparent}
 [data-theme="light"] .lp-sheet{box-shadow:0 -14px 44px rgba(16,24,40,.18)}
 body{background:var(--lpv-bg)}
 :focus-visible{outline:2px solid var(--lpv-action);outline-offset:2px;border-radius:6px}
+.lp-tab:focus,.lp-tab:focus-visible,.lp-mh-mod:focus,.lp-mh-mod:focus-visible{outline:none}
 .lp-main{font-variant-numeric:tabular-nums}
 .lp-main b,.lp-main h1,.lp-main h2,.lp-main h3{letter-spacing:-0.015em}
 .lp-main{flex:1;min-width:0;padding:24px 34px 40px;max-width:1160px;margin:0 auto;width:100%}
@@ -156,9 +157,6 @@ body{background:var(--lpv-bg)}
 @keyframes lp-screen{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .lp-scrim{animation:lp-fade var(--m-std) ease}
 .lp-screen{animation:lp-screen var(--m-std) cubic-bezier(.22,.9,.3,1)}
-@media(max-width:767px){
-.lp-screen{margin:-14px -14px 0;padding:14px 14px 0;background:linear-gradient(180deg,var(--lpv-band) 0,var(--lpv-band) var(--band-h,96px),transparent var(--band-h,96px))}
-}
 .lp-tab{transition:background var(--m-std) ease,color var(--m-std) ease,transform var(--m-fast) ease}
 .lp-tab:active,.lp-mh-mod:active{transform:scale(.94)}
 .lp-card{transition:transform var(--m-fast) ease}
@@ -205,7 +203,7 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-es-cta{grid-area:cta;width:100%;justify-content:center;padding:12px 14px !important;font-size:14px !important}
 .lp-networth{display:grid !important;grid-template-columns:1fr 1fr;gap:14px 16px !important;font-family:inherit !important;padding:14px 16px !important}
 .lp-metric{display:flex;flex-direction:column;gap:3px;font-size:12px}
-.lp-metric b{font-size:20px;font-family:ui-monospace,monospace;letter-spacing:-0.02em}
+.lp-metric b{font-size:20px;letter-spacing:-0.02em}
 .lp-truststats{grid-template-columns:repeat(3,1fr) !important;gap:8px !important}
 .lp-truststats .lp-card{padding:12px 10px !important;text-align:center}
 .lp-truststats .lp-card>span{margin:0 auto}
@@ -1442,7 +1440,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
   return (
     <div
       style={{
-        fontFamily: "ui-monospace, monospace",
+        fontVariantNumeric: "tabular-nums",
         fontSize: 11.5,
         fontWeight: 700,
         letterSpacing: 2,
@@ -1499,7 +1497,7 @@ function Ring({ score, size = 56, color }: { score: number; size?: number; color
           inset: 0,
           display: "grid",
           placeItems: "center",
-          fontFamily: "ui-monospace, monospace",
+          fontVariantNumeric: "tabular-nums",
           fontWeight: 700,
           fontSize: size >= 56 ? 15 : 12,
           color: T.white,
@@ -1522,7 +1520,7 @@ function Stamp() {
         fontSize: 12,
         fontWeight: 800,
         letterSpacing: 2,
-        fontFamily: "ui-monospace, monospace",
+        fontVariantNumeric: "tabular-nums",
       }}
     >
       READY
@@ -1589,7 +1587,7 @@ const btnGhost: CSSProperties = {
   cursor: "pointer",
 };
 const pill = (color: string): CSSProperties => ({
-  fontFamily: "ui-monospace, monospace",
+  fontVariantNumeric: "tabular-nums",
   fontSize: 11,
   fontWeight: 700,
   color,
@@ -2177,7 +2175,7 @@ function Home({ store, go, toast }: any) {
             </span>
             <div
               style={{
-                fontFamily: "ui-monospace, monospace",
+                fontVariantNumeric: "tabular-nums",
                 fontSize: 24,
                 fontWeight: 800,
                 color: T.white,
@@ -2227,12 +2225,12 @@ function Home({ store, go, toast }: any) {
                       letterSpacing: 1,
                       textTransform: "uppercase",
                       color: T.muted,
-                      fontFamily: "ui-monospace, monospace",
+                      fontVariantNumeric: "tabular-nums",
                     }}
                   >
                     {g.label}
                   </span>
-                  <span style={{ fontSize: 11.5, color: g.color, fontFamily: "ui-monospace, monospace" }}>
+                  <span style={{ fontSize: 11.5, color: g.color, fontVariantNumeric: "tabular-nums" }}>
                     {g.acts.length}
                   </span>
                   <ChevronRight size={13} color={T.faint} style={{ marginLeft: "auto" }} />
@@ -2279,7 +2277,7 @@ function Home({ store, go, toast }: any) {
                       style={{
                         fontSize: 11.5,
                         color: a.tone,
-                        fontFamily: "ui-monospace, monospace",
+                        fontVariantNumeric: "tabular-nums",
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -2885,7 +2883,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
     letterSpacing: 0.5,
     textTransform: "uppercase",
     color: T.muted,
-    fontFamily: "ui-monospace, monospace",
+    fontVariantNumeric: "tabular-nums",
     margin: "12px 0 5px",
     display: "block",
   };
@@ -3187,7 +3185,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               marginTop: 12,
               fontSize: 11.5,
               color: ev.custom ? T.gold : T.muted,
-              fontFamily: "ui-monospace, monospace",
+              fontVariantNumeric: "tabular-nums",
               display: "flex",
               alignItems: "center",
               gap: 8,
@@ -3217,7 +3215,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             {score === 100 ? (
               <Stamp />
             ) : (
-              <div style={{ color: T.muted, fontSize: 13, fontFamily: "ui-monospace, monospace" }}>
+              <div style={{ color: T.muted, fontSize: 13, fontVariantNumeric: "tabular-nums" }}>
                 {got} of {total} ready
               </div>
             )}
@@ -3281,7 +3279,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                     </button>
                     {isOpen && d && (
                       <div style={{ padding: "2px 16px 12px 48px" }}>
-                        <div style={{ fontSize: 12.5, color: T.text, fontFamily: "ui-monospace, monospace" }}>
+                        <div style={{ fontSize: 12.5, color: T.text, fontVariantNumeric: "tabular-nums" }}>
                           {d.name}
                         </div>
                         <div style={{ fontSize: 11.5, color: T.muted, marginTop: 2 }}>
@@ -3523,7 +3521,7 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
                 }}
               >
                 <div style={{ fontSize: 13.5, fontWeight: 600, color: T.text }}>{d.docType}</div>
-                <div style={{ fontSize: 11.5, color: T.faint, fontFamily: "ui-monospace, monospace" }}>
+                <div style={{ fontSize: 11.5, color: T.faint, fontVariantNumeric: "tabular-nums" }}>
                   {d.name} · {nameOf(d.memberId)}
                 </div>
               </button>
@@ -4110,7 +4108,7 @@ function Documents({ store, toast }: any) {
             >
               {c.tone && <span style={{ width: 7, height: 7, borderRadius: 9, background: c.tone }} />}
               {c.label}
-              <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 12, color: on ? T.gold : T.faint }}>
+              <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 12, color: on ? T.gold : T.faint }}>
                 {c.n}
               </span>
             </button>
@@ -4241,7 +4239,7 @@ function Documents({ store, toast }: any) {
                 color: T.muted,
                 textTransform: "uppercase",
                 letterSpacing: 1,
-                fontFamily: "ui-monospace, monospace",
+                fontVariantNumeric: "tabular-nums",
               }}
             >
               <input
@@ -4331,7 +4329,7 @@ function Documents({ store, toast }: any) {
                             display: "block",
                             fontSize: 11.5,
                             color: T.faint,
-                            fontFamily: "ui-monospace, monospace",
+                            fontVariantNumeric: "tabular-nums",
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                             whiteSpace: "nowrap",
@@ -4362,10 +4360,10 @@ function Documents({ store, toast }: any) {
                       <span style={pill(col)}>{d.category}</span>
                     </span>
                     <span style={{ fontSize: 12.5, color: T.muted }}>{d.source}</span>
-                    <span style={{ fontSize: 12.5, color: T.muted, fontFamily: "ui-monospace, monospace" }}>
+                    <span style={{ fontSize: 12.5, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
                       {fdate(d.addedAt)}
                     </span>
-                    <span style={{ fontSize: 12.5, fontFamily: "ui-monospace, monospace" }}>{expiryCell(d)}</span>
+                    <span style={{ fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>{expiryCell(d)}</span>
                     </span>
                     <ChevronRight size={15} color={active ? T.gold : T.faint} />
                   </div>
@@ -4398,7 +4396,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
     letterSpacing: 1,
     textTransform: "uppercase",
     color: T.muted,
-    fontFamily: "ui-monospace, monospace",
+    fontVariantNumeric: "tabular-nums",
     margin: "16px 0 7px",
     display: "block",
   };
@@ -4427,7 +4425,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
         style={{
           fontSize: 12.5,
           color: T.text,
-          fontFamily: /\d/.test(String(value)) ? "ui-monospace, monospace" : "inherit",
+          fontVariantNumeric: "tabular-nums",
           textAlign: "right",
         }}
       >
@@ -4484,7 +4482,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
               style={{
                 fontSize: 11.5,
                 color: T.faint,
-                fontFamily: "ui-monospace, monospace",
+                fontVariantNumeric: "tabular-nums",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -4603,7 +4601,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
                 >
                   <Coins size={14} color={T.gold} />
                   <span style={{ flex: 1, fontSize: 13, color: T.text }}>{h.name}</span>
-                  <span style={{ fontSize: 12, color: T.muted, fontFamily: "ui-monospace, monospace" }}>
+                  <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
                     {money(h.value || 0)}
                   </span>
                 </div>
@@ -4621,7 +4619,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
                 >
                   <Receipt size={14} color={t.direction === "paid" ? T.coral : T.mint} />
                   <span style={{ flex: 1, fontSize: 13, color: T.text }}>{t.purpose}</span>
-                  <span style={{ fontSize: 12, color: T.muted, fontFamily: "ui-monospace, monospace" }}>
+                  <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
                     {money(t.amount)}
                   </span>
                 </div>
@@ -4689,7 +4687,7 @@ function AddMember({ onClose, save }: any) {
     letterSpacing: 0.5,
     textTransform: "uppercase",
     color: T.muted,
-    fontFamily: "ui-monospace, monospace",
+    fontVariantNumeric: "tabular-nums",
     marginBottom: 5,
     display: "block",
   };
@@ -4910,7 +4908,7 @@ function Wealth({ store, go, toast }: any) {
   const stat = (label: string, val: string, color: string) => (
     <Card>
       <div style={{ fontSize: 13, color: T.muted }}>{label}</div>
-      <div style={{ fontFamily: "ui-monospace, monospace", fontSize: 24, fontWeight: 800, color, marginTop: 8 }}>
+      <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 24, fontWeight: 800, color, marginTop: 8 }}>
         {val}
       </div>
     </Card>
@@ -4920,7 +4918,7 @@ function Wealth({ store, go, toast }: any) {
       style={{
         fontSize: 10.5,
         fontWeight: 700,
-        fontFamily: "ui-monospace, monospace",
+        fontVariantNumeric: "tabular-nums",
         color: ok ? T.mint : T.coral,
         background: (ok ? T.mint : T.coral) + "14",
         border: `1px solid ${ok ? T.mint : T.coral}44`,
@@ -4972,7 +4970,7 @@ function Wealth({ store, go, toast }: any) {
         <span
           className="lp-wamt"
           style={{
-            fontFamily: "ui-monospace, monospace",
+            fontVariantNumeric: "tabular-nums",
             fontSize: 15,
             fontWeight: 700,
             color: h.kind === "liability" ? T.coral : T.text,
@@ -5144,7 +5142,7 @@ function Wealth({ store, go, toast }: any) {
               <KeyRound size={15} color={T.muted} />
               <b style={{ color: T.white, fontSize: 13.5 }}>Estate readiness</b>
             </span>
-            <span className="lp-es-pct" style={{ fontFamily: "ui-monospace, monospace", fontSize: 24, fontWeight: 800, color: readyColor }}>
+            <span className="lp-es-pct" style={{ fontVariantNumeric: "tabular-nums", fontSize: 24, fontWeight: 800, color: readyColor }}>
               {readiness}%
             </span>
             <span
@@ -5217,12 +5215,12 @@ function Wealth({ store, go, toast }: any) {
                     >
                       {h.name}
                     </span>
-                    <span style={{ fontFamily: "ui-monospace, monospace", color: T.muted }}>
+                    <span style={{ fontVariantNumeric: "tabular-nums", color: T.muted }}>
                       {h.docId ? "✓" : "✗"}doc {h.nominee ? "✓" : "✗"}nom {h.accessNote ? "✓" : "✗"}access
                     </span>
                     <span
                       style={{
-                        fontFamily: "ui-monospace, monospace",
+                        fontVariantNumeric: "tabular-nums",
                         color: ok ? T.mint : T.coral,
                         width: 74,
                         textAlign: "right",
@@ -5247,7 +5245,7 @@ function Wealth({ store, go, toast }: any) {
               borderRadius: 12,
               background: T.panel,
               marginBottom: 24,
-              fontFamily: "ui-monospace, monospace",
+              fontVariantNumeric: "tabular-nums",
               fontSize: 13.5,
             }}
           >
@@ -5350,7 +5348,7 @@ function Wealth({ store, go, toast }: any) {
                       }}
                     >
                       <b style={{ color: T.white, fontSize: 14.5 }}>{label}</b>
-                      <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 13, color: T.muted }}>
+                      <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 13, color: T.muted }}>
                         {money(sum(arr))}
                       </span>
                     </div>
@@ -5417,7 +5415,7 @@ function Wealth({ store, go, toast }: any) {
                         <span
                           className="lp-wamt"
                           style={{
-                            fontFamily: "ui-monospace, monospace",
+                            fontVariantNumeric: "tabular-nums",
                             fontSize: 14.5,
                             fontWeight: 700,
                             color: t.direction === "paid" ? T.coral : T.mint,
@@ -5695,7 +5693,7 @@ function Trust({ store, toast }: any) {
                 padding: "6px 10px",
                 fontSize: 12.5,
                 fontWeight: 600,
-                fontFamily: "ui-monospace, monospace",
+                fontVariantNumeric: "tabular-nums",
               }}
             >
               {(["Owner", "Full member", "Emergency access", "View only"] as Access[]).map((a) => (
@@ -5814,7 +5812,7 @@ function SearchResults({ store, query, go }: any) {
             color: T.muted,
             textTransform: "uppercase",
             letterSpacing: 1,
-            fontFamily: "ui-monospace, monospace",
+            fontVariantNumeric: "tabular-nums",
           }}
         >
           {label} · {count}
@@ -5981,7 +5979,7 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
             letterSpacing: 0.5,
             textTransform: "uppercase",
             color: T.muted,
-            fontFamily: "ui-monospace, monospace",
+            fontVariantNumeric: "tabular-nums",
             marginBottom: 6,
           }}
         >
@@ -6040,7 +6038,7 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
             letterSpacing: 0.5,
             textTransform: "uppercase",
             color: T.muted,
-            fontFamily: "ui-monospace, monospace",
+            fontVariantNumeric: "tabular-nums",
             margin: "16px 0 6px",
           }}
         >
@@ -6171,7 +6169,7 @@ function TransactionModal({ members, onClose, onSave }: any) {
     letterSpacing: 0.5,
     textTransform: "uppercase",
     color: T.muted,
-    fontFamily: "ui-monospace, monospace",
+    fontVariantNumeric: "tabular-nums",
     margin: "12px 0 5px",
     display: "block",
   };
@@ -6405,7 +6403,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete }: any) {
     letterSpacing: 0.5,
     textTransform: "uppercase",
     color: T.muted,
-    fontFamily: "ui-monospace, monospace",
+    fontVariantNumeric: "tabular-nums",
     marginBottom: 5,
     display: "block",
   };
@@ -6704,7 +6702,7 @@ function EstateSheet({ store, onClose, toast }: any) {
           <div>
             <div
               style={{
-                fontFamily: "ui-monospace, monospace",
+                fontVariantNumeric: "tabular-nums",
                 fontSize: 11,
                 letterSpacing: 1.5,
                 textTransform: "uppercase",
@@ -7081,7 +7079,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                   letterSpacing: 1,
                   textTransform: "uppercase",
                   color: T.faint,
-                  fontFamily: "ui-monospace, monospace",
+                  fontVariantNumeric: "tabular-nums",
                   marginBottom: 6,
                 }}
               >
@@ -7328,7 +7326,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           letterSpacing: 1.2,
           textTransform: "uppercase",
           color: T.faint,
-          fontFamily: "ui-monospace, monospace",
+          fontVariantNumeric: "tabular-nums",
           margin: "0 0 8px 2px",
         }}
       >
@@ -7372,7 +7370,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         </span>
         {sub && <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 1 }}>{sub}</span>}
       </span>
-      {value && <span style={{ fontSize: 12.5, color: T.muted, fontFamily: "ui-monospace, monospace" }}>{value}</span>}
+      {value && <span style={{ fontSize: 12.5, color: T.muted, fontVariantNumeric: "tabular-nums" }}>{value}</span>}
       {onClick && <ChevronRight size={14} color={T.faint} />}
     </button>
   );
@@ -7530,7 +7528,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                 letterSpacing: 1.2,
                 textTransform: "uppercase",
                 color: T.coral,
-                fontFamily: "ui-monospace, monospace",
+                fontVariantNumeric: "tabular-nums",
                 margin: "0 0 8px 2px",
               }}
             >
@@ -8239,7 +8237,7 @@ export default function App() {
                   fontSize: 10,
                   letterSpacing: 2,
                   color: T.muted,
-                  fontFamily: "ui-monospace, monospace",
+                  fontVariantNumeric: "tabular-nums",
                   whiteSpace: "nowrap",
                 }}
               >
@@ -8379,9 +8377,9 @@ export default function App() {
                   width: 38,
                   height: 38,
                   borderRadius: 99,
-                  border: `1px solid ${route === "settings" ? T.gold + "88" : "var(--lpv-bandbtnb)"}`,
-                  background: "var(--lpv-bandbtn)",
-                  color: route === "settings" ? T.gold : "var(--lpv-bandtext)",
+                  border: `1px solid ${route === "settings" ? T.gold + "88" : T.border}`,
+                  background: T.gold + "1F",
+                  color: T.gold,
                   fontWeight: 800,
                   fontSize: 14,
                   cursor: "pointer",
@@ -8417,7 +8415,7 @@ export default function App() {
             ),
           }}
         >
-        <div key={route} className="lp-screen" style={{ ["--band-h" as any]: route === "home" ? "148px" : "96px" }}>
+        <div key={route} className="lp-screen">
         {route === "home" && <Home store={store} go={go} toast={toast} />}
         {route === "packages" && <Packages store={store} toast={toast} />}
         {route === "documents" && <Documents store={store} toast={toast} />}
