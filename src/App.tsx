@@ -8080,6 +8080,10 @@ export default function App() {
   const [booted, setBooted] = useState(false);
   const [account, setAccount] = useState<Account | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [themeReady, setThemeReady] = useState(false);
+  useEffect(() => {
+    setThemeReady(true);
+  }, []);
   useEffect(() => {
     const sess = getSession();
     setAccount(sess);
@@ -8130,7 +8134,9 @@ export default function App() {
     (toast as any)._t = window.setTimeout(() => setToastMsg(null), 2400);
   };
   const go = (r: string) => setRoute(r);
-  applyTheme(store.theme);
+  // Server HTML and the first client render must agree (both dark); the saved theme is applied one frame later,
+  // which makes React repaint every themed element instead of keeping stale server attributes after hydration.
+  applyTheme(themeReady ? store.theme : "dark");
 
   if (!authChecked)
     return (
