@@ -290,7 +290,7 @@ export default function DocViewer({ doc, store, onClose }: { doc: Doc; store: an
         position: "fixed",
         inset: 0,
         zIndex: 80,
-        background: "rgba(4,6,15,.66)",
+        background: "var(--lpv-scrim)",
         backdropFilter: "blur(4px)",
         display: "flex",
         alignItems: "center",
@@ -305,8 +305,8 @@ export default function DocViewer({ doc, store, onClose }: { doc: Doc; store: an
           maxHeight: "88vh",
           display: "flex",
           flexDirection: "column",
-          background: "#111524",
-          border: "1px solid rgba(255,255,255,0.09)",
+          background: "var(--lpv-panel)",
+          border: "1px solid var(--lpv-border)",
           borderRadius: 16,
           overflow: "hidden",
         }}
@@ -317,7 +317,7 @@ export default function DocViewer({ doc, store, onClose }: { doc: Doc; store: an
             alignItems: "center",
             gap: 12,
             padding: "14px 16px",
-            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            borderBottom: "1px solid var(--lpv-border)",
           }}
         >
           <span
@@ -327,14 +327,14 @@ export default function DocViewer({ doc, store, onClose }: { doc: Doc; store: an
               width: 34,
               height: 34,
               borderRadius: 9,
-              background: "rgba(216,178,90,0.16)",
+              background: "color-mix(in srgb, var(--lpv-gold) 16%, transparent)",
             }}
           >
-            <FileText size={17} color="#D8B25A" />
+            <FileText size={17} style={{ color: "var(--lpv-gold)" }} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 600, color: "#EAEDF7" }}>{doc.docType}</div>
-            <div style={{ fontSize: 12, color: "rgba(234,237,247,0.5)" }}>
+            <div style={{ fontSize: 14.5, fontWeight: 600, color: "var(--lpv-text)" }}>{doc.docType}</div>
+            <div style={{ fontSize: 12, color: "var(--lpv-muted)" }}>
               {doc.source} · {doc.category}
               {doc.expiry ? ` · valid to ${fmt(doc.expiry)}` : ""}
             </div>
@@ -349,9 +349,9 @@ export default function DocViewer({ doc, store, onClose }: { doc: Doc; store: an
                 width: 32,
                 height: 32,
                 borderRadius: 8,
-                border: "1px solid rgba(255,255,255,0.1)",
+                border: "1px solid var(--lpv-border)",
                 background: "transparent",
-                color: "#EAEDF7",
+                color: "var(--lpv-text)",
                 cursor: "pointer",
               }}
             >
@@ -366,18 +366,18 @@ export default function DocViewer({ doc, store, onClose }: { doc: Doc; store: an
               width: 32,
               height: 32,
               borderRadius: 8,
-              border: "1px solid rgba(255,255,255,0.1)",
+              border: "1px solid var(--lpv-border)",
               background: "transparent",
-              color: "#EAEDF7",
+              color: "var(--lpv-text)",
               cursor: "pointer",
             }}
           >
             <X size={16} />
           </button>
         </div>
-        <div style={{ flex: 1, overflow: "auto", background: "#0b0e18", padding: 16 }}>
+        <div style={{ flex: 1, overflow: "auto", background: "var(--lpv-bg)", padding: 16 }}>
           {mode === "loading" && (
-            <div style={{ color: "rgba(234,237,247,0.5)", fontSize: 13, padding: 20, textAlign: "center" }}>
+            <div style={{ color: "var(--lpv-muted)", fontSize: 13, padding: 20, textAlign: "center" }}>
               Opening…
             </div>
           )}
@@ -408,12 +408,12 @@ export default function DocViewer({ doc, store, onClose }: { doc: Doc; store: an
             alignItems: "center",
             gap: 7,
             padding: "10px 16px",
-            borderTop: "1px solid rgba(255,255,255,0.08)",
-            color: "rgba(234,237,247,0.5)",
+            borderTop: "1px solid var(--lpv-border)",
+            color: "var(--lpv-muted)",
             fontSize: 12,
           }}
         >
-          <ShieldCheck size={13} color="#2FB68A" /> Stored on your device.
+          <ShieldCheck size={13} style={{ color: "var(--lpv-action)" }} /> Stored on your device.
           {doc.fileKey === "seed" ? " Sample preview." : ""}
         </div>
       </div>

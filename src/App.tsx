@@ -117,6 +117,7 @@ const T: typeof T_DARK = { ...T_DARK };
 const A: typeof A_DARK = { ...A_DARK };
 const SEM: typeof SEM_DARK = { ...SEM_DARK };
 let _appliedTheme = "";
+const inkOf = (c: string) => (_appliedTheme === "light" ? `color-mix(in srgb, ${c} 62%, #1B2431)` : c);
 function applyTheme(theme: string) {
   if (theme === _appliedTheme) return;
   _appliedTheme = theme;
@@ -127,8 +128,8 @@ function applyTheme(theme: string) {
 }
 
 const APPCSS = `
-:root{--lpv-action:#35A7A0;--lpv-actionink:#0B1220;--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
-[data-theme="light"]{--lpv-action:#077480;--lpv-actionink:#FFFFFF;--lpv-bg:#F2F3F5;--lpv-panel:#FFFFFF;--lpv-raised:#EAECF0;--lpv-border:#E3E6EA;--lpv-text:#1B2431;--lpv-muted:#5E6674;--lpv-gold:#866318;--lpv-goldb:#9C7420;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(247,248,250,.96);--lpv-scrim:rgba(18,22,30,.38);--lpv-fabshadow:rgba(173,127,31,.28)}
+:root{--lpv-action:#35A7A0;--lpv-actionink:#0B1220;--lpv-shadow:rgba(0,0,0,.5);--lpv-shadow-soft:rgba(0,0,0,.18);--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
+[data-theme="light"]{--lpv-action:#077480;--lpv-actionink:#FFFFFF;--lpv-shadow:rgba(16,24,40,.18);--lpv-shadow-soft:rgba(16,24,40,.08);--lpv-bg:#F2F3F5;--lpv-panel:#FFFFFF;--lpv-raised:#EAECF0;--lpv-border:#E3E6EA;--lpv-text:#1B2431;--lpv-muted:#5E6674;--lpv-gold:#866318;--lpv-goldb:#9C7420;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(247,248,250,.96);--lpv-scrim:rgba(18,22,30,.38);--lpv-fabshadow:rgba(173,127,31,.28)}
 [data-theme="light"] .lp-card{box-shadow:0 1px 2px rgba(16,24,40,.04),0 10px 28px rgba(16,24,40,.06)}
 [data-theme="light"] .lp-tabbar{box-shadow:0 -8px 26px rgba(16,24,40,.08);border-top-color:transparent}
 [data-theme="light"] .lp-sheet{box-shadow:0 -14px 44px rgba(16,24,40,.18)}
@@ -1851,7 +1852,7 @@ function Home({ store, go, toast }: any) {
                       display: "grid",
                       placeItems: "center",
                       padding: "0 4px",
-                      boxShadow: "0 2px 6px rgba(0,0,0,.18)",
+                      boxShadow: "0 2px 6px var(--lpv-shadow-soft)",
                     }}
                   >
                     {m.badge}
@@ -3834,7 +3835,7 @@ function Documents({ store, toast }: any) {
               border: `1px solid ${T.gold}55`,
               borderRadius: 14,
               padding: "9px 12px",
-              boxShadow: "0 14px 40px rgba(0,0,0,.5)",
+              boxShadow: "0 14px 40px var(--lpv-shadow)",
             }}
           >
             <b style={{ fontSize: 13, color: T.white }}>{sel.size} selected</b>
@@ -4000,7 +4001,7 @@ function Documents({ store, toast }: any) {
                     border: `1px solid ${T.border}`,
                     borderRadius: 12,
                     padding: 6,
-                    boxShadow: "0 20px 60px rgba(0,0,0,.5)",
+                    boxShadow: "0 20px 60px var(--lpv-shadow)",
                   }}
                 >
                   <label
@@ -4445,7 +4446,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
           zIndex: 73,
           background: T.navy,
           borderLeft: `1px solid ${T.border}`,
-          boxShadow: "-30px 0 80px rgba(0,0,0,.55)",
+          boxShadow: "-30px 0 80px var(--lpv-shadow)",
           display: "flex",
           flexDirection: "column",
           animation: "lpSlideIn .22s ease",
@@ -5496,7 +5497,7 @@ function Wealth({ store, go, toast }: any) {
                       height: 30,
                       borderRadius: 8,
                       background: m.color + "26",
-                      color: m.color,
+                      color: inkOf(m.color),
                       fontWeight: 800,
                       fontSize: 13,
                     }}
@@ -5667,7 +5668,7 @@ function Trust({ store, toast }: any) {
                 height: 34,
                 borderRadius: 9,
                 background: m.color + "26",
-                color: m.color,
+                color: inkOf(m.color),
                 fontWeight: 800,
               }}
             >
@@ -6014,7 +6015,7 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
                   height: 30,
                   borderRadius: 8,
                   background: m.color + "26",
-                  color: m.color,
+                  color: inkOf(m.color),
                   fontWeight: 800,
                   fontSize: 13,
                 }}
@@ -7427,24 +7428,25 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           </Section>
           <Section label="Preferences">
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
-              {store.theme === "dark" ? <Moon size={16} color={T.muted} /> : <Sun size={16} color={T.gold} />}
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: T.text }}>Theme</span>
+              <span
+                style={{ width: 32, height: 32, borderRadius: 10, display: "grid", placeItems: "center", flexShrink: 0, background: SEM.action + "1F" }}
+              >
+                {store.theme === "dark" ? <Moon size={15} color={SEM.action} /> : <Sun size={15} color={SEM.action} />}
+              </span>
+              <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: T.text }}>Appearance</span>
               <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 9, overflow: "hidden" }}>
                 {(["dark", "light"] as const).map((t) => (
                   <button
                     key={t}
-                    onClick={() => {
-                      store.setTheme(t);
-                      toast(t === "light" ? "Light mode on" : "Dark mode on");
-                    }}
+                    onClick={() => store.setTheme(t)}
                     style={{
-                      padding: "6px 14px",
+                      padding: "7px 13px",
                       fontSize: 12.5,
                       fontWeight: 700,
-                      cursor: "pointer",
                       border: "none",
-                      background: store.theme === t ? T.gold : "transparent",
-                      color: store.theme === t ? "var(--lpv-golddark)" : T.muted,
+                      cursor: "pointer",
+                      background: store.theme === t ? SEM.action : "transparent",
+                      color: store.theme === t ? "var(--lpv-actionink)" : T.muted,
                     }}
                   >
                     {t === "dark" ? "Dark" : "Light"}

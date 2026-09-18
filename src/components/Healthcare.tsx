@@ -72,6 +72,7 @@ const C_LIGHT = {
 };
 const C: typeof C_DARK = { ...C_DARK };
 let _cTheme = "";
+export const inkOf = (c: string) => (_cTheme === "light" ? `color-mix(in srgb, ${c} 62%, #1B2431)` : c);
 function applyC(theme: string) {
   if (theme === _cTheme) return;
   _cTheme = theme;
@@ -321,7 +322,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           acts.push({
             mid: mm.id,
             name: first,
-            color: mm.color,
+            color: inkOf(mm.color),
             icon: RIC[r.kind] || Bell,
             iconC: dd < 0 ? C.red : dd <= 7 ? C.gold : C.sub,
             label: r.title,
@@ -507,7 +508,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   fontFamily: "inherit",
                 }}
               >
-                <span className="lh-famav" style={{ background: mm.color + "26", color: mm.color, border: `1.5px solid ${mm.color}55` }}>
+                <span className="lh-famav" style={{ background: mm.color + "26", color: inkOf(mm.color), border: `1.5px solid ${mm.color}55` }}>
                   {mm.name[0]}
                 </span>
                 <span style={{ flex: 1, minWidth: 0 }}>
@@ -688,7 +689,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             >
               <span
                 className="lh-famav"
-                style={{ background: mm.color + "26", color: mm.color, border: `1.5px solid ${mm.color}55` }}
+                style={{ background: mm.color + "26", color: inkOf(mm.color), border: `1.5px solid ${mm.color}55` }}
               >
                 {mm.name[0]}
               </span>
@@ -714,7 +715,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
 
       {/* selected member — slim identity bar; actions live with their context */}
       <div className="lh-pbar">
-        <span className="lh-av" style={{ background: m.color + "26", color: m.color, borderColor: m.color + "55" }}>
+        <span className="lh-av" style={{ background: m.color + "26", color: inkOf(m.color), borderColor: m.color + "55" }}>
           {m.name[0]}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -958,7 +959,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                       style={{
                         height: 6,
                         borderRadius: 9,
-                        background: "rgba(255,255,255,.07)",
+                        background: "var(--lpv-raised)",
                         margin: "9px 0 11px",
                         overflow: "hidden",
                       }}
@@ -2053,7 +2054,7 @@ const CSS = () => `
 .lh-av{position:relative;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:700;font-size:18px;border:2px solid transparent;font-family:'Space Grotesk';transition:.15s}
 .lh-mm.on .lh-av{transform:translateY(-1px)}
 .lh-av.lg{width:52px;height:52px;font-size:22px}
-.lh-dot{position:absolute;top:-2px;right:-2px;width:11px;height:11px;border-radius:9px;border:2px solid #10131f}
+.lh-dot{position:absolute;top:-2px;right:-2px;width:11px;height:11px;border-radius:9px;border:2px solid var(--lpv-panel)}
 .lh-nm{font-size:12.5px;font-weight:600;white-space:nowrap}
 .lh-addm .lh-av{background:${C.panel2}}
 .lh-famline{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 2px;margin-bottom:2px}
@@ -2074,12 +2075,12 @@ const CSS = () => `
 .lh-vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px}
 .lh-attnrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
 .lh-chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:6px 12px;cursor:pointer;font-family:inherit}
-.lh-chip:hover{background:rgba(255,255,255,.08)}
+.lh-chip:hover{background:var(--lpv-raised)}
 .lh-mhead{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
-.lh-btn{display:inline-flex;align-items:center;gap:7px;background:${C.gold};color:#0B0E24;font-weight:600;font-size:14px;border:0;border-radius:11px;padding:10px 16px;cursor:pointer;font-family:inherit;transition:.15s}
+.lh-btn{display:inline-flex;align-items:center;gap:7px;background:${C.gold};color:var(--lpv-golddark);font-weight:600;font-size:14px;border:0;border-radius:11px;padding:10px 16px;cursor:pointer;font-family:inherit;transition:.15s}
 .lh-btn:hover{filter:brightness(1.06)}.lh-btn:disabled{opacity:.4;cursor:not-allowed}
 .lh-btn-g{display:inline-flex;align-items:center;gap:7px;background:${C.panel2};color:${C.text};font-weight:600;font-size:14px;border:1px solid ${C.border};border-radius:11px;padding:10px 14px;cursor:pointer;font-family:inherit}
-.lh-btn-g:hover{background:rgba(255,255,255,.09)}
+.lh-btn-g:hover{background:var(--lpv-raised)}
 .lh-tabs{display:flex;gap:6px;border-bottom:1px solid ${C.border};margin-bottom:18px;overflow-x:auto}
 .lh-tab{display:inline-flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;color:${C.sub};font-size:14px;font-weight:600;padding:10px 12px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-bottom:-1px}
 .lh-tab.on{color:${C.text};border-bottom-color:${C.gold}}
@@ -2092,7 +2093,7 @@ const CSS = () => `
 .lh-row:first-of-type{border-top:0}
 .lh-ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
 .lh-ib{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;border:1px solid ${C.border};background:transparent;cursor:pointer;flex-shrink:0}
-.lh-ib:hover{background:rgba(255,255,255,.06)}
+.lh-ib:hover{background:var(--lpv-raised)}
 .lh-tag{font-family:'JetBrains Mono';font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
 .lh-info{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid ${C.border}}
 .lh-info:first-of-type{border-top:0}
@@ -2105,7 +2106,7 @@ const CSS = () => `
 .lh-lnk:hover{color:${C.text}}
 .lh-uprow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .lh-up{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:11px;padding:11px 15px;cursor:pointer;font-family:inherit}
-.lh-up:hover{background:rgba(255,255,255,.09);border-color:${C.gold}55}
+.lh-up:hover{background:var(--lpv-raised);border-color:${C.gold}55}
 .lh-rec{position:relative;display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid ${C.border}}
 .lh-rec:first-of-type{border-top:0}
 .lh-tl{position:relative;padding-left:20px}
@@ -2116,20 +2117,20 @@ const CSS = () => `
 .lh-lbl{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};font-family:'JetBrains Mono';margin-bottom:5px}
 .lh-in{width:100%;background:${C.panel2};border:1px solid ${C.border};border-radius:10px;padding:9px 11px;color:${C.text};font-size:14px;outline:none;font-family:inherit}
 .lh-in:focus{border-color:${C.gold}}
-.lh-overlay{position:fixed;inset:0;z-index:72;background:rgba(4,6,15,.62);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px}
-.lh-modal{background:#111524;border:1px solid ${C.border};border-radius:18px;width:min(460px,100%);padding:22px;max-height:90vh;overflow:auto}
+.lh-overlay{position:fixed;inset:0;z-index:72;background:var(--lpv-scrim);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px}
+.lh-modal{background:var(--lpv-panel);border:1px solid ${C.border};border-radius:18px;width:min(460px,100%);padding:22px;max-height:90vh;overflow:auto}
 .lh-preview{background:#f3f4f6;border-radius:10px;padding:10px}
 .lh-x{width:32px;height:32px;border-radius:9px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};cursor:pointer;display:grid;place-items:center}
 .lh-pick{display:flex;flex-wrap:wrap;gap:6px}
 .lh-pk{font-size:12.5px;font-weight:600;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit}
-.lh-pk.on{color:#0B0E24;background:${C.gold};border-color:${C.gold}}
+.lh-pk.on{color:var(--lpv-golddark);background:${C.gold};border-color:${C.gold}}
 .lh-cond{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:4px 10px}
 .lh-cond button{background:0;border:0;color:${C.faint};cursor:pointer;display:inline-flex}
-.lh-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;background:#111524;border:1px solid ${C.border};color:${C.text};padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 16px 50px rgba(0,0,0,.5)}
+.lh-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;background:var(--lpv-panel);border:1px solid ${C.border};color:${C.text};padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 16px 50px rgba(0,0,0,.5)}
 .lh-pbar{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:14px;padding:2px}
 .lh-actcard{margin-bottom:16px;padding:0}
 .lh-actrow{display:flex;align-items:center;gap:11px;border-top:1px solid ${C.border};padding:10px 16px;cursor:pointer}
-.lh-actrow:hover{background:rgba(255,255,255,.04)}
+.lh-actrow:hover{background:var(--lpv-raised)}
 .lh-famgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-bottom:18px}
 .lh-famcard{display:flex;align-items:center;gap:10px;text-align:left;background:${C.panel};border:1px solid ${C.border};border-radius:13px;padding:11px 12px;cursor:pointer;font-family:inherit;transition:.15s}
 .lh-famcard:hover{background:${C.panel2}}
