@@ -179,6 +179,7 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-cardpad{padding:14px !important}
 .lp-chiprail{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap !important;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .lp-chiprail::-webkit-scrollbar{display:none}
+.lp-chipsticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px;padding:8px 14px 6px}
 .lp-act{flex-wrap:wrap;row-gap:2px}
 .lp-act-label{flex:1 1 100% !important;order:9;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;padding-left:19px;line-height:1.45}
 .lp-act-when{margin-left:auto}
@@ -194,7 +195,8 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-upmenu{left:0 !important;right:auto !important}
 .lp-searchdrop{left:0 !important;right:auto !important;width:calc(100vw - 28px) !important}
 .lp-vdiv{display:none}
-.lp-readystrip{display:grid !important;grid-template-columns:1fr auto;grid-template-areas:"label pct" "bar bar" "sum how" "cta cta";gap:10px 12px !important;padding:16px !important;border-radius:16px !important}
+.lp-readystrip{display:grid !important;grid-template-columns:1fr auto;grid-template-areas:"label pct" "bar bar" "sum how" "lb lb" "cta cta";gap:10px 12px !important;padding:16px !important;border-radius:16px !important}
+.lp-es-lb{grid-area:lb;justify-content:flex-start}
 .lp-es-label{grid-area:label}
 .lp-es-pct{grid-area:pct;font-size:30px !important;line-height:1;letter-spacing:-0.02em}
 .lp-es-bar{grid-area:bar;min-width:0 !important;height:8px !important}
@@ -1425,10 +1427,11 @@ const evalEvent = (ev: { reqs: string[] }, have: Set<string>) => {
 };
 
 /* ── primitives ── */
-function Card({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+function Card({ children, style, id }: { children: ReactNode; style?: CSSProperties; id?: string }) {
   const hasPad = style && "padding" in style;
   return (
     <div
+      id={id}
       className={hasPad ? "lp-card" : "lp-card lp-cardpad"}
       style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 14, padding: 18, ...style }}
     >
@@ -4827,6 +4830,8 @@ function Wealth({ store, go, toast }: any) {
   const txs: Transaction[] = store.transactions || [];
   const openTx = txs.filter((t) => !t.followUpDone);
   const txReady = openTx.filter((t) => t.docId && (t.counterparty || "").trim());
+  const owedToYou = openTx.filter((t) => t.direction === "paid").reduce((a, t) => a + t.amount, 0);
+  const youOwe = openTx.filter((t) => t.direction === "received").reduce((a, t) => a + t.amount, 0);
   const readiness = Math.round(
     ((sum(guarded.filter((h) => h.nominee && h.docId && h.accessNote)) + txReady.reduce((a, t) => a + t.amount, 0)) /
       ((sum(guarded) + openTx.reduce((a, t) => a + t.amount, 0)) || 1)) *
@@ -5056,6 +5061,16 @@ function Wealth({ store, go, toast }: any) {
     ["Insurance", covers],
   ];
   const [wg, setWg] = useState<"all" | "Accounts and investments" | "Loans" | "Insurance" | "Lent and borrowed">("all");
+  const [allGaps, setAllGaps] = useState(false);
+  const shownGaps = allGaps ? gaps : gaps.slice(0, 3);
+  const goLent = () => {
+    if (isMobile && wg !== "all") setWg("Lent and borrowed");
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        document.getElementById("lp-lentborrowed")?.scrollIntoView({ behavior: "smooth", block: "start" }),
+      ),
+    );
+  };
 
   return (
     <div>
@@ -5233,6 +5248,36 @@ function Wealth({ store, go, toast }: any) {
             <button className="lp-es-how" onClick={() => setShowMath((v) => !v)} style={{ ...btnGhost, padding: "6px 11px", fontSize: 12 }}>
               {showMath ? "Hide math" : "How?"}
             </button>
+            {openTx.length > 0 && (
+              <button
+                className="lp-es-lb"
+                onClick={goLent}
+                title="Lent and borrowed" aria-label="Lent and borrowed"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  fontSize: 12.5,
+                  color: T.muted,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <Coins size={13} color={T.muted} />
+                <span>
+                  Owed to you{" "}
+                  <b style={{ color: T.text, fontVariantNumeric: "tabular-nums" }}>{money(owedToYou)}</b>
+                </span>
+                <span style={{ color: T.faint }}>·</span>
+                <span>
+                  You owe <b style={{ color: T.text, fontVariantNumeric: "tabular-nums" }}>{money(youOwe)}</b>
+                </span>
+                <ChevronRight size={13} color={T.faint} />
+              </button>
+            )}
             <span className="lp-vdiv" style={{ width: 1, alignSelf: "stretch", background: T.border }} />
             <button className="lp-es-cta" onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13 }}>
               <FileText size={14} /> Family summary <ArrowRight size={13} />
@@ -5294,7 +5339,7 @@ function Wealth({ store, go, toast }: any) {
                 <b style={{ color: T.white, fontSize: 14.5 }}>Needs attention</b>
                 <span style={{ marginLeft: "auto", ...pill(T.gold) }}>{gaps.length}</span>
               </div>
-              {gaps.map((g, i) => (
+              {shownGaps.map((g, i) => (
                 <div
                   key={i}
                   onClick={() =>
@@ -5347,6 +5392,29 @@ function Wealth({ store, go, toast }: any) {
                   <ChevronRight size={14} color={T.faint} />
                 </div>
               ))}
+              {gaps.length > 3 && (
+                <button
+                  onClick={() => setAllGaps((v) => !v)}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    background: "transparent",
+                    border: "none",
+                    borderTop: `1px solid ${T.border}`,
+                    padding: "11px 16px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: SEM.action,
+                    cursor: "pointer",
+                  }}
+                >
+                  {allGaps ? "Show less" : `View all ${gaps.length}`}
+                  <ChevronDown size={14} style={{ transform: allGaps ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
+                </button>
+              )}
             </Card>
           )}
 
@@ -5369,7 +5437,7 @@ function Wealth({ store, go, toast }: any) {
                 </Card>
               )}
               {isMobile && (
-                <div className="lp-chiprail" style={{ marginBottom: 10 }}>
+                <div className="lp-chiprail lp-chipsticky">
                   {(["all", ...groups.map(([l]) => l), "Lent and borrowed"] as const).map((k) => {
                     const on = wg === k;
                     return (
@@ -5418,7 +5486,7 @@ function Wealth({ store, go, toast }: any) {
                 ) : null,
               )}
               {(wg === "all" || wg === "Lent and borrowed") && (
-              <Card style={{ padding: 0 }}>
+              <Card id="lp-lentborrowed" style={{ padding: 0, scrollMarginTop: 60 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
                   <Coins size={16} color={T.muted} />
                   <b style={{ color: T.white, fontSize: 14.5 }}>Lent and borrowed</b>
