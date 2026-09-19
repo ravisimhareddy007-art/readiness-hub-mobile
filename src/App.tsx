@@ -5248,6 +5248,36 @@ function Wealth({ store, go, toast }: any) {
             <button className="lp-es-how" onClick={() => setShowMath((v) => !v)} style={{ ...btnGhost, padding: "6px 11px", fontSize: 12 }}>
               {showMath ? "Hide math" : "How?"}
             </button>
+            {openTx.length > 0 && (
+              <button
+                className="lp-es-lb"
+                onClick={goLent}
+                title="Lent and borrowed" aria-label="Lent and borrowed"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  fontSize: 12.5,
+                  color: T.muted,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <Coins size={13} color={T.muted} />
+                <span>
+                  Owed to you{" "}
+                  <b style={{ color: T.text, fontVariantNumeric: "tabular-nums" }}>{money(owedToYou)}</b>
+                </span>
+                <span style={{ color: T.faint }}>·</span>
+                <span>
+                  You owe <b style={{ color: T.text, fontVariantNumeric: "tabular-nums" }}>{money(youOwe)}</b>
+                </span>
+                <ChevronRight size={13} color={T.faint} />
+              </button>
+            )}
             <span className="lp-vdiv" style={{ width: 1, alignSelf: "stretch", background: T.border }} />
             <button className="lp-es-cta" onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13 }}>
               <FileText size={14} /> Family summary <ArrowRight size={13} />
@@ -5362,6 +5392,29 @@ function Wealth({ store, go, toast }: any) {
                   <ChevronRight size={14} color={T.faint} />
                 </div>
               ))}
+              {gaps.length > 3 && (
+                <button
+                  onClick={() => setAllGaps((v) => !v)}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    background: "transparent",
+                    border: "none",
+                    borderTop: `1px solid ${T.border}`,
+                    padding: "11px 16px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: SEM.action,
+                    cursor: "pointer",
+                  }}
+                >
+                  {allGaps ? "Show less" : `View all ${gaps.length}`}
+                  <ChevronDown size={14} style={{ transform: allGaps ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
+                </button>
+              )}
             </Card>
           )}
 
@@ -5384,7 +5437,7 @@ function Wealth({ store, go, toast }: any) {
                 </Card>
               )}
               {isMobile && (
-                <div className="lp-chiprail" style={{ marginBottom: 10 }}>
+                <div className="lp-chiprail lp-chipsticky">
                   {(["all", ...groups.map(([l]) => l), "Lent and borrowed"] as const).map((k) => {
                     const on = wg === k;
                     return (
@@ -5433,7 +5486,7 @@ function Wealth({ store, go, toast }: any) {
                 ) : null,
               )}
               {(wg === "all" || wg === "Lent and borrowed") && (
-              <Card style={{ padding: 0 }}>
+              <Card id="lp-lentborrowed" style={{ padding: 0, scrollMarginTop: 60 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
                   <Coins size={16} color={T.muted} />
                   <b style={{ color: T.white, fontSize: 14.5 }}>Lent and borrowed</b>
