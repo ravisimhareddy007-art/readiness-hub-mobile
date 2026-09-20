@@ -8,7 +8,7 @@ const INSTITUTIONS = [
   "United India Insurance", "Zerodha", "Groww", "Upstox", "Nippon India", "Aditya Birla", "Mirae Asset", "EPFO", "NPS",
 ];
 
-const AMOUNT = "(?:₹|Rs\\.?|INR)?\\s*([0-9]{1,3}(?:,[0-9]{2,3})+(?:\\.[0-9]{1,2})?|[0-9]{4,}(?:\\.[0-9]{1,2})?)";
+const AMOUNT = "(?:₹|Rs\\.?|INR)?\\s*([0-9]{1,3}(?:,[0-9]{2,3})+(?:\\.[0-9]{1,2})?|[0-9]{3,}(?:\\.[0-9]{1,2})?)";
 const VALUE_LABELS = [
   "sum assured", "sum insured", "cover(?:age)? amount", "outstanding(?: principal| balance| amount)?",
   "closing balance", "available balance", "current value", "market value", "maturity value", "balance",
@@ -54,7 +54,7 @@ export function extractHoldingFields(text: string): Partial<Holding> {
     }
   }
 
-  for (const m of t.matchAll(/(?:policy|account|a\/c|folio|loan)\s*(?:number|no\.?|#|id)?\s*[:\-]?\s*([A-Z0-9][A-Z0-9\-\/]{5,})/gi)) {
+  for (const m of t.matchAll(/(?:policy|account|a\/c|folio|loan)\s*(?:number|no\.?|#|id)?\s*[:\-]?\s*(?=[A-Z0-9\-\/]*\d)([A-Z0-9][A-Z0-9\-\/]{5,})/gi)) {
     const digits = m[1].replace(/\D/g, "");
     if (digits.length >= 4) {
       out.accountRef = "•" + digits.slice(-4);
