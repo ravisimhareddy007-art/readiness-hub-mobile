@@ -61,7 +61,8 @@ import {
   Baby,
   Gem,
 } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { useStore, getCurrency } from "@/lib/store";
+import { formatMoney, rateBetween, CURRENCIES, RATES_NOTE } from "@/lib/currency";
 import type { Category, Doc, Member, Access, Holding, Transaction, Reminder } from "@/lib/types";
 const Healthcare = lazy(() => import("@/components/Healthcare"));
 import { buildZip } from "@/lib/zip";
@@ -169,6 +170,10 @@ body{background:var(--lpv-bg)}
 .lp-mh-modlbl{font-size:10.5px;font-weight:600;color:var(--lpv-muted)}
 .lp-mh-insrail{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .lp-mh-insrail::-webkit-scrollbar{display:none}
+.lp-chip{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 9px;border-radius:7px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap}
+.lp-tap{position:relative;cursor:pointer}
+.lp-tap::after{content:"";position:absolute;inset:-8px}
+.lp-iconbtn{min-width:44px;min-height:44px;display:inline-grid;place-items:center}
 .lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:18px;border:none;display:grid;place-items:center;background:linear-gradient(135deg,var(--lpv-gold),var(--lpv-goldb));box-shadow:0 12px 32px var(--lpv-fabshadow);cursor:pointer}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
@@ -180,6 +185,10 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-chiprail{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap !important;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .lp-chiprail::-webkit-scrollbar{display:none}
 .lp-chipsticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px;padding:8px 14px 6px}
+.lp-wrow{flex-wrap:wrap}
+.lp-wrow .lp-wchips{flex-basis:100%;padding-left:48px;margin-top:2px}
+.lp-es-cta{display:flex;gap:8px}
+.lp-es-cta>button{flex:1;justify-content:center}
 .lp-act{flex-wrap:wrap;row-gap:2px}
 .lp-act-label{flex:1 1 100% !important;order:9;white-space:normal !important;overflow:visible !important;text-overflow:clip !important;padding-left:19px;line-height:1.45}
 .lp-act-when{margin-left:auto}
@@ -232,8 +241,14 @@ const fmtDays = (expiry?: string) => {
   return d < 0 ? "expired" : `${d} days`;
 };
 const daysTo = (s: string) => Math.ceil((+new Date(s) - Date.now()) / 86400000);
-const money = (v: number) =>
-  v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `$${(v / 1e3).toFixed(0)}K` : `$${v}`;
+const money = (v: number, currency?: string) => formatMoney(v, currency || getCurrency());
+const fmtDate = (s?: string, o?: Intl.DateTimeFormatOptions) =>
+  s ? new Date(s).toLocaleDateString(undefined, o || { day: "numeric", month: "short", year: "numeric" }) : "—";
+/* Subline for an entry made in another currency: "CHF 1,200 at 117.00" */
+const origLine = (r: { origAmount?: number; origCurrency?: string; fxRate?: number }) =>
+  r.origCurrency && r.origAmount !== undefined && r.origCurrency !== getCurrency()
+    ? `${formatMoney(r.origAmount, r.origCurrency, false)}${r.fxRate ? ` at ${r.fxRate.toFixed(2)}` : ""}`
+    : "";
 const toneFor = (n: number) => (n >= 80 ? T.mint : n >= 40 ? T.gold : T.coral);
 
 const CAT_META: Record<Category, { icon: any; color: string }> = {
@@ -4817,8 +4832,33 @@ function AddMember({ onClose, save }: any) {
 }
 
 /* ═══════════════ WEALTH (derived from documents with value) ═══════════════ */
+function ConfirmSheet({ title, body, action, onYes, onClose }: any) {
+  return (
+    <MSheet title={title} onClose={onClose}>
+      <p style={{ color: T.text, fontSize: 14, lineHeight: 1.55, margin: "8px 0 18px" }}>{body}</p>
+      <div style={{ display: "flex", gap: 10 }}>
+        <button onClick={onClose} style={{ ...btnGhost, flex: 1, justifyContent: "center", minHeight: 44 }}>
+          Keep
+        </button>
+        <button
+          onClick={() => {
+            onYes();
+            onClose();
+          }}
+          style={{ ...btnGhost, flex: 1, justifyContent: "center", minHeight: 44, color: T.coral, borderColor: T.coral + "55" }}
+        >
+          {action}
+        </button>
+      </div>
+    </MSheet>
+  );
+}
+
 function Wealth({ store, go, toast }: any) {
   const [showMath, setShowMath] = useState(false);
+  const [editTx, setEditTx] = useState<Transaction | null>(null);
+  const [focusField, setFocusField] = useState<"access" | null>(null);
+  const [confirm, setConfirm] = useState<{ title: string; body: string; action: string; onYes: () => void } | null>(null);
   const [viewDoc, setViewDoc] = useState<Doc | null>(null);
   const [edit, setEdit] = useState<Holding | null>(null);
   const [addH, setAddH] = useState(false);
@@ -4856,26 +4896,27 @@ function Wealth({ store, go, toast }: any) {
   const covers = H.filter((h) => h.kind === "cover");
   const sum = (a: Holding[]) => a.reduce((s, h) => s + (h.value || 0), 0);
   const totalAssets = sum(assets),
-    totalLiab = sum(liabilities),
-    net = totalAssets - totalLiab,
-    totalCover = sum(covers);
+    totalLiab = sum(liabilities);
   const guarded = H.filter((h) => h.kind === "asset" || h.kind === "cover");
   const txs: Transaction[] = store.transactions || [];
   const openTx = txs.filter((t) => !t.followUpDone);
   const txReady = openTx.filter((t) => t.docId && (t.counterparty || "").trim());
   const owedToYou = openTx.filter((t) => t.direction === "paid").reduce((a, t) => a + t.amount, 0);
   const youOwe = openTx.filter((t) => t.direction === "received").reduce((a, t) => a + t.amount, 0);
-  const readiness = Math.round(
-    ((sum(guarded.filter((h) => h.nominee && h.docId && h.accessNote)) + txReady.reduce((a, t) => a + t.amount, 0)) /
-      ((sum(guarded) + openTx.reduce((a, t) => a + t.amount, 0)) || 1)) *
-      100,
-  );
+  const reachable = (h: Holding) => !!(h.nominee && h.docId && h.accessNote);
+  const scoredTotal = sum(guarded) + openTx.reduce((a, t) => a + t.amount, 0);
+  const scoredCount = guarded.length + openTx.length;
+  /* Amount-weighted when amounts exist; count-weighted when the user has recorded holdings without amounts. */
+  const readiness =
+    scoredTotal > 0
+      ? Math.round(((sum(guarded.filter(reachable)) + txReady.reduce((a, t) => a + t.amount, 0)) / scoredTotal) * 100)
+      : scoredCount > 0
+        ? Math.round(((guarded.filter(reachable).length + txReady.length) / scoredCount) * 100)
+        : 0;
   const missNom = guarded.filter((h) => !h.nominee).length;
   const missDoc = guarded.filter((h) => !h.docId).length;
   const missAcc = guarded.filter((h) => !h.accessNote).length;
-  const fixMins = missNom * 2 + missDoc * 3 + missAcc * 2;
   const readyColor = readiness >= 80 ? T.mint : readiness >= 40 ? T.gold : T.coral;
-  const trusted = store.members.filter((m: Member) => m.access === "Full member" || m.access === "Emergency access");
   const linkedDoc = (h: Holding) => store.docs.find((d: Doc) => d.id === h.docId) || null;
 
   type Sev = "critical" | "important" | "info";
@@ -4915,6 +4956,22 @@ function Wealth({ store, go, toast }: any) {
         label: `${h.name} · no access instructions`,
         impact: `${money(v)} effectively locked for the family`,
       });
+    if (h.kind === "liability" && !h.docId)
+      gaps.push({
+        h,
+        kind: "doc",
+        sev: "important",
+        label: `${h.name} · no document on file`,
+        impact: "the family would not know the lender, the account, or what is owed",
+      });
+    if (h.kind === "liability" && !h.accessNote)
+      gaps.push({
+        h,
+        kind: "access",
+        sev: "important",
+        label: `${h.name} · no closure instructions`,
+        impact: "who to contact and how to close or take over the loan",
+      });
     if (h.maturityDate && daysTo(h.maturityDate) >= 0 && daysTo(h.maturityDate) < 60)
       gaps.push({
         h,
@@ -4947,12 +5004,22 @@ function Wealth({ store, go, toast }: any) {
       });
   });
   covers.forEach((c) => {
-    if (c.renewalDate && daysTo(c.renewalDate) < 60)
+    if (!c.renewalDate) return;
+    const d = daysTo(c.renewalDate);
+    if (d < 0)
       gaps.push({
         h: c,
         kind: "renewal",
-        sev: daysTo(c.renewalDate) < 15 ? "critical" : "important",
-        label: `${c.name} renews in ${daysTo(c.renewalDate)} days`,
+        sev: "critical",
+        label: `${c.name} · renewal passed ${-d} day${-d === 1 ? "" : "s"} ago`,
+        impact: "check whether the cover has lapsed and update the date",
+      });
+    else if (d < 60)
+      gaps.push({
+        h: c,
+        kind: "renewal",
+        sev: d < 15 ? "critical" : "important",
+        label: `${c.name} renews in ${d} day${d === 1 ? "" : "s"}`,
         impact: "cover lapses if the premium is missed",
       });
   });
@@ -4995,15 +5062,11 @@ function Wealth({ store, go, toast }: any) {
   );
   const Chip = ({ ok, label }: { ok: boolean; label: string }) => (
     <span
+      className="lp-chip"
       style={{
-        fontSize: 10.5,
-        fontWeight: 700,
-        fontVariantNumeric: "tabular-nums",
         color: ok ? T.mint : T.coral,
         background: (ok ? T.mint : T.coral) + "14",
         border: `1px solid ${ok ? T.mint : T.coral}44`,
-        borderRadius: 6,
-        padding: "2px 7px",
       }}
     >
       {ok ? "✓" : "✗"} {label}
@@ -5045,6 +5108,7 @@ function Wealth({ store, go, toast }: any) {
             {h.type}
             {h.institution ? ` · ${h.institution}` : ""}
             {h.accountRef ? ` ${h.accountRef}` : ""}
+            {origLine(h) ? ` · ${origLine(h)}` : ""}
           </div>
         </div>
         <span
@@ -5059,19 +5123,20 @@ function Wealth({ store, go, toast }: any) {
           {h.kind === "liability" ? "\u2212" : ""}
           {money(h.value || 0)}
         </span>
-        {guardedKind && (
-          <span className="lp-wchips" style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
+        <span className="lp-wchips" style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
+          <span
+            className="lp-tap"
+            onClick={(e) => {
+              e.stopPropagation();
+              d ? setViewDoc(d) : attach(h);
+            }}
+            title={d ? "View document" : "Attach document"} aria-label={d ? "View document" : "Attach document"}
+          >
+            <Chip ok={!!d} label="Doc" />
+          </span>
+          {guardedKind && (
             <span
-              onClick={(e) => {
-                e.stopPropagation();
-                d ? setViewDoc(d) : attach(h);
-              }}
-              style={{ cursor: "pointer" }}
-              title={d ? "View document" : "Attach document"} aria-label={d ? "View document" : "Attach document"}
-            >
-              <Chip ok={!!d} label="Doc" />
-            </span>
-            <span
+              className="lp-tap"
               onClick={(e) => {
                 e.stopPropagation();
                 if (!h.nominee) setNomineeFor(h);
@@ -5081,9 +5146,19 @@ function Wealth({ store, go, toast }: any) {
             >
               <Chip ok={!!h.nominee} label="Nominee" />
             </span>
-            <Chip ok={!!h.accessNote} label="Access" />
+          )}
+          <span
+            className="lp-tap"
+            onClick={(e) => {
+              e.stopPropagation();
+              setFocusField("access");
+              setEdit(h);
+            }}
+            title="Access instructions" aria-label="Access instructions"
+          >
+            <Chip ok={!!h.accessNote} label={h.kind === "liability" ? "Closure" : "Access"} />
           </span>
-        )}
+        </span>
         <ChevronRight size={14} color={T.faint} />
       </div>
     );
