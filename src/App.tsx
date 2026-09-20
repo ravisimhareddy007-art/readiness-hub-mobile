@@ -3537,7 +3537,7 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
 }
 
 /* ═══════════════ DOCUMENTS ═══════════════ */
-function Documents({ store, toast }: any) {
+function Documents({ store, toast, go }: any) {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("All");
   const [person, setPerson] = useState<string>("All");
@@ -3627,7 +3627,23 @@ function Documents({ store, toast }: any) {
           onDeleted={() => setOpen(null)}
         />
       )}
-      {preview && <DocViewer doc={preview} store={store} onClose={() => setPreview(null)} />}
+      {preview && (
+        <DocViewer
+          doc={preview}
+          store={store}
+          onClose={() => setPreview(null)}
+          onAddToWealth={
+            ["Finance", "Insurance", "Property", "Tax"].includes(preview.category) &&
+            !store.holdings.some((h: Holding) => h.docId === preview.id)
+              ? () => {
+                  setPreview(null);
+                  store.setWealthIntent({ docId: preview.id });
+                  go?.("wealth");
+                }
+              : undefined
+          }
+        />
+      )}
     </>
   );
 
@@ -8546,7 +8562,7 @@ export default function App() {
         <div key={route} className="lp-screen">
         {route === "home" && <Home store={store} go={go} toast={toast} />}
         {route === "packages" && <Packages store={store} toast={toast} />}
-        {route === "documents" && <Documents store={store} toast={toast} />}
+        {route === "documents" && <Documents store={store} toast={toast} go={go} />}
         {route === "health" && (
           <Suspense fallback={<div style={{ minHeight: 200 }} />}>
             <Healthcare toast={toast} />

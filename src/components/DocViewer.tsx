@@ -243,7 +243,7 @@ function docHTML(doc: Doc, store: any): string {
   ]);
 }
 
-export default function DocViewer({ doc, store, onClose }: { doc: Doc; store: any; onClose: () => void }) {
+export default function DocViewer({ doc, store, onClose, onAddToWealth }: { doc: Doc; store: any; onClose: () => void; onAddToWealth?: () => void }) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [mode, setMode] = useState<"loading" | "image" | "pdf" | "template">("loading");
 
@@ -413,8 +413,27 @@ export default function DocViewer({ doc, store, onClose }: { doc: Doc; store: an
             fontSize: 12,
           }}
         >
-          <ShieldCheck size={13} style={{ color: "var(--lpv-action)" }} /> Stored on your device.
+<ShieldCheck size={13} style={{ color: "var(--lpv-action)" }} /> Stored on your device.
           {doc.fileKey === "seed" ? " Sample preview." : ""}
+          {onAddToWealth && (
+            <button
+              onClick={onAddToWealth}
+              style={{
+                marginLeft: "auto",
+                background: "transparent",
+                border: "1px solid var(--lpv-border)",
+                borderRadius: 8,
+                padding: "6px 10px",
+                color: "var(--lpv-action)",
+                fontSize: 12.5,
+                fontWeight: 600,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Add to Wealth
+            </button>
+          )}
         </div>
       </div>
     </div>
