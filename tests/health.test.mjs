@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const st = await import(pathToFileURL(join(root, "src/lib/visit.ts")).href);
+const st = await import(pathToFileURL(join(root, "src/lib/extract-medical.ts")).href);
 
 let fails = 0;
 const t = (n, fn) => { try { fn(); console.log("ok   " + n); } catch (e) { fails++; console.log("FAIL " + n + " :: " + e.message.split("\n")[0]); } };
