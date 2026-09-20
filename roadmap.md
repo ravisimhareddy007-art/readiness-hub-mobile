@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Add shared currency model and persistence
-- [ ] Upgrade Wealth readiness, actions, and safe editing
-- [ ] Add home currency setting
-- [ ] Validate mobile and desktop workflows
+- [x] Add shared currency model and persistence
+- [x] Upgrade Wealth readiness, actions, and safe editing
+- [x] Add home currency setting
+- [x] Validate mobile and desktop workflows
