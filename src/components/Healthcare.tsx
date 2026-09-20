@@ -903,6 +903,18 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     <Tr size={14} color={delta === 0 ? C.faint : delta > 0 ? C.red : C.emerald} />
                   </div>
                   <MiniChart arr={arr} metric={k} color={SM[st].c === C.faint ? C.cyan : SM[st].c} />
+                  <button
+                    className="lh-lnk"
+                    style={{ fontSize: 12, marginTop: 8 }}
+                    onClick={() => {
+                      const last = arr[arr.length - 1];
+                      if (!last) return;
+                      s.removeLab(last.id);
+                      toast(`Latest ${k} reading removed`);
+                    }}
+                  >
+                    Remove latest reading
+                  </button>
                   <div
                     style={{
                       display: "flex",
@@ -982,6 +994,17 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                       </div>
                       <button
                         className="lh-ib"
+                        title="Remove" aria-label="Remove"
+                        onClick={() => {
+                          s.removeReminder(r.id);
+                          toast("Reminder removed");
+                        }}
+                      >
+                        <Trash2 size={15} color={C.faint} />
+                      </button>
+                      <button
+                        className="lh-ib"
+                        title="Mark done" aria-label="Mark done"
                         onClick={() => {
                           s.completeReminder(r.id);
                           toast("Marked done");
@@ -1127,7 +1150,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               </div>
             ) : (
               meds.map((med) => {
-                const rf = daysTo(med.refillBy);
+                const rf = med.refillBy ? daysTo(med.refillBy) : null;
                 const latestRx = records
                   .filter((r) => r.medType === "prescription")
                   .sort((a, b) => (b.docDate || b.addedAt).localeCompare(a.docDate || a.addedAt))[0];
@@ -1148,7 +1171,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                             : ""}
                         </div>
                       </div>
-                      {rf <= 14 && (
+                      {rf !== null && rf <= 14 && (
                         <span
                           className="lh-tag"
                           style={{
@@ -2087,7 +2110,12 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
   const curLabel = targetLabel(cur);
   const packDocs: Doc[] = useMemo(() => selectVisitDocs(docs, member.id, cur), [docs, member.id, cur]);
   const included = packDocs.filter((d) => !excluded.has(d.id));
-  const foc = focusFor(curLabel);
+  /* Which readings a visit cares about, taken from the specialisation on the matching records. */
+  const foc = focusFor(
+    cur.kind === "specialisation"
+      ? cur.value || ""
+      : packDocs.map((d) => d.specialisation).find(Boolean) || "",
+  );
   const KIND_LABEL: Record<string, string> = {
     doctor: "Doctor",
     hospital: "Hospital or lab",
@@ -2158,6 +2186,12 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
             </button>
           ))}
         </div>
+        {targets.length === 1 && (
+          <div style={{ fontSize: 12.5, color: C.sub, margin: "0 0 12px", lineHeight: 1.5 }}>
+            Doctors, hospitals, and specialisations appear here once {member.name.split(" ")[0]} has records naming
+            them. Add a prescription or report and they are picked up automatically.
+          </div>
+        )}
         <div style={{ fontSize: 12, color: C.faint, marginBottom: 12 }}>
           {KIND_LABEL[cur.kind]}
           {cur.kind !== "general" ? " named on this member's records" : " from the last 12 months"}
