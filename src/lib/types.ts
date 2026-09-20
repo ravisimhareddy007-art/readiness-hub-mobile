@@ -70,7 +70,10 @@ export interface Transaction {
   purpose: string; // "Advance to contractor", "LIC premium paid"
   counterparty?: string; // person/institution on the other side
   direction: "paid" | "received";
-  amount: number;
+  amount: number; // in the home currency at entry
+  origAmount?: number; // as entered, if a different currency was used
+  origCurrency?: string;
+  fxRate?: number; // home units per 1 origCurrency at entry
   date: string; // ISO date of the transaction
   docId?: string; // evidence (screenshot/receipt) stored as a Doc — single source of truth
   followUpOn?: string; // ISO date to follow up
@@ -88,7 +91,10 @@ export interface Holding {
   type: string; // "Mutual funds", "Home loan", "Life insurance", "Property"
   institution?: string; // "Beacon Wealth"
   accountRef?: string; // masked, "\u20224821"
-  value?: number; // documented value (asset), outstanding (liability), or cover (cover)
+  value?: number; // documented value (asset), outstanding (liability), or cover (cover), in the home currency at entry
+  origAmount?: number; // as entered, if a different currency was used
+  origCurrency?: string;
+  fxRate?: number; // home units per 1 origCurrency at entry
   nominee?: boolean; // beneficiary named
   nomineeName?: string;
   renewalDate?: string; // ISO, for policies
