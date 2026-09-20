@@ -29,7 +29,7 @@ ReadiNes must never visually communicate crisis, fear, urgency or medical anxiet
 
 Module identities: Documents `A.blue`, Packages `A.green`, Health `A.pink`, Wealth `A.gold`, Family `A.purple`.
 
-**Gold rule.** Gold means readiness, achievement, premium moments and important highlights only. Gold is never body text, never a border color, never every icon, never every button. Interactive primaries and selected states use teal (`SEM.action`).
+**Gold rule.** Gold means readiness, achievement, premium moments and important highlights only. Gold is never body text, never a border color, never every icon, never every button. Interactive primaries and selected states use teal (`SEM.action`). Applied Sept 2026: the shared primary button style (`btnGold`, kept by name for compatibility) and the floating action button render in `--lpv-action`, never gold; gold buttons are not permitted.
 
 **Themes are designed, never derived.** Light and dark share the same semantic tokens with different values. Inversion filters are banned. Every color in product UI comes from a token or a theme variable; hard-coded hex or rgba values in components are a defect, because they were written against one canvas and break on the other.
 
