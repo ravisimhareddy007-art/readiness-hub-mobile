@@ -199,6 +199,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
      "family" is now the manage-family view, reached deliberately. */
   const [mView, setMView] = useState<"family" | "person">("person");
   const [confirmDel, setConfirmDel] = useState<Member | null>(null);
+  const [addSheet, setAddSheet] = useState(false);
   const [tab, setTab] = useState<"overview" | "timeline" | "meds" | "records">("overview");
   const [modal, setModal] = useState<
     null | "reading" | "member" | "med" | "reminder" | "profile" | "emergency" | "visit"
@@ -638,14 +639,24 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           <MNav
             title="Health" aria-label="Health"
             right={
-              <button
-                className="lh-btn-g"
-                style={{ padding: 9, borderRadius: 99 }}
-                onClick={() => setMView("family")}
-                title="Manage family" aria-label="Manage family"
-              >
-                <Users size={16} />
-              </button>
+              <span style={{ display: "inline-flex", gap: 8 }}>
+                <button
+                  className="lh-btn-g"
+                  style={{ padding: 9, borderRadius: 99 }}
+                  onClick={() => setAddSheet(true)}
+                  title="Add" aria-label="Add"
+                >
+                  <Plus size={16} />
+                </button>
+                <button
+                  className="lh-btn-g"
+                  style={{ padding: 9, borderRadius: 99 }}
+                  onClick={() => setMView("family")}
+                  title="Manage family" aria-label="Manage family"
+                >
+                  <Users size={16} />
+                </button>
+              </span>
             }
           />
           {/* Who you are looking at, always on screen. Tapping switches without leaving Health. */}
@@ -1249,6 +1260,20 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         <div style={{ fontSize: 12, color: C.faint }}>
                           {r.docType} · {fmt(r.docDate || r.addedAt)}
                         </div>
+                        {r.readAt && (
+                          <div style={{ fontSize: 12, color: C.sub, marginTop: 3, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                            <span style={{ color: C.action, fontWeight: 600 }}>Read on {fmt(r.readAt)}</span>
+                            {[r.doctor, r.specialisation, r.hospital || r.lab].filter(Boolean).map((x) => (
+                              <span key={x as string}>· {x}</span>
+                            ))}
+                            {s.labs.filter((l) => l.sourceDocId === r.id).length > 0 && (
+                              <span>
+                                · {s.labs.filter((l) => l.sourceDocId === r.id).length} reading
+                                {s.labs.filter((l) => l.sourceDocId === r.id).length === 1 ? "" : "s"}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -1261,6 +1286,67 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
 
       {/* modals */}
       <AnimatePresence>
+        {addSheet && (
+          <div className="lh-overlay" onClick={() => setAddSheet(false)}>
+            <motion.div
+              className="lh-modal"
+              onClick={(e) => e.stopPropagation()}
+              initial={isMobileView() ? { y: 40, opacity: 0 } : { scale: 0.96, opacity: 0 }}
+              animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
+              transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
+            >
+              <h3 className="lh-h2" style={{ fontSize: 18, marginBottom: 4 }}>
+                Add to Health
+              </h3>
+              <p style={{ fontSize: 13, color: C.sub, margin: "0 0 14px" }}>For {m.name.split(" ")[0]}</p>
+              {[
+                {
+                  icon: Upload,
+                  label: "A record",
+                  sub: "Prescription, lab report, scan, or discharge summary",
+                  run: () => {
+                    setTab("records");
+                    pendingRec.current = null;
+                    setTimeout(() => recRef.current?.click(), 60);
+                  },
+                },
+                { icon: Plus, label: "A reading", sub: "Copy a value and its range from a report", run: () => setModal("reading") },
+                { icon: Bell, label: "A reminder", sub: "Appointment, refill, or vaccination", run: () => setModal("reminder") },
+                { icon: PillIcon, label: "A medicine", sub: "Name, dose, and refill date", run: () => setModal("med") },
+                { icon: UserPlus, label: "A family member", sub: "Someone else whose records you keep", run: () => setModal("member") },
+              ].map((o) => (
+                <button
+                  key={o.label}
+                  onClick={() => {
+                    setAddSheet(false);
+                    o.run();
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    width: "100%",
+                    minHeight: 56,
+                    padding: "10px 4px",
+                    background: "none",
+                    border: "none",
+                    borderTop: `1px solid ${C.border}`,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  <o.icon size={18} color={C.action} />
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 14.5, fontWeight: 600, color: C.text }}>{o.label}</span>
+                    <span style={{ display: "block", fontSize: 12.5, color: C.sub, marginTop: 1 }}>{o.sub}</span>
+                  </span>
+                  <ChevronRight size={15} color={C.faint} />
+                </button>
+              ))}
+            </motion.div>
+          </div>
+        )}
         {modal === "reading" && (
           <LogReading
             member={m}
