@@ -4879,7 +4879,7 @@ function AddMember({ onClose, save }: any) {
           style={inp}
           value={f.name}
           onChange={(e) => setF({ ...f, name: e.target.value })}
-          placeholder="e.g. Taylor Morgan"
+          placeholder="e.g. Lakshmi Iyer"
         />
         <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
           <div style={{ flex: 1 }}>
@@ -7230,7 +7230,7 @@ function NomineeModal({ holding, onClose, onSave }: any) {
           style={inp}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Jordan Morgan (spouse)"
+          placeholder="e.g. Divya Iyer (spouse)"
           autoFocus
         />
         <button

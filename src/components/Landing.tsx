@@ -449,7 +449,7 @@ function HealthMock() {
 }
 function SearchMock() {
   const hits = [
-    { icon: Pill, c: C.purple, t: "Levothyroxine 50mcg", s: "Medication · Diane" },
+    { icon: Pill, c: C.purple, t: "Levothyroxine 50mcg", s: "Medication · Lakshmi" },
     { icon: FlaskConical, c: C.pink, t: "TSH lab report", s: "Lab · May 2026" },
     { icon: FileText, c: C.blue, t: "Thyroid prescription", s: "Document · Dr. Carter" },
   ];

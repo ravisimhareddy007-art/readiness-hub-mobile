@@ -24,7 +24,7 @@ import { myPublicKey } from "./vault";
 import { ensureVaultReady } from "./session";
 import type { DocCrypto } from "./vault";
 
-const LS = "lifepack.v3"; // bumped: enriched seeds (fresh state on upgrade)
+const LS = "lifepack.v4"; // bumped: Indian sample family (stored data from v3 is ignored)
 const rel = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
 const iso = (n: number) => new Date(Date.now() + n * 86400000).toISOString();
 const id = () => Math.random().toString(36).slice(2, 9);
@@ -52,15 +52,10 @@ interface State {
   theme: "dark" | "light";
   notifications: boolean;
   dataMode: "sample" | "empty"; // empty = 1Shelf-style day-0; sample = seeded family
-  seedVersion?: number; // which build of the sample family is stored
   currency: string; // home currency for display and totals
 }
 
 /* ── members (enterprise-neutral) ── */
-/* Bump when the seeded sample family changes. A stored sample bundle from an older version is
-   replaced on next load; a real vault (dataMode "empty") is never touched. */
-const SEED_VERSION = 3;
-
 const seedMembers: Member[] = [
   { id: "you", name: "Arjun Iyer", relation: "Self", color: "#5B8DEF", dob: "1985-06-14", bloodGroup: "O+", access: "Owner" },
   { id: "spouse", name: "Divya Iyer", relation: "Spouse", color: "#9B7BE8", dob: "1987-02-09", bloodGroup: "A+", access: "Full member" },
@@ -193,7 +188,7 @@ const seedHoldings: Holding[] = [
     nominee: true,
     nomineeName: "Divya Iyer",
     accessNote:
-      "Jordan is joint holder. Netbanking ID saved under 'Meridian' in the password manager. Branch: MG Road (Mr. Srinivas, relationship manager).",
+      "Divya is joint holder. Netbanking ID saved under 'HDFC' in the password manager. Branch: MG Road (Mr. Srinivas, relationship manager).",
     docId: dId("Bank Statement"),
   },
   {
@@ -236,7 +231,7 @@ const seedHoldings: Holding[] = [
     nominee: true,
     nomineeName: "Divya Iyer",
     accessNote:
-      "Locker 114, MG Road branch. Keys in the bedroom safe. Jordan already has operating mandate; carry Aadhaar for access.",
+      "Locker 114, MG Road branch. Keys in the bedroom safe. Divya already has operating mandate; carry Aadhaar for access.",
   },
   {
     id: id(),
@@ -263,7 +258,7 @@ const seedHoldings: Holding[] = [
     nominee: true,
     nomineeName: "Divya Iyer",
     accessNote:
-      "Original sale deed and khata in locker 114, Meridian MG Road. Society office: Mr. Rao, Lakeview Apts. Property tax paid online, receipts in this archive.",
+      "Original sale deed and khata in locker 114, HDFC MG Road. Society office: Mr. Rao, Lakeview Apts. Property tax paid online, receipts in this archive.",
     docId: dId("Property Deed"),
   },
   {
@@ -301,7 +296,7 @@ const seedHoldings: Holding[] = [
     nomineeName: "Divya Iyer",
     renewalDate: rel(210),
     accessNote:
-      "Agent: R. Iyer, 98400-22110. Claim online on the Aegis portal with policy 5567 and death certificate. Premium autopays from savings •4821 each July.",
+      "Agent: S. Ramanathan, 98400 22110. Claim online on the LIC portal with policy 5567 and death certificate. Premium autopays from savings •4821 each July.",
     docId: dId("Life Insurance"),
   },
   {
@@ -576,7 +571,6 @@ const DEFAULT: State = {
   customPacks: [],
   theme: "dark",
   notifications: false,
-  seedVersion: SEED_VERSION,
   currency: defaultCurrency(),
 };
 // user-scoped bundles preserved across a mode switch (so switching back is instant and lossless)
@@ -593,8 +587,9 @@ const BUNDLE_KEYS: (keyof Bundle)[] = [
   "handoff",
   "customPacks",
 ];
-const LS_SAVED = "lifepack.v3.saved"; // { sample?: Bundle, empty?: Bundle }
-function loadSaved(): { sample?: Bundle; empty?: Bundle } {
+const LS_SAVED = "lifepack.v4.saved"; // { sample?: Bundle, empty?: Bundle }
+type Saved = { sample?: Bundle; empty?: Bundle };
+function loadSaved(): Saved {
   if (typeof window === "undefined") return {};
   try {
     return JSON.parse(localStorage.getItem(LS_SAVED) || "{}");
@@ -602,7 +597,7 @@ function loadSaved(): { sample?: Bundle; empty?: Bundle } {
     return {};
   }
 }
-function saveSaved(v: { sample?: Bundle; empty?: Bundle }) {
+function saveSaved(v: Saved) {
   if (typeof window !== "undefined") localStorage.setItem(LS_SAVED, JSON.stringify(v));
 }
 function bundleOf(st: State): Bundle {
@@ -624,22 +619,8 @@ function load(): State {
     const raw = localStorage.getItem(LS);
     if (raw) {
       const p = JSON.parse(raw);
-      /* Stale demo content: rebuild the sample family from code, keeping the person's own
-         settings and any real vault they have saved alongside it. */
-      if ((p.dataMode ?? "empty") === "sample" && p.seedVersion !== SEED_VERSION) {
-        return {
-          ...DEFAULT,
-          seedVersion: SEED_VERSION,
-          onboarded: p.onboarded ?? DEFAULT.onboarded,
-          theme: p.theme ?? "dark",
-          notifications: p.notifications ?? false,
-          currency: p.currency ?? defaultCurrency(),
-          dataMode: "sample",
-        };
-      }
       return {
         ...DEFAULT,
-        seedVersion: SEED_VERSION,
         ...p,
         care: p.care ?? DEFAULT.care,
         labs: p.labs ?? DEFAULT.labs,

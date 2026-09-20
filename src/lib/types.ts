@@ -103,7 +103,7 @@ export interface Holding {
   name: string; // "Investment portfolio"
   kind: HoldingKind;
   type: string; // "Mutual funds", "Home loan", "Life insurance", "Property"
-  institution?: string; // "Beacon Wealth"
+  institution?: string; // "HDFC Securities"
   accountRef?: string; // masked, "\u20224821"
   value?: number; // documented value (asset), outstanding (liability), or cover (cover), in the home currency at entry
   origAmount?: number; // as entered, if a different currency was used

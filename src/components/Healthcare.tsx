@@ -1976,7 +1976,7 @@ function AddMember({ onClose, save }: any) {
         className="lh-in"
         value={f.name}
         onChange={(e) => setF({ ...f, name: e.target.value })}
-        placeholder="e.g. Taylor Morgan"
+        placeholder="e.g. Lakshmi Iyer"
       />
       <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
         <div style={{ flex: 1 }}>
