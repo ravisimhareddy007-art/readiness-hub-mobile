@@ -3655,7 +3655,7 @@ function Documents({ store, toast, go }: any) {
           store={store}
           onClose={() => setPreview(null)}
           onAddToWealth={
-            ["Finance", "Insurance", "Property", "Tax"].includes(preview.category) &&
+            ["Finance", "Insurance", "Property"].includes(preview.category) &&
             !store.holdings.some((h: Holding) => h.docId === preview.id)
               ? () => {
                   setPreview(null);
@@ -5452,9 +5452,9 @@ function Wealth({ store, go, toast }: any) {
           {gaps.length > 0 && (
             <Card style={{ padding: 0, marginBottom: 18 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
-                <AlertTriangle size={16} color={T.gold} />
+                <AlertTriangle size={16} color={SEM.warning} />
                 <b style={{ color: T.white, fontSize: 14.5 }}>Needs attention</b>
-                <span style={{ marginLeft: "auto", ...pill(T.gold) }}>{gaps.length}</span>
+                <span style={{ marginLeft: "auto", ...pill(SEM.warning) }}>{gaps.length}</span>
               </div>
               {shownGaps.map((g, i) => (
                 <div
@@ -5783,13 +5783,13 @@ function Wealth({ store, go, toast }: any) {
                   </span>
                 </span>
               </button>
-              {store.docs.filter((d: Doc) => ["Finance", "Insurance", "Property", "Tax"].includes(d.category)).length === 0 && (
+              {store.docs.filter((d: Doc) => ["Finance", "Insurance", "Property"].includes(d.category)).length === 0 && (
                 <p style={{ fontSize: 13, color: T.muted, padding: "6px 10px 12px" }}>
                   No financial documents in your vault yet.
                 </p>
               )}
               {store.docs
-                .filter((d: Doc) => ["Finance", "Insurance", "Property", "Tax"].includes(d.category))
+                .filter((d: Doc) => ["Finance", "Insurance", "Property"].includes(d.category))
                 .map((d: Doc) => (
                   <button
                     key={d.id}
@@ -6902,7 +6902,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
               type="number"
               style={inp}
               value={f.value}
-              onChange={(e) => set("value", parseFloat(e.target.value) || 0)}
+              onChange={(e) => set("value", Math.max(0, parseFloat(e.target.value) || 0))}
             />
           </div>
           <div style={{ flex: 1 }}>
