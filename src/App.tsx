@@ -6727,7 +6727,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
     }
   };
   const [f, setF] = useState<any>(
-    holding || {
+    holding ? { ...holding, value: holding.origAmount ?? holding.value, origCurrency: holding.origCurrency || getCurrency() } : {
       name: "",
       kind: "asset",
       type: "",
