@@ -101,7 +101,7 @@ export function normaliseTestName(raw: string): string {
   let n = (paren || raw)
     .replace(/\([^)]*\)/g, " ")
     .replace(/^\s*[spb]\.\s*/i, " ")                                   // "S." / "P." specimen prefix
-    .replace(/\b(serum|plasma|blood|urine)\b/gi, " ")
+    .replace(/^\s*(serum|plasma)\b/i, " ")
     .replace(/[^A-Za-z0-9 ]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -112,16 +112,17 @@ export function normaliseTestName(raw: string): string {
   return [...quals.map((q) => q.replace(/\s+/g, "-")), base].filter(Boolean).join(" ").toLowerCase();
 }
 
-const NUM = "([0-9]+(?:\\.[0-9]+)?)";
+const NUM = "([0-9]+(?:,[0-9]{2,3})*(?:\\.[0-9]+)?)";
+const num = (x: string) => Number(x.replace(/,/g, ""));
 
 /** "4.0 - 5.6" / "4.0 to 5.6" / "< 100" / "up to 5.6", as printed beside a result. */
 function rangeAfter(segment: string): { low?: number; high?: number; text?: string } {
   let m = segment.match(new RegExp(`${NUM}\\s*(?:-|\\u2013|to)\\s*${NUM}`, "i"));
-  if (m) return { low: Number(m[1]), high: Number(m[2]), text: `${m[1]} to ${m[2]}` };
+  if (m) return { low: num(m[1]), high: num(m[2]), text: `${m[1]} to ${m[2]}` };
   m = segment.match(new RegExp(`(?:<|less than|up ?to|upto)\\s*${NUM}`, "i"));
-  if (m) return { high: Number(m[1]), text: `under ${m[1]}` };
+  if (m) return { high: num(m[1]), text: `under ${m[1]}` };
   m = segment.match(new RegExp(`(?:>|greater than|above)\\s*${NUM}`, "i"));
-  if (m) return { low: Number(m[1]), text: `over ${m[1]}` };
+  if (m) return { low: num(m[1]), text: `over ${m[1]}` };
   return {};
 }
 
@@ -149,7 +150,7 @@ export function extractReadings(text: string): ExtractedReading[] {
       if (rawName.trim().length < 2) continue;
       const name = normaliseTestName(rawName);
       if (!name || /^[0-9 ]+$/.test(name)) continue;
-      const value = Number(rawValue);
+      const value = num(rawValue);
       if (!Number.isFinite(value)) continue;
 
       const key = name + "|" + normUnit(rawUnit);
@@ -175,8 +176,8 @@ export function extractReadings(text: string): ExtractedReading[] {
   const t = text.replace(/\s+/g, " ");
   const bp = t.match(new RegExp(`(?:blood pressure|\\bbp\\b)[^0-9]{0,16}${NUM}\\s*\\/\\s*${NUM}`, "i"));
   if (bp) {
-    const sys = Number(bp[1]);
-    const dia = Number(bp[2]);
+    const sys = num(bp[1]);
+    const dia = num(bp[2]);
     if (sys >= 60 && sys <= 260 && dia >= 30 && dia <= 180)
       out.push({ metric: "Blood Pressure", key: "blood pressure|mmhg", value: sys, value2: dia, unit: "mmHg" });
   }

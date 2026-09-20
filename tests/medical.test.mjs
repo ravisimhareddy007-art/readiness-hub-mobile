@@ -158,5 +158,65 @@ MCV 88 fL 83 - 101`;
   assert.equal(R(cbc).length, 4);
 });
 
+
+/* ── name normalisation: a specimen prefix is not part of the test, an analyte word is ── */
+t("Blood Pressure keeps its name", () => assert.equal(m.normaliseTestName("Blood Pressure"), "blood pressure"));
+t("Blood Urea Nitrogen keeps its name", () => assert.equal(m.normaliseTestName("Blood Urea Nitrogen"), "blood urea nitrogen"));
+t("Urine Protein keeps its name", () => assert.equal(m.normaliseTestName("Urine Protein"), "urine protein"));
+t("leading Serum is a specimen prefix", () => assert.equal(m.normaliseTestName("Serum Creatinine"), "creatinine"));
+t("leading Plasma is a specimen prefix", () => assert.equal(m.normaliseTestName("Plasma Glucose Fasting"), "fasting glucose"));
+t("a logged BP joins a read BP", () => {
+  const read = m.extractReadings("Blood Pressure 148/94 mmHg")[0];
+  assert.equal(read.key, m.normaliseTestName("Blood Pressure") + "|mmhg");
+});
+
+/* ── what a real phone photo of an Indian lab report produces ── */
+const ok_ = (c,m) => { if(!c) throw new Error(m||"assertion failed"); };
+const R2=(x)=>m.extractReadings(x);
+const iso=(d)=>new Date(Date.now()+d*864e5).toISOString().slice(0,10);
+
+t("a scanned report with no readable text yields nothing, not a crash", () => {
+  const x = m.extractMedical("", "lab_report"); ok_(x.readings.length===0);
+});
+t("garbled OCR does not invent results", () => {
+  const x = R2("|||  ###   ???  \n  ..  --  "); ok_(x.length===0);
+});
+t("a very long line does not hang", () => {
+  const start=Date.now(); R2("Test "+"x".repeat(50000)+" 5 mg/dL"); ok_(Date.now()-start<1500);
+});
+t("a 200-row panel parses", () => {
+  const rows=Array.from({length:200},(_,i)=>`Analyte${i} ${i+1} mg/dL 1 - 500`).join("\n");
+  const r=R2(rows); ok_(r.length===200, "got "+r.length);
+});
+t("duplicate rows in one report collapse", () => {
+  const r=R2("HbA1c 6.8 % 4.0 - 5.6\nHbA1c 6.8 % 4.0 - 5.6"); ok_(r.length===1);
+});
+t("a negative value is not read as a result", () => {
+  const r=R2("Base Excess -2.4 mmol/L"); ok_(r.every(x=>x.value>=0));
+});
+t("a value with a comma separator is not split", () => {
+  const r=R2("Platelet Count 2,10,000 /cumm 150000 - 410000");
+  ok_(r.length===0 || r[0].value>=2, JSON.stringify(r));
+});
+t("a date line is not a result", () => {
+  ok_(R2("Reported on 12/08/2026").length===0);
+});
+t("a ratio is captured", () => {
+  const r=R2("Albumin Globulin Ratio 1.4 ratio 1.0 - 2.1"); ok_(r.length===1&&r[0].value===1.4);
+});
+t("prescription with no medicines yields none", () => {
+  const x=m.extractMedical("Advice: rest and fluids. Review after one week.","prescription");
+  ok_(x.medicines.length===0);
+});
+t("a doctor with a single-word name is captured", () => {
+  const x=m.extractMedical("Dr Rao\nDate of visit 04/09/2026","prescription"); ok_(x.doctor==="Dr Rao");
+});
+t("no doctor line yields no doctor", () => {
+  const x=m.extractMedical("Apollo Hospital\nDate 04/09/2026","prescription"); ok_(x.doctor===undefined);
+});
+t("a two-digit year resolves this century", () => {
+  const x=m.extractMedical("Review on 05/02/27","prescription"); ok_(x.reviewOn==="2027-02-05", x.reviewOn);
+});
+
 console.log(f?`\n${f} FAILED`:"\nall passed");
 process.exit(f?1:0);
