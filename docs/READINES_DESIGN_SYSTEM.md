@@ -37,7 +37,10 @@ Module identities: Documents `A.blue`, Packages `A.green`, Health `A.pink`, Weal
 
 - Spacing (8-point): 4, 8, 12, 16, 20, 24, 32, 40, 48, 64. No arbitrary values.
 - Typeface: the platform system font, always (`-apple-system` → SF Pro on iOS, Roboto on Android, Segoe on Windows). Inter and other web-default faces are banned from product UI — they read as template. Headings and bold text carry -0.015em tracking; all numbers render tabular (`font-variant-numeric: tabular-nums`). No monospace in product UI; numbers align through tabular figures in the system face.
-- Type: Display 32 · H1 28 · H2 22 · H3 18 · Body 16 · Small 14 · Caption 12 (mobile screen titles 18). No random sizes. Inputs never below 16px on mobile (iOS zoom).
+- Type: Display 32 · H1 28 · H2 22 · H3 18 · Body 16 · Small 14 · Caption 12 (mobile screen titles 18). No random sizes. Inputs never below 16px on mobile (iOS zoom). Nothing below 12, including status chips.
+- Tap targets: every tappable element has a 44×44pt hit area (Apple HIG) and 48dp on Android. Visual size may be smaller; the hit area is extended with `.lp-tap` (invisible 8px bleed) or `.lp-iconbtn` (44px box). Status chips use `.lp-chip` (12px, 28px tall) and are always wrapped in a tap area when they act.
+- Destructive actions (delete, remove, revoke) always confirm through `ConfirmSheet`; one-way states (settled, archived) always offer a reverse action.
+- Money renders through `formatMoney` in the user's home currency; an entry made in another currency keeps its original amount and shows it as a subline. Dates render through `fmtDate` in the device locale; the app never hard-codes a locale.
 - Radius: sm 8 · control 10 · card 16 · large card 20 · sheet 24. Pills are reserved for status, filters, compact metadata and selected states — not for buttons.
 - Motion: fast 120ms · standard 200ms · slow 320ms. Calm motion only: gentle expansion, animated rings, spring sheets, subtle settle on completion. Nothing flashy.
 
