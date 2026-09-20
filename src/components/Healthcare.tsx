@@ -876,11 +876,19 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 Showing {visibleSeries.length} of {seriesOrder.length} tracked test
                 {seriesOrder.length === 1 ? "" : "s"}
               </span>
-              <button className="lh-lnk" style={{ fontSize: 12.5, marginLeft: "auto" }} onClick={() => setPickSeries(true)}>
+              <button
+                className="lh-lnk"
+                style={{ fontSize: 13, fontWeight: 700, marginLeft: "auto" }}
+                onClick={() => setPickSeries(true)}
+              >
                 Choose tests
               </button>
               {seriesOrder.length > visibleSeries.length && (
-                <button className="lh-lnk" style={{ fontSize: 12.5 }} onClick={() => setShownSeries(new Set(seriesOrder))}>
+                <button
+                  className="lh-lnk"
+                  style={{ fontSize: 13, fontWeight: 700 }}
+                  onClick={() => setShownSeries(new Set(seriesOrder))}
+                >
                   Show all
                 </button>
               )}

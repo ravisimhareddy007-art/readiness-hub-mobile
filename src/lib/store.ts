@@ -57,52 +57,13 @@ interface State {
 
 /* ── members (enterprise-neutral) ── */
 const seedMembers: Member[] = [
-  {
-    id: "you",
-    name: "Alex Morgan",
-    relation: "Self",
-    color: "#5B8DEF",
-    dob: "1985-06-14",
-    bloodGroup: "O+",
-    access: "Owner",
-  },
-  {
-    id: "spouse",
-    name: "Jordan Morgan",
-    relation: "Spouse",
-    color: "#9B7BE8",
-    dob: "1987-02-09",
-    bloodGroup: "A+",
-    access: "Full member",
-  },
-  {
-    id: "father",
-    name: "Richard Morgan",
-    relation: "Father",
-    color: "#4FCB95",
-    dob: "1954-05-12",
-    bloodGroup: "B+",
-    access: "Emergency access",
-  },
-  {
-    id: "mother",
-    name: "Diane Morgan",
-    relation: "Mother",
-    color: "#E86A9B",
-    dob: "1957-09-02",
-    bloodGroup: "O+",
-    access: "Emergency access",
-  },
-  {
-    id: "son",
-    name: "Ethan Morgan",
-    relation: "Son",
-    color: "#D9B86A",
-    dob: "2015-11-05",
-    bloodGroup: "O+",
-    access: "View only",
-  },
+  { id: "you", name: "Arjun Iyer", relation: "Self", color: "#5B8DEF", dob: "1985-06-14", bloodGroup: "O+", access: "Owner" },
+  { id: "spouse", name: "Divya Iyer", relation: "Spouse", color: "#9B7BE8", dob: "1987-02-09", bloodGroup: "A+", access: "Full member" },
+  { id: "father", name: "Ramesh Iyer", relation: "Father", color: "#2FB68A", dob: "1954-11-03", bloodGroup: "B+", access: "Emergency access" },
+  { id: "mother", name: "Lakshmi Iyer", relation: "Mother", color: "#F472B6", dob: "1958-08-27", bloodGroup: "O-", access: "Emergency access" },
+  { id: "son", name: "Aditya Iyer", relation: "Son", color: "#D9B86A", dob: "2016-04-12", bloodGroup: "O+", access: "View only" },
 ];
+
 
 /* ── documents (single source for Documents, Packages, Wealth, Health records) ── */
 const doc = (name: string, category: Category, docType: string, x: Partial<Doc> = {}): Doc => ({
@@ -119,25 +80,25 @@ const doc = (name: string, category: Category, docType: string, x: Partial<Doc> 
   ...x,
 });
 const seedDocs: Doc[] = [
-  doc("Passport_Z4732911_AlexMorgan", "Identity", "Passport", { source: "DigiLocker", expiry: rel(264) }),
-  doc("Aadhaar_XXXX-XXXX-4821_AlexMorgan", "Identity", "Aadhaar Card", { source: "DigiLocker" }),
-  doc("PAN_AZKPM4821L_AlexMorgan", "Identity", "PAN Card", { source: "DigiLocker" }),
+  doc("Passport_Z4732911_ArjunIyer", "Identity", "Passport", { source: "DigiLocker", expiry: rel(264) }),
+  doc("Aadhaar_XXXX-XXXX-4821_ArjunIyer", "Identity", "Aadhaar Card", { source: "DigiLocker" }),
+  doc("PAN_AZKPM4821L_ArjunIyer", "Identity", "PAN Card", { source: "DigiLocker" }),
   doc("DrivingLicence_KA05-2019-0031847", "Identity", "Driving License", { source: "DigiLocker", expiry: rel(147) }),
   doc("OfferLetter_SeniorEngineer_Jan2024", "Employment", "Employment Offer", { source: "Email" }),
   doc("SalarySlip_Jun2026", "Employment", "Payslip", { source: "Email", docDate: iso(-20) }),
   doc("ITR-V_Acknowledgement_AY2025-26", "Finance", "ITR Acknowledgement", { source: "Drive" }),
-  doc("MeridianBank_Statement_Jan-Jun2026", "Finance", "Bank Statement", { source: "Email", docDate: iso(-24) }),
-  doc("BeaconWealth_HoldingStatement_Jun2026", "Finance", "Investment Statement", {
+  doc("HDFCBank_Statement_Jan-Jun2026", "Finance", "Bank Statement", { source: "Email", docDate: iso(-24) }),
+  doc("HDFCSecurities_HoldingStatement_Jun2026", "Finance", "Investment Statement", {
     source: "Drive",
     value: 4200000,
     nominee: true,
   }),
-  doc("AegisHealth_FamilyFloater_Policy_88231", "Insurance", "Health Insurance", {
+  doc("StarHealth_FamilyFloater_Policy_88231", "Insurance", "Health Insurance", {
     source: "Email",
     expiry: rel(230),
     nominee: true,
   }),
-  doc("AegisLife_TermPolicy_5567", "Insurance", "Life Insurance", { source: "Drive", value: 10000000, nominee: false }),
+  doc("LIC_TermPolicy_5567", "Insurance", "Life Insurance", { source: "Drive", value: 10000000, nominee: false }),
   doc("MotorPolicy_KA05MJ4412_2026", "Insurance", "Auto Insurance", { source: "Email", expiry: rel(40) }),
   doc("SaleDeed_Reg4417-2019_LakeviewApts", "Property", "Property Deed", {
     source: "Drive",
@@ -146,44 +107,70 @@ const seedDocs: Doc[] = [
   }),
   doc("PropertyTax_Receipt_FY2026-27", "Property", "Property Tax", { source: "Upload" }),
   doc("UPI_Screenshot_Rohan_5000", "Finance", "Transaction Evidence", { source: "Upload", docDate: iso(-4) }),
-  doc("Prescription_DrBennett_Metformin_Jul2026", "Medical", "Prescription", {
-    source: "Upload",
-    memberId: "father",
-    medType: "prescription",
-    docDate: iso(-8),
-    doctor: "Dr Bennett",
-    hospital: "Northside Medical Centre",
-    specialisation: "Endocrinology",
-    readAt: iso(-8),
+  /* Ramesh: three specialities, three hospitals, one lab. Enough for a visit picker to have
+     real choices, and for a specialist visit to pull a different pack from a general checkup. */
+  doc("Prescription_DrVenkateshPrasad_Endocrinology_Jun2026", "Medical", "Prescription", {
+    source: "Upload", memberId: "father", medType: "prescription", docDate: iso(-8),
+    doctor: "Dr Venkatesh Prasad", hospital: "Fortis Hospital", specialisation: "Endocrinology", readAt: iso(-8),
   }),
-  doc("LabReport_HbA1c_FastingGlucose_Jul2026", "Medical", "Lab Report", {
-    source: "Upload",
-    memberId: "father",
-    medType: "lab_report",
-    docDate: iso(-8),
-    doctor: "Dr Bennett",
-    lab: "Northside Diagnostics",
-    readAt: iso(-8),
+  doc("LabReport_HbA1c_LipidProfile_Jun2026", "Medical", "Lab Report", {
+    source: "Upload", memberId: "father", medType: "lab_report", docDate: iso(-8),
+    doctor: "Dr Venkatesh Prasad", lab: "Fortis Diagnostics", readAt: iso(-8),
   }),
-  doc("Prescription_Levothyroxine_Jun2026", "Medical", "Prescription", {
-    source: "Upload",
-    memberId: "mother",
-    medType: "prescription",
-    docDate: iso(-30),
-    doctor: "Dr Anita Rao",
-    hospital: "Lakeview Clinic",
-    specialisation: "Endocrinology",
-    readAt: iso(-30),
+  doc("LabReport_RenalPanel_Jun2026", "Medical", "Lab Report", {
+    source: "Upload", memberId: "father", medType: "lab_report", docDate: iso(-8),
+    doctor: "Dr Suresh Menon", lab: "Fortis Diagnostics", readAt: iso(-8),
   }),
-  doc("LabReport_ThyroidPanel_Jun2026", "Medical", "Lab Report", {
-    source: "Upload",
-    memberId: "mother",
-    medType: "lab_report",
-    docDate: iso(-30),
-    doctor: "Dr Anita Rao",
-    lab: "Lakeview Diagnostics",
-    readAt: iso(-30),
+  doc("Prescription_DrSureshMenon_Nephrology_May2026", "Medical", "Prescription", {
+    source: "Upload", memberId: "father", medType: "prescription", docDate: iso(-42),
+    doctor: "Dr Suresh Menon", hospital: "Manipal Hospital", specialisation: "Nephrology", readAt: iso(-42),
   }),
+  doc("LabReport_PSA_Jun2026", "Medical", "Lab Report", {
+    source: "Upload", memberId: "father", medType: "lab_report", docDate: iso(-8),
+    doctor: "Dr Kiran Desai", lab: "Apollo Diagnostics", readAt: iso(-8),
+  }),
+  doc("DischargeSummary_Prostatectomy_Aug2025", "Medical", "Discharge Summary", {
+    source: "Upload", memberId: "father", medType: "discharge", docDate: "2025-08-14",
+    doctor: "Dr Kiran Desai", hospital: "HCG Cancer Centre", specialisation: "Oncology", readAt: "2025-08-14",
+  }),
+  doc("Prescription_DrKiranDesai_Oncology_Jun2026", "Medical", "Prescription", {
+    source: "Upload", memberId: "father", medType: "prescription", docDate: iso(-8),
+    doctor: "Dr Kiran Desai", hospital: "HCG Cancer Centre", specialisation: "Oncology", readAt: iso(-8),
+  }),
+  doc("Scan_CTAbdomen_Mar2026", "Medical", "Scan Report", {
+    source: "Upload", memberId: "father", medType: "scan", docDate: "2026-03-12",
+    doctor: "Dr Kiran Desai", hospital: "HCG Cancer Centre", specialisation: "Radiology", readAt: "2026-03-12",
+  }),
+
+  /* Lakshmi: two specialities. */
+  doc("Prescription_DrAnitaShetty_Thyroid_May2026", "Medical", "Prescription", {
+    source: "Upload", memberId: "mother", medType: "prescription", docDate: iso(-30),
+    doctor: "Dr Anita Shetty", hospital: "Apollo Hospital", specialisation: "Endocrinology", readAt: iso(-30),
+  }),
+  doc("LabReport_ThyroidPanel_CBC_May2026", "Medical", "Lab Report", {
+    source: "Upload", memberId: "mother", medType: "lab_report", docDate: iso(-30),
+    doctor: "Dr Anita Shetty", lab: "Apollo Diagnostics", readAt: iso(-30),
+  }),
+  doc("Prescription_DrGeethaNair_Rheumatology_Feb2026", "Medical", "Prescription", {
+    source: "Upload", memberId: "mother", medType: "prescription", docDate: "2026-02-20",
+    doctor: "Dr Geetha Nair", hospital: "Apollo Hospital", specialisation: "Rheumatology", readAt: "2026-02-20",
+  }),
+
+  /* Divya: one report, so her picker shows a single doctor and a lab. */
+  doc("LabReport_CBC_Ferritin_Apr2026", "Medical", "Lab Report", {
+    source: "Upload", memberId: "spouse", medType: "lab_report", docDate: "2026-04-18",
+    doctor: "Dr Shalini Rao", lab: "Cloudnine Diagnostics", readAt: "2026-04-18",
+  }),
+
+  /* Aditya: paediatrics, and a record with no index at all, so the "not read yet" state is visible. */
+  doc("Prescription_DrRahulNair_Asthma_May2026", "Medical", "Prescription", {
+    source: "Upload", memberId: "son", medType: "prescription", docDate: iso(-25),
+    doctor: "Dr Rahul Nair", hospital: "Rainbow Children's Hospital", specialisation: "Paediatrics", readAt: iso(-25),
+  }),
+  doc("Vaccination_Card_Aditya", "Medical", "Vaccination Record", {
+    source: "Upload", memberId: "son", medType: "other", docDate: "2026-01-10",
+  }),
+
 ];
 
 /* ── wealth holdings (assets, liabilities, protection) ── */
@@ -195,11 +182,11 @@ const seedHoldings: Holding[] = [
     name: "Savings account",
     kind: "asset",
     type: "Bank account",
-    institution: "Meridian Bank",
+    institution: "HDFC Bank",
     accountRef: "•4821",
     value: 240000,
     nominee: true,
-    nomineeName: "Jordan Morgan",
+    nomineeName: "Divya Iyer",
     accessNote:
       "Jordan is joint holder. Netbanking ID saved under 'Meridian' in the password manager. Branch: MG Road (Mr. Srinivas, relationship manager).",
     docId: dId("Bank Statement"),
@@ -210,11 +197,11 @@ const seedHoldings: Holding[] = [
     name: "Fixed deposit",
     kind: "asset",
     type: "Fixed deposit",
-    institution: "Meridian Bank",
+    institution: "HDFC Bank",
     accountRef: "•6630",
     value: 500000,
     nominee: true,
-    nomineeName: "Jordan Morgan",
+    nomineeName: "Divya Iyer",
     maturityDate: rel(38),
     accessNote:
       "Auto-renew is OFF. On maturity, proceeds credit savings •4821. FD advice slip in the blue files folder at home.",
@@ -225,11 +212,11 @@ const seedHoldings: Holding[] = [
     name: "Mutual funds (SIP)",
     kind: "asset",
     type: "Mutual funds",
-    institution: "Beacon Wealth",
+    institution: "HDFC Securities",
     accountRef: "•2093",
     value: 4200000,
     nominee: true,
-    nomineeName: "Jordan Morgan",
+    nomineeName: "Divya Iyer",
     docId: dId("Investment Statement"),
   },
   {
@@ -238,11 +225,11 @@ const seedHoldings: Holding[] = [
     name: "Gold in bank locker",
     kind: "asset",
     type: "Gold",
-    institution: "Meridian Bank",
+    institution: "HDFC Bank",
     accountRef: "Locker 114",
     value: 850000,
     nominee: true,
-    nomineeName: "Jordan Morgan",
+    nomineeName: "Divya Iyer",
     accessNote:
       "Locker 114, MG Road branch. Keys in the bedroom safe. Jordan already has operating mandate; carry Aadhaar for access.",
   },
@@ -256,7 +243,7 @@ const seedHoldings: Holding[] = [
     accountRef: "PRAN •7715",
     value: 1350000,
     nominee: true,
-    nomineeName: "Jordan Morgan",
+    nomineeName: "Divya Iyer",
     accessNote: "PRAN card in the files drawer. Linked bank: savings •4821. Login via Protean CRA portal with PRAN.",
   },
   {
@@ -269,7 +256,7 @@ const seedHoldings: Holding[] = [
     accountRef: "Flat 402",
     value: 18500000,
     nominee: true,
-    nomineeName: "Jordan Morgan",
+    nomineeName: "Divya Iyer",
     accessNote:
       "Original sale deed and khata in locker 114, Meridian MG Road. Society office: Mr. Rao, Lakeview Apts. Property tax paid online, receipts in this archive.",
     docId: dId("Property Deed"),
@@ -280,7 +267,7 @@ const seedHoldings: Holding[] = [
     name: "Home loan",
     kind: "liability",
     type: "Mortgage",
-    institution: "Meridian Bank",
+    institution: "HDFC Bank",
     accountRef: "•3390",
     value: 6200000,
     accessNote:
@@ -292,7 +279,7 @@ const seedHoldings: Holding[] = [
     name: "Car loan",
     kind: "liability",
     type: "Auto loan",
-    institution: "Meridian Bank",
+    institution: "HDFC Bank",
     accountRef: "•8842",
     value: 410000,
   },
@@ -302,11 +289,11 @@ const seedHoldings: Holding[] = [
     name: "Term life insurance",
     kind: "cover",
     type: "Life insurance",
-    institution: "Aegis Life",
+    institution: "LIC",
     accountRef: "Policy 5567",
     value: 10000000,
     nominee: true,
-    nomineeName: "Jordan Morgan",
+    nomineeName: "Divya Iyer",
     renewalDate: rel(210),
     accessNote:
       "Agent: R. Iyer, 98400-22110. Claim online on the Aegis portal with policy 5567 and death certificate. Premium autopays from savings •4821 each July.",
@@ -318,7 +305,7 @@ const seedHoldings: Holding[] = [
     name: "Health insurance (family floater)",
     kind: "cover",
     type: "Health insurance",
-    institution: "Aegis Health",
+    institution: "Star Health",
     accountRef: "Policy 88231",
     value: 500000,
     nominee: true,
@@ -401,140 +388,148 @@ const L = (
   qualifier,
 });
 const seedLabs: LabLog[] = [
-  /* Ranges are the ones printed on each report, never supplied by the app. */
+  /* Every range below is the one printed on that report. The app supplies none. */
+
+  /* Arjun: a healthy adult, two tests, short history. */
   L("you", "LDL Cholesterol", 118, "mg/dL", "2026-05-02", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
-  L("you", "Blood Pressure", 122, "mmHg", "2026-05-02", 80, "blood pressure|mmhg"),
   L("you", "HbA1c", 5.5, "%", "2026-05-02", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
+  L("you", "Blood Pressure", 122, "mmHg", "2026-05-02", 80, "blood pressure|mmhg"),
+
+  /* Divya: anaemia followed over a year, ferritin and haemoglobin moving together. */
+  L("spouse", "Haemoglobin", 9.8, "g/dL", "2025-06-14", undefined, "haemoglobin|g/dl", 12, 15, "12.0 to 15.0"),
+  L("spouse", "Haemoglobin", 10.6, "g/dL", "2025-11-08", undefined, "haemoglobin|g/dl", 12, 15, "12.0 to 15.0"),
+  L("spouse", "Haemoglobin", 11.9, "g/dL", "2026-04-18", undefined, "haemoglobin|g/dl", 12, 15, "12.0 to 15.0"),
+  L("spouse", "Ferritin", 8, "ng/mL", "2025-06-14", undefined, "ferritin|ng/ml", 15, 150, "15 to 150"),
+  L("spouse", "Ferritin", 22, "ng/mL", "2025-11-08", undefined, "ferritin|ng/ml", 15, 150, "15 to 150"),
+  L("spouse", "Ferritin", 41, "ng/mL", "2026-04-18", undefined, "ferritin|ng/ml", 15, 150, "15 to 150"),
   L("spouse", "Blood Pressure", 118, "mmHg", "2026-04-18", 76, "blood pressure|mmhg"),
 
-  /* Father: diabetes followed quarterly, plus kidney function tracked alongside it. */
+  /* Ramesh: diabetes quarterly, kidney function declining, and PSA followed for two years
+     after treatment, ending in two consecutive undetectable results. */
+  L("father", "HbA1c", 8.1, "%", "2025-06-12", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
+  L("father", "HbA1c", 7.6, "%", "2025-09-18", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
   L("father", "HbA1c", 6.6, "%", "2026-01-08", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
   L("father", "HbA1c", 6.9, "%", "2026-03-12", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
   L("father", "HbA1c", 7.2, "%", "2026-06-10", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
+  L("father", "Fasting Glucose", 156, "mg/dL", "2026-01-08", undefined, "fasting glucose|mg/dl", 70, 99, "70 to 99"),
+  L("father", "Fasting Glucose", 148, "mg/dL", "2026-03-12", undefined, "fasting glucose|mg/dl", 70, 99, "70 to 99"),
+  L("father", "Fasting Glucose", 162, "mg/dL", "2026-06-10", undefined, "fasting glucose|mg/dl", 70, 99, "70 to 99"),
   L("father", "LDL Cholesterol", 132, "mg/dL", "2026-01-08", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
-  L("father", "LDL Cholesterol", 124, "mg/dL", "2026-05-02", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
+  L("father", "LDL Cholesterol", 124, "mg/dL", "2026-03-12", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
   L("father", "LDL Cholesterol", 119, "mg/dL", "2026-06-10", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
   L("father", "Blood Pressure", 138, "mmHg", "2026-01-08", 86, "blood pressure|mmhg"),
   L("father", "Blood Pressure", 132, "mmHg", "2026-03-12", 84, "blood pressure|mmhg"),
   L("father", "Blood Pressure", 124, "mmHg", "2026-06-10", 82, "blood pressure|mmhg"),
-  L("father", "Creatinine", 1.12, "mg/dL", "2026-01-08", undefined, "creatinine|mg/dl", 0.7, 1.3, "0.7 to 1.3"),
+  L("father", "Creatinine", 1.12, "mg/dL", "2025-09-18", undefined, "creatinine|mg/dl", 0.7, 1.3, "0.7 to 1.3"),
+  L("father", "Creatinine", 1.21, "mg/dL", "2026-01-08", undefined, "creatinine|mg/dl", 0.7, 1.3, "0.7 to 1.3"),
   L("father", "Creatinine", 1.28, "mg/dL", "2026-03-12", undefined, "creatinine|mg/dl", 0.7, 1.3, "0.7 to 1.3"),
   L("father", "Creatinine", 1.41, "mg/dL", "2026-06-10", undefined, "creatinine|mg/dl", 0.7, 1.3, "0.7 to 1.3"),
+  L("father", "eGFR", 78, "mL/min/1.73m2", "2025-09-18", undefined, "egfr|ml/min/1.73m2", 90, undefined, "over 90"),
   L("father", "eGFR", 74, "mL/min/1.73m2", "2026-01-08", undefined, "egfr|ml/min/1.73m2", 90, undefined, "over 90"),
   L("father", "eGFR", 63, "mL/min/1.73m2", "2026-03-12", undefined, "egfr|ml/min/1.73m2", 90, undefined, "over 90"),
   L("father", "eGFR", 55, "mL/min/1.73m2", "2026-06-10", undefined, "egfr|ml/min/1.73m2", 90, undefined, "over 90"),
-
-  /* Father: PSA followed quarterly after treatment. A sub-threshold result is the whole point. */
-  L("father", "PSA Total", 8.4, "ng/mL", "2024-11-20", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
-  L("father", "PSA Total", 6.1, "ng/mL", "2025-02-18", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
-  L("father", "PSA Total", 2.3, "ng/mL", "2025-05-22", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
-  L("father", "PSA Total", 0.42, "ng/mL", "2025-08-19", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
-  L("father", "PSA Total", 0.08, "ng/mL", "2025-11-25", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
-  L("father", "PSA Total", 0.01, "ng/mL", "2026-02-24", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0", "<"),
+  L("father", "Potassium", 5.1, "mEq/L", "2026-06-10", undefined, "potassium|meq/l", 3.5, 5, "3.5 to 5.0"),
+  L("father", "PSA Total", 8.4, "ng/mL", "2025-06-12", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
+  L("father", "PSA Total", 6.1, "ng/mL", "2025-08-05", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
+  L("father", "PSA Total", 2.3, "ng/mL", "2025-11-20", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
+  L("father", "PSA Total", 0.42, "ng/mL", "2026-01-08", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
+  L("father", "PSA Total", 0.08, "ng/mL", "2026-03-12", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
   L("father", "PSA Total", 0.01, "ng/mL", "2026-06-10", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0", "<"),
+  L("father", "PSA Free", 0.91, "ng/mL", "2025-06-12", undefined, "free psa|ng/ml", 0.5, 2, "0.5 to 2.0"),
+  L("father", "Haemoglobin", 12.4, "g/dL", "2026-06-10", undefined, "haemoglobin|g/dl", 13, 17, "13.0 to 17.0"),
 
-  /* Mother: thyroid panel, three tests that move together. */
+  /* Lakshmi: thyroid panel plus a bone marker, all from her own reports. */
+  L("mother", "TSH", 8.4, "mIU/L", "2025-09-10", undefined, "tsh|miu/l", 0.4, 4, "0.4 to 4.0"),
   L("mother", "TSH", 6.2, "mIU/L", "2026-01-15", undefined, "tsh|miu/l", 0.4, 4, "0.4 to 4.0"),
   L("mother", "TSH", 4.8, "mIU/L", "2026-03-20", undefined, "tsh|miu/l", 0.4, 4, "0.4 to 4.0"),
   L("mother", "TSH", 3.9, "mIU/L", "2026-05-20", undefined, "tsh|miu/l", 0.4, 4, "0.4 to 4.0"),
+  L("mother", "Free T4", 0.74, "ng/dL", "2025-09-10", undefined, "free t4|ng/dl", 0.8, 1.8, "0.8 to 1.8"),
   L("mother", "Free T4", 0.82, "ng/dL", "2026-01-15", undefined, "free t4|ng/dl", 0.8, 1.8, "0.8 to 1.8"),
   L("mother", "Free T4", 1.05, "ng/dL", "2026-03-20", undefined, "free t4|ng/dl", 0.8, 1.8, "0.8 to 1.8"),
   L("mother", "Free T4", 1.21, "ng/dL", "2026-05-20", undefined, "free t4|ng/dl", 0.8, 1.8, "0.8 to 1.8"),
-  L("mother", "Haemoglobin", 10.8, "g/dL", "2026-01-15", undefined, "haemoglobin|g/dl", 12, 15, "12.0 to 15.0"),
+  L("mother", "Vitamin D", 14, "ng/mL", "2026-01-15", undefined, "vitamin d|ng/ml", 30, 100, "30 to 100"),
+  L("mother", "Vitamin D", 26, "ng/mL", "2026-05-20", undefined, "vitamin d|ng/ml", 30, 100, "30 to 100"),
+  L("mother", "Calcium", 9.1, "mg/dL", "2026-05-20", undefined, "calcium|mg/dl", 8.6, 10.2, "8.6 to 10.2"),
   L("mother", "Haemoglobin", 11.6, "g/dL", "2026-05-20", undefined, "haemoglobin|g/dl", 12, 15, "12.0 to 15.0"),
+  L("mother", "Blood Pressure", 128, "mmHg", "2026-05-20", 78, "blood pressure|mmhg"),
 
+  /* Aditya: growth tracked at home, the case where a chart needs density rather than a lab. */
+  L("son", "Weight", 26.5, "kg", "2025-08-01", undefined, "weight|kg"),
+  L("son", "Weight", 27.4, "kg", "2025-11-01", undefined, "weight|kg"),
   L("son", "Weight", 28, "kg", "2026-02-01", undefined, "weight|kg"),
   L("son", "Weight", 30, "kg", "2026-05-01", undefined, "weight|kg"),
 ];
+
 const seedMeds: Medication[] = [
-  {
-    id: id(),
-    memberId: "father",
-    name: "Metformin",
-    dose: "500 mg",
-    freq: "Twice daily",
-    refillBy: rel(4),
-    remaining: 9,
-    taken: [rel(-2), rel(-1)],
-  },
-  {
-    id: id(),
-    memberId: "father",
-    name: "Telmisartan",
-    dose: "40 mg",
-    freq: "Once daily",
-    refillBy: rel(19),
-    remaining: 24,
-    taken: [rel(-2), rel(0)],
-  },
-  {
-    id: id(),
-    memberId: "father",
-    name: "Atorvastatin",
-    dose: "10 mg",
-    freq: "Once at night",
-    refillBy: rel(19),
-    remaining: 24,
-    taken: [rel(-1)],
-  },
-  {
-    id: id(),
-    memberId: "mother",
-    name: "Levothyroxine",
-    dose: "50 mcg",
-    freq: "Once, empty stomach",
-    refillBy: rel(9),
-    remaining: 12,
-    taken: [rel(-1), rel(0)],
-  },
+  { id: id(), memberId: "father", name: "Metformin", dose: "500 mg", freq: "1-0-1", refillBy: rel(4), remaining: 9 },
+  { id: id(), memberId: "father", name: "Telmisartan", dose: "40 mg", freq: "1-0-0", refillBy: rel(19), remaining: 24 },
+  { id: id(), memberId: "father", name: "Atorvastatin", dose: "10 mg", freq: "0-0-1", refillBy: rel(19), remaining: 24 },
+  { id: id(), memberId: "father", name: "Bicalutamide", dose: "50 mg", freq: "1-0-0", refillBy: rel(26), remaining: 30 },
+  { id: id(), memberId: "mother", name: "Levothyroxine", dose: "75 mcg", freq: "1-0-0", refillBy: rel(9), remaining: 12 },
+  { id: id(), memberId: "mother", name: "Cholecalciferol", dose: "60000 IU", freq: "Weekly", refillBy: rel(48), remaining: 6 },
+  { id: id(), memberId: "spouse", name: "Ferrous ascorbate", dose: "100 mg", freq: "1-0-0", refillBy: rel(11), remaining: 14 },
+  /* No refill date printed on the prescription: the row must simply omit the refill line. */
+  { id: id(), memberId: "son", name: "Salbutamol inhaler", dose: "100 mcg", freq: "As needed", refillBy: "" },
 ];
+
 const seedReminders: Reminder[] = [
   { id: id(), memberId: "father", title: "Metformin refill", kind: "refill", due: rel(4), done: false },
-  { id: id(), memberId: "father", title: "Endocrinology follow-up", kind: "appointment", due: rel(12), done: false },
+  { id: id(), memberId: "father", title: "Review with Dr Venkatesh Prasad", kind: "appointment", due: rel(12), done: false },
+  { id: id(), memberId: "father", title: "Nephrology review with Dr Suresh Menon", kind: "appointment", due: rel(27), done: false },
+  { id: id(), memberId: "father", title: "PSA recheck before oncology visit", kind: "appointment", due: rel(54), done: false },
   { id: id(), memberId: "father", title: "Health insurance renewal", kind: "insurance", due: rel(21), done: false },
+  /* One overdue item, so the overdue state is visible without waiting. */
+  { id: id(), memberId: "mother", title: "Levothyroxine refill", kind: "refill", due: rel(-3), done: false },
   { id: id(), memberId: "mother", title: "TSH recheck", kind: "appointment", due: rel(40), done: false },
-  { id: id(), memberId: "mother", title: "Levothyroxine refill", kind: "refill", due: rel(9), done: false },
+  { id: id(), memberId: "spouse", title: "Haemoglobin recheck", kind: "appointment", due: rel(35), done: false },
   { id: id(), memberId: "you", title: "Annual health checkup", kind: "appointment", due: rel(70), done: false },
   { id: id(), memberId: "son", title: "MMR booster due", kind: "vaccination", due: rel(15), done: false },
-  { id: id(), memberId: "son", title: "Pediatric dental checkup", kind: "appointment", due: rel(33), done: false },
+  { id: id(), memberId: "son", title: "Paediatric dental checkup", kind: "appointment", due: rel(33), done: false },
 ];
+
 const seedCare: Record<string, CareProfile> = {
   you: {
     conditions: [],
     medications: [],
     allergies: "Penicillin",
-    doctor: "Dr. Reyes, Family Medicine",
-    emergency: "Jordan Morgan (spouse)",
+    doctor: "Dr Meera Krishnan, Family Medicine",
+    hospital: "Manipal Hospital, Whitefield",
+    emergency: "Divya Iyer (spouse) 98450 11223",
   },
   spouse: {
-    conditions: [],
+    conditions: ["Iron deficiency anaemia"],
     medications: [],
     allergies: "None recorded",
-    doctor: "Dr. Osei, Internal Medicine",
-    emergency: "Alex Morgan (spouse)",
+    doctor: "Dr Shalini Rao, Internal Medicine",
+    hospital: "Cloudnine Hospital, Bellandur",
+    emergency: "Arjun Iyer (spouse) 98450 11224",
   },
   father: {
-    conditions: ["Type 2 Diabetes", "Hypertension"],
+    conditions: ["Type 2 Diabetes", "Hypertension", "Chronic Kidney Disease stage 3", "Prostate cancer, in remission"],
     medications: [],
     allergies: "Sulfonamides",
-    doctor: "Dr. Bennett, Endocrinology",
-    emergency: "Alex Morgan (son)",
+    doctor: "Dr Venkatesh Prasad, Endocrinology",
+    hospital: "Fortis Hospital, Bannerghatta Road",
+    emergency: "Arjun Iyer (son) 98450 11224",
   },
   mother: {
-    conditions: ["Hypothyroidism"],
+    conditions: ["Hypothyroidism", "Osteoporosis"],
     medications: [],
     allergies: "None recorded",
-    doctor: "Dr. Carter, Internal Medicine",
-    emergency: "Alex Morgan (son)",
+    doctor: "Dr Anita Shetty, Endocrinology",
+    hospital: "Apollo Hospital, Jayanagar",
+    emergency: "Arjun Iyer (son) 98450 11224",
   },
   son: {
-    conditions: [],
+    conditions: ["Asthma"],
     medications: [],
-    allergies: "Peanuts",
-    doctor: "Dr. Lin, Pediatrics",
-    emergency: "Alex Morgan (father)",
+    allergies: "Peanuts, dust mites",
+    doctor: "Dr Rahul Nair, Paediatrics",
+    hospital: "Rainbow Children's Hospital, Marathahalli",
+    emergency: "Arjun Iyer (father) 98450 11224",
   },
 };
+
 
 const emptyOwner: Member = { id: "you", name: "You", relation: "Self", color: "#5B8DEF", access: "Owner" };
 const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency"> = {
