@@ -65,8 +65,6 @@ export interface Medication {
   dose: string;
   freq: string;
   refillBy: string;
-  remaining?: number;
-  taken?: string[];
 }
 export type ReminderKind = "appointment" | "refill" | "vaccination" | "insurance" | "other";
 export interface Reminder {

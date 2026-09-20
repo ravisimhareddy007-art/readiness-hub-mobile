@@ -23,6 +23,7 @@ step("unit fixtures");
 run(process.execPath, ["--experimental-strip-types", "--no-warnings", "tests/wealth.test.mjs"], false, false);
 run(process.execPath, ["--experimental-strip-types", "--no-warnings", "tests/medical.test.mjs"], false, false);
 run(process.execPath, ["--experimental-strip-types", "--no-warnings", "tests/health.test.mjs"], false, false);
+run(process.execPath, ["--experimental-strip-types", "--no-warnings", "tests/zip.test.mjs"], false, false);
 
 step("banned patterns");
 const walk = (d, out = []) => {
@@ -48,6 +49,33 @@ ban("hard-coded dollar formatting (use formatMoney)", /`\$\$\{/, all);
 ban("font size below 12px", /fontSize: (10|11)(\.[0-9])?[,} ]/, all);
 ban("gold used on warning icon (use SEM.warning)", /AlertTriangle[^/]*color=\{T\.gold\}/, all);
 ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
+
+// Dead code and orphaned data: a store function nothing calls, or rows left behind by a delete.
+{
+  const hits = [];
+  const st = readFileSync("src/lib/store.ts", "utf8");
+  const ui = ["src/App.tsx", "src/components/Healthcare.tsx", "src/components/DocViewer.tsx"]
+    .map((p) => readFileSync(p, "utf8")).join("\n");
+  const block = (st.match(/\n  return \{([\s\S]*?)\n  \};/) || ["", ""])[1];
+  for (const m of block.matchAll(/^\s{4}(\w+),$/gm))
+    if (!new RegExp("\\." + m[1] + "\\b").test(ui)) hits.push(`store.${m[1]} exported but never called`);
+  for (const k of ["labs", "meds", "reminders"])
+    if (!new RegExp(k + ": state\\." + k + "\\.filter\\(\\(x\\) => x\\.memberId !== mid\\)").test(st))
+      hits.push(`removeMember leaves ${k} behind`);
+  if (!/labs: state\.labs\.filter\(\(x\) => x\.sourceDocId !== docId\)/.test(st))
+    hits.push("removeDoc leaves readings behind");
+  if (hits.length) { status = 1; console.log(`FAIL dead code and orphaned data (${hits.length})`); hits.forEach((h) => console.log("  " + h)); }
+  else console.log("ok   dead code and orphaned data");
+}
+
+// Exported documents are read on paper: nothing below 12px there either.
+{
+  const hits = [];
+  for (const p of all) for (const m of readFileSync(p, "utf8").matchAll(/font-size:(\d+)px/g))
+    if (+m[1] < 12) hits.push(`${p}: ${m[1]}px in exported HTML`);
+  if (hits.length) { status = 1; console.log(`FAIL export type below 12px (${hits.length})`); hits.forEach((h) => console.log("  " + h)); }
+  else console.log("ok   export type below 12px");
+}
 
 step("release blockers (listed, not failing yet)");
 let dev = 0;

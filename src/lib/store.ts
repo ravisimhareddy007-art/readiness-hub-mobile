@@ -507,15 +507,15 @@ const seedLabs: LabLog[] = [
 ];
 
 const seedMeds: Medication[] = [
-  { id: id(), memberId: "father", name: "Metformin", dose: "500 mg", freq: "1-0-1", refillBy: rel(4), remaining: 9 },
-  { id: id(), memberId: "father", name: "Telmisartan", dose: "40 mg", freq: "1-0-0", refillBy: rel(19), remaining: 24 },
-  { id: id(), memberId: "father", name: "Atorvastatin", dose: "10 mg", freq: "0-0-1", refillBy: rel(19), remaining: 24 },
-  { id: id(), memberId: "father", name: "Bicalutamide", dose: "50 mg", freq: "1-0-0", refillBy: rel(26), remaining: 30 },
-  { id: id(), memberId: "mother", name: "Levothyroxine", dose: "75 mcg", freq: "1-0-0", refillBy: rel(9), remaining: 12 },
-  { id: id(), memberId: "mother", name: "Cholecalciferol", dose: "60000 IU", freq: "Weekly", refillBy: rel(48), remaining: 6 },
-  { id: id(), memberId: "you", name: "Cholecalciferol", dose: "60000 IU", freq: "Weekly", refillBy: rel(33), remaining: 5 },
-  { id: id(), memberId: "you", name: "Methylcobalamin", dose: "1500 mcg", freq: "1-0-0", refillBy: rel(14), remaining: 18 },
-  { id: id(), memberId: "spouse", name: "Ferrous ascorbate", dose: "100 mg", freq: "1-0-0", refillBy: rel(11), remaining: 14 },
+  { id: id(), memberId: "father", name: "Metformin", dose: "500 mg", freq: "1-0-1", refillBy: rel(4) },
+  { id: id(), memberId: "father", name: "Telmisartan", dose: "40 mg", freq: "1-0-0", refillBy: rel(19) },
+  { id: id(), memberId: "father", name: "Atorvastatin", dose: "10 mg", freq: "0-0-1", refillBy: rel(19) },
+  { id: id(), memberId: "father", name: "Bicalutamide", dose: "50 mg", freq: "1-0-0", refillBy: rel(26) },
+  { id: id(), memberId: "mother", name: "Levothyroxine", dose: "75 mcg", freq: "1-0-0", refillBy: rel(9) },
+  { id: id(), memberId: "mother", name: "Cholecalciferol", dose: "60000 IU", freq: "Weekly", refillBy: rel(48) },
+  { id: id(), memberId: "you", name: "Cholecalciferol", dose: "60000 IU", freq: "Weekly", refillBy: rel(33) },
+  { id: id(), memberId: "you", name: "Methylcobalamin", dose: "1500 mcg", freq: "1-0-0", refillBy: rel(14) },
+  { id: id(), memberId: "spouse", name: "Ferrous ascorbate", dose: "100 mg", freq: "1-0-0", refillBy: rel(11) },
   /* No refill date printed on the prescription: the row must simply omit the refill line. */
   { id: id(), memberId: "son", name: "Salbutamol inhaler", dose: "100 mcg", freq: "As needed", refillBy: "" },
 ];
@@ -784,7 +784,13 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
         await delBlob(d.fileKey);
       } catch {}
     }
-    state = { ...state, docs: state.docs.filter((x) => x.id !== docId) };
+    state = {
+      ...state,
+      docs: state.docs.filter((x) => x.id !== docId),
+      /* A reading only exists because a report stated it. Remove the report, remove the reading,
+         so a chart can never plot a value with no source behind it. */
+      labs: state.labs.filter((x) => x.sourceDocId !== docId),
+    };
     persist();
   }, []);
   const addMember = useCallback((mem: Member) => {
@@ -813,10 +819,6 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     state = { ...state, members: state.members.map((mm) => (mm.id === mid ? { ...mm, ...patch } : mm)) };
     persist();
   }, []);
-  const removeLabsFromDoc = useCallback((docId: string) => {
-    state = { ...state, labs: state.labs.filter((x) => x.sourceDocId !== docId) };
-    persist();
-  }, []);
   const removeLab = useCallback((lid: string) => {
     state = { ...state, labs: state.labs.filter((x) => x.id !== lid) };
     persist();
@@ -836,29 +838,6 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
   }, []);
   const removeMed = useCallback((mid: string) => {
     state = { ...state, meds: state.meds.filter((x) => x.id !== mid) };
-    persist();
-  }, []);
-  const refillMed = useCallback((mid: string, days = 30, count = 30) => {
-    state = {
-      ...state,
-      meds: state.meds.map((x) => (x.id === mid ? { ...x, refillBy: rel(days), remaining: count } : x)),
-    };
-    persist();
-  }, []);
-  const markTaken = useCallback((mid: string, date = rel(0)) => {
-    state = {
-      ...state,
-      meds: state.meds.map((x) => {
-        if (x.id !== mid) return x;
-        const taken = x.taken || [];
-        if (taken.includes(date)) return x;
-        return {
-          ...x,
-          taken: [...taken, date],
-          remaining: typeof x.remaining === "number" ? Math.max(0, x.remaining - 1) : x.remaining,
-        };
-      }),
-    };
     persist();
   }, []);
   const addReminder = useCallback((r: Reminder) => {
@@ -1106,12 +1085,9 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     removeMember,
     addLab,
     removeLab,
-    removeLabsFromDoc,
     updateCare,
     addMed,
     removeMed,
-    refillMed,
-    markTaken,
     addReminder,
     completeReminder,
     removeReminder,

@@ -469,7 +469,34 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     return (
       <div className="lh-root">
         <style>{CSS()}</style>
-        <p style={{ color: C.sub }}>No family members yet.</p>
+        {isMobile && <MNav title="Health" aria-label="Health" />}
+        <div className="lh-card" style={{ padding: 24, textAlign: "center", marginTop: 12 }}>
+          <Users size={22} color={C.sub} />
+          <h2 className="lh-h2" style={{ fontSize: 17, margin: "10px 0 6px" }}>
+            Add the first person
+          </h2>
+          <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 16px" }}>
+            Health keeps records, readings, medicines, and an emergency card for each person in your family. Start with
+            yourself or whoever you look after.
+          </p>
+          <button className="lh-btn" style={{ margin: "0 auto" }} onClick={() => setModal("member")}>
+            <UserPlus size={15} /> Add a family member
+          </button>
+        </div>
+        <AnimatePresence>
+          {modal === "member" && (
+            <AddMember
+              onClose={() => setModal(null)}
+              save={(mm: Member) => {
+                s.addMember(mm);
+                s.updateCare(mm.id, { conditions: [], medications: [], allergies: "None recorded", doctor: "", emergency: "" });
+                setSel(mm.id);
+                toast(`${mm.name.split(" ")[0]} added`);
+                setModal(null);
+              }}
+            />
+          )}
+        </AnimatePresence>
       </div>
     );
 
@@ -1132,7 +1159,22 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               <CalendarClock size={16} color={C.sub} /> Health timeline
             </div>
             {timeline.length === 0 ? (
-              <Empty t="No history yet. Logged readings and uploaded records appear here as a story." />
+              <div style={{ padding: "18px 4px", textAlign: "center" }}>
+                <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
+                  No history yet. Records you add and readings you log appear here in order, newest first.
+                </p>
+                <button
+                  className="lh-btn"
+                  style={{ margin: "0 auto" }}
+                  onClick={() => {
+                    setTab("records");
+                    pendingRec.current = null;
+                    setTimeout(() => recRef.current?.click(), 60);
+                  }}
+                >
+                  <Upload size={15} /> Add a record
+                </button>
+              </div>
             ) : (
               <div className="lh-tl">
                 {timeline.map((e, i) => {
@@ -1722,8 +1764,8 @@ function MiniChart({ arr, metric, color }: { arr: LabLog[]; metric: string; colo
         {shortD(last.date)}
       </text>
       {band && Y(band[1]) > pt + 10 && (
-        <text x={W - pr - 2} y={Y(band[1]) - 4} textAnchor="end" fontSize="8.5" fill={C.emerald} fontFamily={mono}>
-          normal ≤ {band[1]}
+        <text x={W - pr - 2} y={Y(band[1]) - 4} textAnchor="end" fontSize="10" fill={C.emerald} fontFamily={mono}>
+          printed range ≤ {band[1]}
         </text>
       )}
     </svg>
@@ -1759,7 +1801,7 @@ function Modal({ title, onClose, children }: any) {
           <h3 className="lh-h2" style={{ fontSize: 18 }}>
             {title}
           </h3>
-          <button className="lh-x" onClick={onClose}>
+          <button className="lh-x" onClick={onClose} title="Close" aria-label="Close">
             <X size={16} />
           </button>
         </div>
@@ -1790,7 +1832,7 @@ function SheetModal({ title, onClose, html, onExport, onPrint, primary }: any) {
               {title}
             </h3>
           </div>
-          <button className="lh-x" onClick={onClose}>
+          <button className="lh-x" onClick={onClose} title="Close" aria-label="Close">
             <X size={16} />
           </button>
         </div>
@@ -2026,7 +2068,7 @@ function AddMember({ onClose, save }: any) {
   );
 }
 function AddMed({ onClose, save }: any) {
-  const [f, setF] = useState({ name: "", dose: "", freq: "Once daily", refillBy: rel(30), remaining: 30 });
+  const [f, setF] = useState({ name: "", dose: "", freq: "Once daily", refillBy: rel(30) });
   return (
     <Modal title="Add medication" aria-label="Add medication" onClose={onClose}>
       <div style={{ display: "flex", gap: 10 }}>
@@ -2053,15 +2095,6 @@ function AddMed({ onClose, save }: any) {
         <div style={{ flex: 1 }}>
           <Lbl>Frequency</Lbl>
           <input className="lh-in" value={f.freq} onChange={(e) => setF({ ...f, freq: e.target.value })} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <Lbl>Tablets</Lbl>
-          <input
-            className="lh-in"
-            type="number"
-            value={f.remaining}
-            onChange={(e) => setF({ ...f, remaining: parseInt(e.target.value) || 0 })}
-          />
         </div>
         <div style={{ flex: 1 }}>
           <Lbl>Refill by</Lbl>
@@ -2262,9 +2295,9 @@ function buildVisitCover(
   </div>
   ${sec("Critical", `<div style="font-size:13px;line-height:1.7"><b style="color:#b91c1c">Allergies:</b> ${care.allergies || "None recorded"}<br/><b>Conditions:</b> ${(care.conditions || []).join(", ") || "None recorded"}<br/><b>Primary physician:</b> ${care.doctor || "—"}${care.hospital ? `<br/><b>Preferred hospital:</b> ${care.hospital}` : ""}</div>`)}
   ${sec("Current medications", meds.length ? `<ul style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">${meds.map((x) => `<li>${x.name} ${x.dose} · ${x.freq} · refill by ${fmt(x.refillBy)}</li>`).join("")}</ul>` : `<div style="color:#9ca3af;font-size:13px">None recorded</div>`)}
-  ${sec("Latest readings (with source document)", readingRows ? `<table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6"><th style="text-align:left;padding:5px 10px;font-size:11px;color:#6b7280">Metric</th><th style="text-align:left;padding:5px 10px;font-size:11px;color:#6b7280">Value</th><th style="text-align:left;padding:5px 10px;font-size:11px;color:#6b7280">Date</th><th style="text-align:left;padding:5px 10px;font-size:11px;color:#6b7280">Source</th></tr>${readingRows}</table>` : `<div style="color:#9ca3af;font-size:13px">No readings tracked</div>`)}
+  ${sec("Latest readings (with source document)", readingRows ? `<table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6"><th style="text-align:left;padding:5px 10px;font-size:12px;color:#6b7280">Metric</th><th style="text-align:left;padding:5px 10px;font-size:12px;color:#6b7280">Value</th><th style="text-align:left;padding:5px 10px;font-size:12px;color:#6b7280">Date</th><th style="text-align:left;padding:5px 10px;font-size:12px;color:#6b7280">Source</th></tr>${readingRows}</table>` : `<div style="color:#9ca3af;font-size:13px">No readings tracked</div>`)}
   ${sec(`Documents in this pack (${included.length})`, included.length ? `<ol style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">${included.map((d) => `<li>${d.docType} · ${d.name} · ${fmt(d.docDate || d.addedAt)}</li>`).join("")}</ol>` : `<div style="color:#9ca3af;font-size:13px">None selected</div>`)}
-  <p style="margin-top:20px;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:9px">Assembled from ${m.name.split(" ")[0]}'s own records on ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}. Facts only — no diagnosis, no medical advice.</p>
+  <p style="margin-top:20px;font-size:12px;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:9px">Assembled from ${m.name.split(" ")[0]}'s own records on ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}. Facts only — no diagnosis, no medical advice.</p>
   </div>`;
 }
 
@@ -2313,11 +2346,21 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
     if (busy) return;
     setBusy(true);
     try {
-      await buildZip(`Visit_${member.name.split(" ")[0]}_${curLabel.replace(/[^A-Za-z0-9]+/g, "_")}`, included, [
-        { name: "00_Cover_Sheet.html", content: coverHTML() },
+      const res = await buildZip(`Visit_${member.name.split(" ")[0]}_${curLabel.replace(/[^A-Za-z0-9]+/g, "_")}`, included, [
+        { name: "99_ReadiNes_Cover_Sheet.html", content: coverHTML() },
       ]);
-      toast(`Downloaded: cover sheet + ${included.length} document${included.length === 1 ? "" : "s"}`);
-      onClose();
+      /* The originals are the point of the download, so say exactly how many made it and never
+         report success for a pack that carries none. */
+      if (res.added === 0)
+        toast(
+          included.length
+            ? "No document files could be read. The pack was not usable, so nothing was sent."
+            : "Nothing to pack: no documents are selected.",
+        );
+      else if (res.missing.length)
+        toast(`Downloaded ${res.added} document${res.added === 1 ? "" : "s"} · ${res.missing.length} could not be read`);
+      else toast(`Downloaded ${res.added} original document${res.added === 1 ? "" : "s"}`);
+      if (res.added > 0) onClose();
     } finally {
       setBusy(false);
     }
@@ -2341,7 +2384,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
               Prepare for a visit
             </h3>
           </div>
-          <button className="lh-x" onClick={onClose}>
+          <button className="lh-x" onClick={onClose} title="Close" aria-label="Close">
             <X size={16} />
           </button>
         </div>
@@ -2614,7 +2657,7 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
     ${row("Insurance", ins ? ins.name : "—")}
     ${row("Medical documents", `${medDocs} on file in ReadiNes`)}
   </table></div>
-  <div style="padding:10px 16px;background:#f9fafb;color:#9ca3af;font-size:11px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between"><span>Assembled facts only · no diagnosis.</span><span>Generated ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span></div>
+  <div style="padding:10px 16px;background:#f9fafb;color:#6b7280;font-size:12px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between"><span>Assembled facts only · no diagnosis.</span><span>Generated ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span></div>
   </div>`;
 }
 
@@ -2664,7 +2707,7 @@ const CSS = () => `
 .lh-tabs::-webkit-scrollbar{display:none}
 .lh-tab{display:inline-flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;color:${C.sub};font-size:14px;font-weight:600;padding:10px 12px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-bottom:-1px}
 .lh-tab.on{color:${C.text};border-bottom-color:${C.action}}
-.lh-tc{font-size:11px;background:${C.panel2};border-radius:9px;padding:1px 6px;color:${C.sub}}
+.lh-tc{font-size:12px;background:${C.panel2};border-radius:9px;padding:1px 6px;color:${C.sub}}
 .lh-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .lh-grid-2-1{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px}
 .lh-sechead{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:700;color:${C.text};margin-bottom:12px}
@@ -2674,7 +2717,7 @@ const CSS = () => `
 .lh-ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
 .lh-ib{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;border:1px solid ${C.border};background:transparent;cursor:pointer;flex-shrink:0}
 .lh-ib:hover{background:var(--lpv-raised)}
-.lh-tag{font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+.lh-tag{font-size:12px;font-weight:600;padding:2px 7px;border-radius:20px}
 .lh-info{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid ${C.border}}
 .lh-info:first-of-type{border-top:0}
 .lh-med{padding:12px 0;border-top:1px solid ${C.border}}
@@ -2694,7 +2737,7 @@ const CSS = () => `
 .lh-tlmon{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${C.gold};margin:14px 0 6px}
 .lh-tlrow{position:relative;display:flex;align-items:center;gap:11px;padding:8px 0}
 .lh-tldot{position:absolute;left:-15px;top:18px;width:9px;height:9px;border-radius:9px}
-.lh-lbl{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};margin-bottom:5px}
+.lh-lbl{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};margin-bottom:5px}
 .lh-in{width:100%;background:${C.panel2};border:1px solid ${C.border};border-radius:10px;padding:11px;min-height:44px;color:${C.text};font-size:16px;outline:none;font-family:inherit}
 .lh-in:focus{border-color:${C.action}}
 .lh-overlay{position:fixed;inset:0;z-index:72;background:var(--lpv-scrim);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px}

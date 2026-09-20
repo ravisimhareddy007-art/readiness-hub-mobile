@@ -147,7 +147,7 @@ body{background:var(--lpv-bg)}
 @media(max-width:880px){.lp-hero2{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:760px){.lp-main{padding:16px 14px 30px}}
 .lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(5,1fr);gap:0;background:var(--lpv-barbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--lpv-border);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
-.lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:14px;font-size:10px;margin:0 3px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:14px;font-size:12px;margin:0 3px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lp-scrim{position:fixed;inset:0;z-index:65;background:var(--lpv-scrim)}
 .lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up 280ms cubic-bezier(.2,.9,.3,1.08)}
 .lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:var(--lpv-border);margin:4px auto 10px}
@@ -6357,7 +6357,12 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
       a.download = "SOS_Estate_Summary.html";
       a.click();
       URL.revokeObjectURL(u);
-      await buildZip("SOS_Handoff_Documents", wealthDocs);
+      const res = await buildZip("SOS_Handoff_Documents", wealthDocs);
+      if (res.added === 0) {
+        toast("No document files could be read, so nothing was downloaded.");
+        return;
+      }
+      if (res.missing.length) toast(`${res.added} document${res.added === 1 ? "" : "s"} downloaded · ${res.missing.length} could not be read`);
       store.releaseHandoff([...chosen], reason);
       toast("SOS handoff released · pack downloaded");
       onClose();
@@ -7340,7 +7345,7 @@ function buildEstate(store: any): string {
   const net = s(A_) - s(L_);
   const dn = (id?: string) => store.docs.find((d: Doc) => d.id === id)?.name || "\u2014 not attached \u2014";
   const trusted = store.members.filter((mm: Member) => mm.access === "Full member" || mm.access === "Emergency access");
-  const th = (t: string) => `<th style="text-align:left;padding:6px 10px;font-size:11px;color:#6b7280">${t}</th>`;
+  const th = (t: string) => `<th style="text-align:left;padding:6px 10px;font-size:12px;color:#6b7280">${t}</th>`;
   const secTable = (title: string, arr: Holding[], showNom: boolean) =>
     `<h3 style="margin:18px 0 6px;font-size:14px;color:#111827">${title}</h3><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Holding")}${th("Type")}${th("Where")}${th("Value")}${showNom ? th("Nominee") : ""}${th("Document")}${th("How to access")}</tr>${arr.map((h) => `<tr><td style="padding:6px 10px;font-weight:600">${h.name}</td><td style="padding:6px 10px">${h.type}</td><td style="padding:6px 10px;color:#6b7280">${h.institution || ""} ${h.accountRef || ""}</td><td style="padding:6px 10px">${m2(h.value)}</td>${showNom ? `<td style="padding:6px 10px;color:${h.nominee ? "#111827" : "#b91c1c"};font-weight:${h.nominee ? 400 : 700}">${h.nominee ? h.nomineeName || "named" : "NOT NAMED"}</td>` : ""}<td style="padding:6px 10px;color:#6b7280">${dn(h.docId)}</td><td style="padding:6px 10px;color:#374151">${h.accessNote || "\u2014"}</td></tr>`).join("") || `<tr><td colspan="6" style="padding:6px 10px;color:#9ca3af">None</td></tr>`}</table>`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>Family Summary</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111827;max-width:760px;margin:20px auto;padding:0 20px;background:#fff">
@@ -7371,7 +7376,7 @@ function buildEstate(store: any): string {
     ${L_.length ? `<li>Outstanding liabilities to settle or transfer: ${L_.map((l) => `${l.name} (${l.institution || ""})`).join(", ")}</li>` : ""}
   </ol>
   <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">Who can help</h3><ul style="margin:0;padding-left:18px;line-height:1.7;color:#374151;font-size:13px">${trusted.map((mm: Member) => `<li>${mm.name} \u2014 ${mm.relation} (${mm.access})</li>`).join("") || "<li>No trusted contacts set</li>"}</ul>
-  <p style="margin-top:22px;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:10px">Prepared by ReadiNes from your own records. Account references are masked. This is an organizational summary \u2014 not a will, and not legal, tax, or financial advice. Confirm nominee and succession details with each institution and a professional.</p>
+  <p style="margin-top:22px;font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:10px">Prepared by ReadiNes from your own records. Account references are masked. This is an organizational summary \u2014 not a will, and not legal, tax, or financial advice. Confirm nominee and succession details with each institution and a professional.</p>
   </body></html>`;
 }
 
