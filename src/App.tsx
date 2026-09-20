@@ -185,8 +185,15 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-chiprail{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap !important;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .lp-chiprail::-webkit-scrollbar{display:none}
 .lp-chipsticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px;padding:8px 14px 6px}
-.lp-wrow{flex-wrap:wrap}
-.lp-wrow .lp-wchips{flex-basis:100%;padding-left:48px;margin-top:2px}
+.lp-hrow,.lp-txrow{display:grid !important;column-gap:12px;row-gap:6px;align-items:center}
+.lp-hrow{grid-template-columns:36px minmax(0,1fr) auto 16px;grid-template-areas:"icon name amt chev" "chips chips chips chev"}
+.lp-txrow{grid-template-columns:36px minmax(0,1fr) auto;grid-template-areas:"icon name amt" "chips chips act"}
+.lp-hrow > span:first-child,.lp-txrow > span:first-child{grid-area:icon}
+.lp-hrow .lp-wname,.lp-txrow .lp-wname{grid-area:name;min-width:0 !important}
+.lp-hrow .lp-wamt,.lp-txrow .lp-wamt{grid-area:amt;margin-left:0;text-align:right;white-space:nowrap}
+.lp-hrow .lp-wchips,.lp-txrow .lp-wchips{grid-area:chips;justify-content:flex-start;margin-left:0}
+.lp-hrow > svg:last-child{grid-area:chev;justify-self:end}
+.lp-txrow > button{grid-area:act;justify-self:end}
 .lp-es-cta{display:flex;gap:8px}
 .lp-es-cta>button{flex:1;justify-content:center}
 .lp-act{flex-wrap:wrap;row-gap:2px}
@@ -5079,7 +5086,7 @@ function Wealth({ store, go, toast }: any) {
     const guardedKind = h.kind === "asset" || h.kind === "cover";
     return (
       <div
-        className="lp-wrow"
+        className="lp-wrow lp-hrow"
         onClick={() => setEdit(h)}
         style={{
           display: "flex",
@@ -5623,7 +5630,7 @@ function Wealth({ store, go, toast }: any) {
                     return (
                       <div
                         key={t.id}
-                        className="lp-wrow"
+                        className="lp-wrow lp-txrow"
                         onClick={() => setEditTx(t)}
                         style={{
                           display: "flex",
@@ -5730,25 +5737,6 @@ function Wealth({ store, go, toast }: any) {
                             <Check size={12} /> Settled
                           </button>
                         )}
-                        <button
-                          className="lp-iconbtn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setConfirm({
-                              title: "Remove this entry?",
-                              body: `${money(t.amount)} ${lent ? "lent to" : "borrowed from"} ${t.counterparty || "someone"} will be removed from the register. Any evidence stays in Documents.`,
-                              action: "Remove",
-                              onYes: () => {
-                                store.removeTransaction(t.id);
-                                toast("Entry removed");
-                              },
-                            });
-                          }}
-                          title="Remove" aria-label="Remove"
-                          style={{ ...btnGhost, padding: 0 }}
-                        >
-                          <Trash2 size={13} />
-                        </button>
                       </div>
                     );
                   })
@@ -6441,7 +6429,7 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
   );
 }
 
-function TransactionModal({ transaction, currency, onClose, onSave }: any) {
+function TransactionModal({ transaction, currency, members, onClose, onSave, onDelete }: any) {
   const [evidence, setEvidence] = useState<File | null>(null);
   const [more, setMore] = useState(!!transaction);
   const [saving, setSaving] = useState(false);
@@ -6695,6 +6683,14 @@ function TransactionModal({ transaction, currency, onClose, onSave }: any) {
         >
           {saving ? "Saving…" : transaction ? "Save changes" : "Confirm"}
         </button>
+        {onDelete && (
+          <button
+            onClick={onDelete}
+            style={{ ...btnGhost, width: "100%", justifyContent: "center", marginTop: 10, minHeight: 44, color: T.coral, borderColor: T.coral + "55" }}
+          >
+            <Trash2 size={14} /> Remove this entry
+          </button>
+        )}
       </div>
     </div>
   );
