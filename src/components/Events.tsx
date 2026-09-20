@@ -19,7 +19,9 @@ export function PackageModal({ ev, onClose, toast }: { ev: LifeEvent; onClose: (
   const onZip = async () => {
     if (!haveDocs.length) { toast("No matching files yet — upload documents first"); return; }
     toast(`Zipping ${haveDocs.length} files…`);
-    await buildZip(`${ev.name} Package`, haveDocs);
+    const res = await buildZip(`${ev.name} Package`, haveDocs);
+    if (res.added === 0) return alert("No document files could be read, so the package was not created.");
+    if (res.missing.length) alert(`${res.added} document(s) packed. ${res.missing.length} could not be read.`);
     toast("Package downloaded");
   };
 
