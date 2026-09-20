@@ -32,6 +32,12 @@ export interface Doc {
   wrappedKeys?: Record<string, WrappedKey>;
   enc?: boolean;
   notes?: string;
+  /* Health index, read from the record on upload. Printed facts only, used to assemble a visit kit. */
+  doctor?: string;
+  hospital?: string;
+  specialisation?: string;
+  lab?: string;
+  readAt?: string; // when the record was read
   value?: number; // for Wealth (documented asset value)
   nominee?: boolean; // for Wealth (nominee designated?)
 }
@@ -43,6 +49,12 @@ export interface LabLog {
   value2?: number;
   unit: string;
   date: string;
+  /* The reference range as printed on the report this reading came from.
+     ReadiNes never supplies a range of its own: no range on file means no status shown. */
+  refLow?: number;
+  refHigh?: number;
+  refText?: string;
+  sourceDocId?: string; // the record it was read from; absent when typed by hand
 }
 export interface Medication {
   id: string;

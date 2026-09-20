@@ -17,6 +17,7 @@ import { classify } from "./classify";
 import { safeOcr } from "./ocr";
 import { classifyContent } from "./classify-content";
 import { extractHoldingFields } from "./extract-holding";
+import { extractMedical } from "./extract-medical";
 import { defaultCurrency, rateBetween } from "./currency";
 import { getDecrypted, putEncrypted } from "./secure-idb";
 import { myPublicKey } from "./vault";
@@ -673,6 +674,9 @@ export function useStore() {
   const addFiles = useCallback(async (files: FileList | File[], memberId?: string, override?: Partial<Doc>) => {
     await ensureVaultReady();
     const created: Doc[] = [];
+    const newLabs: LabLog[] = [];
+    const newMeds: Medication[] = [];
+    const newReminders: Reminder[] = [];
     for (const file of Array.from(files)) {
       const key = "f_" + Math.random().toString(36).slice(2) + Date.now();
       const sizeKB = Math.max(1, Math.round(file.size / 1024));
@@ -702,6 +706,13 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
       created.push(doc);
       state = { ...state, docs: [doc, ...state.docs] };
     }
+    if (newLabs.length || newMeds.length || newReminders.length)
+      state = {
+        ...state,
+        labs: [...newLabs, ...state.labs],
+        meds: [...state.meds, ...newMeds],
+        reminders: [...state.reminders, ...newReminders],
+      };
     persist();
     return created;
   }, []);
