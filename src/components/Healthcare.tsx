@@ -89,42 +89,15 @@ const age = (dob?: string) => (dob ? Math.floor((Date.now() - +new Date(dob)) / 
 
 /* ── reference ranges (standard published values) ── */
 export type Status = "in" | "watch" | "out" | "none";
-export const METRICS: Record<
-  string,
-  { unit: string; bp?: boolean; ref: string; band?: [number, number]; status: (a: number, b?: number) => Status }
-> = {
-  HbA1c: {
-    unit: "%",
-    ref: "under 5.7% normal, 6.5%+ high",
-    band: [4, 5.7],
-    status: (v) => (v < 5.7 ? "in" : v < 6.5 ? "watch" : "out"),
-  },
-  LDL: {
-    unit: "mg/dL",
-    ref: "under 100 optimal, 130+ high",
-    band: [40, 100],
-    status: (v) => (v < 100 ? "in" : v < 130 ? "watch" : "out"),
-  },
-  "Fasting Glucose": {
-    unit: "mg/dL",
-    ref: "under 100 normal, 126+ high",
-    band: [70, 100],
-    status: (v) => (v < 100 ? "in" : v < 126 ? "watch" : "out"),
-  },
-  "Blood Pressure": {
-    unit: "mmHg",
-    bp: true,
-    ref: "under 130/85 in range",
-    band: [90, 130],
-    status: (s, d = 0) => (s < 130 && d < 85 ? "in" : s < 140 && d < 90 ? "watch" : "out"),
-  },
-  TSH: {
-    unit: "mIU/L",
-    ref: "0.4 to 4.0 normal",
-    band: [0.4, 4],
-    status: (v) => (v >= 0.4 && v <= 4 ? "in" : v <= 6 ? "watch" : "out"),
-  },
-  Weight: { unit: "kg", ref: "tracked", status: () => "none" },
+/* Display metadata only. Reference ranges are never supplied by ReadiNes:
+   a reading is judged against the range printed on the report it came from, or not at all. */
+export const METRICS: Record<string, { unit: string; bp?: boolean }> = {
+  HbA1c: { unit: "%" },
+  LDL: { unit: "mg/dL" },
+  "Fasting Glucose": { unit: "mg/dL" },
+  "Blood Pressure": { unit: "mmHg", bp: true },
+  TSH: { unit: "mIU/L" },
+  Weight: { unit: "kg" },
 };
 function focusFor(label: string): string[] {
   const l = (label || "").toLowerCase();
@@ -133,10 +106,10 @@ function focusFor(label: string): string[] {
   return [];
 }
 const SM: Record<Status, { label: string; c: string }> = {
-  in: { label: "in range", c: C.emerald },
-  watch: { label: "watch", c: C.gold },
-  out: { label: "out of range", c: C.red },
-  none: { label: "tracked", c: C.faint },
+  in: { label: "within printed range", c: C.emerald },
+  watch: { label: "within printed range", c: C.emerald },
+  out: { label: "outside printed range", c: C.red },
+  none: { label: "no range on file", c: C.faint },
 };
 const KIND: Record<string, { icon: any; c: string; label: string }> = {
   reading: { icon: Activity, c: C.cyan, label: "Reading" },
@@ -147,11 +120,17 @@ const KIND: Record<string, { icon: any; c: string; label: string }> = {
   other: { icon: ClipboardList, c: C.faint, label: "Record" },
 };
 export const sortR = (a: LabLog, b: LabLog) => a.date.localeCompare(b.date);
-export const statusOf = (metric: string, r: LabLog[]): Status => {
-  if (!r.length) return "none";
-  const l = r[r.length - 1];
-  return METRICS[metric].status(l.value, l.value2);
+/* A reading is in or out of the range printed on its own report. With no printed range
+   there is no status: ReadiNes reports what the document says and never sets a range itself. */
+export const statusOfReading = (l?: LabLog): Status => {
+  if (!l || (l.refLow === undefined && l.refHigh === undefined)) return "none";
+  const over = l.refHigh !== undefined && l.value > l.refHigh;
+  const under = l.refLow !== undefined && l.value < l.refLow;
+  return over || under ? "out" : "in";
 };
+export const statusOf = (_metric: string, r: LabLog[]): Status => statusOfReading(r[r.length - 1]);
+export const rangeText = (l?: LabLog): string =>
+  l?.refText ? `range on this report: ${l.refText}` : "no range printed on the report";
 
 /* intent-based record types: people think "I have a blood report", not "upload" */
 const RECORD_TYPES: { label: string; short: string; icon: any; c: string; override: Partial<Doc> }[] = [
@@ -399,7 +378,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       const st = statusOf(k, arr);
       const l = arr[arr.length - 1],
         f = arr[0];
-      if (st === "out" || st === "watch") {
+      if (st === "out") {
         const dir = l.value > f.value ? "up" : "down";
         outs.push(`${k} ${dir} to ${METRICS[k].bp ? `${l.value}/${l.value2}` : l.value}`);
       }
@@ -411,10 +390,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       .filter((k) => k !== "Weight")
       .map((k) => ({ k, st: statusOf(k, vitals[k]) }));
     if (!sts.length) return "No readings tracked yet";
-    const bad = sts.filter((x) => x.st === "out" || x.st === "watch").map((x) => x.k);
+    const bad = sts.filter((x) => x.st === "out").map((x) => x.k);
     const ok = sts.filter((x) => x.st === "in").map((x) => x.k);
-    if (!bad.length) return "All tracked readings in range";
-    return `${bad.join(", ")} to review${ok.length ? ` · ${ok.join(", ")} in range` : ""}`;
+    if (!bad.length) return "All readings within their printed ranges";
+    return `${bad.join(", ")} outside printed range${ok.length ? ` · ${ok.join(", ")} within` : ""}`;
   }, [vitals]);
 
   const insight = useMemo(() => {
@@ -429,10 +408,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       const val = METRICS[k].bp ? `${l.value}/${l.value2}` : `${l.value} ${METRICS[k].unit}`;
       const rng =
         st === "out"
-          ? "above the standard reference range"
-          : st === "watch"
-            ? "near the upper edge of the standard range"
-            : "within the standard range";
+          ? `outside the range printed on the report (${l.refText})`
+          : st === "in"
+            ? `within the range printed on the report (${l.refText})`
+            : "with no range printed on the report";
       parts.push(`${k} has ${dir} across ${m?.name.split(" ")[0]}'s last ${arr.length} readings to ${val}, ${rng}.`);
     });
     if (!parts.length)
@@ -667,7 +646,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           </span>
         </div>
         <p style={{ color: C.sub, fontSize: 14, marginTop: 3 }}>
-          Keep the whole family visit-ready. ReadiNes organizes and surfaces your records. It never diagnoses.
+          Keep the whole family visit-ready. ReadiNes reads your records to organize and surface them. It reports what
+          they say and never diagnoses.
         </p>
       </div>
 
@@ -839,6 +819,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   >
                     {METRICS[k].bp ? `${l.value}/${l.value2}` : l.value}
                     <span style={{ fontSize: 13, color: C.sub, fontWeight: 500 }}>{METRICS[k].unit}</span>
+                    <span style={{ display: "block", fontSize: 12, color: C.faint, fontWeight: 500, marginTop: 2 }}>
+                      {rangeText(l)}
+                    </span>
                     <Tr size={14} color={delta === 0 ? C.faint : delta > 0 ? C.red : C.emerald} />
                   </div>
                   <MiniChart arr={arr} metric={k} color={SM[st].c === C.faint ? C.cyan : SM[st].c} />
@@ -1045,7 +1028,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               </button>
             </div>
             <div style={{ fontSize: 12, color: C.faint, marginBottom: 8 }}>
-              What the latest prescriptions say, not a pill tracker. Refill dates come from the prescription.
+              What the latest prescriptions say, not a pill tracker. Medicines and refill dates are read from the
+              prescription itself.
             </div>
             {meds.length === 0 ? (
               <Empty t="No medications recorded." />
@@ -1135,8 +1119,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               />
             </div>
             <div style={{ fontSize: 12, color: C.faint, marginBottom: 6 }}>
-              Upload anything: ReadiNes identifies whether it is a prescription, lab report, scan, or discharge summary
-              and files it. A copy lands in Documents too.
+              Upload anything. ReadiNes reads the record on your device to file it, pull out the values and the ranges
+              printed beside them, and note the doctor, hospital, and specialisation so a visit kit can be assembled. It
+              records what the document says and never adds an opinion. A copy lands in Documents too.
             </div>
             {records.length === 0 ? (
               <Empty t="No records yet. Upload, scan, or pick from gallery. Each one also lands in Documents." />
@@ -1338,9 +1323,12 @@ function Spark({ arr, c }: { arr: LabLog[]; c: string }) {
   );
 }
 function MiniChart({ arr, metric, color }: { arr: LabLog[]; metric: string; color: string }) {
-  const M = METRICS[metric];
   const vals = arr.map((x) => x.value);
-  const band = M.band;
+  const latest = arr[arr.length - 1];
+  const band: [number, number] | undefined =
+    latest && (latest.refLow !== undefined || latest.refHigh !== undefined)
+      ? [latest.refLow ?? Math.min(...vals), latest.refHigh ?? Math.max(...vals)]
+      : undefined;
   let min = Math.min(...vals, ...(band ? [band[0]] : []));
   let max = Math.max(...vals, ...(band ? [band[1]] : []));
   const pad = (max - min) * 0.18 || 1;
@@ -1491,6 +1479,8 @@ function LogReading({ member, vitals, onClose, save }: any) {
   const [v, setV] = useState("");
   const [d, setD] = useState("");
   const [date, setDate] = useState(today());
+  const [rl, setRl] = useState("");
+  const [rh, setRh] = useState("");
   const isBP = METRICS[k].bp;
   return (
     <Modal title={`Log a reading for ${member.name.split(" ")[0]}`} onClose={onClose}>
@@ -1520,7 +1510,22 @@ function LogReading({ member, vitals, onClose, save }: any) {
           <input className="lh-in" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
       </div>
-      <div style={{ fontSize: 12, color: C.faint, marginTop: 10 }}>Reference: {METRICS[k].ref}.</div>
+      {!isBP && (
+        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+          <div style={{ flex: 1 }}>
+            <Lbl>Range low (optional)</Lbl>
+            <input className="lh-in" type="number" value={rl} onChange={(e) => setRl(e.target.value)} placeholder="as printed" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <Lbl>Range high (optional)</Lbl>
+            <input className="lh-in" type="number" value={rh} onChange={(e) => setRh(e.target.value)} placeholder="as printed" />
+          </div>
+        </div>
+      )}
+      <div style={{ fontSize: 12, color: C.faint, marginTop: 10 }}>
+        Copy the reference range from your report. ReadiNes does not supply one, so a reading with no range is
+        recorded without a status.
+      </div>
       <button
         className="lh-btn"
         style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
@@ -1528,7 +1533,22 @@ function LogReading({ member, vitals, onClose, save }: any) {
         onClick={() => {
           const val = parseFloat(v);
           if (isNaN(val)) return;
-          save(k, { value: val, unit: METRICS[k].unit, date, ...(isBP ? { value2: parseFloat(d) || 0 } : {}) });
+          const lo = parseFloat(rl);
+          const hi = parseFloat(rh);
+          const hasRange = !isBP && (Number.isFinite(lo) || Number.isFinite(hi));
+          save(k, {
+            value: val,
+            unit: METRICS[k].unit,
+            date,
+            ...(isBP ? { value2: parseFloat(d) || 0 } : {}),
+            ...(hasRange
+              ? {
+                  refLow: Number.isFinite(lo) ? lo : undefined,
+                  refHigh: Number.isFinite(hi) ? hi : undefined,
+                  refText: Number.isFinite(lo) && Number.isFinite(hi) ? `${lo} to ${hi}` : Number.isFinite(hi) ? `under ${hi}` : `over ${lo}`,
+                }
+              : {}),
+          });
         }}
       >
         Save reading
