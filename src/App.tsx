@@ -5693,13 +5693,7 @@ function Wealth({ store, go, toast }: any) {
                     className="lp-sheet-item"
                     onClick={() => {
                       setDocPick(false);
-                      setDraft({
-                        name: d.docType,
-                        docId: d.id,
-                        memberId: d.memberId,
-                        kind: d.category === "Insurance" ? "cover" : "asset",
-                        type: d.category === "Insurance" ? "Insurance" : d.category === "Property" ? "Property" : "Bank account",
-                      });
+                      setDraft(draftFromDoc(d));
                       setAddH(true);
                     }}
                   >
@@ -5719,6 +5713,7 @@ function Wealth({ store, go, toast }: any) {
               holding={edit}
               initial={draft}
               members={store.members}
+              store={store}
               onClose={() => {
                 setEdit(null);
                 setAddH(false);
@@ -6556,7 +6551,32 @@ function TransactionModal({ members, onClose, onSave }: any) {
   );
 }
 
-function HoldingModal({ holding, members, onClose, onSave, onDelete, initial }: any) {
+function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, store }: any) {
+  const [fill, setFill] = useState<{ busy: boolean; note: string | null }>({ busy: false, note: null });
+  const fillFromDoc = async () => {
+    if (!f.docId || fill.busy) return;
+    setFill({ busy: true, note: null });
+    try {
+      const x: Record<string, any> = await store.fillFromDocument(f.docId);
+      const next = { ...f };
+      let n = 0;
+      for (const k of ["institution", "accountRef", "value", "renewalDate", "maturityDate"]) {
+        const cur = next[k];
+        if (x[k] !== undefined && (cur === undefined || cur === "" || cur === 0)) { next[k] = x[k]; n++; }
+      }
+      setF(next);
+      const d = store.docs.find((z: Doc) => z.id === f.docId);
+      const when = d?.docDate || d?.addedAt;
+      setFill({
+        busy: false,
+        note: n
+          ? `Filled ${n} field${n > 1 ? "s" : ""} from your document${when ? " as of " + new Date(when).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : ""}. Check and confirm.`
+          : "Nothing readable in this document. Fill in by hand.",
+      });
+    } catch {
+      setFill({ busy: false, note: "Could not read this document. Fill in by hand." });
+    }
+  };
   const [f, setF] = useState<any>(
     holding || {
       name: "",
@@ -6626,6 +6646,32 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial }: 
             <X size={16} />
           </button>
         </div>
+        {f.docId && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 12px",
+              marginBottom: 14,
+              borderRadius: 10,
+              border: `1px solid ${T.border}`,
+              background: T.raised,
+            }}
+          >
+            <FileText size={16} color={T.muted} />
+            <span style={{ flex: 1, fontSize: 12.5, color: fill.note ? T.text : T.muted }}>
+              {fill.note || "Linked to a document. Read it once to fill what it states."}
+            </span>
+            <button
+              onClick={fillFromDoc}
+              disabled={fill.busy}
+              style={{ ...btnGhost, padding: "6px 10px", fontSize: 12, color: SEM.action, whiteSpace: "nowrap", opacity: fill.busy ? 0.6 : 1 }}
+            >
+              {fill.busy ? "Reading…" : fill.note ? "Read again" : "Fill from this document"}
+            </button>
+          </div>
+        )}
         <label style={lbl}>Name</label>
         <input
           style={inp}
