@@ -5,10 +5,12 @@
 import type { MedType } from "./types";
 
 export interface ExtractedReading {
-  metric: string;
+  metric: string; // the test name as printed
+  key: string; // normalised name + unit: the series this reading belongs to
   value: number;
   value2?: number; // diastolic, for blood pressure
   unit: string;
+  qualifier?: string; // "<" or ">" for a sub- or above-threshold result, e.g. PSA <0.01
   refLow?: number; // reference range printed on this report
   refHigh?: number;
   refText?: string; // the range exactly as printed
@@ -60,21 +62,61 @@ function dateNear(text: string, labels: string[]): string | undefined {
 }
 
 /* ── lab readings ──
-   Each test carries the aliases printed on Indian lab reports and the metric key the
-   trends already use, so an extracted value lands on the same chart as a typed one. */
-const TESTS: { metric: string; unit: string; aliases: string[]; min: number; max: number }[] = [
-  { metric: "HbA1c", unit: "%", aliases: ["hba1c", "glycated haemoglobin", "glycosylated hemoglobin", "glycated hemoglobin"], min: 3, max: 20 },
-  { metric: "LDL", unit: "mg/dL", aliases: ["ldl cholesterol", "ldl-c", "ldl"], min: 10, max: 400 },
-  { metric: "Fasting Glucose", unit: "mg/dL", aliases: ["fasting blood sugar", "fasting glucose", "glucose fasting", "fbs"], min: 30, max: 600 },
-  { metric: "TSH", unit: "mIU/L", aliases: ["tsh", "thyroid stimulating hormone"], min: 0.01, max: 100 },
-  { metric: "Weight", unit: "kg", aliases: ["weight"], min: 1, max: 400 },
+   Any test the report prints, not a fixed list. A row is recognised as a result only when a
+   recognised clinical unit follows the number, because test names are unbounded while units are
+   a small, stable vocabulary. Nothing is inferred: no test is looked up, no range is supplied. */
+
+/* Closed unit vocabulary. Anchors what counts as a result and keeps demographics, billing lines,
+   and sample identifiers out of the data. */
+const UNITS = [
+  "%", "mg/dL", "mg/dl", "g/dL", "g/dl", "mg/L", "g/L", "ng/mL", "ng/dL", "pg/mL", "ug/L", "ug/dL",
+  "mcg/L", "mcg/dL", "IU/L", "U/L", "mIU/L", "uIU/mL", "mIU/mL", "IU/mL", "mmol/L", "umol/L", "nmol/L",
+  "pmol/L", "mEq/L", "mm/hr", "mmHg", "fL", "pg", "kg", "cm", "million/uL", "thousand/uL", "cells/uL",
+  "/uL", "/cumm", "cells/cumm", "x10^3/uL", "x10^6/uL", "sec", "seconds", "ratio", "INR", "mL/min",
+  "mL/min/1.73m2", "U/mL", "kU/L", "ug/mL", "ng/L",
 ];
+/* Micro sign, Greek mu and "mcg" all mean the same thing; case varies by lab. */
+const normUnit = (u: string) =>
+  u.replace(/[\u00B5\u03BC]/g, "u").replace(/mcg/gi, "ug").replace(/\s+/g, "").toLowerCase();
+const UNIT_SET = new Set(UNITS.map(normUnit));
+const UNIT_RE = "([%/a-zA-Z\\u00B5\\u03BC][a-zA-Z\\u00B5\\u03BC0-9/^.]{0,14})";
+
+/* Qualifiers that change what a test measures. Two results may only share a series if these match,
+   so Free PSA never joins Total PSA and calculated LDL never joins direct LDL. */
+const QUALIFIERS = ["free", "total", "direct", "indirect", "calculated", "estimated", "ratio", "fasting",
+  "post prandial", "postprandial", "random", "corrected", "unbound", "bound"];
+
+/* Analytical methods printed in brackets. These are not another name for the test. */
+const METHODS = /^(hplc|clia|elisa|eclia|cmia|jaffe|enzymatic|colorimetric|photometr\w*|turbidimetr\w*|immunoturbidimetr\w*|nephelometr\w*|spectrophotometr\w*|calculated|direct|serum|plasma|flow cytometry|microscopy|automated|manual)$/i;
+
+/** Conservative name normalisation: tidy formatting, never merge different measurements.
+    Labs print "Full Name (ABBREV)"; the abbreviation is the stabler key, so it wins when present
+    and is not a method note. Two labs that print only different forms stay separate, by design:
+    guessing they are the same test would need a synonym table, which is clinical knowledge. */
+export function normaliseTestName(raw: string): string {
+  const paren = [...raw.matchAll(/\(([^)]{1,14})\)/g)]
+    .map((x) => x[1].trim())
+    .find((x) => /^[A-Za-z0-9][A-Za-z0-9 .\-]*$/.test(x) && !METHODS.test(x) && x.length <= 10);
+
+  let n = (paren || raw)
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/^\s*[spb]\.\s*/i, " ")                                   // "S." / "P." specimen prefix
+    .replace(/\b(serum|plasma|blood|urine)\b/gi, " ")
+    .replace(/[^A-Za-z0-9 ]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const low = n.toLowerCase();
+  const quals = QUALIFIERS.filter((q) => low.includes(q));
+  const base = quals.reduce((acc, q) => acc.replace(new RegExp(q, "gi"), " "), n).replace(/\s+/g, " ").trim();
+  return [...quals.map((q) => q.replace(/\s+/g, "-")), base].filter(Boolean).join(" ").toLowerCase();
+}
 
 const NUM = "([0-9]+(?:\\.[0-9]+)?)";
 
-/** "4.0 - 5.6" / "4.0 to 5.6" / "< 100" / "up to 5.6" as printed next to a result. */
+/** "4.0 - 5.6" / "4.0 to 5.6" / "< 100" / "up to 5.6", as printed beside a result. */
 function rangeAfter(segment: string): { low?: number; high?: number; text?: string } {
-  let m = segment.match(new RegExp(`${NUM}\\s*(?:-|–|to)\\s*${NUM}`, "i"));
+  let m = segment.match(new RegExp(`${NUM}\\s*(?:-|\\u2013|to)\\s*${NUM}`, "i"));
   if (m) return { low: Number(m[1]), high: Number(m[2]), text: `${m[1]} to ${m[2]}` };
   m = segment.match(new RegExp(`(?:<|less than|up ?to|upto)\\s*${NUM}`, "i"));
   if (m) return { high: Number(m[1]), text: `under ${m[1]}` };
@@ -83,39 +125,60 @@ function rangeAfter(segment: string): { low?: number; high?: number; text?: stri
   return {};
 }
 
+/* Lines that carry a number and a unit but are not results. */
+const NOT_A_RESULT = /\b(age|years?|months?|amount|invoice|bill|receipt|gst|page|sample|barcode|uhid|mrn|reg(istration)?|phone|mobile|pin|room|bed|ref(erence)? no|panel|method|printed|collected|reported|received)\b/i;
+
 export function extractReadings(text: string): ExtractedReading[] {
-  // A lab report is a table: the result and its reference range share one printed line.
-  // Work line by line so a row can never borrow the row below it.
   const lines = text.split(/[\r\n]+/).map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean);
   const out: ExtractedReading[] = [];
-  const done = new Set<string>();
+  const seen = new Set<string>();
+
+  const BP_LINE = new RegExp(`(?:blood pressure|\\bbp\\b)[^0-9]{0,16}${NUM}\\s*\\/\\s*${NUM}`, "i");
+  /* Scan every number-and-unit pair on the line, not just the first: a test name can itself
+     contain a digit (HbA1c, Vitamin B12, x10^3), and stopping at the first candidate loses the row. */
+  const CANDIDATE = new RegExp(`([<>]?)\\s*${NUM}\\s*${UNIT_RE}`, "g");
 
   for (const line of lines) {
-    const low = line.toLowerCase();
-    for (const test of TESTS) {
-      if (done.has(test.metric)) continue;
-      const alias = test.aliases.find((a) => low.includes(a));
-      if (!alias) continue;
-      const seg = line.slice(low.indexOf(alias) + alias.length);
-      const v = seg.match(new RegExp(`^[^0-9]{0,24}${NUM}`));
-      if (!v) continue;
-      const value = Number(v[1]);
-      if (!Number.isFinite(value) || value < test.min || value > test.max) continue;
-      const r = rangeAfter(seg.slice(v[0].length));
-      out.push({ metric: test.metric, value, unit: test.unit, refLow: r.low, refHigh: r.high, refText: r.text });
-      done.add(test.metric);
-      break;
+    if (NOT_A_RESULT.test(line) || BP_LINE.test(line)) continue;
+
+    for (const c of line.matchAll(CANDIDATE)) {
+      const [whole, qualifier, rawValue, rawUnit] = c;
+      if (!UNIT_SET.has(normUnit(rawUnit))) continue;
+
+      const rawName = line.slice(0, c.index).replace(/[\s:.]+$/, "");
+      if (rawName.trim().length < 2) continue;
+      const name = normaliseTestName(rawName);
+      if (!name || /^[0-9 ]+$/.test(name)) continue;
+      const value = Number(rawValue);
+      if (!Number.isFinite(value)) continue;
+
+      const key = name + "|" + normUnit(rawUnit);
+      if (seen.has(key)) break;
+      seen.add(key);
+
+      const r = rangeAfter(line.slice((c.index || 0) + whole.length));
+      out.push({
+        metric: rawName.replace(/\([^)]*\)/g, "").replace(/\s+/g, " ").trim(),
+        key,
+        value,
+        unit: rawUnit.trim(),
+        qualifier: qualifier === "<" || qualifier === ">" ? qualifier : undefined,
+        refLow: r.low,
+        refHigh: r.high,
+        refText: r.text,
+      });
+      break; // one result per printed row
     }
   }
 
-  // blood pressure is printed as a pair
+  /* Blood pressure is the one paired value, printed as a fraction rather than a table row. */
   const t = text.replace(/\s+/g, " ");
   const bp = t.match(new RegExp(`(?:blood pressure|\\bbp\\b)[^0-9]{0,16}${NUM}\\s*\\/\\s*${NUM}`, "i"));
   if (bp) {
     const sys = Number(bp[1]);
     const dia = Number(bp[2]);
     if (sys >= 60 && sys <= 260 && dia >= 30 && dia <= 180)
-      out.push({ metric: "Blood Pressure", value: sys, value2: dia, unit: "mmHg" });
+      out.push({ metric: "Blood Pressure", key: "blood pressure|mmhg", value: sys, value2: dia, unit: "mmHg" });
   }
   return out;
 }

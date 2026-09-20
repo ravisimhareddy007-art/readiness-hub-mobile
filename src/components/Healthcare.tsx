@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { useStore, selectVisitDocs, visitTargets, targetLabel, type VisitTarget } from "../lib/store";
 import { buildZip } from "../lib/zip";
+import { normaliseTestName } from "../lib/extract-medical";
 import DocViewer from "./DocViewer";
 import type { Doc, Member, LabLog, Medication, ReminderKind } from "../lib/types";
 
@@ -100,20 +101,14 @@ const age = (dob?: string) => (dob ? Math.floor((Date.now() - +new Date(dob)) / 
 export type Status = "in" | "watch" | "out" | "none";
 /* Display metadata only. Reference ranges are never supplied by ReadiNes:
    a reading is judged against the range printed on the report it came from, or not at all. */
-export const METRICS: Record<string, { unit: string; bp?: boolean }> = {
-  HbA1c: { unit: "%" },
-  LDL: { unit: "mg/dL" },
-  "Fasting Glucose": { unit: "mg/dL" },
-  "Blood Pressure": { unit: "mmHg", bp: true },
-  TSH: { unit: "mIU/L" },
-  Weight: { unit: "kg" },
-};
-function focusFor(label: string): string[] {
-  const l = (label || "").toLowerCase();
-  if (/endocrin|diabet|thyroid|sugar|glucose/.test(l)) return ["HbA1c", "Fasting Glucose", "TSH", "LDL"];
-  if (/cardio|heart|hypertens|pressure|\bbp\b/.test(l)) return ["Blood Pressure", "LDL"];
-  return [];
-}
+/* No table of tests. A series describes itself from its own readings: the name and unit as the
+   report printed them, and whether it is the one paired value. */
+export const isPaired = (l?: LabLog) => (l?.unit || "").toLowerCase() === "mmhg";
+export const seriesName = (arr: LabLog[]) => arr[arr.length - 1]?.metric || "";
+export const seriesUnit = (arr: LabLog[]) => arr[arr.length - 1]?.unit || "";
+/** The value as printed, keeping a sub-threshold marker: PSA <0.01 must never read as 0.01. */
+export const readingText = (l?: LabLog) =>
+  !l ? "" : isPaired(l) ? `${l.value}/${l.value2}` : `${l.qualifier || ""}${l.value}`;
 const SM: Record<Status, { label: string; c: string }> = {
   in: { label: "within printed range", c: C.emerald },
   watch: { label: "within printed range", c: C.emerald },
@@ -227,12 +222,15 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         .sort((a, b) => (b.docDate || b.addedAt).localeCompare(a.docDate || a.addedAt)),
     [s.docs, sel],
   );
+  /* Every test the reports printed, grouped into series. A series is one test in one unit:
+     Free PSA never joins Total PSA, and a lab that changed units starts a new line rather than
+     drawing a cliff. Keyed off what the documents said, never off a condition. */
   const vitals = useMemo(() => {
     const map: Record<string, LabLog[]> = {};
     s.labs
-      .filter((l) => l.memberId === sel && METRICS[l.metric])
+      .filter((l) => l.memberId === sel)
       .forEach((l) => {
-        (map[l.metric] ||= []).push(l);
+        (map[l.seriesKey || l.metric.toLowerCase() + "|" + (l.unit || "").toLowerCase()] ||= []).push(l);
       });
     Object.values(map).forEach((a) => a.sort(sortR));
     return map;
@@ -246,7 +244,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         ev.push({
           date: l.date,
           kind: "reading",
-          title: `${l.metric} ${METRICS[l.metric]?.bp ? `${l.value}/${l.value2}` : l.value}${METRICS[l.metric] ? " " + METRICS[l.metric].unit : ""}`,
+          title: `${l.metric} ${readingText(l)}${l.unit ? " " + l.unit : ""}`,
           detail: "Reading logged",
         }),
       );
@@ -263,7 +261,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
 
   const outMetricsOf = (mid: string) => {
     const by: Record<string, LabLog[]> = {};
-    s.labs.filter((l) => l.memberId === mid && METRICS[l.metric]).forEach((l) => (by[l.metric] ||= []).push(l));
+    s.labs.filter((l) => l.memberId === mid).forEach((l) => (by[l.seriesKey || l.metric] ||= []).push(l));
     const outs: { k: string; last: LabLog }[] = [];
     Object.keys(by).forEach((k) => {
       by[k].sort(sortR);
@@ -354,7 +352,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     });
     s.members.forEach((mm) => {
       const by: Record<string, LabLog[]> = {};
-      s.labs.filter((l) => l.memberId === mm.id && METRICS[l.metric]).forEach((l) => (by[l.metric] ||= []).push(l));
+      s.labs.filter((l) => l.memberId === mm.id).forEach((l) => (by[l.seriesKey || l.metric] ||= []).push(l));
       Object.keys(by).forEach((k) => {
         by[k].sort(sortR);
         if (statusOf(k, by[k]) === "out") {
@@ -393,7 +391,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         f = arr[0];
       if (st === "out") {
         const dir = l.value > f.value ? "up" : "down";
-        outs.push(`${k} ${dir} to ${METRICS[k].bp ? `${l.value}/${l.value2}` : l.value}`);
+        outs.push(`${seriesName(arr)} ${readingText(l)}`);
       }
     });
     return outs.length ? outs.slice(0, 2).join(", ") : "Readings holding in range";
@@ -418,7 +416,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         f = arr[0];
       const st = statusOf(k, arr);
       const dir = l.value > f.value ? "risen" : l.value < f.value ? "eased" : "held steady";
-      const val = METRICS[k].bp ? `${l.value}/${l.value2}` : `${l.value} ${METRICS[k].unit}`;
+      const val = `${readingText(l)} ${seriesUnit(arr)}`.trim();
       const rng =
         st === "out"
           ? `outside the range printed on the report (${l.refText})`
@@ -887,7 +885,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: 13.5, color: C.sub }}>
                       {k}
-                      {METRICS[k].bp ? " · systolic trend" : ""}
+                      {isPaired(l) ? " · systolic trend" : ""}
                     </span>
                     <StatusPill s={st} />
                   </div>
@@ -895,8 +893,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     className="lh-h2"
                     style={{ fontSize: 25, margin: "6px 0 4px", display: "flex", alignItems: "baseline", gap: 8 }}
                   >
-                    {METRICS[k].bp ? `${l.value}/${l.value2}` : l.value}
-                    <span style={{ fontSize: 13, color: C.sub, fontWeight: 500 }}>{METRICS[k].unit}</span>
+                    {readingText(l)}
+                    <span style={{ fontSize: 13, color: C.sub, fontWeight: 500 }}>{seriesUnit(arr)}</span>
                     <span style={{ display: "block", fontSize: 12, color: C.faint, fontWeight: 500, marginTop: 2 }}>
                       {rangeText(l)}
                     </span>
@@ -1680,28 +1678,59 @@ function SheetModal({ title, onClose, html, onExport, onPrint, primary }: any) {
 
 /* ── forms ── */
 function LogReading({ member, vitals, onClose, save }: any) {
-  const keys = Object.keys(METRICS);
-  const [k, setK] = useState(Object.keys(vitals)[0] || "HbA1c");
+  /* Series already on file, so a second reading of the same test lands on the same line. */
+  const existing = Object.keys(vitals).map((key) => ({
+    key,
+    name: seriesName(vitals[key]),
+    unit: seriesUnit(vitals[key]),
+  }));
+  const [k, setK] = useState(existing[0]?.key || "");
+  const [newTest, setNewTest] = useState(existing.length === 0);
+  const [name, setName] = useState("");
+  const [unit, setUnit] = useState("");
   const [v, setV] = useState("");
   const [d, setD] = useState("");
   const [date, setDate] = useState(today());
   const [rl, setRl] = useState("");
   const [rh, setRh] = useState("");
-  const isBP = METRICS[k].bp;
+  const isBP = newTest ? unit.toLowerCase() === "mmhg" : (vitals[k]?.[0]?.unit || "").toLowerCase() === "mmhg";
+  const curUnit = newTest ? unit : seriesUnit(vitals[k] || []);
+  const ready = (newTest ? name.trim() && unit.trim() : !!k) && v.trim() !== "";
   return (
     <Modal title={`Log a reading for ${member.name.split(" ")[0]}`} onClose={onClose}>
-      <Lbl>Metric</Lbl>
-      <div className="lh-pick">
-        {keys.map((kk) => (
-          <button key={kk} className={"lh-pk" + (k === kk ? " on" : "")} onClick={() => setK(kk)}>
-            {kk}
-          </button>
-        ))}
-      </div>
+      <Lbl>Test</Lbl>
+      {existing.length > 0 && !newTest && (
+        <div className="lh-pick">
+          {existing.map((e) => (
+            <button key={e.key} className={"lh-pk" + (k === e.key ? " on" : "")} onClick={() => setK(e.key)}>
+              {e.name}
+            </button>
+          ))}
+        </div>
+      )}
+      {newTest && (
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ flex: 2 }}>
+            <input
+              className="lh-in"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name as printed, e.g. PSA Total"
+            />
+          </div>
+          <div style={{ flex: 1 }}>
+            <input className="lh-in" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="Unit" />
+          </div>
+        </div>
+      )}
+      <button className="lh-lnk" style={{ fontSize: 12.5, marginTop: 8 }} onClick={() => setNewTest((x) => !x)}>
+        {newTest && existing.length > 0 ? "Pick a test already on file" : "Add a test not listed"}
+      </button>
       <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
         <div style={{ flex: 1 }}>
           <Lbl>
-            {isBP ? "Systolic" : "Value"} ({METRICS[k].unit})
+            {isBP ? "Systolic" : "Value"}
+            {curUnit ? ` (${curUnit})` : ""}
           </Lbl>
           <input className="lh-in" type="number" value={v} onChange={(e) => setV(e.target.value)} placeholder="0" />
         </div>
@@ -1729,22 +1758,25 @@ function LogReading({ member, vitals, onClose, save }: any) {
         </div>
       )}
       <div style={{ fontSize: 12, color: C.faint, marginTop: 10 }}>
-        Copy the reference range from your report. ReadiNes does not supply one, so a reading with no range is
-        recorded without a status.
+        Copy the test name, value, unit, and reference range from your report. ReadiNes supplies none of them, so a
+        reading with no range is recorded without a status.
       </div>
       <button
         className="lh-btn"
         style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
-        disabled={!v}
+        disabled={!ready}
         onClick={() => {
           const val = parseFloat(v);
           if (isNaN(val)) return;
+          const mName = newTest ? name.trim() : seriesName(vitals[k] || []);
+          const mUnit = curUnit.trim();
           const lo = parseFloat(rl);
           const hi = parseFloat(rh);
           const hasRange = !isBP && (Number.isFinite(lo) || Number.isFinite(hi));
-          save(k, {
+          save(mName, {
+            seriesKey: newTest ? normaliseTestName(mName) + "|" + mUnit.toLowerCase() : k,
             value: val,
-            unit: METRICS[k].unit,
+            unit: mUnit,
             date,
             ...(isBP ? { value2: parseFloat(d) || 0 } : {}),
             ...(hasRange
@@ -1761,6 +1793,7 @@ function LogReading({ member, vitals, onClose, save }: any) {
       </button>
     </Modal>
   );
+
 }
 function ConfirmRemove({ member, onClose, onYes }: any) {
   const first = member.name.split(" ")[0];
@@ -2079,9 +2112,9 @@ function buildVisitCover(
   const readingRows = Object.keys(vitals)
     .map((k) => {
       const l = vitals[k][vitals[k].length - 1];
-      const val = METRICS[k].bp ? `${l.value}/${l.value2}` : `${l.value}`;
+      const val = readingText(l);
       const src = srcFor(l.date);
-      return `<tr><td style="padding:5px 10px">${k}</td><td style="padding:5px 10px;font-weight:700">${val} ${METRICS[k].unit}</td><td style="padding:5px 10px;color:#6b7280">${fmt(l.date)}</td><td style="padding:5px 10px;color:#6b7280">${src ? src.name : "manually logged"}</td></tr>`;
+      return `<tr><td style="padding:5px 10px">${seriesName(vitals[k])}</td><td style="padding:5px 10px;font-weight:700">${val} ${seriesUnit(vitals[k])}</td><td style="padding:5px 10px;color:#6b7280">${fmt(l.date)}</td><td style="padding:5px 10px;color:#6b7280">${src ? src.name : "manually logged"}</td></tr>`;
     })
     .join("");
   const sec = (t: string, body: string) =>
@@ -2111,11 +2144,6 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
   const packDocs: Doc[] = useMemo(() => selectVisitDocs(docs, member.id, cur), [docs, member.id, cur]);
   const included = packDocs.filter((d) => !excluded.has(d.id));
   /* Which readings a visit cares about, taken from the specialisation on the matching records. */
-  const foc = focusFor(
-    cur.kind === "specialisation"
-      ? cur.value || ""
-      : packDocs.map((d) => d.specialisation).find(Boolean) || "",
-  );
   const KIND_LABEL: Record<string, string> = {
     doctor: "Doctor",
     hospital: "Hospital or lab",
@@ -2195,7 +2223,6 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
         <div style={{ fontSize: 12, color: C.faint, marginBottom: 12 }}>
           {KIND_LABEL[cur.kind]}
           {cur.kind !== "general" ? " named on this member's records" : " from the last 12 months"}
-          {foc.length ? ` · prioritizes ${foc.join(", ")}` : ""}
           {` · ${packDocs.length} matching document${packDocs.length === 1 ? "" : "s"}`}
         </div>
         <div style={{ flex: 1, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>

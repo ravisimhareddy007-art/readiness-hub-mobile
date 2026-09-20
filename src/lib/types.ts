@@ -44,10 +44,12 @@ export interface Doc {
 export interface LabLog {
   id: string;
   memberId: string;
-  metric: string;
+  metric: string; // the test name as printed on the report
+  seriesKey?: string; // normalised name + unit: readings sharing this are one series
   value: number;
   value2?: number;
   unit: string;
+  qualifier?: string; // "<" or ">" for a sub- or above-threshold result
   date: string;
   /* The reference range as printed on the report this reading came from.
      ReadiNes never supplies a range of its own: no range on file means no status shown. */

@@ -724,6 +724,10 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     state = { ...state, members: state.members.map((mm) => (mm.id === mid ? { ...mm, ...patch } : mm)) };
     persist();
   }, []);
+  const removeLabsFromDoc = useCallback((docId: string) => {
+    state = { ...state, labs: state.labs.filter((x) => x.sourceDocId !== docId) };
+    persist();
+  }, []);
   const removeLab = useCallback((lid: string) => {
     state = { ...state, labs: state.labs.filter((x) => x.id !== lid) };
     persist();
@@ -1013,6 +1017,7 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     removeMember,
     addLab,
     removeLab,
+    removeLabsFromDoc,
     updateCare,
     addMed,
     removeMed,
