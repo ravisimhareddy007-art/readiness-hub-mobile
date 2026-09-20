@@ -204,3 +204,80 @@ export function extractMedical(text: string, medType?: MedType): MedicalExtracti
     medicines: medType === "prescription" || medType === "discharge" ? extractMedicines(text) : [],
   };
 }
+
+/* ── Preparing for a visit ──
+   Which records travel, and what a visit can be prepared for. Pure functions over documents:
+   no React, no storage, no side effects, so the rules stay testable. */
+
+import type { Doc } from "./types";
+
+const MED_PRIORITY: Record<string, number> = { prescription: 0, lab_report: 1, discharge: 2, scan: 3, other: 4 };
+
+export interface VisitTarget {
+  kind: "doctor" | "hospital" | "specialisation" | "general";
+  value?: string;
+}
+
+/** Doctors, hospitals and specialisations this member's records actually name, most recent first. */
+export function visitTargets(docs: Doc[], memberId: string): VisitTarget[] {
+  const when = (d: Doc) => +new Date(d.docDate || d.addedAt);
+  const mine = docs
+    .filter((d) => d.category === "Medical" && d.memberId === memberId)
+    .sort((a, b) => when(b) - when(a));
+  const out: VisitTarget[] = [];
+  const seen = new Set<string>();
+  const add = (kind: VisitTarget["kind"], value?: string) => {
+    if (!value) return;
+    const k = kind + ":" + value.toLowerCase();
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push({ kind, value });
+  };
+  mine.forEach((d) => add("doctor", d.doctor));
+  mine.forEach((d) => add("specialisation", d.specialisation));
+  mine.forEach((d) => add("hospital", d.hospital));
+  out.push({ kind: "general" });
+  return out;
+}
+
+export function targetLabel(t: VisitTarget): string {
+  if (t.kind === "general") return "General checkup";
+  if (t.kind === "specialisation") return t.value + " visit";
+  return t.value || "";
+}
+
+/* Matching is on what each record names: the doctor who wrote it, the hospital it came from,
+   the specialisation printed on it. Recent prescriptions, lab reports and the health insurance
+   policy always travel, because a consultation stalls without them. */
+export function selectVisitDocs(docs: Doc[], memberId: string, target?: VisitTarget): Doc[] {
+  const when = (d: Doc) => +new Date(d.docDate || d.addedAt);
+  const monthsAgo = (n: number) => Date.now() - n * 30 * 86400000;
+  const mine = docs.filter((d) => d.category === "Medical" && d.memberId === memberId);
+  const insurance = docs.find(
+    (d) => d.docType === "Health Insurance" && (d.memberId === memberId || d.memberId === "you"),
+  );
+  const eq = (a?: string, b?: string) => !!a && !!b && a.trim().toLowerCase() === b.trim().toLowerCase();
+
+  let picked: Doc[];
+  if (!target || target.kind === "general") {
+    picked = mine.filter((d) => when(d) >= monthsAgo(12));
+    const latestRx = mine.filter((d) => d.medType === "prescription").sort((a, b) => when(b) - when(a))[0];
+    if (latestRx && !picked.includes(latestRx)) picked.push(latestRx);
+  } else {
+    const hit = (d: Doc) =>
+      target.kind === "doctor"
+        ? eq(d.doctor, target.value)
+        : target.kind === "hospital"
+          ? eq(d.hospital, target.value) || eq(d.lab, target.value)
+          : eq(d.specialisation, target.value);
+    picked = mine.filter(
+      (d) => hit(d) || ((d.medType === "prescription" || d.medType === "lab_report") && when(d) >= monthsAgo(6)),
+    );
+  }
+  if (insurance && !picked.includes(insurance)) picked.push(insurance);
+  return [...new Set(picked)].sort((a, b) => {
+    const pa = MED_PRIORITY[a.medType || "other"] ?? 4;
+    const pb = MED_PRIORITY[b.medType || "other"] ?? 4;
+    return pa !== pb ? pa - pb : when(b) - when(a);
+  });
+}

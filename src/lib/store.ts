@@ -571,7 +571,7 @@ function bundleOf(st: State): Bundle {
    Given the chosen doctor/appointment, returns the member's relevant real documents,
    filtered by specialty keywords and recency, sorted by clinical priority then date. ── */
 /* Visit selection lives in ./visit so it can be tested without pulling in React or storage. */
-export { visitTargets, targetLabel, selectVisitDocs, type VisitTarget } from "./visit";
+export { visitTargets, targetLabel, selectVisitDocs, type VisitTarget } from "./extract-medical";
 
 
 function load(): State {
