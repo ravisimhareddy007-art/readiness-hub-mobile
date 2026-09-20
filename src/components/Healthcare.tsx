@@ -2461,11 +2461,27 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                 <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: C.text, marginTop: 1 }}>
                   {curLabel}
                 </span>
+                <span style={{ display: "block", fontSize: 12.5, color: C.sub, marginTop: 2 }}>
+                  {packDocs.length} document{packDocs.length === 1 ? "" : "s"} · tap to choose another doctor, hospital,
+                  or specialisation
+                </span>
               </span>
-              <span style={{ fontSize: 12.5, color: C.sub, whiteSpace: "nowrap" }}>
-                {packDocs.length} doc{packDocs.length === 1 ? "" : "s"}
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  flexShrink: 0,
+                  padding: "7px 11px",
+                  borderRadius: 9,
+                  background: C.action + "1F",
+                  color: C.action,
+                  fontSize: 13,
+                  fontWeight: 700,
+                }}
+              >
+                Change <ChevronRight size={14} />
               </span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: C.action, whiteSpace: "nowrap" }}>Change</span>
             </button>
             {targets.length === 1 && (
               <div style={{ fontSize: 12.5, color: C.sub, margin: "0 0 12px", lineHeight: 1.5 }}>
@@ -2476,7 +2492,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
           </>
         )}
         {!picking && (
-        <div style={{ flex: 1, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
+        <div style={{ flex: 1, minHeight: 168, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
           {packDocs.length === 0 ? (
             <div style={{ padding: 20, fontSize: 13.5, color: C.faint, lineHeight: 1.6 }}>
               {member.name.split(" ")[0]} has no matching medical records on file yet. The cover sheet still carries
@@ -2543,19 +2559,17 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
             padding: "10px 13px",
             borderRadius: 11,
             border: `1px solid ${C.border}`,
-            background: "rgba(216,178,90,.06)",
+            background: C.panel2,
             fontSize: 12.5,
             color: C.sub,
           }}
         >
           <ClipboardList size={14} color={C.action} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1 }}>
-            The pack opens with a cover sheet: {member.name.split(" ")[0]}'s allergies, conditions, medications, latest
-            readings with sources, and the document list · then the {included.length} selected file
-            {included.length === 1 ? "" : "s"}.
+            Cover sheet included: allergies, conditions, medicines, and latest readings.
           </span>
-          <button className="lh-lnk" style={{ flexShrink: 0 }} onClick={previewCover}>
-            Preview cover
+          <button className="lh-lnk" style={{ flexShrink: 0, fontWeight: 700 }} onClick={previewCover}>
+            Preview
           </button>
         </div>
         )}
