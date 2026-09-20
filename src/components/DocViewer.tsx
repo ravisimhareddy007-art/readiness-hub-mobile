@@ -40,7 +40,7 @@ function paper(title: string, issuer: string, accent: string, fields: [string, s
     </div>
     <table style="width:100%;border-collapse:collapse">${rows}</table>
     ${body}
-    <div style="margin-top:18px;padding-top:10px;border-top:1px solid #e5e7eb;color:#9ca3af;font-size:10.5px">Sample document rendered by ReadiNes for preview. Not an official copy.</div>
+    <div style="margin-top:18px;padding-top:10px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:12px">Sample document rendered by ReadiNes for preview. Not an official copy.</div>
   </div>`;
 }
 
@@ -175,7 +175,7 @@ function docHTML(doc: Doc, store: any): string {
               `<div style="padding:9px 0;border-top:1px solid #e5e7eb"><b style="font-size:14px">${m.name} ${m.dose}</b><div style="color:#6b7280;font-size:12.5px">${m.freq}</div></div>`,
           )
           .join("")
-      : `<div style="color:#9ca3af;font-size:13px;padding:8px 0">No medications on file</div>`;
+      : `<div style="color:#6b7280;font-size:13px;padding:8px 0">No medications on file</div>`;
     return paper(
       "PRESCRIPTION",
       store.care[owner.id]?.doctor || "Attending physician",
@@ -185,7 +185,7 @@ function docHTML(doc: Doc, store: any): string {
         ["Date", fmt(doc.docDate || doc.addedAt)],
         ["DOB", fmt(owner.dob)],
       ],
-      `<div style="margin-top:12px;font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px">Rx</div>${rx}`,
+      `<div style="margin-top:12px;font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:1px">Rx</div>${rx}`,
     );
   }
 
@@ -208,7 +208,7 @@ function docHTML(doc: Doc, store: any): string {
           (l: any) =>
             `<tr><td style="padding:7px 10px;font-size:13px">${l.metric}</td><td style="padding:7px 10px;font-weight:700;font-size:13px">${l.value2 ? `${l.value}/${l.value2}` : l.value} ${l.unit}</td><td style="padding:7px 10px;color:#6b7280;font-size:12.5px">${bounds[l.metric] || "—"}</td><td style="padding:7px 10px;color:#6b7280;font-size:12px">${fmt(l.date)}</td></tr>`,
         )
-        .join("") || `<tr><td colspan="4" style="padding:8px 10px;color:#9ca3af">No results on file</td></tr>`;
+        .join("") || `<tr><td colspan="4" style="padding:8px 10px;color:#6b7280">No results on file</td></tr>`;
     return paper(
       "LABORATORY REPORT",
       "Meridian Diagnostics",
@@ -218,7 +218,7 @@ function docHTML(doc: Doc, store: any): string {
         ["Collected", fmt(doc.docDate || doc.addedAt)],
         ["Report id", seededId("LR", doc.id)],
       ],
-      `<table style="width:100%;border-collapse:collapse;margin-top:12px"><tr style="background:#f3f4f6"><th style="text-align:left;padding:6px 10px;font-size:11px;color:#6b7280">Test</th><th style="text-align:left;padding:6px 10px;font-size:11px;color:#6b7280">Result</th><th style="text-align:left;padding:6px 10px;font-size:11px;color:#6b7280">Reference</th><th style="text-align:left;padding:6px 10px;font-size:11px;color:#6b7280">Date</th></tr>${rows}</table>`,
+      `<table style="width:100%;border-collapse:collapse;margin-top:12px"><tr style="background:#f3f4f6"><th style="text-align:left;padding:6px 10px;font-size:12px;color:#6b7280">Test</th><th style="text-align:left;padding:6px 10px;font-size:12px;color:#6b7280">Result</th><th style="text-align:left;padding:6px 10px;font-size:12px;color:#6b7280">Reference</th><th style="text-align:left;padding:6px 10px;font-size:12px;color:#6b7280">Date</th></tr>${rows}</table>`,
     );
   }
 
