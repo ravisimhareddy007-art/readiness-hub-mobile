@@ -21,6 +21,7 @@ run(npx, ["tsc", "--noEmit"]) && console.log("ok   typecheck");
 
 step("unit fixtures");
 run(process.execPath, ["--experimental-strip-types", "--no-warnings", "tests/wealth.test.mjs"], false, false);
+run(process.execPath, ["--experimental-strip-types", "--no-warnings", "tests/medical.test.mjs"], false, false);
 
 step("banned patterns");
 const walk = (d, out = []) => {

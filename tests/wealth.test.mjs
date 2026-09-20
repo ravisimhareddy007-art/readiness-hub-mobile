@@ -2,9 +2,10 @@
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const cur = await import(join(root, "src/lib/currency.ts"));
-const ex = await import(join(root, "src/lib/extract-holding.ts"));
+const cur = await import(pathToFileURL(join(root, "src/lib/currency.ts")).href);
+const ex = await import(pathToFileURL(join(root, "src/lib/extract-holding.ts")).href);
 
 let fails = 0;
 const t = (name, fn) => {
