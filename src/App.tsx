@@ -5829,8 +5829,10 @@ function Wealth({ store, go, toast }: any) {
               initial={draft}
               members={store.members}
               store={store}
+              focus={focusField}
               onClose={() => {
                 setEdit(null);
+                setFocusField(null);
                 setAddH(false);
                 setDraft(null);
               }}
@@ -5849,22 +5851,40 @@ function Wealth({ store, go, toast }: any) {
               onDelete={
                 edit
                   ? () => {
-                      store.removeHolding(edit.id);
-                      toast("Holding removed");
-                      setEdit(null);
+                      setConfirm({
+                        title: "Remove this holding?",
+                        body: `${edit.name} will be removed from Wealth. Its linked document stays in Documents.`,
+                        action: "Remove",
+                        onYes: () => {
+                          store.removeHolding(edit.id);
+                          toast("Holding removed");
+                          setEdit(null);
+                        },
+                      });
                     }
                   : undefined
               }
             />
           )}
-          {addTx && (
+          {(addTx || editTx) && (
             <TransactionModal
+              transaction={editTx}
               members={store.members}
-              onClose={() => setAddTx(false)}
-              onSave={async (t: Omit<Transaction, "id" | "addedAt" | "docId">, evidence?: File) => {
-                await store.addTransaction(t, evidence);
-                toast(evidence ? "Transaction saved with evidence" : "Transaction saved");
+              currency={store.currency}
+              onClose={() => {
                 setAddTx(false);
+                setEditTx(null);
+              }}
+              onSave={async (t: Omit<Transaction, "id" | "addedAt" | "docId">, evidence?: File) => {
+                if (editTx) {
+                  store.updateTransaction(editTx.id, t);
+                  toast("Entry updated");
+                } else {
+                  await store.addTransaction(t, evidence);
+                  toast(evidence ? "Transaction saved with evidence" : "Transaction saved");
+                }
+                setAddTx(false);
+                setEditTx(null);
               }}
             />
           )}
@@ -5882,6 +5902,7 @@ function Wealth({ store, go, toast }: any) {
           {sos && <SOSHandoffModal store={store} toast={toast} onClose={() => setSos(false)} />}
           {estate && <EstateSheet store={store} onClose={() => setEstate(false)} toast={toast} />}
           {viewDoc && <DocViewer doc={viewDoc} store={store} onClose={() => setViewDoc(null)} />}
+          {confirm && <ConfirmSheet {...confirm} onClose={() => setConfirm(null)} />}
         </>
       )}
     </div>
@@ -6420,19 +6441,21 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
   );
 }
 
-function TransactionModal({ members, onClose, onSave }: any) {
+function TransactionModal({ transaction, currency, onClose, onSave }: any) {
   const [evidence, setEvidence] = useState<File | null>(null);
-  const [more, setMore] = useState(false);
+  const [more, setMore] = useState(!!transaction);
   const [saving, setSaving] = useState(false);
+  const homeCurrency = currency || getCurrency();
   const [f, setF] = useState({
-    purpose: "",
-    counterparty: "",
-    direction: "paid" as "paid" | "received",
-    amount: "",
-    date: new Date().toISOString().slice(0, 10),
-    memberId: "you",
-    followUpOn: "",
-    followUpNote: "",
+    purpose: transaction?.purpose || "",
+    counterparty: transaction?.counterparty || "",
+    direction: (transaction?.direction || "paid") as "paid" | "received",
+    amount: String(transaction?.origAmount ?? transaction?.amount ?? ""),
+    origCurrency: transaction?.origCurrency || homeCurrency,
+    date: transaction?.date || new Date().toISOString().slice(0, 10),
+    memberId: transaction?.memberId || "you",
+    followUpOn: transaction?.followUpOn || "",
+    followUpNote: transaction?.followUpNote || "",
   });
   const onProof = (file: File | null) => {
     setEvidence(file);
@@ -6494,7 +6517,7 @@ function TransactionModal({ members, onClose, onSave }: any) {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 18 }}>Record money lent or borrowed</b>
+          <b style={{ color: T.white, fontSize: 18 }}>{transaction ? "Edit money lent or borrowed" : "Record money lent or borrowed"}</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
@@ -6558,6 +6581,12 @@ function TransactionModal({ members, onClose, onSave }: any) {
               onChange={(e) => setF({ ...f, amount: e.target.value })}
               placeholder="0"
             />
+          </div>
+          <div style={{ flex: 0.8 }}>
+            <label style={lbl}>Currency</label>
+            <select style={inp} value={f.origCurrency} onChange={(e) => setF({ ...f, origCurrency: e.target.value })}>
+              {CURRENCIES.map((c) => <option key={c} value={c} style={{ color: "#000" }}>{c}</option>)}
+            </select>
           </div>
           <div style={{ flex: 1 }}>
             <label style={lbl}>Which way</label>
@@ -6641,7 +6670,10 @@ function TransactionModal({ members, onClose, onSave }: any) {
                 purpose: f.purpose.trim(),
                 counterparty: f.counterparty.trim() || undefined,
                 direction: f.direction,
-                amount: Number(f.amount),
+                amount: Number(f.amount) * rateBetween(f.origCurrency, homeCurrency),
+                origAmount: f.origCurrency === homeCurrency ? undefined : Number(f.amount),
+                origCurrency: f.origCurrency === homeCurrency ? undefined : f.origCurrency,
+                fxRate: f.origCurrency === homeCurrency ? undefined : rateBetween(f.origCurrency, homeCurrency),
                 date: f.date,
                 memberId: f.memberId,
                 followUpOn: f.followUpOn || undefined,
@@ -6652,21 +6684,23 @@ function TransactionModal({ members, onClose, onSave }: any) {
             );
           }}
           style={{
-            ...btnGold,
+            ...btnGhost,
+            background: SEM.action,
+            color: "var(--lpv-actionink)",
             width: "100%",
             justifyContent: "center",
             marginTop: 16,
             opacity: valid && !saving ? 1 : 0.4,
           }}
         >
-          {saving ? "Saving…" : "Confirm"}
+          {saving ? "Saving…" : transaction ? "Save changes" : "Confirm"}
         </button>
       </div>
     </div>
   );
 }
 
-function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, store }: any) {
+function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, store, focus }: any) {
   const [fill, setFill] = useState<{ busy: boolean; note: string | null }>({ busy: false, note: null });
   const fillFromDoc = async () => {
     if (!f.docId || fill.busy) return;
@@ -6700,6 +6734,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
       institution: "",
       accountRef: "",
       value: 0,
+      origCurrency: getCurrency(),
       nominee: false,
       nomineeName: "",
       renewalDate: "",
@@ -6728,6 +6763,10 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
     display: "block",
   };
   const set = (k: string, v: any) => setF({ ...f, [k]: v });
+  const accessRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    if (focus === "access") requestAnimationFrame(() => accessRef.current?.focus());
+  }, [focus]);
   const canNominee = f.kind === "asset" || f.kind === "cover";
   return (
     <div
@@ -6805,6 +6844,12 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
               ))}
             </select>
           </div>
+          <div style={{ flex: 0.7 }}>
+            <label style={lbl}>Currency</label>
+            <select style={inp} value={f.origCurrency || getCurrency()} onChange={(e) => set("origCurrency", e.target.value)}>
+              {CURRENCIES.map((c) => <option key={c} value={c} style={{ color: "#000" }}>{c}</option>)}
+            </select>
+          </div>
           <div style={{ flex: 1 }}>
             <label style={lbl}>Type</label>
             <input
@@ -6878,7 +6923,17 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
             />
           </div>
         )}
-        {canNominee && (
+        <div style={{ marginTop: 12 }}>
+          <label style={lbl}>{f.kind === "liability" ? "Closure instructions for the family" : "Access instructions for the family"}</label>
+          <textarea
+            ref={accessRef}
+            style={{ ...inp, minHeight: 58, resize: "vertical", fontFamily: "inherit" }}
+            value={f.accessNote || ""}
+            onChange={(e) => set("accessNote", e.target.value)}
+            placeholder={f.kind === "liability" ? "Who to contact, account details, and how to close or take over the loan" : "Where it is, who to contact, how to claim (locker no., agent, portal)"}
+          />
+        </div>
+        {false && canNominee && (
           <div style={{ marginTop: 12 }}>
             <label style={lbl}>Access instructions for the family</label>
             <textarea
@@ -6910,7 +6965,18 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
         <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
           <button
             disabled={!f.name}
-            onClick={() => onSave({ ...f, id: f.id || Math.random().toString(36).slice(2, 9) })}
+            onClick={() => {
+              const orig = Number(f.value) || 0;
+              const origCurrency = f.origCurrency || getCurrency();
+              onSave({
+                ...f,
+                id: f.id || Math.random().toString(36).slice(2, 9),
+                value: orig * rateBetween(origCurrency, getCurrency()),
+                origAmount: origCurrency === getCurrency() ? undefined : orig,
+                origCurrency: origCurrency === getCurrency() ? undefined : origCurrency,
+                fxRate: origCurrency === getCurrency() ? undefined : rateBetween(origCurrency, getCurrency()),
+              });
+            }}
             style={{ ...btnGold, flex: 1, justifyContent: "center", opacity: f.name ? 1 : 0.4 }}
           >
             {holding ? "Save" : "Add holding"}
