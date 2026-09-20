@@ -17,6 +17,7 @@ import { classify } from "./classify";
 import { safeOcr } from "./ocr";
 import { classifyContent } from "./classify-content";
 import { extractHoldingFields } from "./extract-holding";
+import { defaultCurrency, rateBetween } from "./currency";
 import { getDecrypted, putEncrypted } from "./secure-idb";
 import { myPublicKey } from "./vault";
 import { ensureVaultReady } from "./session";
@@ -50,6 +51,7 @@ interface State {
   theme: "dark" | "light";
   notifications: boolean;
   dataMode: "sample" | "empty"; // empty = 1Shelf-style day-0; sample = seeded family
+  currency: string; // home currency for display and totals
 }
 
 /* ── members (enterprise-neutral) ── */
@@ -477,7 +479,7 @@ const seedCare: Record<string, CareProfile> = {
 };
 
 const emptyOwner: Member = { id: "you", name: "You", relation: "Self", color: "#5B8DEF", access: "Owner" };
-const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode"> = {
+const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency"> = {
   members: [emptyOwner],
   docs: [],
   labs: [],
@@ -489,7 +491,7 @@ const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode"> =
   handoff: null,
   customPacks: [],
 };
-const SAMPLE: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode"> = {
+const SAMPLE: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency"> = {
   members: seedMembers,
   docs: seedDocs,
   labs: seedLabs,
@@ -516,9 +518,10 @@ const DEFAULT: State = {
   customPacks: [],
   theme: "dark",
   notifications: false,
+  currency: defaultCurrency(),
 };
 // user-scoped bundles preserved across a mode switch (so switching back is instant and lossless)
-type Bundle = Omit<State, "theme" | "notifications" | "onboarded" | "dataMode">;
+type Bundle = Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency">;
 const BUNDLE_KEYS: (keyof Bundle)[] = [
   "members",
   "docs",
@@ -623,6 +626,7 @@ function load(): State {
         theme: p.theme ?? "dark",
         notifications: p.notifications ?? false,
         dataMode: p.dataMode ?? "empty",
+        currency: p.currency ?? defaultCurrency(),
       };
     }
   } catch {}
@@ -651,6 +655,10 @@ function recipientsFor(category: Category, members: Member[]): Record<string, Js
 
 /* ── transient cross-screen intent: "open Wealth with this document" (never persisted) ── */
 let wealthIntent: { docId: string } | null = null;
+
+export function getCurrency(): string {
+  return state.currency || "INR";
+}
 
 export function useStore() {
   const [, force] = useState(0);
@@ -919,6 +927,29 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     state = { ...state, theme: t };
     persist();
   }, []);
+  /* Re-express every amount in the new home currency. Entries made in another currency use their own
+     recorded amount; entries made in the old home currency are converted at the bundled rate. */
+  const setCurrency = useCallback((to: string) => {
+    const from = state.currency || "INR";
+    if (to === from) return;
+    const conv = (v: number | undefined, orig?: number, origCur?: string) =>
+      origCur && orig !== undefined ? orig * rateBetween(origCur, to) : (v || 0) * rateBetween(from, to);
+    state = {
+      ...state,
+      currency: to,
+      holdings: state.holdings.map((h) => ({
+        ...h,
+        value: conv(h.value, h.origAmount, h.origCurrency),
+        fxRate: h.origCurrency ? rateBetween(h.origCurrency, to) : undefined,
+      })),
+      transactions: state.transactions.map((t) => ({
+        ...t,
+        amount: conv(t.amount, t.origAmount, t.origCurrency),
+        fxRate: t.origCurrency ? rateBetween(t.origCurrency, to) : undefined,
+      })),
+    };
+    persist();
+  }, []);
   const setNotifications = useCallback((v: boolean) => {
     state = { ...state, notifications: v };
     persist();
@@ -996,6 +1027,7 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     completeFollowUp,
     setDataMode,
     setTheme,
+    setCurrency,
     setNotifications,
     addCustomPack,
     updateCustomPack,
