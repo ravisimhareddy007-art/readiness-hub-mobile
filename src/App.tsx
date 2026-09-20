@@ -5839,14 +5839,16 @@ function Wealth({ store, go, toast }: any) {
               onDelete={
                 edit
                   ? () => {
+                      const h = edit;
+                      setEdit(null);
+                      setFocusField(null);
                       setConfirm({
                         title: "Remove this holding?",
-                        body: `${edit.name} will be removed from Wealth. Its linked document stays in Documents.`,
+                        body: `${h.name} will be removed from Wealth. Its document stays in Documents.`,
                         action: "Remove",
                         onYes: () => {
-                          store.removeHolding(edit.id);
+                          store.removeHolding(h.id);
                           toast("Holding removed");
-                          setEdit(null);
                         },
                       });
                     }
@@ -5857,6 +5859,23 @@ function Wealth({ store, go, toast }: any) {
           {(addTx || editTx) && (
             <TransactionModal
               transaction={editTx}
+              onDelete={
+                editTx
+                  ? () => {
+                      const t = editTx;
+                      setEditTx(null);
+                      setConfirm({
+                        title: "Remove this entry?",
+                        body: `${money(t.amount)} ${t.direction === "paid" ? "lent to" : "borrowed from"} ${t.counterparty || "someone"} will be removed from the register. Any evidence stays in Documents.`,
+                        action: "Remove",
+                        onYes: () => {
+                          store.removeTransaction(t.id);
+                          toast("Entry removed");
+                        },
+                      });
+                    }
+                  : undefined
+              }
               members={store.members}
               currency={store.currency}
               onClose={() => {
