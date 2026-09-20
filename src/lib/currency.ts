@@ -30,18 +30,29 @@ export function defaultCurrency(): string {
 
 const SYMBOL: Record<string, string> = { INR: "₹", USD: "$", EUR: "€", GBP: "£", AED: "AED ", SGD: "S$", CHF: "CHF ", AUD: "A$", CAD: "C$", SAR: "SAR ", JPY: "¥" };
 
-/** Compact, locale-aware: ₹12L / ₹1.2Cr for INR, $1.2M for USD. */
+const trim = (s: string) => s.replace(/(\d)\.0+(?=\D|$)/, "$1");
+
+/** Compact and deterministic across engines: ₹60,000 / ₹1.5L / ₹1.2Cr for INR, $1.2M for USD. */
 export function formatMoney(v: number, currency: string, compact = true): string {
   const n = Number.isFinite(v) ? v : 0;
-  const locale = currency === "INR" ? "en-IN" : typeof navigator !== "undefined" ? navigator.language : "en-US";
+  const neg = n < 0 ? "-" : "";
+  const a = Math.abs(n);
   try {
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency,
-      notation: compact && Math.abs(n) >= 1000 ? "compact" : "standard",
-      maximumFractionDigits: compact ? 1 : 0,
-    }).format(n);
+    if (currency === "INR") {
+      if (!compact || a < 100000) return neg + "₹" + Math.round(a).toLocaleString("en-IN");
+      if (a < 10000000) return neg + "₹" + trim((a / 100000).toFixed(1)) + "L";
+      return neg + "₹" + trim((a / 10000000).toFixed(1)) + "Cr";
+    }
+    const locale = typeof navigator !== "undefined" ? navigator.language : "en-US";
+    return trim(
+      new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency,
+        notation: compact && a >= 1000 ? "compact" : "standard",
+        maximumFractionDigits: compact ? 1 : 0,
+      }).format(n),
+    );
   } catch {
-    return `${SYMBOL[currency] || currency + " "}${Math.round(n).toLocaleString()}`;
+    return `${neg}${SYMBOL[currency] || currency + " "}${Math.round(a).toLocaleString()}`;
   }
 }

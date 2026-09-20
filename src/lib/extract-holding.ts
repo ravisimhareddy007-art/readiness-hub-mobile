@@ -54,9 +54,9 @@ export function extractHoldingFields(text: string): Partial<Holding> {
     }
   }
 
-  const ref = t.match(/(?:policy|account|a\/c|folio|loan)\s*(?:no\.?|number|#|id)?\s*[:\-]?\s*([A-Z0-9][A-Z0-9\-\/ ]{5,})/i);
+  const ref = t.match(/(?:policy|account|a\/c|folio|loan)\s*(?:number|no\.?|#|id)?\s*[:\-]?\s*([A-Z0-9][A-Z0-9\-\/]{5,})/i);
   if (ref) {
-    const digits = ref[1].replace(/[^0-9A-Z]/gi, "");
+    const digits = ref[1].replace(/\D/g, "");
     if (digits.length >= 4) out.accountRef = "•" + digits.slice(-4);
   }
 

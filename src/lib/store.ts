@@ -932,21 +932,23 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
   const setCurrency = useCallback((to: string) => {
     const from = state.currency || "INR";
     if (to === from) return;
-    const conv = (v: number | undefined, orig?: number, origCur?: string) =>
-      origCur && orig !== undefined ? orig * rateBetween(origCur, to) : (v || 0) * rateBetween(from, to);
+    /* Keep the original on every entry so the subline always shows what was actually recorded. */
+    const re = (v: number | undefined, orig?: number, origCur?: string) => {
+      const oAmt = origCur && orig !== undefined ? orig : v || 0;
+      const oCur = origCur || from;
+      return { value: oAmt * rateBetween(oCur, to), origAmount: oAmt, origCurrency: oCur, fxRate: rateBetween(oCur, to) };
+    };
     state = {
       ...state,
       currency: to,
-      holdings: state.holdings.map((h) => ({
-        ...h,
-        value: conv(h.value, h.origAmount, h.origCurrency),
-        fxRate: h.origCurrency ? rateBetween(h.origCurrency, to) : undefined,
-      })),
-      transactions: state.transactions.map((t) => ({
-        ...t,
-        amount: conv(t.amount, t.origAmount, t.origCurrency),
-        fxRate: t.origCurrency ? rateBetween(t.origCurrency, to) : undefined,
-      })),
+      holdings: state.holdings.map((h) => {
+        const x = re(h.value, h.origAmount, h.origCurrency);
+        return { ...h, value: x.value, origAmount: x.origAmount, origCurrency: x.origCurrency, fxRate: x.fxRate };
+      }),
+      transactions: state.transactions.map((t) => {
+        const x = re(t.amount, t.origAmount, t.origCurrency);
+        return { ...t, amount: x.value, origAmount: x.origAmount, origCurrency: x.origCurrency, fxRate: x.fxRate };
+      }),
     };
     persist();
   }, []);
