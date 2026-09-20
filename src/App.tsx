@@ -7843,6 +7843,24 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           </Section>
           <Section label="Preferences">
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+              <Coins size={16} color={SEM.action} />
+              <span style={{ flex: 1 }}>
+                <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.text }}>Home currency</span>
+                <span style={{ display: "block", fontSize: 12, color: T.muted }}>{RATES_NOTE}</span>
+              </span>
+              <select
+                aria-label="Home currency"
+                value={store.currency}
+                onChange={(e) => {
+                  store.setCurrency(e.target.value);
+                  toast(`Home currency changed to ${e.target.value}`);
+                }}
+                style={{ background: T.raised, color: T.text, border: `1px solid ${T.border}`, borderRadius: 9, minHeight: 44, padding: "0 10px", fontSize: 14 }}
+              >
+                {CURRENCIES.map((c) => <option key={c} value={c} style={{ color: "#000" }}>{c}</option>)}
+              </select>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
               <span
                 style={{ width: 32, height: 32, borderRadius: 10, display: "grid", placeItems: "center", flexShrink: 0, background: SEM.action + "1F" }}
               >
