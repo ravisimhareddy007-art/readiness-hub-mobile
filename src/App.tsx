@@ -3537,7 +3537,7 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
 }
 
 /* ═══════════════ DOCUMENTS ═══════════════ */
-function Documents({ store, toast }: any) {
+function Documents({ store, toast, go }: any) {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("All");
   const [person, setPerson] = useState<string>("All");
@@ -3627,7 +3627,23 @@ function Documents({ store, toast }: any) {
           onDeleted={() => setOpen(null)}
         />
       )}
-      {preview && <DocViewer doc={preview} store={store} onClose={() => setPreview(null)} />}
+      {preview && (
+        <DocViewer
+          doc={preview}
+          store={store}
+          onClose={() => setPreview(null)}
+          onAddToWealth={
+            ["Finance", "Insurance", "Property", "Tax"].includes(preview.category) &&
+            !store.holdings.some((h: Holding) => h.docId === preview.id)
+              ? () => {
+                  setPreview(null);
+                  store.setWealthIntent({ docId: preview.id });
+                  go?.("wealth");
+                }
+              : undefined
+          }
+        />
+      )}
     </>
   );
 
@@ -4808,6 +4824,23 @@ function Wealth({ store, go, toast }: any) {
   const [addH, setAddH] = useState(false);
   const [actSheet, setActSheet] = useState(false);
   const [docPick, setDocPick] = useState(false);
+  const pickUpRef = useRef<HTMLInputElement>(null);
+  const draftFromDoc = (d: Doc): Partial<Holding> => ({
+    name: d.docType,
+    docId: d.id,
+    memberId: d.memberId,
+    kind: d.category === "Insurance" ? "cover" : "asset",
+    type: d.category === "Insurance" ? "Insurance" : d.category === "Property" ? "Property" : "Bank account",
+  });
+  useEffect(() => {
+    const i = store.takeWealthIntent();
+    if (!i) return;
+    const d = store.docs.find((x: Doc) => x.id === i.docId);
+    if (d) {
+      setDraft(draftFromDoc(d));
+      setAddH(true);
+    }
+  }, []);
   const [draft, setDraft] = useState<Partial<Holding> | null>(null);
   const isMobile = useIsMobile();
   const [addTx, setAddTx] = useState(false);
@@ -5100,7 +5133,7 @@ function Wealth({ store, go, toast }: any) {
                   setDocPick(true);
                 }}
               >
-                <FileText size={19} color={T.muted} /> Add from a document
+                <FileText size={19} color={T.muted} /> From a document in your vault
               </button>
               <button
                 className="lp-sheet-item"
@@ -5109,7 +5142,7 @@ function Wealth({ store, go, toast }: any) {
                   setAddH(true);
                 }}
               >
-                <Plus size={19} color={T.muted} /> Add an account or policy
+                <Plus size={19} color={T.muted} /> Without a document (cash, gold, informal)
               </button>
               <button
                 className="lp-sheet-item"
@@ -5620,10 +5653,36 @@ function Wealth({ store, go, toast }: any) {
             }}
           />
           {docPick && (
-            <MSheet title="Add from a document" onClose={() => setDocPick(false)}>
+            <MSheet title="From a document in your vault" onClose={() => setDocPick(false)}>
+              <input
+                ref={pickUpRef}
+                type="file"
+                accept="image/*,application/pdf"
+                hidden
+                onChange={async (e) => {
+                  const files = e.target.files;
+                  if (!files?.length) return;
+                  const created: Doc[] = await store.addFiles(files);
+                  e.target.value = "";
+                  const d = created[0];
+                  if (!d) return;
+                  setDocPick(false);
+                  setDraft(draftFromDoc(d));
+                  setAddH(true);
+                }}
+              />
+              <button className="lp-sheet-item" onClick={() => pickUpRef.current?.click()}>
+                <UploadCloud size={18} color={SEM.action} />
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 14.5 }}>Scan or upload a new document</span>
+                  <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 500 }}>
+                    Statement, policy, or deed. It is filed in Documents and opened here.
+                  </span>
+                </span>
+              </button>
               {store.docs.filter((d: Doc) => ["Finance", "Insurance", "Property", "Tax"].includes(d.category)).length === 0 && (
                 <p style={{ fontSize: 13, color: T.muted, padding: "6px 10px 12px" }}>
-                  No financial documents in your vault yet. Add a statement, policy, or deed under Documents first.
+                  No financial documents in your vault yet.
                 </p>
               )}
               {store.docs
@@ -5634,13 +5693,7 @@ function Wealth({ store, go, toast }: any) {
                     className="lp-sheet-item"
                     onClick={() => {
                       setDocPick(false);
-                      setDraft({
-                        name: d.docType,
-                        docId: d.id,
-                        memberId: d.memberId,
-                        kind: d.category === "Insurance" ? "cover" : "asset",
-                        type: d.category === "Insurance" ? "Insurance" : d.category === "Property" ? "Property" : "Bank account",
-                      });
+                      setDraft(draftFromDoc(d));
                       setAddH(true);
                     }}
                   >
@@ -5660,6 +5713,7 @@ function Wealth({ store, go, toast }: any) {
               holding={edit}
               initial={draft}
               members={store.members}
+              store={store}
               onClose={() => {
                 setEdit(null);
                 setAddH(false);
@@ -6497,7 +6551,32 @@ function TransactionModal({ members, onClose, onSave }: any) {
   );
 }
 
-function HoldingModal({ holding, members, onClose, onSave, onDelete, initial }: any) {
+function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, store }: any) {
+  const [fill, setFill] = useState<{ busy: boolean; note: string | null }>({ busy: false, note: null });
+  const fillFromDoc = async () => {
+    if (!f.docId || fill.busy) return;
+    setFill({ busy: true, note: null });
+    try {
+      const x: Record<string, any> = await store.fillFromDocument(f.docId);
+      const next = { ...f };
+      let n = 0;
+      for (const k of ["institution", "accountRef", "value", "renewalDate", "maturityDate"]) {
+        const cur = next[k];
+        if (x[k] !== undefined && (cur === undefined || cur === "" || cur === 0)) { next[k] = x[k]; n++; }
+      }
+      setF(next);
+      const d = store.docs.find((z: Doc) => z.id === f.docId);
+      const when = d?.docDate || d?.addedAt;
+      setFill({
+        busy: false,
+        note: n
+          ? `Filled ${n} field${n > 1 ? "s" : ""} from your document${when ? " as of " + new Date(when).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : ""}. Check and confirm.`
+          : "Nothing readable in this document. Fill in by hand.",
+      });
+    } catch {
+      setFill({ busy: false, note: "Could not read this document. Fill in by hand." });
+    }
+  };
   const [f, setF] = useState<any>(
     holding || {
       name: "",
@@ -6567,6 +6646,32 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial }: 
             <X size={16} />
           </button>
         </div>
+        {f.docId && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 12px",
+              marginBottom: 14,
+              borderRadius: 10,
+              border: `1px solid ${T.border}`,
+              background: T.raised,
+            }}
+          >
+            <FileText size={16} color={T.muted} />
+            <span style={{ flex: 1, fontSize: 12.5, color: fill.note ? T.text : T.muted }}>
+              {fill.note || "Linked to a document. Read it once to fill what it states."}
+            </span>
+            <button
+              onClick={fillFromDoc}
+              disabled={fill.busy}
+              style={{ ...btnGhost, padding: "6px 10px", fontSize: 12, color: SEM.action, whiteSpace: "nowrap", opacity: fill.busy ? 0.6 : 1 }}
+            >
+              {fill.busy ? "Reading…" : fill.note ? "Read again" : "Fill from this document"}
+            </button>
+          </div>
+        )}
         <label style={lbl}>Name</label>
         <input
           style={inp}
@@ -8546,7 +8651,7 @@ export default function App() {
         <div key={route} className="lp-screen">
         {route === "home" && <Home store={store} go={go} toast={toast} />}
         {route === "packages" && <Packages store={store} toast={toast} />}
-        {route === "documents" && <Documents store={store} toast={toast} />}
+        {route === "documents" && <Documents store={store} toast={toast} go={go} />}
         {route === "health" && (
           <Suspense fallback={<div style={{ minHeight: 200 }} />}>
             <Healthcare toast={toast} />

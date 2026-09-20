@@ -16,7 +16,8 @@ import { putBlob, delBlob } from "./idb";
 import { classify } from "./classify";
 import { safeOcr } from "./ocr";
 import { classifyContent } from "./classify-content";
-import { putEncrypted } from "./secure-idb";
+import { extractHoldingFields } from "./extract-holding";
+import { getDecrypted, putEncrypted } from "./secure-idb";
 import { myPublicKey } from "./vault";
 import { ensureVaultReady } from "./session";
 import type { DocCrypto } from "./vault";
@@ -648,6 +649,9 @@ function recipientsFor(category: Category, members: Member[]): Record<string, Js
   return { you: mine };
 }
 
+/* ── transient cross-screen intent: "open Wealth with this document" (never persisted) ── */
+let wealthIntent: { docId: string } | null = null;
+
 export function useStore() {
   const [, force] = useState(0);
   useEffect(() => {
@@ -660,6 +664,7 @@ export function useStore() {
 
   const addFiles = useCallback(async (files: FileList | File[], memberId?: string, override?: Partial<Doc>) => {
     await ensureVaultReady();
+    const created: Doc[] = [];
     for (const file of Array.from(files)) {
       const key = "f_" + Math.random().toString(36).slice(2) + Date.now();
       const sizeKB = Math.max(1, Math.round(file.size / 1024));
@@ -685,9 +690,12 @@ export function useStore() {
         wrappedKeys: meta?.wrappedKeys,
         enc: !!meta,
       };
-      state = { ...state, docs: [{ ...base, ...override, id: key, fileKey: key }, ...state.docs] };
+const doc: Doc = { ...base, ...override, id: key, fileKey: key };
+      created.push(doc);
+      state = { ...state, docs: [doc, ...state.docs] };
     }
     persist();
+    return created;
   }, []);
   const updateDoc = useCallback((docId: string, patch: Partial<Doc>) => {
     state = { ...state, docs: state.docs.map((d) => (d.id === docId ? { ...d, ...patch } : d)) };
@@ -939,6 +947,23 @@ export function useStore() {
     state = { ...state, onboarded: v };
     persist();
   }, []);
+  /* Attested class: one extraction, only when the user asks, nothing saved until they confirm. */
+  const fillFromDocument = useCallback(async (docId: string): Promise<Partial<Holding>> => {
+    const d = state.docs.find((x) => x.id === docId);
+    if (!d || d.fileKey === "seed" || !d.iv || !d.wrappedKeys) return {};
+    const blob = await getDecrypted(d.fileKey, d.iv, d.wrappedKeys, "you", d.mime);
+    if (!blob) return {};
+    const text = await safeOcr(blob, d.mime, d.sizeKB);
+    return extractHoldingFields(text);
+  }, []);
+  const setWealthIntent = useCallback((i: { docId: string } | null) => {
+    wealthIntent = i;
+  }, []);
+  const takeWealthIntent = useCallback(() => {
+    const i = wealthIntent;
+    wealthIntent = null;
+    return i;
+  }, []);
   const reset = useCallback(() => {
     state = { ...DEFAULT };
     persist();
@@ -978,6 +1003,9 @@ export function useStore() {
     releaseHandoff,
     cancelHandoff,
     setOnboarded,
+    fillFromDocument,
+    setWealthIntent,
+    takeWealthIntent,
     reset,
   };
 }
