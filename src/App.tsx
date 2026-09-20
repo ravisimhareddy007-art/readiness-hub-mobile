@@ -174,7 +174,7 @@ body{background:var(--lpv-bg)}
 .lp-tap{position:relative;cursor:pointer}
 .lp-tap::after{content:"";position:absolute;inset:-8px}
 .lp-iconbtn{min-width:44px;min-height:44px;display:inline-grid;place-items:center}
-.lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:18px;border:none;display:grid;place-items:center;background:linear-gradient(135deg,var(--lpv-gold),var(--lpv-goldb));box-shadow:0 12px 32px var(--lpv-fabshadow);cursor:pointer}
+.lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:18px;border:none;display:grid;place-items:center;background:var(--lpv-action);box-shadow:0 12px 32px var(--lpv-shadow-soft);cursor:pointer}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
@@ -1585,12 +1585,13 @@ function ModRing({ score, size = 58, color, children }: { score: number | null; 
     </span>
   );
 }
+/* Primary action. Teal is the action colour; gold stays reserved for readiness highlights (design constitution). */
 const btnGold: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   gap: 8,
-  background: T.gold,
-  color: "var(--lpv-golddark)",
+  background: "var(--lpv-action)",
+  color: "var(--lpv-actionink)",
   border: "none",
   borderRadius: 10,
   padding: "10px 15px",
@@ -1602,9 +1603,9 @@ const btnGhost: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   gap: 8,
-  background: T.raised,
-  color: T.text,
-  border: `1px solid ${T.border}`,
+  background: "var(--lpv-raised)",
+  color: "var(--lpv-text)",
+  border: "1px solid var(--lpv-border)",
   borderRadius: 10,
   padding: "10px 15px",
   fontSize: 13,
@@ -5386,13 +5387,13 @@ function Wealth({ store, go, toast }: any) {
             )}
             <span className="lp-vdiv" style={{ width: 1, alignSelf: "stretch", background: T.border }} />
             <div className="lp-es-cta">
-              <button onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13, minHeight: 44 }}>
-                <FileText size={14} /> Family summary <ArrowRight size={13} />
+              <button onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13, minHeight: 44, whiteSpace: "nowrap" }}>
+                <FileText size={14} /> Family summary
               </button>
               {!store.handoff && (
                 <button
                   onClick={() => setSos(true)}
-                  style={{ ...btnGhost, padding: "8px 14px", fontSize: 13, minHeight: 44, color: T.coral, borderColor: T.coral + "55" }}
+                  style={{ ...btnGhost, padding: "8px 14px", fontSize: 13, minHeight: 44, whiteSpace: "nowrap", color: T.coral, borderColor: T.coral + "55" }}
                 >
                   <Siren size={14} /> SOS handoff
                 </button>
@@ -6464,6 +6465,9 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
     followUpOn: transaction?.followUpOn || "",
     followUpNote: transaction?.followUpNote || "",
   });
+  const [fx, setFx] = useState<number>(transaction?.fxRate || rateBetween(transaction?.origCurrency || homeCurrency, homeCurrency));
+  const foreign = f.origCurrency !== homeCurrency;
+  const homeAmount = (Number(f.amount) || 0) * (foreign ? fx : 1);
   const onProof = (file: File | null) => {
     setEvidence(file);
     if (file && !f.purpose) {
@@ -6578,7 +6582,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
           placeholder="e.g. car down payment, hospital bill, wedding advance"
         />
         <div style={{ display: "flex", gap: 10 }}>
-          <div style={{ flex: 1.2 }}>
+          <div style={{ flex: 1.4 }}>
             <label style={lbl}>Amount</label>
             <input
               style={inp}
@@ -6589,12 +6593,38 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
               placeholder="0"
             />
           </div>
-          <div style={{ flex: 0.8 }}>
+          <div style={{ flex: 1 }}>
             <label style={lbl}>Currency</label>
-            <select style={inp} value={f.origCurrency} onChange={(e) => setF({ ...f, origCurrency: e.target.value })}>
+            <select
+              style={inp}
+              value={f.origCurrency}
+              onChange={(e) => {
+                setF({ ...f, origCurrency: e.target.value });
+                setFx(rateBetween(e.target.value, homeCurrency));
+              }}
+            >
               {CURRENCIES.map((c) => <option key={c} value={c} style={{ color: "#000" }}>{c}</option>)}
             </select>
           </div>
+        </div>
+        {foreign && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.muted }}>
+              <span>1 {f.origCurrency} =</span>
+              <input
+                type="number"
+                step="0.01"
+                value={fx}
+                onChange={(e) => setFx(Math.max(0, parseFloat(e.target.value) || 0))}
+                style={{ ...inp, width: 88, padding: "6px 8px", fontSize: 13 }}
+              />
+              <span>{homeCurrency}</span>
+              <b style={{ marginLeft: "auto", color: T.text, fontVariantNumeric: "tabular-nums" }}>= {formatMoney(homeAmount, homeCurrency, false)}</b>
+            </div>
+            <div style={{ fontSize: 12, color: T.faint, marginTop: 4 }}>{RATES_NOTE}. Edit it to match your bank's rate.</div>
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
           <div style={{ flex: 1 }}>
             <label style={lbl}>Which way</label>
             <select
@@ -6677,10 +6707,10 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
                 purpose: f.purpose.trim(),
                 counterparty: f.counterparty.trim() || undefined,
                 direction: f.direction,
-                amount: Number(f.amount) * rateBetween(f.origCurrency, homeCurrency),
-                origAmount: f.origCurrency === homeCurrency ? undefined : Number(f.amount),
-                origCurrency: f.origCurrency === homeCurrency ? undefined : f.origCurrency,
-                fxRate: f.origCurrency === homeCurrency ? undefined : rateBetween(f.origCurrency, homeCurrency),
+                amount: homeAmount,
+                origAmount: foreign ? Number(f.amount) : undefined,
+                origCurrency: foreign ? f.origCurrency : undefined,
+                fxRate: foreign ? fx : undefined,
                 date: f.date,
                 memberId: f.memberId,
                 followUpOn: f.followUpOn || undefined,
@@ -6717,6 +6747,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
 
 function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, store, focus }: any) {
   const [fill, setFill] = useState<{ busy: boolean; note: string | null }>({ busy: false, note: null });
+  const [hfx, setHfx] = useState<number>(holding?.fxRate || rateBetween(holding?.origCurrency || getCurrency(), getCurrency()));
   const fillFromDoc = async () => {
     if (!f.docId || fill.busy) return;
     setFill({ busy: true, note: null });
@@ -6783,6 +6814,9 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
     if (focus === "access") requestAnimationFrame(() => accessRef.current?.focus());
   }, [focus]);
   const canNominee = f.kind === "asset" || f.kind === "cover";
+  const hCur: string = f.origCurrency || getCurrency();
+  const hForeign = hCur !== getCurrency();
+  const hHome = (Number(f.value) || 0) * (hForeign ? hfx : 1);
   return (
     <div
       onClick={onClose}
@@ -6819,6 +6853,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
           <div
             style={{
               display: "flex",
+              flexWrap: "wrap",
               alignItems: "center",
               gap: 10,
               padding: "10px 12px",
@@ -6829,7 +6864,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
             }}
           >
             <FileText size={16} color={T.muted} />
-            <span style={{ flex: 1, fontSize: 12.5, color: fill.note ? T.text : T.muted }}>
+            <span style={{ flex: "1 1 180px", fontSize: 12.5, color: fill.note ? T.text : T.muted }}>
               {fill.note || "Linked to a document. Read it once to fill what it states."}
             </span>
             <button
@@ -6857,12 +6892,6 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
                   {k}
                 </option>
               ))}
-            </select>
-          </div>
-          <div style={{ flex: 0.7 }}>
-            <label style={lbl}>Currency</label>
-            <select style={inp} value={f.origCurrency || getCurrency()} onChange={(e) => set("origCurrency", e.target.value)}>
-              {CURRENCIES.map((c) => <option key={c} value={c} style={{ color: "#000" }}>{c}</option>)}
             </select>
           </div>
           <div style={{ flex: 1 }}>
@@ -6900,21 +6929,53 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
             <label style={lbl}>{f.kind === "liability" ? "Outstanding" : f.kind === "cover" ? "Cover" : "Value"}</label>
             <input
               type="number"
+              min="0"
               style={inp}
-              value={f.value}
+              value={f.value || ""}
               onChange={(e) => set("value", Math.max(0, parseFloat(e.target.value) || 0))}
+              placeholder="0"
             />
           </div>
-          <div style={{ flex: 1 }}>
-            <label style={lbl}>Owner</label>
-            <select style={inp} value={f.memberId} onChange={(e) => set("memberId", e.target.value)}>
-              {members.map((m: Member) => (
-                <option key={m.id} value={m.id} style={{ color: "#000" }}>
-                  {m.name}
-                </option>
-              ))}
+          <div style={{ flex: 0.7 }}>
+            <label style={lbl}>Currency</label>
+            <select
+              style={inp}
+              value={hCur}
+              onChange={(e) => {
+                set("origCurrency", e.target.value);
+                setHfx(rateBetween(e.target.value, getCurrency()));
+              }}
+            >
+              {CURRENCIES.map((c) => <option key={c} value={c} style={{ color: "#000" }}>{c}</option>)}
             </select>
           </div>
+        </div>
+        {hForeign && (
+          <div style={{ marginTop: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.muted }}>
+              <span>1 {hCur} =</span>
+              <input
+                type="number"
+                step="0.01"
+                value={hfx}
+                onChange={(e) => setHfx(Math.max(0, parseFloat(e.target.value) || 0))}
+                style={{ ...inp, width: 88, padding: "6px 8px", fontSize: 13 }}
+              />
+              <span>{getCurrency()}</span>
+              <b style={{ marginLeft: "auto", color: T.text, fontVariantNumeric: "tabular-nums" }}>= {formatMoney(hHome, getCurrency(), false)}</b>
+            </div>
+            <div style={{ fontSize: 12, color: T.faint, marginTop: 4 }}>{RATES_NOTE}. Edit it to match your bank's rate.</div>
+          </div>
+        )}
+        <div style={{ marginTop: 12 }}>
+          <label style={lbl}>Owner</label>
+          <select style={inp} value={f.memberId} onChange={(e) => set("memberId", e.target.value)}>
+            {members.map((m: Member) => (
+              <option key={m.id} value={m.id} style={{ color: "#000" }}>
+                {m.name}
+              </option>
+            ))}
+          </select>
         </div>
         {f.kind === "cover" && (
           <div style={{ marginTop: 12 }}>
@@ -6981,15 +7042,13 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
           <button
             disabled={!f.name}
             onClick={() => {
-              const orig = Number(f.value) || 0;
-              const origCurrency = f.origCurrency || getCurrency();
               onSave({
                 ...f,
                 id: f.id || Math.random().toString(36).slice(2, 9),
-                value: orig * rateBetween(origCurrency, getCurrency()),
-                origAmount: origCurrency === getCurrency() ? undefined : orig,
-                origCurrency: origCurrency === getCurrency() ? undefined : origCurrency,
-                fxRate: origCurrency === getCurrency() ? undefined : rateBetween(origCurrency, getCurrency()),
+                value: hHome,
+                origAmount: hForeign ? Number(f.value) || 0 : undefined,
+                origCurrency: hForeign ? hCur : undefined,
+                fxRate: hForeign ? hfx : undefined,
               });
             }}
             style={{ ...btnGold, flex: 1, justifyContent: "center", opacity: f.name ? 1 : 0.4 }}
@@ -8929,7 +8988,7 @@ export default function App() {
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search everything…"
+                placeholder="Search documents, packs, people, holdings"
                 style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text }}
               />
               {query && (
@@ -8951,8 +9010,33 @@ export default function App() {
                 }}
               />
             ) : (
-              <div style={{ color: T.faint, fontSize: 13, textAlign: "center", marginTop: 40 }}>
-                Documents, packs, people, holdings — one search.
+              <div style={{ padding: "18px 4px 0" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, marginBottom: 10 }}>Try</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                  {["Passport", "Insurance", "Bank statement", "Home loan", "Nominee", "Prescription"].map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => setQuery(q)}
+                      className="lp-chip"
+                      style={{ background: T.raised, color: T.text, border: `1px solid ${T.border}`, minHeight: 36, padding: "0 12px", fontWeight: 600, cursor: "pointer" }}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, margin: "22px 0 10px" }}>Recently added</div>
+                {store.docs.slice(0, 5).map((d: Doc) => (
+                  <button
+                    key={d.id}
+                    onClick={() => setQuery(d.docType)}
+                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", background: "none", border: "none", borderTop: `1px solid ${T.border}`, padding: "12px 4px", color: T.text, fontSize: 14, cursor: "pointer", minHeight: 44 }}
+                  >
+                    <FileText size={15} color={T.muted} />
+                    <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.docType}</span>
+                    <span style={{ fontSize: 12, color: T.muted }}>{d.category}</span>
+                  </button>
+                ))}
+                {store.docs.length === 0 && <div style={{ fontSize: 13, color: T.muted, padding: "8px 4px" }}>Nothing in the vault yet.</div>}
               </div>
             )}
           </div>
