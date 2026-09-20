@@ -756,6 +756,24 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     state = { ...state, members: [...state.members, mem] };
     persist();
   }, []);
+  /* Removing a person takes their health data with them. Their documents stay in the vault,
+     unassigned, so nothing the family may still need is destroyed by a tidy-up. */
+  const removeMember = useCallback((mid: string) => {
+    if (mid === "you") return;
+    const care = { ...state.care };
+    delete care[mid];
+    state = {
+      ...state,
+      members: state.members.filter((x) => x.id !== mid),
+      care,
+      labs: state.labs.filter((x) => x.memberId !== mid),
+      meds: state.meds.filter((x) => x.memberId !== mid),
+      reminders: state.reminders.filter((x) => x.memberId !== mid),
+      holdings: state.holdings.map((h) => (h.memberId === mid ? { ...h, memberId: "you" } : h)),
+      docs: state.docs.map((d) => (d.memberId === mid ? { ...d, memberId: undefined } : d)),
+    };
+    persist();
+  }, []);
   const updateMember = useCallback((mid: string, patch: Partial<Member>) => {
     state = { ...state, members: state.members.map((mm) => (mm.id === mid ? { ...mm, ...patch } : mm)) };
     persist();
@@ -1042,6 +1060,7 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     removeDoc,
     addMember,
     updateMember,
+    removeMember,
     addLab,
     updateCare,
     addMed,
