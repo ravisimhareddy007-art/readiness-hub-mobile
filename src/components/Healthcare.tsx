@@ -36,7 +36,7 @@ import {
   IdCard,
   ChevronDown,
 } from "lucide-react";
-import { useStore, selectVisitDocs } from "../lib/store";
+import { useStore, selectVisitDocs, visitTargets, targetLabel, type VisitTarget } from "../lib/store";
 import { buildZip } from "../lib/zip";
 import DocViewer from "./DocViewer";
 import type { Doc, Member, LabLog, Medication, ReminderKind } from "../lib/types";
@@ -454,7 +454,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     setTab("overview");
     setMView("person");
   };
-  if (isMobile && mView === "family")
+  if (isMobile && mView === "family") {
+    const prepFor = upcomingAppts[0]?.memberId || s.members[0]?.id || sel;
     return (
       <div className="lh-root">
         <style>{CSS()}</style>
@@ -466,7 +467,28 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             </button>
           }
         />
+        <button
+          className="lh-btn"
+          style={{ width: "100%", justifyContent: "center", minHeight: 48, marginBottom: 14 }}
+          onClick={() => {
+            setSel(prepFor);
+            setModal("visit");
+          }}
+        >
+          <ClipboardList size={16} /> Prepare for a visit
+        </button>
         <div className="lh-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
+          {s.members.length === 0 && (
+            <div style={{ padding: "22px 16px", textAlign: "center" }}>
+              <p style={{ fontSize: 13.5, color: C.sub, lineHeight: 1.6, margin: "0 0 14px" }}>
+                Add the people whose health records you keep. Each one gets their own records, readings, medicines, and
+                emergency card.
+              </p>
+              <button className="lh-btn" style={{ margin: "0 auto", minHeight: 44 }} onClick={() => setModal("member")}>
+                <UserPlus size={15} /> Add a family member
+              </button>
+            </div>
+          )}
           {s.members.map((mm, i) => {
             const st = memberStatus(mm.id);
             return (
@@ -493,6 +515,26 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: "block", fontSize: 14.5, fontWeight: 700, color: C.text }}>{mm.name.split(" ")[0]}</span>
                   <span style={{ display: "block", fontSize: 12, marginTop: 1, color: st.c }}>{st.txt}</span>
+                </span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  title="Emergency card" aria-label={`Emergency card for ${mm.name.split(" ")[0]}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSel(mm.id);
+                    setModal("emergency");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.stopPropagation();
+                      setSel(mm.id);
+                      setModal("emergency");
+                    }
+                  }}
+                  style={{ display: "inline-grid", placeItems: "center", minWidth: 44, minHeight: 44, borderRadius: 10, color: C.red, cursor: "pointer" }}
+                >
+                  <IdCard size={17} />
                 </span>
                 <ChevronRight size={15} color={C.faint} />
               </button>
@@ -606,6 +648,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         )}
       </div>
     );
+  }
 
   return (
     <div className="lh-root">
@@ -1245,7 +1288,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             appts={s.reminders
               .filter((r) => r.memberId === sel && !r.done && r.kind === "appointment")
               .sort((a, b) => a.due.localeCompare(b.due))}
-            doctor={care.doctor}
             member={m}
             care={care}
             meds={meds}
@@ -1858,31 +1900,35 @@ function buildVisitCover(
   </div>`;
 }
 
-function VisitPrep({ appts, doctor, member, care, meds, vitals, records, docs, onView, toast, onClose }: any) {
-  const opts = [
-    ...appts.map((a: any) => ({ id: a.id, label: a.title, sub: `in ${daysTo(a.due)} days · ${fmt(a.due)}` })),
-    ...(doctor ? [{ id: "doc", label: doctor, sub: "primary doctor" }] : []),
-    { id: "general", label: "General checkup", sub: "everything recent" },
-  ];
-  const [chosen, setChosen] = useState(opts[0]?.id);
+function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, toast, onClose }: any) {
+  /* Every doctor, hospital and specialisation this member's own records name. */
+  const targets: VisitTarget[] = useMemo(() => visitTargets(docs, member.id), [docs, member.id]);
+  const nextAppt = appts[0];
+  const [chosen, setChosen] = useState(0);
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
-  const cur = opts.find((o: any) => o.id === chosen) || opts[opts.length - 1];
-  const visitLabel = cur.id === "general" ? undefined : cur.label;
-  const packDocs: Doc[] = useMemo(() => selectVisitDocs(docs, member.id, visitLabel), [docs, member.id, visitLabel]);
+  const cur = targets[chosen] || targets[targets.length - 1];
+  const curLabel = targetLabel(cur);
+  const packDocs: Doc[] = useMemo(() => selectVisitDocs(docs, member.id, cur), [docs, member.id, cur]);
   const included = packDocs.filter((d) => !excluded.has(d.id));
-  const foc = focusFor(cur.label);
+  const foc = focusFor(curLabel);
+  const KIND_LABEL: Record<string, string> = {
+    doctor: "Doctor",
+    hospital: "Hospital or lab",
+    specialisation: "Specialisation",
+    general: "Everything recent",
+  };
   const toggle = (id: string) =>
     setExcluded((p) => {
       const n = new Set(p);
       n.has(id) ? n.delete(id) : n.add(id);
       return n;
     });
-  const pick = (id: string) => {
-    setChosen(id);
+  const pick = (i: number) => {
+    setChosen(i);
     setExcluded(new Set());
   };
-  const coverHTML = () => buildVisitCover(member, care, meds, vitals, records, included, cur.label);
+  const coverHTML = () => buildVisitCover(member, care, meds, vitals, records, included, curLabel);
   const previewCover = () => {
     const b = new Blob([coverHTML()], { type: "text/html" });
     window.open(URL.createObjectURL(b), "_blank");
@@ -1891,10 +1937,10 @@ function VisitPrep({ appts, doctor, member, care, meds, vitals, records, docs, o
     if (busy) return;
     setBusy(true);
     try {
-      await buildZip(`VisitPack_${member.name.split(" ")[0]}_${cur.label}`, included, [
-        { name: "00_Visit_Cover_Sheet.html", content: coverHTML() },
+      await buildZip(`Visit_${member.name.split(" ")[0]}_${curLabel.replace(/[^A-Za-z0-9]+/g, "_")}`, included, [
+        { name: "00_Cover_Sheet.html", content: coverHTML() },
       ]);
-      toast(`Visit pack downloaded: cover sheet + ${included.length} document${included.length === 1 ? "" : "s"}`);
+      toast(`Downloaded: cover sheet + ${included.length} document${included.length === 1 ? "" : "s"}`);
       onClose();
     } finally {
       setBusy(false);
@@ -1912,26 +1958,32 @@ function VisitPrep({ appts, doctor, member, care, meds, vitals, records, docs, o
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
           <div>
             <div className="lh-eyebrow" style={{ marginBottom: 4 }}>
-              Your real documents · filtered for this visit
+              Your own records, filtered for this visit
             </div>
             <h3 className="lh-h2" style={{ fontSize: 19 }}>
-              Prepare for visit
+              Prepare for a visit
             </h3>
           </div>
           <button className="lh-x" onClick={onClose}>
             <X size={16} />
           </button>
         </div>
-        <div className="lh-lbl">Preparing for which visit?</div>
+        {nextAppt && (
+          <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 10 }}>
+            Next appointment: {nextAppt.title} on {fmt(nextAppt.due)}.
+          </div>
+        )}
+        <div className="lh-lbl">Who is this visit with?</div>
         <div className="lh-pick" style={{ marginBottom: 6 }}>
-          {opts.map((o: any) => (
-            <button key={o.id} className={"lh-pk" + (chosen === o.id ? " on" : "")} onClick={() => pick(o.id)}>
-              {o.label}
+          {targets.map((t, i) => (
+            <button key={t.kind + (t.value || "")} className={"lh-pk" + (chosen === i ? " on" : "")} onClick={() => pick(i)}>
+              {targetLabel(t)}
             </button>
           ))}
         </div>
         <div style={{ fontSize: 12, color: C.faint, marginBottom: 12 }}>
-          {cur.sub}
+          {KIND_LABEL[cur.kind]}
+          {cur.kind !== "general" ? " named on this member's records" : " from the last 12 months"}
           {foc.length ? ` · prioritizes ${foc.join(", ")}` : ""}
           {` · ${packDocs.length} matching document${packDocs.length === 1 ? "" : "s"}`}
         </div>
