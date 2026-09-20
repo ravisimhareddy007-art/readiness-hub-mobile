@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { X, Download, FileText, ShieldCheck } from "lucide-react";
 import { getBlob } from "../lib/idb";
 import { getDecrypted } from "../lib/secure-idb";
+import { formatMoney } from "../lib/currency";
+import { getCurrency } from "../lib/store";
 import type { Doc } from "../lib/types";
 
 const fmt = (s?: string) =>
-  s ? new Date(s).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+  s ? new Date(s).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
-const money = (v: number) => `$${v.toLocaleString("en-US")}`;
+const money = (v: number) => formatMoney(v, getCurrency(), false);
 
 const rid = (p: string, n = 8) =>
   p + Array.from({ length: n }, () => "0123456789".at(Math.floor(Math.random() * 10))).join("");

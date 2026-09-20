@@ -47,7 +47,7 @@ export function Pill({ children, tone = "muted" }: { children: React.ReactNode; 
     warn: ["#D8B25A", "#FBF1E0"], bad: ["#E04A4F", "#FBEBEC"],
   };
   const [c, bg] = map[tone];
-  return <span className="font-mono font-semibold" style={{ fontSize: 11, color: c, background: bg, padding: "3px 8px", borderRadius: 20 }}>{children}</span>;
+  return <span className="font-mono font-semibold" style={{ fontSize: 12, color: c, background: bg, padding: "3px 8px", borderRadius: 20 }}>{children}</span>;
 }
 
 export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className = "", ...p }) => (

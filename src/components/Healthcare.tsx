@@ -82,8 +82,8 @@ const rel = (n: number) => new Date(Date.now() + n * 86400000).toISOString().sli
 const uid = () => Math.random().toString(36).slice(2, 9);
 const today = () => new Date().toISOString().slice(0, 10);
 const fmt = (s?: string) =>
-  s ? new Date(s).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" }) : "—";
-const mon = (s: string) => new Date(s).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  s ? new Date(s).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }) : "—";
+const mon = (s: string) => new Date(s).toLocaleDateString(undefined, { month: "short", year: "numeric" });
 const daysTo = (s: string) => Math.ceil((+new Date(s) - Date.now()) / 86400000);
 const age = (dob?: string) => (dob ? Math.floor((Date.now() - +new Date(dob)) / (365.25 * 86400000)) : null);
 
@@ -522,7 +522,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         </div>
         {upcomingAppts.length > 0 && (
           <>
-            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.5, color: C.faint, textTransform: "uppercase", margin: "0 0 8px 2px" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: C.faint, textTransform: "uppercase", margin: "0 0 8px 2px" }}>
               Upcoming
             </div>
             <div className="lh-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
@@ -564,7 +564,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         )}
         {familyActions.length > 0 && (
           <>
-            <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.5, color: C.faint, textTransform: "uppercase", margin: "0 0 8px 2px" }}>
+            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: C.faint, textTransform: "uppercase", margin: "0 0 8px 2px" }}>
               Needs attention
             </div>
             <div className="lh-card" style={{ padding: 0, overflow: "hidden" }}>
@@ -592,7 +592,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: C.text }}>
                     <b style={{ color: a.color }}>{a.name}</b> · {a.label}
                   </span>
-                  <span style={{ fontSize: 11.5, color: a.iconC, whiteSpace: "nowrap" }}>{a.when}</span>
+                  <span style={{ fontSize: 12, color: a.iconC, whiteSpace: "nowrap" }}>{a.when}</span>
                 </button>
               ))}
             </div>
@@ -848,7 +848,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                       alignItems: "center",
                       gap: 6,
                       marginTop: 10,
-                      fontSize: 11.5,
+                      fontSize: 12,
                       color: C.faint,
                     }}
                   >
@@ -866,7 +866,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         >
                           Source: {srcDoc.name} · {fmt(srcDoc.docDate || srcDoc.addedAt)}
                         </span>
-                        <button className="lh-lnk" style={{ fontSize: 11.5 }} onClick={() => setViewDoc(srcDoc)}>
+                        <button className="lh-lnk" style={{ fontSize: 12 }} onClick={() => setViewDoc(srcDoc)}>
                           View report
                         </button>
                       </>
@@ -1355,7 +1355,7 @@ function MiniChart({ arr, metric, color }: { arr: LabLog[]; metric: string; colo
   const X = (i: number) => pl + (arr.length <= 1 ? 0.5 : i / (arr.length - 1)) * (W - pl - pr);
   const Y = (v: number) => pt + (1 - (v - min) / (max - min || 1)) * (H - pt - pb);
   const pts = arr.map((pp, i) => `${X(i)},${Y(pp.value)}`).join(" ");
-  const shortD = (ss: string) => new Date(ss).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const shortD = (ss: string) => new Date(ss).toLocaleDateString(undefined, { month: "short", day: "numeric" });
   const last = arr[arr.length - 1];
   const bandTop = band ? Math.max(pt, Y(band[1])) : 0;
   const bandBot = band ? Math.min(H - pb, Y(band[0])) : 0;
@@ -1407,7 +1407,7 @@ const StatusPill = ({ s }: { s: Status }) => (
   <span
     style={{
       fontVariantNumeric: "tabular-nums",
-      fontSize: 11,
+      fontSize: 12,
       fontWeight: 600,
       color: SM[s].c,
       background: SM[s].c + "20",
@@ -1834,7 +1834,7 @@ function buildVisitCover(
   ${sec("Current medications", meds.length ? `<ul style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">${meds.map((x) => `<li>${x.name} ${x.dose} · ${x.freq} · refill by ${fmt(x.refillBy)}</li>`).join("")}</ul>` : `<div style="color:#9ca3af;font-size:13px">None recorded</div>`)}
   ${sec("Latest readings (with source document)", readingRows ? `<table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6"><th style="text-align:left;padding:5px 10px;font-size:11px;color:#6b7280">Metric</th><th style="text-align:left;padding:5px 10px;font-size:11px;color:#6b7280">Value</th><th style="text-align:left;padding:5px 10px;font-size:11px;color:#6b7280">Date</th><th style="text-align:left;padding:5px 10px;font-size:11px;color:#6b7280">Source</th></tr>${readingRows}</table>` : `<div style="color:#9ca3af;font-size:13px">No readings tracked</div>`)}
   ${sec(`Documents in this pack (${included.length})`, included.length ? `<ol style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">${included.map((d) => `<li>${d.docType} · ${d.name} · ${fmt(d.docDate || d.addedAt)}</li>`).join("")}</ol>` : `<div style="color:#9ca3af;font-size:13px">None selected</div>`)}
-  <p style="margin-top:20px;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:9px">Assembled from ${m.name.split(" ")[0]}'s own records on ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}. Facts only — no diagnosis, no medical advice.</p>
+  <p style="margin-top:20px;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:9px">Assembled from ${m.name.split(" ")[0]}'s own records on ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}. Facts only — no diagnosis, no medical advice.</p>
   </div>`;
 }
 
@@ -1953,7 +1953,7 @@ function VisitPrep({ appts, doctor, member, care, meds, vitals, records, docs, o
                     <div style={{ fontSize: 13.5, fontWeight: 600, color: C.text }}>{d.docType}</div>
                     <div
                       style={{
-                        fontSize: 11.5,
+                        fontSize: 12,
                         color: C.faint,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -2034,7 +2034,7 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
     ${row("Insurance", ins ? ins.name : "—")}
     ${row("Medical documents", `${medDocs} on file in ReadiNes`)}
   </table></div>
-  <div style="padding:10px 16px;background:#f9fafb;color:#9ca3af;font-size:11px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between"><span>Assembled facts only · no diagnosis.</span><span>Generated ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span></div>
+  <div style="padding:10px 16px;background:#f9fafb;color:#9ca3af;font-size:11px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between"><span>Assembled facts only · no diagnosis.</span><span>Generated ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span></div>
   </div>`;
 }
 

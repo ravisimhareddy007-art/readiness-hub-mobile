@@ -1466,7 +1466,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
     <div
       style={{
         fontVariantNumeric: "tabular-nums",
-        fontSize: 11.5,
+        fontSize: 12,
         fontWeight: 700,
         letterSpacing: 2,
         textTransform: "uppercase",
@@ -1613,7 +1613,7 @@ const btnGhost: CSSProperties = {
 };
 const pill = (color: string): CSSProperties => ({
   fontVariantNumeric: "tabular-nums",
-  fontSize: 11,
+  fontSize: 12,
   fontWeight: 700,
   color,
   background: color + "22",
@@ -1734,7 +1734,7 @@ function Home({ store, go, toast }: any) {
     if (premTx && lifeCover) {
       insights.push({
         icons: [Wallet, ShieldCheck],
-        text: `${lifeCover.name} premium receipt is filed as evidence (${new Date(premTx.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}). ${lifeCover.renewalDate ? `Renewal in ${daysTo(lifeCover.renewalDate)}d; ` : ""}a claim would find both policy and proof in one place.`,
+        text: `${lifeCover.name} premium receipt is filed as evidence (${fmtDate(premTx.date, { month: "short", day: "numeric" })}). ${lifeCover.renewalDate ? `Renewal in ${daysTo(lifeCover.renewalDate)}d; ` : ""}a claim would find both policy and proof in one place.`,
         to: "wealth",
         tone: T.mint,
       });
@@ -1873,7 +1873,7 @@ function Home({ store, go, toast }: any) {
                       borderRadius: 99,
                       background: T.gold,
                       color: "var(--lpv-golddark)",
-                      fontSize: 10.5,
+                      fontSize: 12,
                       fontWeight: 800,
                       display: "grid",
                       placeItems: "center",
@@ -1957,7 +1957,7 @@ function Home({ store, go, toast }: any) {
                   </span>
                   <span
                     style={{
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: 700,
                       color: a.tone,
                       background: a.tone + "1C",
@@ -2128,7 +2128,7 @@ function Home({ store, go, toast }: any) {
               return (
                 <Card key={id} style={{ padding: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span style={{ width: 30, height: 30, borderRadius: 99, border: `2.5px solid ${T.gold}`, display: "grid", placeItems: "center", fontSize: 10, fontWeight: 800, color: T.gold }}>0%</span>
+                    <span style={{ width: 30, height: 30, borderRadius: 99, border: `2.5px solid ${T.gold}`, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 800, color: T.gold }}>0%</span>
                     <b style={{ color: T.white, fontSize: 14 }}>{title}</b>
                   </div>
                   <p style={{ color: T.muted, fontSize: 12.5, margin: "0 0 8px" }}>Start with these three:</p>
@@ -2245,7 +2245,7 @@ function Home({ store, go, toast }: any) {
                   <g.icon size={14} color={g.color} />
                   <span
                     style={{
-                      fontSize: 11.5,
+                      fontSize: 12,
                       fontWeight: 700,
                       letterSpacing: 1,
                       textTransform: "uppercase",
@@ -2255,7 +2255,7 @@ function Home({ store, go, toast }: any) {
                   >
                     {g.label}
                   </span>
-                  <span style={{ fontSize: 11.5, color: g.color, fontVariantNumeric: "tabular-nums" }}>
+                  <span style={{ fontSize: 12, color: g.color, fontVariantNumeric: "tabular-nums" }}>
                     {g.acts.length}
                   </span>
                   <ChevronRight size={13} color={T.faint} style={{ marginLeft: "auto" }} />
@@ -2300,7 +2300,7 @@ function Home({ store, go, toast }: any) {
                     <span
                       className="lp-act-when"
                       style={{
-                        fontSize: 11.5,
+                        fontSize: 12,
                         color: a.tone,
                         fontVariantNumeric: "tabular-nums",
                         whiteSpace: "nowrap",
@@ -2903,7 +2903,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 700,
     letterSpacing: 0.5,
     textTransform: "uppercase",
@@ -2958,7 +2958,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         />
         {!drafted && similar.length > 0 && (
           <div style={{ marginTop: 10 }}>
-            <div style={{ fontSize: 11.5, color: T.muted, marginBottom: 6 }}>
+            <div style={{ fontSize: 12, color: T.muted, marginBottom: 6 }}>
               The catalog may already cover this. Start from one, or draft fresh:
             </div>
             <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
@@ -3004,7 +3004,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         {drafted && (
           <>
             {loading && (
-              <div style={{ fontSize: 11.5, color: T.gold, margin: "4px 0" }}>
+              <div style={{ fontSize: 12, color: T.gold, margin: "4px 0" }}>
                 ⟳ Refining with current official sources… (up to a minute)
               </div>
             )}
@@ -3013,7 +3013,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
             <label style={lbl}>Checklist · edit freely</label>
             <div
               style={{
-                fontSize: 11.5,
+                fontSize: 12,
                 color: T.gold,
                 background: T.gold + "12",
                 border: `1px solid ${T.gold}44`,
@@ -3068,14 +3068,14 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
               <Plus size={13} /> Add requirement
             </button>
             {drafted && reqs.some((r) => have?.has(r.trim())) && (
-              <div style={{ fontSize: 11.5, color: T.mint, marginTop: 8 }}>
+              <div style={{ fontSize: 12, color: T.mint, marginTop: 8 }}>
                 {reqs.filter((r) => have?.has(r.trim())).length} of {reqs.filter((r) => r.trim()).length} already in
                 your archive; they will count the moment you save.
               </div>
             )}
             {meta && (
               <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: T.navy, border: `1px solid ${T.border}` }}>
-                <div style={{ fontSize: 11, color: T.muted, marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                <div style={{ fontSize: 12, color: T.muted, marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ color: meta.dataSource === "fallback" ? T.coral : T.mint, fontWeight: 700 }}>
                     {meta.dataSource === "fallback" ? "Offline estimate" : "Live · sourced"}
                   </span>
@@ -3088,7 +3088,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                     {s.title}
                   </a>
                 ))}
-                {meta.disclaimer && <p style={{ fontSize: 11, color: T.muted, marginTop: 8, lineHeight: 1.45 }}>{meta.disclaimer}</p>}
+                {meta.disclaimer && <p style={{ fontSize: 12, color: T.muted, marginTop: 8, lineHeight: 1.45 }}>{meta.disclaimer}</p>}
               </div>
             )}
             <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
@@ -3208,7 +3208,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
           <div
             style={{
               marginTop: 12,
-              fontSize: 11.5,
+              fontSize: 12,
               color: ev.custom ? T.gold : T.muted,
               fontVariantNumeric: "tabular-nums",
               display: "flex",
@@ -3223,7 +3223,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 {onEdit && (
                   <button
                     onClick={onEdit}
-                    style={{ ...btnGhost, padding: "4px 10px", fontSize: 11.5, marginLeft: "auto" }}
+                    style={{ ...btnGhost, padding: "4px 10px", fontSize: 12, marginLeft: "auto" }}
                   >
                     <Pencil size={11} /> Edit checklist
                   </button>
@@ -3307,12 +3307,12 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         <div style={{ fontSize: 12.5, color: T.text, fontVariantNumeric: "tabular-nums" }}>
                           {d.name}
                         </div>
-                        <div style={{ fontSize: 11.5, color: T.muted, marginTop: 2 }}>
+                        <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
                           {memberName(d.memberId)}
                           {d.docType !== r.label ? ` · satisfied by ${d.docType}` : ""}
                         </div>
                         {reuse.length > 0 && (
-                          <div style={{ fontSize: 11.5, color: T.faint, marginTop: 5, lineHeight: 1.5 }}>
+                          <div style={{ fontSize: 12, color: T.faint, marginTop: 5, lineHeight: 1.5 }}>
                             Stored once, also counts toward: {reuse.join(", ")}
                           </div>
                         )}
@@ -3346,7 +3346,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                   gap: 8,
                 }}
               >
-                <AlertTriangle size={16} color={T.gold} /> Still needed ({rows.filter((r) => !r.have).length})
+                <AlertTriangle size={16} color={SEM.warning} /> Still needed ({rows.filter((r) => !r.have).length})
               </div>
               {rows
                 .filter((r) => !r.have)
@@ -3371,7 +3371,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         <span style={{ flex: 1, fontSize: 14, color: T.text, minWidth: 0 }}>
                           {r.label}
                           {cond && (
-                            <span style={{ display: "block", fontSize: 11, color: T.faint }}>
+                            <span style={{ display: "block", fontSize: 12, color: T.faint }}>
                               May be required depending on your situation
                             </span>
                           )}
@@ -3546,7 +3546,7 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
                 }}
               >
                 <div style={{ fontSize: 13.5, fontWeight: 600, color: T.text }}>{d.docType}</div>
-                <div style={{ fontSize: 11.5, color: T.faint, fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: 12, color: T.faint, fontVariantNumeric: "tabular-nums" }}>
                   {d.name} · {nameOf(d.memberId)}
                 </div>
               </button>
@@ -3578,7 +3578,7 @@ function Documents({ store, toast, go }: any) {
   const nameOf = (mid?: string) => store.members.find((m: Member) => m.id === mid)?.name || "Unassigned";
   const colorOf = (mid?: string) => store.members.find((m: Member) => m.id === mid)?.color || T.faint;
   const fdate = (s?: string) =>
-    s ? new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" }) : "—";
+    s ? new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" }) : "—";
 
   const docs: Doc[] = store.docs;
   const expiring = docs.filter((d) => d.expiry && daysTo(d.expiry) >= 0 && daysTo(d.expiry) < 60);
@@ -3696,7 +3696,7 @@ function Documents({ store, toast, go }: any) {
     );
     const Sec = ({ label, children }: any) => (
       <div style={{ margin: "12px 0" }}>
-        <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>{children}</div>
       </div>
     );
@@ -3754,7 +3754,7 @@ function Documents({ store, toast, go }: any) {
                 gap: 5,
                 padding: "4px 9px",
                 borderRadius: 99,
-                fontSize: 11.5,
+                fontSize: 12,
                 fontWeight: 600,
                 border: `1px solid ${T.gold}55`,
                 background: T.raised,
@@ -4275,7 +4275,7 @@ function Documents({ store, toast, go }: any) {
                 gap: 10,
                 alignItems: "center",
                 padding: "12px 16px",
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 700,
                 color: T.muted,
                 textTransform: "uppercase",
@@ -4368,7 +4368,7 @@ function Documents({ store, toast, go }: any) {
                         <span
                           style={{
                             display: "block",
-                            fontSize: 11.5,
+                            fontSize: 12,
                             color: T.faint,
                             fontVariantNumeric: "tabular-nums",
                             overflow: "hidden",
@@ -4432,7 +4432,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
   const days = d.expiry ? daysTo(d.expiry) : null;
 
   const lbl: CSSProperties = {
-    fontSize: 10.5,
+    fontSize: 12,
     fontWeight: 700,
     letterSpacing: 1,
     textTransform: "uppercase",
@@ -4521,7 +4521,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
             <div style={{ fontSize: 16.5, fontWeight: 700, color: T.white }}>{d.docType}</div>
             <div
               style={{
-                fontSize: 11.5,
+                fontSize: 12,
                 color: T.faint,
                 fontVariantNumeric: "tabular-nums",
                 overflow: "hidden",
@@ -4723,7 +4723,7 @@ function AddMember({ onClose, save }: any) {
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 700,
     letterSpacing: 0.5,
     textTransform: "uppercase",
@@ -5268,7 +5268,7 @@ function Wealth({ store, go, toast }: any) {
               <Siren size={16} color={T.coral} />
               <span style={{ flex: 1, fontSize: 13.5, color: T.text }}>
                 <b style={{ color: T.coral }}>SOS handoff active</b> ({store.handoff.reason}) since{" "}
-                {new Date(store.handoff.releasedAt).toLocaleString("en-US", {
+                {new Date(store.handoff.releasedAt).toLocaleString(undefined, {
                   month: "short",
                   day: "numeric",
                   hour: "numeric",
@@ -5685,7 +5685,7 @@ function Wealth({ store, go, toast }: any) {
                           }}
                         >
                           {money(t.amount)}
-                          <span style={{ fontSize: 11, fontWeight: 600, marginLeft: 6, color: T.muted, textDecoration: "none" }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, marginLeft: 6, color: T.muted, textDecoration: "none" }}>
                             {settled ? "" : lent ? "owed to you" : "you owe"}
                           </span>
                         </span>
@@ -6072,7 +6072,7 @@ function SearchResults({ store, query, go }: any) {
   const q = query.trim().toLowerCase();
   const nameOf = (id?: string) => store.members.find((m: Member) => m.id === id)?.name || "";
   const monthOf = (s?: string) =>
-    s ? new Date(s).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "";
+    s ? new Date(s).toLocaleDateString(undefined, { month: "long", year: "numeric" }) : "";
   const docs = store.docs.filter((d: Doc) =>
     `${d.docType} ${d.name} ${d.category} ${nameOf(d.memberId)} ${d.source} ${monthOf(d.docDate || d.addedAt)}`
       .toLowerCase()
@@ -6129,7 +6129,7 @@ function SearchResults({ store, query, go }: any) {
         <div
           style={{
             padding: "11px 14px",
-            fontSize: 11.5,
+            fontSize: 12,
             fontWeight: 700,
             color: T.muted,
             textTransform: "uppercase",
@@ -6296,7 +6296,7 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
         </p>
         <div
           style={{
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 700,
             letterSpacing: 0.5,
             textTransform: "uppercase",
@@ -6355,7 +6355,7 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
         )}
         <div
           style={{
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 700,
             letterSpacing: 0.5,
             textTransform: "uppercase",
@@ -6488,7 +6488,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 700,
     letterSpacing: 0.5,
     textTransform: "uppercase",
@@ -6552,13 +6552,13 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
               <span style={{ fontSize: 13, color: T.text, fontWeight: 600, wordBreak: "break-all" }}>
                 {evidence.name}
               </span>
-              <span style={{ fontSize: 11.5, color: T.muted }}>Tap to replace</span>
+              <span style={{ fontSize: 12, color: T.muted }}>Tap to replace</span>
             </>
           ) : (
             <>
               <Paperclip size={20} color={T.gold} />
               <span style={{ fontSize: 13.5, color: T.text, fontWeight: 600 }}>Photo · screenshot · receipt · PDF</span>
-              <span style={{ fontSize: 11.5, color: T.muted }}>
+              <span style={{ fontSize: 12, color: T.muted }}>
                 The proof is the record; it files into Documents too
               </span>
             </>
@@ -6768,7 +6768,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 700,
     letterSpacing: 0.5,
     textTransform: "uppercase",
@@ -7130,7 +7130,7 @@ function EstateSheet({ store, onClose, toast }: any) {
             <div
               style={{
                 fontVariantNumeric: "tabular-nums",
-                fontSize: 11,
+                fontSize: 12,
                 letterSpacing: 1.5,
                 textTransform: "uppercase",
                 color: T.gold,
@@ -7164,7 +7164,7 @@ function EstateSheet({ store, onClose, toast }: any) {
 
 function buildEstate(store: any): string {
   const H: Holding[] = store.holdings;
-  const m2 = (v?: number) => `$${(v || 0).toLocaleString("en-US")}`;
+  const m2 = (v?: number) => formatMoney(v || 0, getCurrency(), false);
   const A_ = H.filter((h) => h.kind === "asset"),
     L_ = H.filter((h) => h.kind === "liability"),
     C_ = H.filter((h) => h.kind === "cover");
@@ -7246,12 +7246,12 @@ function DesignSystem({ store }: any) {
   const Sw = ({ c, l }: { c: string; l: string }) => (
     <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
       <span style={{ width: 44, height: 44, borderRadius: 12, background: c, border: `1px solid ${T.border}` }} />
-      <span style={{ fontSize: 10, color: T.muted }}>{l}</span>
+      <span style={{ fontSize: 12, color: T.muted }}>{l}</span>
     </span>
   );
   const Sec = ({ t, children }: any) => (
     <Card style={{ marginBottom: 14 }}>
-      <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 12 }}>{t}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 12 }}>{t}</div>
       {children}
     </Card>
   );
@@ -7331,7 +7331,7 @@ function DesignSystem({ store }: any) {
           {Object.entries(DS.radius).map(([k, v]) => (
             <span key={k} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
               <span style={{ width: 52, height: 40, borderRadius: v, border: `1.5px solid ${SEM.action}`, background: SEM.action + "14" }} />
-              <span style={{ fontSize: 10, color: T.muted }}>{k} · {v}</span>
+              <span style={{ fontSize: 12, color: T.muted }}>{k} · {v}</span>
             </span>
           ))}
         </div>
@@ -7370,11 +7370,11 @@ function DesignSystem({ store }: any) {
             <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.white }}>Annual health checkup</span>
             <span style={{ display: "block", fontSize: 12, color: T.muted }}>Nov 21 · Dr. Reyes</span>
           </span>
-          <span style={{ padding: "4px 9px", borderRadius: 99, fontSize: 11, fontWeight: 700, color: SEM.success, background: SEM.success + "1C" }}>in 69d</span>
+          <span style={{ padding: "4px 9px", borderRadius: 99, fontSize: 12, fontWeight: 700, color: SEM.success, background: SEM.success + "1C" }}>in 69d</span>
           <ChevronRight size={15} color={T.faint} />
         </div>
       </Sec>
-      <p style={{ fontSize: 11.5, color: T.faint, lineHeight: 1.6 }}>
+      <p style={{ fontSize: 12, color: T.faint, lineHeight: 1.6 }}>
         Roles are locked; hex values tune against real UI. Gold appears only where readiness is the message. Changes land at the
         highest reusable level: token → theme → component → pattern → screen.
       </p>
@@ -7503,7 +7503,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
             <div style={{ padding: "8px 12px", borderTop: `1px solid ${T.border}` }}>
               <div
                 style={{
-                  fontSize: 10.5,
+                  fontSize: 12,
                   fontWeight: 700,
                   letterSpacing: 1,
                   textTransform: "uppercase",
@@ -7557,7 +7557,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                     </span>
                     <span style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.text }}>{label}</span>
-                      <span style={{ display: "block", fontSize: 11, color: T.muted }}>{sub}</span>
+                      <span style={{ display: "block", fontSize: 12, color: T.muted }}>{sub}</span>
                     </span>
                     {on && <Check size={15} color={T.gold} />}
                   </button>
@@ -7750,7 +7750,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
     <div style={{ marginBottom: 20 }}>
       <div
         style={{
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 700,
           letterSpacing: 1.2,
           textTransform: "uppercase",
@@ -7970,7 +7970,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           <div style={{ marginBottom: 20 }}>
             <div
               style={{
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 700,
                 letterSpacing: 1.2,
                 textTransform: "uppercase",
@@ -8039,7 +8039,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           >
             Send
           </button>
-          <p style={{ fontSize: 11.5, color: T.faint, marginTop: 8 }}>
+          <p style={{ fontSize: 12, color: T.faint, marginTop: 8 }}>
             Prototype note: feedback is recorded on this device for the team to collect.
           </p>
         </Overlay>
@@ -8681,7 +8681,7 @@ export default function App() {
               </div>
               <div
                 style={{
-                  fontSize: 10,
+                  fontSize: 12,
                   letterSpacing: 2,
                   color: T.muted,
                   fontVariantNumeric: "tabular-nums",
