@@ -194,6 +194,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
      "family" is now the manage-family view, reached deliberately. */
   const [mView, setMView] = useState<"family" | "person">("person");
   const [confirmDel, setConfirmDel] = useState<Member | null>(null);
+  const [shownSeries, setShownSeries] = useState<Set<string> | null>(null);
+  const [pickSeries, setPickSeries] = useState(false);
   const [addSheet, setAddSheet] = useState(false);
   const [tab, setTab] = useState<"overview" | "timeline" | "meds" | "records">("overview");
   const [modal, setModal] = useState<
@@ -222,6 +224,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         .sort((a, b) => (b.docDate || b.addedAt).localeCompare(a.docDate || a.addedAt)),
     [s.docs, sel],
   );
+  /* Which series are charted. A full panel can carry forty tests, so the screen opens on the ones
+     with something to say and the rest are one tap away. The user's choice wins once made. */
   /* Every test the reports printed, grouped into series. A series is one test in one unit:
      Free PSA never joins Total PSA, and a lab that changed units starts a new line rather than
      drawing a cliff. Keyed off what the documents said, never off a condition. */
@@ -235,6 +239,19 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     Object.values(map).forEach((a) => a.sort(sortR));
     return map;
   }, [s.labs, sel]);
+  const seriesOrder = useMemo(() => {
+    const keys = Object.keys(vitals);
+    const score = (k: string) => {
+      const arr = vitals[k];
+      const out = statusOfReading(arr[arr.length - 1]) === "out" ? 1000 : 0;
+      return out + arr.length * 10;
+    };
+    return keys.sort((a, b) => score(b) - score(a));
+  }, [vitals]);
+  const visibleSeries = useMemo(
+    () => (shownSeries ? seriesOrder.filter((k) => shownSeries.has(k)) : seriesOrder.slice(0, 4)),
+    [seriesOrder, shownSeries],
+  );
 
   const timeline = useMemo(() => {
     const ev: { date: string; kind: string; title: string; detail: string }[] = [];
@@ -853,6 +870,22 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               </p>
             </div>
           )}
+          {seriesOrder.length > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 12.5, color: C.sub }}>
+                Showing {visibleSeries.length} of {seriesOrder.length} tracked test
+                {seriesOrder.length === 1 ? "" : "s"}
+              </span>
+              <button className="lh-lnk" style={{ fontSize: 12.5, marginLeft: "auto" }} onClick={() => setPickSeries(true)}>
+                Choose tests
+              </button>
+              {seriesOrder.length > visibleSeries.length && (
+                <button className="lh-lnk" style={{ fontSize: 12.5 }} onClick={() => setShownSeries(new Set(seriesOrder))}>
+                  Show all
+                </button>
+              )}
+            </div>
+          )}
           <div className="lh-vitals" style={{ marginBottom: 16 }}>
             {Object.keys(vitals).length === 0 && (
               <div className="lh-card" style={{ padding: 20, textAlign: "center" }}>
@@ -870,7 +903,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 </div>
               </div>
             )}
-            {Object.keys(vitals).map((k) => {
+            {visibleSeries.map((k) => {
               const arr = vitals[k];
               const l = arr[arr.length - 1];
               const st = statusOf(k, arr);
@@ -1223,7 +1256,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 onChange={(e) => {
                   if (e.target.files?.length) {
                     const pen = pendingRec.current;
-                    s.addFiles(e.target.files, sel, pen?.override);
+                    /* Uploaded from a person's Records tab: it is a medical record for that person,
+                       whatever the classifier makes of the file name or the scan quality. */
+                    s.addFiles(e.target.files, sel, { category: "Medical", memberId: sel, ...(pen?.override || {}) });
                     toast(`${pen?.label || "Record"} added`);
                   }
                   pendingRec.current = null;
@@ -1307,6 +1342,99 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
 
       {/* modals */}
       <AnimatePresence>
+        {pickSeries && (
+          <div className="lh-overlay" onClick={() => setPickSeries(false)}>
+            <motion.div
+              className="lh-modal"
+              onClick={(e) => e.stopPropagation()}
+              initial={isMobileView() ? { y: 40, opacity: 0 } : { scale: 0.96, opacity: 0 }}
+              animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
+              transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
+            >
+              <h3 className="lh-h2" style={{ fontSize: 18, marginBottom: 4 }}>
+                Which tests to chart
+              </h3>
+              <p style={{ fontSize: 13, color: C.sub, margin: "0 0 14px" }}>
+                Every test read from {m.name.split(" ")[0]}'s reports. Nothing is hidden, only unpinned from this screen.
+              </p>
+              <div style={{ maxHeight: "46vh", overflowY: "auto" }}>
+                {seriesOrder.map((k) => {
+                  const arr = vitals[k];
+                  const on = shownSeries ? shownSeries.has(k) : visibleSeries.includes(k);
+                  return (
+                    <button
+                      key={k}
+                      onClick={() => {
+                        const next = new Set(shownSeries || visibleSeries);
+                        next.has(k) ? next.delete(k) : next.add(k);
+                        setShownSeries(next);
+                      }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 11,
+                        width: "100%",
+                        minHeight: 48,
+                        padding: "8px 4px",
+                        background: "none",
+                        border: "none",
+                        borderTop: `1px solid ${C.border}`,
+                        cursor: "pointer",
+                        textAlign: "left",
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: 6,
+                          flexShrink: 0,
+                          display: "grid",
+                          placeItems: "center",
+                          background: on ? C.action : "transparent",
+                          border: `1.5px solid ${on ? C.action : C.border}`,
+                          color: "var(--lpv-actionink)",
+                        }}
+                      >
+                        {on ? <Check size={13} /> : null}
+                      </span>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: C.text }}>
+                          {seriesName(arr)}
+                        </span>
+                        <span style={{ display: "block", fontSize: 12.5, color: C.sub, marginTop: 1 }}>
+                          {arr.length} reading{arr.length === 1 ? "" : "s"} · latest {readingText(arr[arr.length - 1])}{" "}
+                          {seriesUnit(arr)}
+                        </span>
+                      </span>
+                      {statusOfReading(arr[arr.length - 1]) === "out" && (
+                        <span className="lh-chip" style={{ fontSize: 12, color: C.red, whiteSpace: "nowrap" }}>
+                          outside range
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+                <button
+                  className="lh-btn-g"
+                  style={{ flex: 1, justifyContent: "center" }}
+                  onClick={() => {
+                    setShownSeries(null);
+                    setPickSeries(false);
+                  }}
+                >
+                  Reset
+                </button>
+                <button className="lh-btn" style={{ flex: 1, justifyContent: "center" }} onClick={() => setPickSeries(false)}>
+                  Done
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
         {addSheet && (
           <div className="lh-overlay" onClick={() => setAddSheet(false)}>
             <motion.div

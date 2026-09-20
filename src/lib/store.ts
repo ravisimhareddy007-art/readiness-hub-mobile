@@ -374,7 +374,19 @@ const seedTransactions: Transaction[] = [
 ];
 
 /* ── health readings ── */
-const L = (memberId: string, metric: string, value: number, unit: string, date: string, value2?: number): LabLog => ({
+const L = (
+  memberId: string,
+  metric: string,
+  value: number,
+  unit: string,
+  date: string,
+  value2?: number,
+  seriesKey?: string,
+  refLow?: number,
+  refHigh?: number,
+  refText?: string,
+  qualifier?: string,
+): LabLog => ({
   id: id(),
   memberId,
   metric,
@@ -382,26 +394,57 @@ const L = (memberId: string, metric: string, value: number, unit: string, date: 
   value2,
   unit,
   date,
+  seriesKey: seriesKey || metric.toLowerCase() + "|" + unit.toLowerCase(),
+  refLow,
+  refHigh,
+  refText,
+  qualifier,
 });
 const seedLabs: LabLog[] = [
-  L("you", "LDL", 118, "mg/dL", "2026-05-02"),
-  L("you", "Blood Pressure", 122, "mmHg", "2026-05-02", 80),
-  L("you", "HbA1c", 5.5, "%", "2026-05-02"),
-  L("spouse", "Blood Pressure", 118, "mmHg", "2026-04-18", 76),
-  L("father", "HbA1c", 6.6, "%", "2026-01-08"),
-  L("father", "HbA1c", 6.9, "%", "2026-03-12"),
-  L("father", "HbA1c", 7.2, "%", "2026-06-10"),
-  L("father", "LDL", 132, "mg/dL", "2026-01-08"),
-  L("father", "LDL", 124, "mg/dL", "2026-05-02"),
-  L("father", "LDL", 119, "mg/dL", "2026-06-10"),
-  L("father", "Blood Pressure", 138, "mmHg", "2026-01-08", 86),
-  L("father", "Blood Pressure", 132, "mmHg", "2026-03-12", 84),
-  L("father", "Blood Pressure", 124, "mmHg", "2026-06-10", 82),
-  L("mother", "TSH", 6.2, "mIU/L", "2026-01-15"),
-  L("mother", "TSH", 4.8, "mIU/L", "2026-03-20"),
-  L("mother", "TSH", 3.9, "mIU/L", "2026-05-20"),
-  L("son", "Weight", 28, "kg", "2026-02-01"),
-  L("son", "Weight", 30, "kg", "2026-05-01"),
+  /* Ranges are the ones printed on each report, never supplied by the app. */
+  L("you", "LDL Cholesterol", 118, "mg/dL", "2026-05-02", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
+  L("you", "Blood Pressure", 122, "mmHg", "2026-05-02", 80, "blood pressure|mmhg"),
+  L("you", "HbA1c", 5.5, "%", "2026-05-02", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
+  L("spouse", "Blood Pressure", 118, "mmHg", "2026-04-18", 76, "blood pressure|mmhg"),
+
+  /* Father: diabetes followed quarterly, plus kidney function tracked alongside it. */
+  L("father", "HbA1c", 6.6, "%", "2026-01-08", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
+  L("father", "HbA1c", 6.9, "%", "2026-03-12", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
+  L("father", "HbA1c", 7.2, "%", "2026-06-10", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
+  L("father", "LDL Cholesterol", 132, "mg/dL", "2026-01-08", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
+  L("father", "LDL Cholesterol", 124, "mg/dL", "2026-05-02", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
+  L("father", "LDL Cholesterol", 119, "mg/dL", "2026-06-10", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
+  L("father", "Blood Pressure", 138, "mmHg", "2026-01-08", 86, "blood pressure|mmhg"),
+  L("father", "Blood Pressure", 132, "mmHg", "2026-03-12", 84, "blood pressure|mmhg"),
+  L("father", "Blood Pressure", 124, "mmHg", "2026-06-10", 82, "blood pressure|mmhg"),
+  L("father", "Creatinine", 1.12, "mg/dL", "2026-01-08", undefined, "creatinine|mg/dl", 0.7, 1.3, "0.7 to 1.3"),
+  L("father", "Creatinine", 1.28, "mg/dL", "2026-03-12", undefined, "creatinine|mg/dl", 0.7, 1.3, "0.7 to 1.3"),
+  L("father", "Creatinine", 1.41, "mg/dL", "2026-06-10", undefined, "creatinine|mg/dl", 0.7, 1.3, "0.7 to 1.3"),
+  L("father", "eGFR", 74, "mL/min/1.73m2", "2026-01-08", undefined, "egfr|ml/min/1.73m2", 90, undefined, "over 90"),
+  L("father", "eGFR", 63, "mL/min/1.73m2", "2026-03-12", undefined, "egfr|ml/min/1.73m2", 90, undefined, "over 90"),
+  L("father", "eGFR", 55, "mL/min/1.73m2", "2026-06-10", undefined, "egfr|ml/min/1.73m2", 90, undefined, "over 90"),
+
+  /* Father: PSA followed quarterly after treatment. A sub-threshold result is the whole point. */
+  L("father", "PSA Total", 8.4, "ng/mL", "2024-11-20", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
+  L("father", "PSA Total", 6.1, "ng/mL", "2025-02-18", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
+  L("father", "PSA Total", 2.3, "ng/mL", "2025-05-22", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
+  L("father", "PSA Total", 0.42, "ng/mL", "2025-08-19", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
+  L("father", "PSA Total", 0.08, "ng/mL", "2025-11-25", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0"),
+  L("father", "PSA Total", 0.01, "ng/mL", "2026-02-24", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0", "<"),
+  L("father", "PSA Total", 0.01, "ng/mL", "2026-06-10", undefined, "total psa|ng/ml", 0, 4, "0.0 to 4.0", "<"),
+
+  /* Mother: thyroid panel, three tests that move together. */
+  L("mother", "TSH", 6.2, "mIU/L", "2026-01-15", undefined, "tsh|miu/l", 0.4, 4, "0.4 to 4.0"),
+  L("mother", "TSH", 4.8, "mIU/L", "2026-03-20", undefined, "tsh|miu/l", 0.4, 4, "0.4 to 4.0"),
+  L("mother", "TSH", 3.9, "mIU/L", "2026-05-20", undefined, "tsh|miu/l", 0.4, 4, "0.4 to 4.0"),
+  L("mother", "Free T4", 0.82, "ng/dL", "2026-01-15", undefined, "free t4|ng/dl", 0.8, 1.8, "0.8 to 1.8"),
+  L("mother", "Free T4", 1.05, "ng/dL", "2026-03-20", undefined, "free t4|ng/dl", 0.8, 1.8, "0.8 to 1.8"),
+  L("mother", "Free T4", 1.21, "ng/dL", "2026-05-20", undefined, "free t4|ng/dl", 0.8, 1.8, "0.8 to 1.8"),
+  L("mother", "Haemoglobin", 10.8, "g/dL", "2026-01-15", undefined, "haemoglobin|g/dl", 12, 15, "12.0 to 15.0"),
+  L("mother", "Haemoglobin", 11.6, "g/dL", "2026-05-20", undefined, "haemoglobin|g/dl", 12, 15, "12.0 to 15.0"),
+
+  L("son", "Weight", 28, "kg", "2026-02-01", undefined, "weight|kg"),
+  L("son", "Weight", 30, "kg", "2026-05-01", undefined, "weight|kg"),
 ];
 const seedMeds: Medication[] = [
   {
