@@ -41,20 +41,25 @@ import { buildZip } from "../lib/zip";
 import DocViewer from "./DocViewer";
 import type { Doc, Member, LabLog, Medication, ReminderKind } from "../lib/types";
 
-/* ── theme ── */
+/* ── theme ──
+   The same values as the app's shared tokens (docs/READINES_DESIGN_SYSTEM.md). Health keeps a local
+   object only because its styles are inline; the numbers are not its own. Semantic roles come from
+   the constitution: action is teal, warnings are amber, gold is reserved for readiness and identity. */
 const C_DARK = {
-  panel: "rgba(255,255,255,0.035)",
-  panel2: "rgba(255,255,255,0.055)",
-  border: "rgba(255,255,255,0.08)",
-  text: "#EAEDF7",
-  sub: "rgba(234,237,247,0.62)",
-  faint: "rgba(234,237,247,0.40)",
-  gold: "#D8B25A",
+  panel: "#131C2E",
+  panel2: "#1B2740",
+  border: "#27324A",
+  text: "#E6EBF5",
+  sub: "#8A97AE",
+  faint: "rgba(230,235,245,0.40)",
+  gold: "#D9B86A",
+  action: "#35A7A0",
+  warning: "#D98A2B",
   emerald: "#2FB68A",
-  red: "#F26D6D",
+  red: "#E8736A",
   violet: "#A78BFA",
   pink: "#F472B6",
-  cyan: "#6E8BFF",
+  cyan: "#5B8DEF",
 };
 const C_LIGHT = {
   panel: "#FFFFFF",
@@ -64,11 +69,13 @@ const C_LIGHT = {
   sub: "#5E6674",
   faint: "#666D7A",
   gold: "#866318",
+  action: "#077480",
+  warning: "#935D19",
   emerald: "#277759",
-  red: "#BA4238",
+  red: "#A25146",
   violet: "#7256C9",
   pink: "#AF416E",
-  cyan: "#2C68C9",
+  cyan: "#366E94",
 };
 const C: typeof C_DARK = { ...C_DARK };
 let _cTheme = "";
@@ -78,6 +85,8 @@ function applyC(theme: string) {
   _cTheme = theme;
   Object.assign(C, theme === "light" ? C_LIGHT : C_DARK);
 }
+/* Sheets rise on a phone, boxes scale on a desktop. */
+const isMobileView = () => typeof window !== "undefined" && window.matchMedia("(max-width:767px)").matches;
 const rel = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
 const uid = () => Math.random().toString(36).slice(2, 9);
 const today = () => new Date().toISOString().slice(0, 10);
@@ -116,7 +125,7 @@ const KIND: Record<string, { icon: any; c: string; label: string }> = {
   prescription: { icon: PillIcon, c: C.violet, label: "Prescription" },
   lab_report: { icon: FlaskConical, c: C.pink, label: "Lab report" },
   discharge: { icon: Stethoscope, c: C.emerald, label: "Consultation" },
-  scan: { icon: ClipboardList, c: C.gold, label: "Scan" },
+  scan: { icon: ClipboardList, c: C.violet, label: "Scan" },
   other: { icon: ClipboardList, c: C.faint, label: "Record" },
 };
 export const sortR = (a: LabLog, b: LabLog) => a.date.localeCompare(b.date);
@@ -268,8 +277,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     const newDocs = s.docs.filter(
       (d) => d.category === "Medical" && d.memberId === mid && (Date.now() - +new Date(d.addedAt)) / 86400000 <= 7,
     ).length;
-    if (nextAppt && daysTo(nextAppt.due) <= 30) return { txt: `Appointment in ${daysTo(nextAppt.due)}d`, c: C.gold };
-    if (due) return { txt: `${due} due soon`, c: C.gold };
+    if (nextAppt && daysTo(nextAppt.due) <= 30) return { txt: `Appointment in ${daysTo(nextAppt.due)}d`, c: C.sub };
+    if (due) return { txt: `${due} due soon`, c: C.warning };
     if (newDocs) return { txt: `${newDocs} new document${newDocs === 1 ? "" : "s"}`, c: C.cyan };
     return { txt: "Up to date", c: C.emerald };
   };
@@ -305,7 +314,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             name: first,
             color: inkOf(mm.color),
             icon: RIC[r.kind] || Bell,
-            iconC: dd < 0 ? C.red : dd <= 7 ? C.gold : C.sub,
+            iconC: dd < 0 ? C.red : dd <= 7 ? C.warning : C.sub,
             label: r.title,
             when: dd < 0 ? `${-dd}d overdue` : dd === 0 ? "today" : `in ${dd}d`,
             urgency: dd < 0 ? -1000 + dd : dd,
@@ -630,7 +639,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       <div className="lh-head">
         <div className="lh-headrow">
           <h1 className="lh-h1">Health</h1>
-          <span className="lh-famsum" style={{ color: familyActions.length ? C.gold : C.emerald }}>
+          <span className="lh-famsum" style={{ color: familyActions.length ? C.warning : C.emerald }}>
             <Users size={13} style={{ verticalAlign: "-2px", marginRight: 6 }} />
             {familyActions.length
               ? `${familyActions.length} thing${familyActions.length === 1 ? "" : "s"} need attention`
@@ -679,8 +688,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           style={{ borderStyle: "dashed", justifyContent: "center" }}
           onClick={() => setModal("member")}
         >
-          <UserPlus size={15} color={C.gold} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: C.gold }}>Add</span>
+          <UserPlus size={15} color={C.action} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: C.action }}>Add</span>
         </button>
       </div>
       )}
@@ -741,13 +750,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               flexWrap: "wrap",
             }}
           >
-            <CalendarClock size={16} color={C.gold} />
+            <CalendarClock size={16} color={C.sub} />
             <div style={{ flex: 1, minWidth: 220 }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>
                 {nextVisit ? nextVisit.title : "No visit scheduled"}
               </div>
               {nextVisit && (
-                <div style={{ fontSize: 12.5, color: C.gold, marginTop: 1, fontWeight: 600 }}>
+                <div style={{ fontSize: 12.5, color: C.sub, marginTop: 1, fontWeight: 600 }}>
                   {fmt(nextVisit.due)} · in {daysTo(nextVisit.due)} days
                 </div>
               )}
@@ -763,7 +772,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             </button>
           </div>
           <button className="lh-infobar" onClick={() => setInsightOpen((o) => !o)}>
-            <Info size={15} color={C.gold} />
+            <Info size={15} color={C.action} />
             <span className="lh-infoshort">{shortInsight}</span>
             <ChevronDown
               size={15}
@@ -878,12 +887,12 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   const dd = daysTo(r.due);
                   return (
                     <div key={r.id} className="lh-row">
-                      <span className="lh-ic" style={{ background: C.gold + "1f" }}>
-                        <Ic size={15} color={C.gold} />
+                      <span className="lh-ic" style={{ background: C.warning + "1f" }}>
+                        <Ic size={15} color={C.warning} />
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.title}</div>
-                        <div style={{ fontSize: 12, color: dd < 7 ? C.gold : C.faint }}>
+                        <div style={{ fontSize: 12, color: dd < 7 ? C.warning : C.faint }}>
                           {dd < 0 ? "overdue" : dd === 0 ? "today" : `in ${dd} days`}
                         </div>
                       </div>
@@ -919,7 +928,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 ];
                 const done = items.filter(([, ok]) => ok).length;
                 const pct = Math.round((done / items.length) * 100);
-                const pc = pct >= 80 ? C.emerald : pct >= 50 ? C.gold : C.red;
+                const pc = pct >= 80 ? C.emerald : pct >= 50 ? C.warning : C.red;
                 return (
                   <>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
@@ -1052,8 +1061,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         <span
                           className="lh-tag"
                           style={{
-                            color: rf < 0 ? C.red : C.gold,
-                            background: (rf < 0 ? C.red : C.gold) + "1f",
+                            color: rf < 0 ? C.red : C.warning,
+                            background: (rf < 0 ? C.red : C.warning) + "1f",
                           }}
                         >
                           {rf < 0 ? "refill overdue" : `refill due ${fmt(med.refillBy)}`}
@@ -1091,7 +1100,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   recRef.current?.click();
                 }}
               >
-                <Upload size={16} color={C.gold} /> Upload medical record
+                <Upload size={16} color={C.action} /> Upload medical record
               </button>
               <input
                 ref={recRef}
@@ -1404,8 +1413,9 @@ function Modal({ title, onClose, children }: any) {
       <motion.div
         className="lh-modal"
         onClick={(e) => e.stopPropagation()}
-        initial={{ scale: 0.96, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        initial={isMobileView() ? { y: 40, opacity: 0 } : { scale: 0.96, opacity: 0 }}
+        animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
+        transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h3 className="lh-h2" style={{ fontSize: 18 }}>
@@ -1429,8 +1439,9 @@ function SheetModal({ title, onClose, html, onExport, onPrint, primary }: any) {
         className="lh-modal"
         style={{ width: "min(640px,100%)", maxHeight: "88vh", display: "flex", flexDirection: "column" }}
         onClick={(e) => e.stopPropagation()}
-        initial={{ scale: 0.96, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        initial={isMobileView() ? { y: 40, opacity: 0 } : { scale: 0.96, opacity: 0 }}
+        animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
+        transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
           <div>
@@ -1901,8 +1912,9 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
         className="lh-modal"
         style={{ width: "min(600px,100%)", maxHeight: "88vh", display: "flex", flexDirection: "column" }}
         onClick={(e) => e.stopPropagation()}
-        initial={{ scale: 0.96, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        initial={isMobileView() ? { y: 40, opacity: 0 } : { scale: 0.96, opacity: 0 }}
+        animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
+        transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
           <div>
@@ -1965,7 +1977,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                     type="checkbox"
                     checked={on}
                     onChange={() => toggle(d.id)}
-                    style={{ accentColor: C.gold, cursor: "pointer", flexShrink: 0 }}
+                    style={{ accentColor: C.action, cursor: "pointer", flexShrink: 0 }}
                   />
                   <span className="lh-ic" style={{ background: c + "22" }}>
                     <Ic size={15} color={c} />
@@ -2006,7 +2018,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
             color: C.sub,
           }}
         >
-          <ClipboardList size={14} color={C.gold} style={{ flexShrink: 0 }} />
+          <ClipboardList size={14} color={C.action} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1 }}>
             The pack opens with a cover sheet: {member.name.split(" ")[0]}'s allergies, conditions, medications, latest
             readings with sources, and the document list · then the {included.length} selected file
@@ -2086,9 +2098,9 @@ const CSS = () => `
 .lh-herometa{font-size:13px;color:${C.sub};margin-top:8px;line-height:1.5}
 .lh-headrow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .lh-pillm{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:7px 14px;cursor:pointer;font-family:inherit;flex-shrink:0}
-.lh-pillm.on{color:${C.text};border-color:${C.gold}66;background:${C.gold}14}
+.lh-pillm.on{color:${C.text};border-color:${C.action}66;background:${C.action}14}
 .lh-cdot{width:8px;height:8px;border-radius:9px;flex-shrink:0}
-.lh-attndot{width:6px;height:6px;border-radius:9px;background:${C.gold}}
+.lh-attndot{width:6px;height:6px;border-radius:9px;background:${C.warning}}
 .lh-addpill{border-style:dashed}
 .lh-infobar{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:linear-gradient(180deg,rgba(216,178,90,.06),${C.panel});border:1px solid ${C.border};border-radius:12px;padding:12px 14px;cursor:pointer;font-family:inherit;margin-bottom:16px}
 .lh-infoshort{flex:1;font-size:14px;color:${C.text}}
@@ -2097,13 +2109,13 @@ const CSS = () => `
 .lh-chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:6px 12px;cursor:pointer;font-family:inherit}
 .lh-chip:hover{background:var(--lpv-raised)}
 .lh-mhead{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
-.lh-btn{display:inline-flex;align-items:center;gap:7px;background:${C.gold};color:var(--lpv-golddark);font-weight:600;font-size:14px;border:0;border-radius:11px;padding:10px 16px;cursor:pointer;font-family:inherit;transition:.15s}
+.lh-btn{display:inline-flex;align-items:center;gap:7px;background:${C.action};color:var(--lpv-actionink);font-weight:600;font-size:14px;border:0;border-radius:11px;padding:10px 16px;min-height:44px;cursor:pointer;font-family:inherit;transition:.15s}
 .lh-btn:hover{filter:brightness(1.06)}.lh-btn:disabled{opacity:.4;cursor:not-allowed}
-.lh-btn-g{display:inline-flex;align-items:center;gap:7px;background:${C.panel2};color:${C.text};font-weight:600;font-size:14px;border:1px solid ${C.border};border-radius:11px;padding:10px 14px;cursor:pointer;font-family:inherit}
+.lh-btn-g{display:inline-flex;align-items:center;gap:7px;background:${C.panel2};color:${C.text};font-weight:600;font-size:14px;border:1px solid ${C.border};border-radius:11px;padding:10px 14px;min-height:44px;cursor:pointer;font-family:inherit}
 .lh-btn-g:hover{background:var(--lpv-raised)}
 .lh-tabs{display:flex;gap:6px;border-bottom:1px solid ${C.border};margin-bottom:18px;overflow-x:auto}
 .lh-tab{display:inline-flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;color:${C.sub};font-size:14px;font-weight:600;padding:10px 12px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-bottom:-1px}
-.lh-tab.on{color:${C.text};border-bottom-color:${C.gold}}
+.lh-tab.on{color:${C.text};border-bottom-color:${C.action}}
 .lh-tc{font-size:11px;background:${C.panel2};border-radius:9px;padding:1px 6px;color:${C.sub}}
 .lh-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .lh-grid-2-1{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px}
@@ -2126,24 +2138,29 @@ const CSS = () => `
 .lh-lnk:hover{color:${C.text}}
 .lh-uprow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
 .lh-up{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:11px;padding:11px 15px;cursor:pointer;font-family:inherit}
-.lh-up:hover{background:var(--lpv-raised);border-color:${C.gold}55}
+.lh-up:hover{background:var(--lpv-raised);border-color:${C.action}55}
 .lh-rec{position:relative;display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid ${C.border}}
 .lh-rec:first-of-type{border-top:0}
 .lh-tl{position:relative;padding-left:20px}
 .lh-tl:before{content:"";position:absolute;left:5px;top:24px;bottom:8px;width:1px;background:${C.border}}
-.lh-tlmon{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${C.gold};margin:14px 0 6px}
+.lh-tlmon{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${C.gold};margin:14px 0 6px}
 .lh-tlrow{position:relative;display:flex;align-items:center;gap:11px;padding:8px 0}
 .lh-tldot{position:absolute;left:-15px;top:18px;width:9px;height:9px;border-radius:9px}
 .lh-lbl{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};margin-bottom:5px}
-.lh-in{width:100%;background:${C.panel2};border:1px solid ${C.border};border-radius:10px;padding:9px 11px;color:${C.text};font-size:14px;outline:none;font-family:inherit}
-.lh-in:focus{border-color:${C.gold}}
+.lh-in{width:100%;background:${C.panel2};border:1px solid ${C.border};border-radius:10px;padding:11px;min-height:44px;color:${C.text};font-size:16px;outline:none;font-family:inherit}
+.lh-in:focus{border-color:${C.action}}
 .lh-overlay{position:fixed;inset:0;z-index:72;background:var(--lpv-scrim);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px}
 .lh-modal{background:var(--lpv-panel);border:1px solid ${C.border};border-radius:18px;width:min(460px,100%);padding:22px;max-height:90vh;overflow:auto}
+@media(max-width:767px){
+.lh-overlay{align-items:flex-end;padding:0}
+.lh-modal{width:100% !important;max-width:100% !important;max-height:88vh;border-radius:24px 24px 0 0;border-bottom:0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+.lh-modal::before{content:"";display:block;width:38px;height:4px;border-radius:99px;background:${C.border};margin:0 auto 14px}
+}
 .lh-preview{background:#f3f4f6;border-radius:10px;padding:10px}
-.lh-x{width:32px;height:32px;border-radius:9px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};cursor:pointer;display:grid;place-items:center}
+.lh-x{width:44px;height:44px;border-radius:9px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};cursor:pointer;display:grid;place-items:center}
 .lh-pick{display:flex;flex-wrap:wrap;gap:6px}
 .lh-pk{font-size:12.5px;font-weight:600;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit}
-.lh-pk.on{color:var(--lpv-golddark);background:${C.gold};border-color:${C.gold}}
+.lh-pk.on{color:var(--lpv-actionink);background:${C.action};border-color:${C.action}}
 .lh-cond{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:4px 10px}
 .lh-cond button{background:0;border:0;color:${C.faint};cursor:pointer;display:inline-flex}
 .lh-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;background:var(--lpv-panel);border:1px solid ${C.border};color:${C.text};padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 16px 50px rgba(0,0,0,.5)}
@@ -2154,7 +2171,7 @@ const CSS = () => `
 .lh-famgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-bottom:18px}
 .lh-famcard{display:flex;align-items:center;gap:10px;text-align:left;background:${C.panel};border:1px solid ${C.border};border-radius:13px;padding:11px 12px;cursor:pointer;font-family:inherit;transition:.15s}
 .lh-famcard:hover{background:${C.panel2}}
-.lh-famcard.on{border-color:${C.gold}77;background:linear-gradient(180deg,rgba(216,178,90,.08),${C.panel})}
+.lh-famcard.on{border-color:${C.action}77;background:${C.panel}}
 .lh-swrail{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 0 12px;margin:0 -2px}
 .lh-swrail::-webkit-scrollbar{display:none}
 .lh-sw{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px;min-height:66px;background:none;border:none;padding:2px;cursor:pointer;font-family:inherit}
