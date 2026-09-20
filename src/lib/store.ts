@@ -24,7 +24,7 @@ import { myPublicKey } from "./vault";
 import { ensureVaultReady } from "./session";
 import type { DocCrypto } from "./vault";
 
-const LS = "lifepack.v4"; // bumped: Indian sample family (stored data from v3 is ignored)
+const LS = "lifepack.v5"; // bumped: Indian sample family (stored data from v3 is ignored)
 const rel = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
 const iso = (n: number) => new Date(Date.now() + n * 86400000).toISOString();
 const id = () => Math.random().toString(36).slice(2, 9);
@@ -140,6 +140,29 @@ const seedDocs: Doc[] = [
   doc("Scan_CTAbdomen_Mar2026", "Medical", "Scan Report", {
     source: "Upload", memberId: "father", medType: "scan", docDate: "2026-03-12",
     doctor: "Dr Kiran Desai", hospital: "HCG Cancer Centre", specialisation: "Radiology", readAt: "2026-03-12",
+  }),
+
+  /* Arjun: an annual checkup, a physician he sees, a dermatology visit, and a dental record.
+     Three specialities and two hospitals, so his own visit picker is not a single option. */
+  doc("HealthCheck_Annual_May2026_ArjunIyer", "Medical", "Lab Report", {
+    source: "Upload", memberId: "you", medType: "lab_report", docDate: "2026-05-02",
+    doctor: "Dr Meera Krishnan", lab: "Manipal Diagnostics", readAt: "2026-05-02",
+  }),
+  doc("Prescription_DrMeeraKrishnan_May2026", "Medical", "Prescription", {
+    source: "Upload", memberId: "you", medType: "prescription", docDate: "2026-05-02",
+    doctor: "Dr Meera Krishnan", hospital: "Manipal Hospital", specialisation: "General Medicine", readAt: "2026-05-02",
+  }),
+  doc("LabReport_LipidProfile_Apr2025", "Medical", "Lab Report", {
+    source: "Upload", memberId: "you", medType: "lab_report", docDate: "2025-04-28",
+    doctor: "Dr Meera Krishnan", lab: "Manipal Diagnostics", readAt: "2025-04-28",
+  }),
+  doc("Prescription_DrNehaKulkarni_Dermatology_Jan2026", "Medical", "Prescription", {
+    source: "Upload", memberId: "you", medType: "prescription", docDate: "2026-01-19",
+    doctor: "Dr Neha Kulkarni", hospital: "Apollo Hospital", specialisation: "Dermatology", readAt: "2026-01-19",
+  }),
+  doc("Prescription_DrSanjayGupta_Dental_Nov2025", "Medical", "Prescription", {
+    source: "Upload", memberId: "you", medType: "prescription", docDate: "2025-11-08",
+    doctor: "Dr Sanjay Gupta", hospital: "Smile Dental Care", specialisation: "Dentistry", readAt: "2025-11-08",
   }),
 
   /* Lakshmi: two specialities. */
@@ -390,10 +413,33 @@ const L = (
 const seedLabs: LabLog[] = [
   /* Every range below is the one printed on that report. The app supplies none. */
 
-  /* Arjun: a healthy adult, two tests, short history. */
-  L("you", "LDL Cholesterol", 118, "mg/dL", "2026-05-02", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
+  /* Arjun: annual checkups over three years, plus a vitamin D course he is following and
+     home blood-pressure readings. Enough series that the picker has something to sort. */
+  L("you", "HbA1c", 5.2, "%", "2024-05-06", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
+  L("you", "HbA1c", 5.4, "%", "2025-04-28", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
   L("you", "HbA1c", 5.5, "%", "2026-05-02", undefined, "hba1c|%", 4, 5.6, "4.0 to 5.6"),
+  L("you", "LDL Cholesterol", 104, "mg/dL", "2024-05-06", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
+  L("you", "LDL Cholesterol", 112, "mg/dL", "2025-04-28", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
+  L("you", "LDL Cholesterol", 118, "mg/dL", "2026-05-02", undefined, "ldl cholesterol|mg/dl", undefined, 100, "under 100"),
+  L("you", "HDL Cholesterol", 46, "mg/dL", "2025-04-28", undefined, "hdl cholesterol|mg/dl", 40, undefined, "over 40"),
+  L("you", "HDL Cholesterol", 43, "mg/dL", "2026-05-02", undefined, "hdl cholesterol|mg/dl", 40, undefined, "over 40"),
+  L("you", "Triglycerides", 168, "mg/dL", "2025-04-28", undefined, "triglycerides|mg/dl", undefined, 150, "under 150"),
+  L("you", "Triglycerides", 194, "mg/dL", "2026-05-02", undefined, "triglycerides|mg/dl", undefined, 150, "under 150"),
+  L("you", "Vitamin D", 11, "ng/mL", "2025-04-28", undefined, "vitamin d|ng/ml", 30, 100, "30 to 100"),
+  L("you", "Vitamin D", 24, "ng/mL", "2025-10-12", undefined, "vitamin d|ng/ml", 30, 100, "30 to 100"),
+  L("you", "Vitamin D", 38, "ng/mL", "2026-05-02", undefined, "vitamin d|ng/ml", 30, 100, "30 to 100"),
+  L("you", "Vitamin B12", 268, "pg/mL", "2026-05-02", undefined, "vitamin b12|pg/ml", 200, 900, "200 to 900"),
+  L("you", "TSH", 2.1, "mIU/L", "2026-05-02", undefined, "tsh|miu/l", 0.4, 4, "0.4 to 4.0"),
+  L("you", "Haemoglobin", 14.6, "g/dL", "2026-05-02", undefined, "haemoglobin|g/dl", 13, 17, "13.0 to 17.0"),
+  L("you", "SGPT", 52, "U/L", "2025-04-28", undefined, "sgpt|u/l", undefined, 45, "under 45"),
+  L("you", "SGPT", 61, "U/L", "2026-05-02", undefined, "sgpt|u/l", undefined, 45, "under 45"),
+  L("you", "Blood Pressure", 128, "mmHg", "2026-02-14", 84, "blood pressure|mmhg"),
+  L("you", "Blood Pressure", 124, "mmHg", "2026-03-21", 82, "blood pressure|mmhg"),
+  L("you", "Blood Pressure", 126, "mmHg", "2026-04-11", 83, "blood pressure|mmhg"),
   L("you", "Blood Pressure", 122, "mmHg", "2026-05-02", 80, "blood pressure|mmhg"),
+  L("you", "Weight", 78.4, "kg", "2026-02-14", undefined, "weight|kg"),
+  L("you", "Weight", 77.1, "kg", "2026-03-21", undefined, "weight|kg"),
+  L("you", "Weight", 76.2, "kg", "2026-05-02", undefined, "weight|kg"),
 
   /* Divya: anaemia followed over a year, ferritin and haemoglobin moving together. */
   L("spouse", "Haemoglobin", 9.8, "g/dL", "2025-06-14", undefined, "haemoglobin|g/dl", 12, 15, "12.0 to 15.0"),
@@ -467,6 +513,8 @@ const seedMeds: Medication[] = [
   { id: id(), memberId: "father", name: "Bicalutamide", dose: "50 mg", freq: "1-0-0", refillBy: rel(26), remaining: 30 },
   { id: id(), memberId: "mother", name: "Levothyroxine", dose: "75 mcg", freq: "1-0-0", refillBy: rel(9), remaining: 12 },
   { id: id(), memberId: "mother", name: "Cholecalciferol", dose: "60000 IU", freq: "Weekly", refillBy: rel(48), remaining: 6 },
+  { id: id(), memberId: "you", name: "Cholecalciferol", dose: "60000 IU", freq: "Weekly", refillBy: rel(33), remaining: 5 },
+  { id: id(), memberId: "you", name: "Methylcobalamin", dose: "1500 mcg", freq: "1-0-0", refillBy: rel(14), remaining: 18 },
   { id: id(), memberId: "spouse", name: "Ferrous ascorbate", dose: "100 mg", freq: "1-0-0", refillBy: rel(11), remaining: 14 },
   /* No refill date printed on the prescription: the row must simply omit the refill line. */
   { id: id(), memberId: "son", name: "Salbutamol inhaler", dose: "100 mcg", freq: "As needed", refillBy: "" },
@@ -483,6 +531,8 @@ const seedReminders: Reminder[] = [
   { id: id(), memberId: "mother", title: "TSH recheck", kind: "appointment", due: rel(40), done: false },
   { id: id(), memberId: "spouse", title: "Haemoglobin recheck", kind: "appointment", due: rel(35), done: false },
   { id: id(), memberId: "you", title: "Annual health checkup", kind: "appointment", due: rel(70), done: false },
+  { id: id(), memberId: "you", title: "Vitamin D recheck", kind: "appointment", due: rel(44), done: false },
+  { id: id(), memberId: "you", title: "Methylcobalamin refill", kind: "refill", due: rel(14), done: false },
   { id: id(), memberId: "son", title: "MMR booster due", kind: "vaccination", due: rel(15), done: false },
   { id: id(), memberId: "son", title: "Paediatric dental checkup", kind: "appointment", due: rel(33), done: false },
 ];
@@ -587,7 +637,7 @@ const BUNDLE_KEYS: (keyof Bundle)[] = [
   "handoff",
   "customPacks",
 ];
-const LS_SAVED = "lifepack.v4.saved"; // { sample?: Bundle, empty?: Bundle }
+const LS_SAVED = "lifepack.v5.saved"; // { sample?: Bundle, empty?: Bundle }
 type Saved = { sample?: Bundle; empty?: Bundle };
 function loadSaved(): Saved {
   if (typeof window === "undefined") return {};
