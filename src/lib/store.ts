@@ -52,10 +52,15 @@ interface State {
   theme: "dark" | "light";
   notifications: boolean;
   dataMode: "sample" | "empty"; // empty = 1Shelf-style day-0; sample = seeded family
+  seedVersion?: number; // which build of the sample family is stored
   currency: string; // home currency for display and totals
 }
 
 /* ── members (enterprise-neutral) ── */
+/* Bump when the seeded sample family changes. A stored sample bundle from an older version is
+   replaced on next load; a real vault (dataMode "empty") is never touched. */
+const SEED_VERSION = 3;
+
 const seedMembers: Member[] = [
   { id: "you", name: "Arjun Iyer", relation: "Self", color: "#5B8DEF", dob: "1985-06-14", bloodGroup: "O+", access: "Owner" },
   { id: "spouse", name: "Divya Iyer", relation: "Spouse", color: "#9B7BE8", dob: "1987-02-09", bloodGroup: "A+", access: "Full member" },
@@ -571,6 +576,7 @@ const DEFAULT: State = {
   customPacks: [],
   theme: "dark",
   notifications: false,
+  seedVersion: SEED_VERSION,
   currency: defaultCurrency(),
 };
 // user-scoped bundles preserved across a mode switch (so switching back is instant and lossless)
@@ -618,8 +624,22 @@ function load(): State {
     const raw = localStorage.getItem(LS);
     if (raw) {
       const p = JSON.parse(raw);
+      /* Stale demo content: rebuild the sample family from code, keeping the person's own
+         settings and any real vault they have saved alongside it. */
+      if ((p.dataMode ?? "empty") === "sample" && p.seedVersion !== SEED_VERSION) {
+        return {
+          ...DEFAULT,
+          seedVersion: SEED_VERSION,
+          onboarded: p.onboarded ?? DEFAULT.onboarded,
+          theme: p.theme ?? "dark",
+          notifications: p.notifications ?? false,
+          currency: p.currency ?? defaultCurrency(),
+          dataMode: "sample",
+        };
+      }
       return {
         ...DEFAULT,
+        seedVersion: SEED_VERSION,
         ...p,
         care: p.care ?? DEFAULT.care,
         labs: p.labs ?? DEFAULT.labs,
