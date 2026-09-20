@@ -54,10 +54,12 @@ export function extractHoldingFields(text: string): Partial<Holding> {
     }
   }
 
-  const ref = t.match(/(?:policy|account|a\/c|folio|loan)\s*(?:number|no\.?|#|id)?\s*[:\-]?\s*([A-Z0-9][A-Z0-9\-\/]{5,})/i);
-  if (ref) {
-    const digits = ref[1].replace(/\D/g, "");
-    if (digits.length >= 4) out.accountRef = "•" + digits.slice(-4);
+  for (const m of t.matchAll(/(?:policy|account|a\/c|folio|loan)\s*(?:number|no\.?|#|id)?\s*[:\-]?\s*([A-Z0-9][A-Z0-9\-\/]{5,})/gi)) {
+    const digits = m[1].replace(/\D/g, "");
+    if (digits.length >= 4) {
+      out.accountRef = "•" + digits.slice(-4);
+      break;
+    }
   }
 
   const renewal = findDate(t, ["renewal date", "next premium due", "premium due date", "policy expiry", "valid till", "valid up ?to", "due date"]);
