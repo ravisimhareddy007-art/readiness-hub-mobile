@@ -2272,18 +2272,26 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
   /* Every doctor, hospital and specialisation this member's own records name. */
   const targets: VisitTarget[] = useMemo(() => visitTargets(docs, member.id), [docs, member.id]);
   const nextAppt = appts[0];
-  const [chosen, setChosen] = useState(0);
+  /* "I am seeing Dr Rao on Thursday" is how people think about a visit, so open on the doctor the
+     next appointment names when it names one, and otherwise on the most recent doctor. */
+  const [chosen, setChosen] = useState(() => {
+    const title = (appts[0]?.title || "").toLowerCase();
+    const named = targets.findIndex((t) => t.kind === "doctor" && title.includes((t.value || "").toLowerCase()));
+    return named >= 0 ? named : 0;
+  });
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [picking, setPicking] = useState(false);
+  const [q, setQ] = useState("");
   const cur = targets[chosen] || targets[targets.length - 1];
   const curLabel = targetLabel(cur);
   const packDocs: Doc[] = useMemo(() => selectVisitDocs(docs, member.id, cur), [docs, member.id, cur]);
   const included = packDocs.filter((d) => !excluded.has(d.id));
   /* Which readings a visit cares about, taken from the specialisation on the matching records. */
-  const KIND_LABEL: Record<string, string> = {
-    doctor: "Doctor",
-    hospital: "Hospital or lab",
-    specialisation: "Specialisation",
+  const GROUP_LABEL: Record<string, string> = {
+    doctor: "Doctors",
+    hospital: "Hospitals and labs",
+    specialisation: "Specialisations",
     general: "Everything recent",
   };
   const toggle = (id: string) =>
@@ -2337,30 +2345,137 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
             <X size={16} />
           </button>
         </div>
-        {nextAppt && (
-          <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 10 }}>
-            Next appointment: {nextAppt.title} on {fmt(nextAppt.due)}.
-          </div>
-        )}
-        <div className="lh-lbl">Who is this visit with?</div>
-        <div className="lh-pick" style={{ marginBottom: 6 }}>
-          {targets.map((t, i) => (
-            <button key={t.kind + (t.value || "")} className={"lh-pk" + (chosen === i ? " on" : "")} onClick={() => pick(i)}>
-              {targetLabel(t)}
+        {picking ? (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <button
+                onClick={() => setPicking(false)}
+                className="lh-x"
+                title="Back" aria-label="Back"
+                style={{ flexShrink: 0 }}
+              >
+                <ChevronRight size={15} style={{ transform: "rotate(180deg)" }} />
+              </button>
+              <input
+                className="lh-in"
+                autoFocus
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search doctors, specialisations, hospitals"
+              />
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
+              {(["doctor", "specialisation", "hospital", "general"] as const).map((kind) => {
+                const group = targets
+                  .map((t, i) => ({ t, i }))
+                  .filter(
+                    ({ t }) =>
+                      t.kind === kind && (!q.trim() || targetLabel(t).toLowerCase().includes(q.trim().toLowerCase())),
+                  );
+                if (!group.length) return null;
+                return (
+                  <div key={kind}>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: 0.5,
+                        textTransform: "uppercase",
+                        color: C.faint,
+                        padding: "10px 13px 6px",
+                        background: C.panel2,
+                      }}
+                    >
+                      {GROUP_LABEL[kind]}
+                    </div>
+                    {group.map(({ t, i }) => {
+                      const count = selectVisitDocs(docs, member.id, t).length;
+                      return (
+                        <button
+                          key={t.kind + (t.value || "")}
+                          onClick={() => {
+                            pick(i);
+                            setPicking(false);
+                            setQ("");
+                          }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            width: "100%",
+                            minHeight: 48,
+                            padding: "10px 13px",
+                            background: "none",
+                            border: "none",
+                            borderTop: `1px solid ${C.border}`,
+                            cursor: "pointer",
+                            textAlign: "left",
+                            fontFamily: "inherit",
+                          }}
+                        >
+                          <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: C.text, fontWeight: chosen === i ? 700 : 500 }}>
+                            {targetLabel(t)}
+                          </span>
+                          <span style={{ fontSize: 12.5, color: C.sub, whiteSpace: "nowrap" }}>
+                            {count} doc{count === 1 ? "" : "s"}
+                          </span>
+                          {chosen === i && <Check size={15} color={C.action} />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+              {targets.filter((t) => !q.trim() || targetLabel(t).toLowerCase().includes(q.trim().toLowerCase())).length === 0 && (
+                <div style={{ padding: 20, fontSize: 13.5, color: C.faint }}>Nothing matches that.</div>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            {nextAppt && (
+              <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 10 }}>
+                Next appointment: {nextAppt.title} on {fmt(nextAppt.due)}.
+              </div>
+            )}
+            <button
+              onClick={() => setPicking(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                width: "100%",
+                minHeight: 52,
+                padding: "10px 13px",
+                marginBottom: 12,
+                borderRadius: 12,
+                border: `1px solid ${C.border}`,
+                background: C.panel2,
+                cursor: "pointer",
+                textAlign: "left",
+                fontFamily: "inherit",
+              }}
+            >
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 12, color: C.faint }}>{GROUP_LABEL[cur.kind]}</span>
+                <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: C.text, marginTop: 1 }}>
+                  {curLabel}
+                </span>
+              </span>
+              <span style={{ fontSize: 12.5, color: C.sub, whiteSpace: "nowrap" }}>
+                {packDocs.length} doc{packDocs.length === 1 ? "" : "s"}
+              </span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: C.action, whiteSpace: "nowrap" }}>Change</span>
             </button>
-          ))}
-        </div>
-        {targets.length === 1 && (
-          <div style={{ fontSize: 12.5, color: C.sub, margin: "0 0 12px", lineHeight: 1.5 }}>
-            Doctors, hospitals, and specialisations appear here once {member.name.split(" ")[0]} has records naming
-            them. Add a prescription or report and they are picked up automatically.
-          </div>
+            {targets.length === 1 && (
+              <div style={{ fontSize: 12.5, color: C.sub, margin: "0 0 12px", lineHeight: 1.5 }}>
+                Doctors, hospitals, and specialisations appear here once {member.name.split(" ")[0]} has records naming
+                them. Add a prescription or report and they are picked up automatically.
+              </div>
+            )}
+          </>
         )}
-        <div style={{ fontSize: 12, color: C.faint, marginBottom: 12 }}>
-          {KIND_LABEL[cur.kind]}
-          {cur.kind !== "general" ? " named on this member's records" : " from the last 12 months"}
-          {` · ${packDocs.length} matching document${packDocs.length === 1 ? "" : "s"}`}
-        </div>
+        {!picking && (
         <div style={{ flex: 1, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
           {packDocs.length === 0 ? (
             <div style={{ padding: 20, fontSize: 13.5, color: C.faint, lineHeight: 1.6 }}>
@@ -2417,6 +2532,8 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
             })
           )}
         </div>
+        )}
+        {!picking && (
         <div
           style={{
             display: "flex",
@@ -2441,6 +2558,8 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
             Preview cover
           </button>
         </div>
+        )}
+        {!picking && (
         <button
           className="lh-btn"
           style={{ width: "100%", justifyContent: "center", marginTop: 12, opacity: busy ? 0.45 : 1 }}
@@ -2449,6 +2568,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
         >
           <Download size={16} /> {busy ? "Packing…" : `Download visit pack (cover + ${included.length})`}
         </button>
+        )}
       </motion.div>
     </div>
   );
@@ -2526,7 +2646,8 @@ const CSS = () => `
 .lh-btn:hover{filter:brightness(1.06)}.lh-btn:disabled{opacity:.4;cursor:not-allowed}
 .lh-btn-g{display:inline-flex;align-items:center;gap:7px;background:${C.panel2};color:${C.text};font-weight:600;font-size:14px;border:1px solid ${C.border};border-radius:11px;padding:10px 14px;min-height:44px;cursor:pointer;font-family:inherit}
 .lh-btn-g:hover{background:var(--lpv-raised)}
-.lh-tabs{display:flex;gap:6px;border-bottom:1px solid ${C.border};margin-bottom:18px;overflow-x:auto}
+.lh-tabs{display:flex;gap:6px;border-bottom:1px solid ${C.border};margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
+.lh-tabs::-webkit-scrollbar{display:none}
 .lh-tab{display:inline-flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;color:${C.sub};font-size:14px;font-weight:600;padding:10px 12px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-bottom:-1px}
 .lh-tab.on{color:${C.text};border-bottom-color:${C.action}}
 .lh-tc{font-size:11px;background:${C.panel2};border-radius:9px;padding:1px 6px;color:${C.sub}}
@@ -2603,6 +2724,7 @@ const CSS = () => `
 .lh-root input,.lh-root select,.lh-root textarea{min-width:0}
 .lh-h2{font-size:17px !important;letter-spacing:-0.015em}
 .lh-tab{font-size:13px;padding:9px 8px;gap:0}
+.lh-tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px 14px;padding:6px 14px 0}
 .lh-tab>svg{display:none}
 .lh-pane .lh-card{padding:14px !important}
 .lh-sechead-tab{display:none}
