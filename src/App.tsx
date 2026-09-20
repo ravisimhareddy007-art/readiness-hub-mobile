@@ -3029,7 +3029,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         position: "fixed",
         inset: 0,
         zIndex: 72,
-        background: "rgba(4,7,15,.62)",
+        background: "var(--lpv-scrim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -3125,7 +3125,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
               style={{
                 fontSize: 12,
                 color: T.gold,
-                background: T.gold + "12",
+                background: T.gold + "1F",
                 border: `1px solid ${T.gold}44`,
                 borderRadius: 9,
                 padding: "8px 11px",
@@ -3278,7 +3278,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
         position: "fixed",
         inset: 0,
         zIndex: 72,
-        background: "rgba(4,7,15,.6)",
+        background: "var(--lpv-scrim)",
         display: "flex",
         justifyContent: "flex-end",
       }}
@@ -3592,7 +3592,7 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
         position: "fixed",
         inset: 0,
         zIndex: 75,
-        background: "rgba(4,7,15,.62)",
+        background: "var(--lpv-scrim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -4587,7 +4587,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
 
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 72, background: "rgba(4,7,15,.5)" }} />
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 72, background: "var(--lpv-scrim)" }} />
       <aside
         style={{
           position: "fixed",
@@ -4849,7 +4849,7 @@ function AddMember({ onClose, save }: any) {
         position: "fixed",
         inset: 0,
         zIndex: 72,
-        background: "rgba(4,7,15,.62)",
+        background: "var(--lpv-scrim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -5368,7 +5368,7 @@ function Wealth({ store, go, toast }: any) {
                 display: "flex",
                 alignItems: "center",
                 gap: 11,
-                background: T.coral + "14",
+                background: T.coral + "1F",
                 border: `1px solid ${T.coral}66`,
                 borderRadius: 12,
                 padding: "12px 16px",
@@ -6377,7 +6377,7 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
         position: "fixed",
         inset: 0,
         zIndex: 72,
-        background: "rgba(4,7,15,.62)",
+        background: "var(--lpv-scrim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -6622,7 +6622,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
         position: "fixed",
         inset: 0,
         zIndex: 72,
-        background: "rgba(4,7,15,.62)",
+        background: "var(--lpv-scrim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -6659,7 +6659,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
             padding: evidence ? "14px" : "22px 14px",
             borderRadius: 12,
             border: `1.5px dashed ${evidence ? T.mint + "77" : T.border}`,
-            background: evidence ? T.mint + "0d" : T.raised + "66",
+            background: evidence ? T.mint + "1F" : T.raised,
             cursor: "pointer",
             textAlign: "center",
           }}
@@ -6938,7 +6938,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
         position: "fixed",
         inset: 0,
         zIndex: 75,
-        background: "rgba(4,7,15,.62)",
+        background: "var(--lpv-scrim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -7203,7 +7203,7 @@ function NomineeModal({ holding, onClose, onSave }: any) {
         position: "fixed",
         inset: 0,
         zIndex: 75,
-        background: "rgba(4,7,15,.62)",
+        background: "var(--lpv-scrim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -7278,7 +7278,7 @@ function EstateSheet({ store, onClose, toast }: any) {
         position: "fixed",
         inset: 0,
         zIndex: 75,
-        background: "rgba(4,7,15,.62)",
+        background: "var(--lpv-scrim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -7347,7 +7347,7 @@ function buildEstate(store: any): string {
   const trusted = store.members.filter((mm: Member) => mm.access === "Full member" || mm.access === "Emergency access");
   const th = (t: string) => `<th style="text-align:left;padding:6px 10px;font-size:12px;color:#6b7280">${t}</th>`;
   const secTable = (title: string, arr: Holding[], showNom: boolean) =>
-    `<h3 style="margin:18px 0 6px;font-size:14px;color:#111827">${title}</h3><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Holding")}${th("Type")}${th("Where")}${th("Value")}${showNom ? th("Nominee") : ""}${th("Document")}${th("How to access")}</tr>${arr.map((h) => `<tr><td style="padding:6px 10px;font-weight:600">${h.name}</td><td style="padding:6px 10px">${h.type}</td><td style="padding:6px 10px;color:#6b7280">${h.institution || ""} ${h.accountRef || ""}</td><td style="padding:6px 10px">${m2(h.value)}</td>${showNom ? `<td style="padding:6px 10px;color:${h.nominee ? "#111827" : "#b91c1c"};font-weight:${h.nominee ? 400 : 700}">${h.nominee ? h.nomineeName || "named" : "NOT NAMED"}</td>` : ""}<td style="padding:6px 10px;color:#6b7280">${dn(h.docId)}</td><td style="padding:6px 10px;color:#374151">${h.accessNote || "\u2014"}</td></tr>`).join("") || `<tr><td colspan="6" style="padding:6px 10px;color:#9ca3af">None</td></tr>`}</table>`;
+    `<h3 style="margin:18px 0 6px;font-size:14px;color:#111827">${title}</h3><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Holding")}${th("Type")}${th("Where")}${th("Value")}${showNom ? th("Nominee") : ""}${th("Document")}${th("How to access")}</tr>${arr.map((h) => `<tr><td style="padding:6px 10px;font-weight:600">${h.name}</td><td style="padding:6px 10px">${h.type}</td><td style="padding:6px 10px;color:#6b7280">${h.institution || ""} ${h.accountRef || ""}</td><td style="padding:6px 10px">${m2(h.value)}</td>${showNom ? `<td style="padding:6px 10px;color:${h.nominee ? "#111827" : "#b91c1c"};font-weight:${h.nominee ? 400 : 700}">${h.nominee ? h.nomineeName || "named" : "NOT NAMED"}</td>` : ""}<td style="padding:6px 10px;color:#6b7280">${dn(h.docId)}</td><td style="padding:6px 10px;color:#374151">${h.accessNote || "\u2014"}</td></tr>`).join("") || `<tr><td colspan="6" style="padding:6px 10px;color:#6b7280">None</td></tr>`}</table>`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>Family Summary</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111827;max-width:760px;margin:20px auto;padding:0 20px;background:#fff">
   <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #D8B25A;padding-bottom:12px"><div><div style="font-weight:800;font-size:20px">ReadiNes · Family Summary</div><div style="color:#6b7280;font-size:13px">What your family would need to find and claim everything</div></div><div style="text-align:right;color:#6b7280;font-size:12px">Prepared ${new Date().toLocaleString()}</div></div>
   <div style="display:flex;gap:26px;margin-top:16px">
@@ -7360,7 +7360,7 @@ function buildEstate(store: any): string {
   ${secTable("Loans", L_, false)}
   ${secTable("Insurance", C_, true)}
   <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">Money between people</h3>
-  <table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Who")}${th("What for")}${th("Amount")}${th("Direction")}${th("Evidence")}</tr>${(store.transactions || []).filter((t: Transaction) => !t.followUpDone).map((t: Transaction) => `<tr><td style="padding:6px 10px;font-weight:600">${t.counterparty || "\u2014"}</td><td style="padding:6px 10px">${t.purpose}</td><td style="padding:6px 10px">${m2(t.amount)}</td><td style="padding:6px 10px">${t.direction === "paid" ? "owed to the family" : "the family owes"}</td><td style="padding:6px 10px;color:${t.docId ? "#111827" : "#b91c1c"};font-weight:${t.docId ? 400 : 700}">${t.docId ? dn(t.docId) : "NONE"}</td></tr>`).join("") || `<tr><td colspan="5" style="padding:6px 10px;color:#9ca3af">None recorded</td></tr>`}</table>
+  <table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Who")}${th("What for")}${th("Amount")}${th("Direction")}${th("Evidence")}</tr>${(store.transactions || []).filter((t: Transaction) => !t.followUpDone).map((t: Transaction) => `<tr><td style="padding:6px 10px;font-weight:600">${t.counterparty || "\u2014"}</td><td style="padding:6px 10px">${t.purpose}</td><td style="padding:6px 10px">${m2(t.amount)}</td><td style="padding:6px 10px">${t.direction === "paid" ? "owed to the family" : "the family owes"}</td><td style="padding:6px 10px;color:${t.docId ? "#111827" : "#b91c1c"};font-weight:${t.docId ? 400 : 700}">${t.docId ? dn(t.docId) : "NONE"}</td></tr>`).join("") || `<tr><td colspan="5" style="padding:6px 10px;color:#6b7280">None recorded</td></tr>`}</table>
   <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">If something happens: first steps for the family</h3>
   <ol style="margin:0;padding-left:18px;line-height:1.8;color:#374151;font-size:13px">
     ${C_.map((c) => `<li>File the ${c.type.toLowerCase()} claim with <b>${c.institution || "the insurer"}</b>${c.accessNote ? ` — ${c.accessNote}` : ""}${c.nominee ? ` (nominee: ${c.nomineeName || "named"})` : ` <span style="color:#b91c1c;font-weight:700">(no nominee — expect a legal-heir process)</span>`}</li>`).join("")}
@@ -7376,7 +7376,7 @@ function buildEstate(store: any): string {
     ${L_.length ? `<li>Outstanding liabilities to settle or transfer: ${L_.map((l) => `${l.name} (${l.institution || ""})`).join(", ")}</li>` : ""}
   </ol>
   <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">Who can help</h3><ul style="margin:0;padding-left:18px;line-height:1.7;color:#374151;font-size:13px">${trusted.map((mm: Member) => `<li>${mm.name} \u2014 ${mm.relation} (${mm.access})</li>`).join("") || "<li>No trusted contacts set</li>"}</ul>
-  <p style="margin-top:22px;font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:10px">Prepared by ReadiNes from your own records. Account references are masked. This is an organizational summary \u2014 not a will, and not legal, tax, or financial advice. Confirm nominee and succession details with each institution and a professional.</p>
+  <p style="margin-top:22px;font-size:12px;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:10px">Prepared by ReadiNes from your own records. Account references are masked. This is an organizational summary \u2014 not a will, and not legal, tax, or financial advice. Confirm nominee and succession details with each institution and a professional.</p>
   </body></html>`;
 }
 
@@ -7503,7 +7503,7 @@ function DesignSystem({ store }: any) {
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           {Object.entries(DS.radius).map(([k, v]) => (
             <span key={k} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-              <span style={{ width: 52, height: 40, borderRadius: v, border: `1.5px solid ${SEM.action}`, background: SEM.action + "14" }} />
+              <span style={{ width: 52, height: 40, borderRadius: v, border: `1.5px solid ${SEM.action}`, background: SEM.action + "22" }} />
               <span style={{ fontSize: 12, color: T.muted }}>{k} · {v}</span>
             </span>
           ))}
@@ -7888,7 +7888,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         position: "fixed",
         inset: 0,
         zIndex: 72,
-        background: "rgba(4,7,15,.62)",
+        background: "var(--lpv-scrim)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

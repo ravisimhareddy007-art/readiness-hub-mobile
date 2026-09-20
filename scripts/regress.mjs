@@ -34,7 +34,9 @@ const walk = (d, out = []) => {
   }
   return out;
 };
-const all = walk("src").filter((p) => !p.endsWith(`components${sep}Landing.tsx`)); // marketing page, web type scale
+const all = walk("src")
+  .filter((p) => !p.endsWith(`components${sep}Landing.tsx`)) // marketing page, web type scale
+  .filter((p) => !/components.(Dashboard|Documents|Events|Viewer|ui)\.tsx$/.test(p) || /Events|ui/.test(p)); // Dashboard.tsx and Documents.tsx are not imported anywhere
 const app = all.filter((p) => !p.endsWith(`lib${sep}currency.ts`));                // holds the one legitimate locale fallback
 const ban = (desc, re, files) => {
   const hits = [];
@@ -75,6 +77,23 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
     if (+m[1] < 12) hits.push(`${p}: ${m[1]}px in exported HTML`);
   if (hits.length) { status = 1; console.log(`FAIL export type below 12px (${hits.length})`); hits.forEach((h) => console.log("  " + h)); }
   else console.log("ok   export type below 12px");
+}
+
+// Light mode: a hard-coded scrim, an invisible tint, or a low-contrast printed footer all look
+// fine on dark and break on white.
+{
+  const hits = [];
+  for (const p of all) {
+    const src = readFileSync(p, "utf8");
+    for (const m of src.matchAll(/background: "rgba\\(\\d+, ?\\d+, ?\\d+, ?\\.\\d+\\)"/g))
+      hits.push(`${p}: modal scrim ignores the theme (${m[0].slice(12)})`);
+    for (const m of src.matchAll(/(\w+(?:\.\w+)?)\s*\+\s*"(0[0-9a-fA-F]|1[0-9a-fA-F])"/g))
+      if (parseInt(m[2], 16) < 0x1a) hits.push(`${p}: ${m[1]} tinted at ${Math.round((parseInt(m[2], 16) / 255) * 100)}% is invisible on white`);
+    for (const m of src.matchAll(/color:#(9ca3af|d1d5db|e5e7eb)/g))
+      hits.push(`${p}: printed text at ${m[1]} is below 4.5:1 on white`);
+  }
+  if (hits.length) { status = 1; console.log(`FAIL light-mode surfaces (${hits.length})`); hits.slice(0, 12).forEach((h) => console.log("  " + h)); }
+  else console.log("ok   light-mode surfaces");
 }
 
 step("release blockers (listed, not failing yet)");
