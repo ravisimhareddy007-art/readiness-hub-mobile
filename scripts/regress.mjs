@@ -96,6 +96,19 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
   else console.log("ok   light-mode surfaces");
 }
 
+// Anything the app reads from a document must be correctable by the person who owns it.
+{
+  const hits = [];
+  const hc = readFileSync("src/components/Healthcare.tsx", "utf8");
+  if (!/function EditRecord\(/.test(hc)) hits.push("no way to correct an extracted record");
+  if (!/s\.updateDoc\(/.test(hc)) hits.push("the record index is written but never editable");
+  for (const fld of ["doctor", "hospital", "specialisation"])
+    if (!new RegExp(`setF\\(\\{ \\.\\.\\.f, ${fld}:`).test(hc)) hits.push(`${fld} cannot be corrected`);
+  if (!/onRemoveReading/.test(hc)) hits.push("a misread reading cannot be removed from its record");
+  if (hits.length) { status = 1; console.log(`FAIL extracted data is not correctable (${hits.length})`); hits.forEach((h) => console.log("  " + h)); }
+  else console.log("ok   extracted data is correctable");
+}
+
 step("release blockers (listed, not failing yet)");
 let dev = 0;
 for (const p of all) readFileSync(p, "utf8").split("\n").forEach((l, i) => { if (/DEV ONLY/.test(l)) { dev++; console.log(`  ${p}:${i + 1}: ${l.trim().slice(0, 120)}`); } });

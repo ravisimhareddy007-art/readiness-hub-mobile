@@ -9,6 +9,7 @@ import {
   Download,
   Printer,
   Users,
+  Pencil,
   Pill as PillIcon,
   FlaskConical,
   Stethoscope,
@@ -194,6 +195,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
      "family" is now the manage-family view, reached deliberately. */
   const [mView, setMView] = useState<"family" | "person">("person");
   const [confirmDel, setConfirmDel] = useState<Member | null>(null);
+  const [editRec, setEditRec] = useState<Doc | null>(null);
   const [shownSeries, setShownSeries] = useState<Set<string> | null>(null);
   const [pickSeries, setPickSeries] = useState(false);
   const [addSheet, setAddSheet] = useState(false);
@@ -1345,7 +1347,28 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   const K = KIND[r.medType || "other"] || KIND.other;
                   const Ic = K.icon;
                   return (
-                    <div key={r.id} className="lh-rec" onClick={() => setViewDoc(r)} style={{ cursor: "pointer" }}>
+                    <div key={r.id} className="lh-rec" style={{ position: "relative" }}>
+                      <button
+                        onClick={() => setEditRec(r)}
+                        title="Correct what was read" aria-label="Correct what was read"
+                        style={{
+                          position: "absolute",
+                          right: 6,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          minWidth: 44,
+                          minHeight: 44,
+                          display: "grid",
+                          placeItems: "center",
+                          background: "none",
+                          border: "none",
+                          color: C.sub,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Pencil size={15} />
+                      </button>
+                      <div onClick={() => setViewDoc(r)} style={{ cursor: "pointer", display: "contents" }}>
                       <span
                         style={{
                           position: "absolute",
@@ -1380,6 +1403,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                             )}
                           </div>
                         )}
+                      </div>
                       </div>
                     </div>
                   );
@@ -1484,6 +1508,22 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               </div>
             </motion.div>
           </div>
+        )}
+        {editRec && (
+          <EditRecord
+            doc={editRec}
+            labs={s.labs}
+            onClose={() => setEditRec(null)}
+            onRemoveReading={(lid: string) => {
+              s.removeLab(lid);
+              toast("Reading removed");
+            }}
+            onSave={(patch: Partial<Doc>) => {
+              s.updateDoc(editRec.id, patch);
+              toast("Record updated");
+              setEditRec(null);
+            }}
+          />
         )}
         {addSheet && (
           <div className="lh-overlay" onClick={() => setAddSheet(false)}>
@@ -1973,6 +2013,103 @@ function LogReading({ member, vitals, onClose, save }: any) {
   );
 
 }
+function EditRecord({ doc, labs, onClose, onSave, onRemoveReading }: any) {
+  const [f, setF] = useState({
+    docType: doc.docType || "",
+    doctor: doc.doctor || "",
+    hospital: doc.hospital || "",
+    specialisation: doc.specialisation || "",
+    lab: doc.lab || "",
+    docDate: (doc.docDate || doc.addedAt || "").slice(0, 10),
+  });
+  const mine = labs.filter((l: LabLog) => l.sourceDocId === doc.id);
+  return (
+    <Modal title="Correct this record" onClose={onClose}>
+      <p style={{ fontSize: 13, color: C.sub, margin: "0 0 14px", lineHeight: 1.5 }}>
+        {doc.readAt
+          ? "These were read from the document. Fix anything that came out wrong: a visit is assembled from them."
+          : "Nothing was read from this document. Fill in what it says so it can be found later."}
+      </p>
+      <Lbl>What it is</Lbl>
+      <input className="lh-in" value={f.docType} onChange={(e) => setF({ ...f, docType: e.target.value })} placeholder="Prescription, Lab Report, Scan" />
+      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+        <div style={{ flex: 1 }}>
+          <Lbl>Doctor</Lbl>
+          <input className="lh-in" value={f.doctor} onChange={(e) => setF({ ...f, doctor: e.target.value })} placeholder="Dr Meera Krishnan" />
+        </div>
+        <div style={{ flex: 1 }}>
+          <Lbl>Date on it</Lbl>
+          <input className="lh-in" type="date" value={f.docDate} onChange={(e) => setF({ ...f, docDate: e.target.value })} />
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+        <div style={{ flex: 1 }}>
+          <Lbl>Hospital or clinic</Lbl>
+          <input className="lh-in" value={f.hospital} onChange={(e) => setF({ ...f, hospital: e.target.value })} placeholder="Fortis Hospital" />
+        </div>
+        <div style={{ flex: 1 }}>
+          <Lbl>Specialisation</Lbl>
+          <input className="lh-in" value={f.specialisation} onChange={(e) => setF({ ...f, specialisation: e.target.value })} placeholder="Cardiology" />
+        </div>
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <Lbl>Laboratory</Lbl>
+        <input className="lh-in" value={f.lab} onChange={(e) => setF({ ...f, lab: e.target.value })} placeholder="Apollo Diagnostics" />
+      </div>
+      {mine.length > 0 && (
+        <div style={{ marginTop: 18 }}>
+          <Lbl>Readings taken from this record</Lbl>
+          <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+            {mine.map((l: LabLog, i: number) => (
+              <div
+                key={l.id}
+                style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 11px", borderTop: i ? `1px solid ${C.border}` : "none" }}
+              >
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: C.text }}>
+                  {l.metric}{" "}
+                  <b>
+                    {l.qualifier || ""}
+                    {l.value}
+                    {l.value2 ? `/${l.value2}` : ""}
+                  </b>{" "}
+                  <span style={{ color: C.sub }}>{l.unit}</span>
+                </span>
+                <button
+                  className="lh-ib"
+                  onClick={() => onRemoveReading(l.id)}
+                  title="Remove this reading" aria-label="Remove this reading"
+                  style={{ minWidth: 44, minHeight: 44 }}
+                >
+                  <Trash2 size={14} color={C.faint} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: 12, color: C.faint, marginTop: 6, lineHeight: 1.5 }}>
+            A value that was misread should be removed here and logged by hand with the number printed on the report.
+          </p>
+        </div>
+      )}
+      <button
+        className="lh-btn"
+        style={{ width: "100%", justifyContent: "center", marginTop: 18 }}
+        onClick={() =>
+          onSave({
+            docType: f.docType.trim() || doc.docType,
+            doctor: f.doctor.trim() || undefined,
+            hospital: f.hospital.trim() || undefined,
+            specialisation: f.specialisation.trim() || undefined,
+            lab: f.lab.trim() || undefined,
+            docDate: f.docDate || undefined,
+          })
+        }
+      >
+        Save corrections
+      </button>
+    </Modal>
+  );
+}
+
 function ConfirmRemove({ member, onClose, onYes }: any) {
   const first = member.name.split(" ")[0];
   return (
