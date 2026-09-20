@@ -4824,6 +4824,23 @@ function Wealth({ store, go, toast }: any) {
   const [addH, setAddH] = useState(false);
   const [actSheet, setActSheet] = useState(false);
   const [docPick, setDocPick] = useState(false);
+  const pickUpRef = useRef<HTMLInputElement>(null);
+  const draftFromDoc = (d: Doc) => ({
+    name: d.docType,
+    docId: d.id,
+    memberId: d.memberId,
+    kind: d.category === "Insurance" ? "cover" : "asset",
+    type: d.category === "Insurance" ? "Insurance" : d.category === "Property" ? "Property" : "Bank account",
+  });
+  useEffect(() => {
+    const i = store.takeWealthIntent();
+    if (!i) return;
+    const d = store.docs.find((x: Doc) => x.id === i.docId);
+    if (d) {
+      setDraft(draftFromDoc(d));
+      setAddH(true);
+    }
+  }, []);
   const [draft, setDraft] = useState<Partial<Holding> | null>(null);
   const isMobile = useIsMobile();
   const [addTx, setAddTx] = useState(false);
@@ -5116,7 +5133,7 @@ function Wealth({ store, go, toast }: any) {
                   setDocPick(true);
                 }}
               >
-                <FileText size={19} color={T.muted} /> Add from a document
+                <FileText size={19} color={T.muted} /> From a document in your vault
               </button>
               <button
                 className="lp-sheet-item"
@@ -5125,7 +5142,7 @@ function Wealth({ store, go, toast }: any) {
                   setAddH(true);
                 }}
               >
-                <Plus size={19} color={T.muted} /> Add an account or policy
+                <Plus size={19} color={T.muted} /> Without a document (cash, gold, informal)
               </button>
               <button
                 className="lp-sheet-item"
@@ -5636,10 +5653,36 @@ function Wealth({ store, go, toast }: any) {
             }}
           />
           {docPick && (
-            <MSheet title="Add from a document" onClose={() => setDocPick(false)}>
+            <MSheet title="From a document in your vault" onClose={() => setDocPick(false)}>
+              <input
+                ref={pickUpRef}
+                type="file"
+                accept="image/*,application/pdf"
+                hidden
+                onChange={async (e) => {
+                  const files = e.target.files;
+                  if (!files?.length) return;
+                  const created: Doc[] = await store.addFiles(files);
+                  e.target.value = "";
+                  const d = created[0];
+                  if (!d) return;
+                  setDocPick(false);
+                  setDraft(draftFromDoc(d));
+                  setAddH(true);
+                }}
+              />
+              <button className="lp-sheet-item" onClick={() => pickUpRef.current?.click()}>
+                <UploadCloud size={18} color={SEM.action} />
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ display: "block", fontSize: 14.5 }}>Scan or upload a new document</span>
+                  <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 500 }}>
+                    Statement, policy, or deed. It is filed in Documents and opened here.
+                  </span>
+                </span>
+              </button>
               {store.docs.filter((d: Doc) => ["Finance", "Insurance", "Property", "Tax"].includes(d.category)).length === 0 && (
                 <p style={{ fontSize: 13, color: T.muted, padding: "6px 10px 12px" }}>
-                  No financial documents in your vault yet. Add a statement, policy, or deed under Documents first.
+                  No financial documents in your vault yet.
                 </p>
               )}
               {store.docs
