@@ -4825,7 +4825,7 @@ function Wealth({ store, go, toast }: any) {
   const [actSheet, setActSheet] = useState(false);
   const [docPick, setDocPick] = useState(false);
   const pickUpRef = useRef<HTMLInputElement>(null);
-  const draftFromDoc = (d: Doc) => ({
+  const draftFromDoc = (d: Doc): Partial<Holding> => ({
     name: d.docType,
     docId: d.id,
     memberId: d.memberId,
