@@ -4557,12 +4557,12 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
             {fact("Source", d.source)}
             {fact(
               "Added",
-              new Date(d.addedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+              fmtDate(d.addedAt),
             )}
             {d.docDate &&
               fact(
                 "Document date",
-                new Date(d.docDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+                fmtDate(d.docDate),
               )}
             {fact("Size", `${d.sizeKB} KB`)}
           </div>
@@ -5228,15 +5228,6 @@ function Wealth({ store, go, toast }: any) {
               >
                 <Coins size={19} color={T.muted} /> Record money lent or borrowed
               </button>
-              <button
-                className="lp-sheet-item"
-                onClick={() => {
-                  setActSheet(false);
-                  setSos(true);
-                }}
-              >
-                <Siren size={19} color={T.coral} /> <span style={{ color: T.coral }}>SOS handoff</span>
-              </button>
             </MSheet>
           )}
           <div hidden={isMobile} style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "0 0 28px" }}>
@@ -5387,9 +5378,19 @@ function Wealth({ store, go, toast }: any) {
               </button>
             )}
             <span className="lp-vdiv" style={{ width: 1, alignSelf: "stretch", background: T.border }} />
-            <button className="lp-es-cta" onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13 }}>
-              <FileText size={14} /> Family summary <ArrowRight size={13} />
-            </button>
+            <div className="lp-es-cta">
+              <button onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13, minHeight: 44 }}>
+                <FileText size={14} /> Family summary <ArrowRight size={13} />
+              </button>
+              {!store.handoff && (
+                <button
+                  onClick={() => setSos(true)}
+                  style={{ ...btnGhost, padding: "8px 14px", fontSize: 13, minHeight: 44, color: T.coral, borderColor: T.coral + "55" }}
+                >
+                  <Siren size={14} /> SOS handoff
+                </button>
+              )}
+            </div>
           </div>
           {showMath && (
             <Card style={{ marginBottom: 12, padding: "12px 16px" }}>
@@ -5397,7 +5398,8 @@ function Wealth({ store, go, toast }: any) {
                 Each account and policy counts as family-reachable only when all three are true: a document on file, a
                 nominee named, and access instructions written. Money lent or borrowed counts when it has evidence and a
                 contact. Weighted by amount, so the home matters more than the FD.
-                Liabilities are excluded. Nothing else is scored.
+                Loans are checked under Needs attention but are not scored. When no amounts are recorded, each item
+                counts equally. Nothing else is scored.
               </p>
               {guarded.map((h) => {
                 const ok = !!(h.docId && h.nominee && h.accessNote);
@@ -5450,15 +5452,16 @@ function Wealth({ store, go, toast }: any) {
               {shownGaps.map((g, i) => (
                 <div
                   key={i}
-                  onClick={() =>
-                    g.kind === "evidence" || g.kind === "contact"
-                      ? attachTx(g.t!)
-                      : g.kind === "nominee"
-                        ? setNomineeFor(g.h)
-                        : g.kind === "doc"
-                          ? attach(g.h)
-                          : setEdit(g.h)
-                  }
+                  onClick={() => {
+                    if (g.kind === "evidence" && g.t) attachTx(g.t);
+                    else if (g.kind === "contact" && g.t) setEditTx(g.t);
+                    else if (g.kind === "nominee") setNomineeFor(g.h);
+                    else if (g.kind === "doc") attach(g.h);
+                    else if (g.kind === "access") {
+                      setFocusField("access");
+                      setEdit(g.h);
+                    } else setEdit(g.h);
+                  }}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -5539,12 +5542,12 @@ function Wealth({ store, go, toast }: any) {
                   <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 300 }}>
                     Add an account, a policy, or a loan. ReadiNes tracks whether your family could reach each one.
                   </p>
-                  <button onClick={() => setAddH(true)} style={{ ...btnGold, margin: "0 auto" }}>
-                    <Plus size={15} /> Add your first holding
+                  <button onClick={() => (isMobile ? setActSheet(true) : setDocPick(true))} style={{ ...btnGold, margin: "0 auto", minHeight: 44 }}>
+                    <Plus size={15} /> Add your first record
                   </button>
                 </Card>
               )}
-              {isMobile && (
+              {isMobile && (store.holdings.length > 0 || txs.length > 0) && (
                 <div className="lp-chiprail lp-chipsticky">
                   {(["all", ...groups.map(([l]) => l), "Lent and borrowed"] as const).map((k) => {
                     const on = wg === k;
@@ -5621,12 +5624,14 @@ function Wealth({ store, go, toast }: any) {
                       <div
                         key={t.id}
                         className="lp-wrow"
+                        onClick={() => setEditTx(t)}
                         style={{
                           display: "flex",
                           alignItems: "center",
                           gap: 12,
                           padding: "12px 16px",
                           borderTop: `1px solid ${T.border}`,
+                          cursor: "pointer",
                         }}
                       >
                         <span
@@ -5649,11 +5654,16 @@ function Wealth({ store, go, toast }: any) {
                           <div style={{ fontSize: 12.5, color: T.muted }}>
                             {t.purpose}
                             {" · "}
-                            {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                            {fmtDate(t.date, { day: "numeric", month: "short" })}
+                            {origLine(t) ? ` · ${origLine(t)}` : ""}
                             {settled
                               ? " · settled"
                               : overdueFu
-                                ? ` · follow up ${daysTo(t.followUpOn!) <= 0 ? "today" : `in ${daysTo(t.followUpOn!)}d`}`
+                                ? daysTo(t.followUpOn || "") < 0
+                                  ? ` · follow-up overdue by ${-daysTo(t.followUpOn || "")}d`
+                                  : daysTo(t.followUpOn || "") === 0
+                                    ? " · follow up today"
+                                    : ` · follow up in ${daysTo(t.followUpOn || "")}d`
                                 : ""}
                           </div>
                         </div>
@@ -5675,37 +5685,67 @@ function Wealth({ store, go, toast }: any) {
                         {!settled && (
                           <span className="lp-wchips" style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
                             <span
+                              className="lp-tap"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 ev ? setViewDoc(ev) : attachTx(t);
                               }}
-                              style={{ ...pill(ev ? T.mint : T.coral), cursor: "pointer" }}
+                              style={pill(ev ? T.mint : T.coral)}
                             >
                               {ev ? "✓ Evidence" : "✗ Evidence"}
                             </span>
-                            <span style={pill((t.counterparty || "").trim() ? T.mint : T.coral)}>
+                            <span
+                              className="lp-tap"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditTx(t);
+                              }}
+                              style={pill((t.counterparty || "").trim() ? T.mint : T.coral)}
+                            >
                               {(t.counterparty || "").trim() ? "✓ Contact" : "✗ Contact"}
                             </span>
                           </span>
                         )}
+                        {settled && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              store.updateTransaction(t.id, { followUpDone: false });
+                              toast("Reopened");
+                            }}
+                            style={{ ...btnGhost, padding: "6px 10px", fontSize: 12, minHeight: 44 }}
+                          >
+                            Reopen
+                          </button>
+                        )}
                         {!settled && (
                           <button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               store.completeFollowUp(t.id);
                               toast("Marked as settled");
                             }}
-                            style={{ ...btnGhost, padding: "6px 10px", fontSize: 12 }}
+                            style={{ ...btnGhost, padding: "6px 10px", fontSize: 12, minHeight: 44 }}
                           >
                             <Check size={12} /> Settled
                           </button>
                         )}
                         <button
-                          onClick={() => {
-                            store.removeTransaction(t.id);
-                            toast("Transaction removed");
+                          className="lp-iconbtn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirm({
+                              title: "Remove this entry?",
+                              body: `${money(t.amount)} ${lent ? "lent to" : "borrowed from"} ${t.counterparty || "someone"} will be removed from the register. Any evidence stays in Documents.`,
+                              action: "Remove",
+                              onYes: () => {
+                                store.removeTransaction(t.id);
+                                toast("Entry removed");
+                              },
+                            });
                           }}
                           title="Remove" aria-label="Remove"
-                          style={{ ...btnGhost, padding: 7 }}
+                          style={{ ...btnGhost, padding: 0 }}
                         >
                           <Trash2 size={13} />
                         </button>
