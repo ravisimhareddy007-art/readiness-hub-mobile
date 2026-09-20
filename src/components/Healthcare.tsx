@@ -198,6 +198,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
   /* Health opens on a person: the family is a switcher in the header, not a screen to get past.
      "family" is now the manage-family view, reached deliberately. */
   const [mView, setMView] = useState<"family" | "person">("person");
+  const [confirmDel, setConfirmDel] = useState<Member | null>(null);
   const [tab, setTab] = useState<"overview" | "timeline" | "meds" | "records">("overview");
   const [modal, setModal] = useState<
     null | "reading" | "member" | "med" | "reminder" | "profile" | "emergency" | "visit"
@@ -466,7 +467,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     setMView("person");
   };
   if (isMobile && mView === "family") {
-    const prepFor = upcomingAppts[0]?.memberId || s.members[0]?.id || sel;
     return (
       <div className="lh-root">
         <style>{CSS()}</style>
@@ -491,22 +491,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               <ChevronRight size={16} style={{ transform: "rotate(180deg)" }} /> Health
             </button>
           }
-          right={
-            <button className="lh-btn-g" style={{ padding: 9, borderRadius: 99 }} onClick={() => setModal("member")} title="Add a family member" aria-label="Add a family member">
-              <UserPlus size={16} />
-            </button>
-          }
         />
-        <button
-          className="lh-btn"
-          style={{ width: "100%", justifyContent: "center", minHeight: 48, marginBottom: 14 }}
-          onClick={() => {
-            setSel(prepFor);
-            setModal("visit");
-          }}
-        >
-          <ClipboardList size={16} /> Prepare for a visit
-        </button>
+        <h1 className="lh-h1" style={{ marginBottom: 4 }}>
+          Family
+        </h1>
+        <p style={{ color: C.sub, fontSize: 13.5, margin: "0 0 14px", lineHeight: 1.5 }}>
+          Everyone whose health records you keep. Tap a person to edit their details, conditions, allergies, and doctor.
+        </p>
         <div className="lh-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
           {s.members.length === 0 && (
             <div style={{ padding: "22px 16px", textAlign: "center" }}>
@@ -514,63 +505,127 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 Add the people whose health records you keep. Each one gets their own records, readings, medicines, and
                 emergency card.
               </p>
-              <button className="lh-btn" style={{ margin: "0 auto", minHeight: 44 }} onClick={() => setModal("member")}>
+              <button className="lh-btn" style={{ margin: "0 auto" }} onClick={() => setModal("member")}>
                 <UserPlus size={15} /> Add a family member
               </button>
             </div>
           )}
           {s.members.map((mm, i) => {
-            const st = memberStatus(mm.id);
+            const c = s.care[mm.id] || {};
+            const bits = [mm.relation, age(mm.dob) != null ? `${age(mm.dob)}` : null, mm.bloodGroup, c.doctor].filter(Boolean);
             return (
-              <button
+              <div
                 key={mm.id}
-                onClick={() => openPerson(mm.id)}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
-                  width: "100%",
-                  padding: "13px 14px",
-                  background: "none",
-                  border: "none",
+                  padding: "11px 14px",
                   borderTop: i ? `1px solid ${C.border}` : "none",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  fontFamily: "inherit",
                 }}
               >
-                <span className="lh-famav" style={{ background: mm.color + "26", color: inkOf(mm.color), border: `1.5px solid ${mm.color}55` }}>
-                  {mm.name[0]}
-                </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 14.5, fontWeight: 700, color: C.text }}>{mm.name.split(" ")[0]}</span>
-                  <span style={{ display: "block", fontSize: 12, marginTop: 1, color: st.c }}>{st.txt}</span>
-                </span>
-                <span
-                  role="button"
-                  tabIndex={0}
-                  title="Emergency card" aria-label={`Emergency card for ${mm.name.split(" ")[0]}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
+                <button
+                  onClick={() => {
                     setSel(mm.id);
-                    setModal("emergency");
+                    setModal("profile");
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.stopPropagation();
-                      setSel(mm.id);
-                      setModal("emergency");
-                    }
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    flex: 1,
+                    minWidth: 0,
+                    minHeight: 44,
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontFamily: "inherit",
                   }}
-                  style={{ display: "inline-grid", placeItems: "center", minWidth: 44, minHeight: 44, borderRadius: 10, color: C.red, cursor: "pointer" }}
                 >
-                  <IdCard size={17} />
-                </span>
-                <ChevronRight size={15} color={C.faint} />
-              </button>
+                  <span
+                    className="lh-famav"
+                    style={{ background: mm.color + "26", color: inkOf(mm.color), border: `1.5px solid ${mm.color}55` }}
+                  >
+                    {mm.name[0]}
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 14.5, fontWeight: 700, color: C.text }}>{mm.name}</span>
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: 12.5,
+                        marginTop: 1,
+                        color: C.sub,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {bits.join(" · ") || "No details yet"}
+                    </span>
+                  </span>
+                </button>
+                {mm.id !== "you" && (
+                  <button
+                    onClick={() => setConfirmDel(mm)}
+                    className="lh-x"
+                    style={{ color: C.red, borderColor: C.red + "55", flexShrink: 0 }}
+                    title={`Remove ${mm.name.split(" ")[0]}`} aria-label={`Remove ${mm.name.split(" ")[0]}`}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
+        {s.members.length > 0 && (
+          <button className="lh-btn-g" style={{ width: "100%", justifyContent: "center" }} onClick={() => setModal("member")}>
+            <UserPlus size={15} /> Add a family member
+          </button>
+        )}
+        <AnimatePresence>
+          {modal === "member" && (
+            <AddMember
+              onClose={() => setModal(null)}
+              save={(mm: Member) => {
+                s.addMember(mm);
+                s.updateCare(mm.id, { conditions: [], medications: [], allergies: "None recorded", doctor: "", emergency: "" });
+                setSel(mm.id);
+                toast(`${mm.name.split(" ")[0]} added`);
+                setModal(null);
+              }}
+            />
+          )}
+          {modal === "profile" && m && (
+            <EditProfile
+              member={m}
+              care={care}
+              onClose={() => setModal(null)}
+              save={(cp: any, mp: any) => {
+                s.updateCare(sel, cp);
+                if (mp) s.updateMember(sel, mp);
+                toast("Details updated");
+                setModal(null);
+              }}
+            />
+          )}
+          {confirmDel && (
+            <ConfirmRemove
+              member={confirmDel}
+              onClose={() => setConfirmDel(null)}
+              onYes={() => {
+                const nm = confirmDel.name.split(" ")[0];
+                if (sel === confirmDel.id) setSel("you");
+                s.removeMember(confirmDel.id);
+                setConfirmDel(null);
+                toast(`${nm} removed`);
+              }}
+            />
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -768,7 +823,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               </div>
             </div>
             <button className="lh-btn" onClick={() => setModal("visit")}>
-              <ClipboardList size={15} /> Prepare for visit
+              <ClipboardList size={15} /> Prepare for a visit
             </button>
           </div>
           <button className="lh-infobar" onClick={() => setInsightOpen((o) => !o)}>
@@ -791,8 +846,19 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           )}
           <div className="lh-vitals" style={{ marginBottom: 16 }}>
             {Object.keys(vitals).length === 0 && (
-              <div className="lh-card" style={{ padding: 20, color: C.faint, fontSize: 13.5 }}>
-                No readings tracked yet.
+              <div className="lh-card" style={{ padding: 20, textAlign: "center" }}>
+                <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 14px" }}>
+                  Upload a lab report and its values arrive here with the ranges printed beside them, or log a reading
+                  yourself.
+                </p>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                  <button className="lh-btn" onClick={() => setTab("records")}>
+                    <Upload size={15} /> Add a lab report
+                  </button>
+                  <button className="lh-btn-g" onClick={() => setModal("reading")}>
+                    <Plus size={15} /> Log a reading
+                  </button>
+                </div>
               </div>
             )}
             {Object.keys(vitals).map((k) => {
@@ -871,7 +937,14 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 </button>
               </div>
               {reminders.length === 0 ? (
-                <Empty t="Nothing due." />
+                <div style={{ padding: "18px 4px", textAlign: "center" }}>
+                  <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
+                    Nothing due. Appointments and refills read from a prescription land here, or add one yourself.
+                  </p>
+                  <button className="lh-btn-g" style={{ margin: "0 auto" }} onClick={() => setModal("reminder")}>
+                    <Plus size={15} /> Add a reminder
+                  </button>
+                </div>
               ) : (
                 reminders.map((r) => {
                   const Ic =
@@ -1033,7 +1106,14 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               prescription itself.
             </div>
             {meds.length === 0 ? (
-              <Empty t="No medications recorded." />
+              <div style={{ padding: "18px 4px", textAlign: "center" }}>
+                <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
+                  No medicines recorded. Upload a prescription and they arrive with dose, schedule, and refill date.
+                </p>
+                <button className="lh-btn-g" style={{ margin: "0 auto" }} onClick={() => setModal("med")}>
+                  <Plus size={15} /> Add one by hand
+                </button>
+              </div>
             ) : (
               meds.map((med) => {
                 const rf = daysTo(med.refillBy);
@@ -1125,7 +1205,22 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               records what the document says and never adds an opinion. A copy lands in Documents too.
             </div>
             {records.length === 0 ? (
-              <Empty t="No records yet. Upload, scan, or pick from gallery. Each one also lands in Documents." />
+              <div style={{ padding: "18px 4px", textAlign: "center" }}>
+                <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
+                  No records yet. Add a prescription or lab report and ReadiNes files it, pulls out the values and
+                  ranges printed on it, and notes the doctor and hospital. A copy lands in Documents too.
+                </p>
+                <button
+                  className="lh-btn"
+                  style={{ margin: "0 auto" }}
+                  onClick={() => {
+                    pendingRec.current = null;
+                    recRef.current?.click();
+                  }}
+                >
+                  <Upload size={15} /> Add a record
+                </button>
+              </div>
             ) : (
               <div style={{ position: "relative", paddingLeft: 18, marginTop: 6 }}>
                 <div style={{ position: "absolute", left: 4, top: 6, bottom: 6, width: 1, background: C.border }} />
@@ -1558,6 +1653,41 @@ function LogReading({ member, vitals, onClose, save }: any) {
     </Modal>
   );
 }
+function ConfirmRemove({ member, onClose, onYes }: any) {
+  const first = member.name.split(" ")[0];
+  return (
+    <div className="lh-overlay" onClick={onClose}>
+      <motion.div
+        className="lh-modal"
+        onClick={(e) => e.stopPropagation()}
+        initial={isMobileView() ? { y: 40, opacity: 0 } : { scale: 0.96, opacity: 0 }}
+        animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
+        transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
+      >
+        <h3 className="lh-h2" style={{ fontSize: 18, marginBottom: 8 }}>
+          Remove {first}?
+        </h3>
+        <p style={{ fontSize: 13.5, color: C.sub, lineHeight: 1.6, margin: "0 0 18px" }}>
+          {first}'s readings, medicines, and reminders are removed with them. Their documents stay in your vault, no
+          longer assigned to anyone, so nothing is lost.
+        </p>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button className="lh-btn-g" style={{ flex: 1, justifyContent: "center" }} onClick={onClose}>
+            Keep
+          </button>
+          <button
+            className="lh-btn-g"
+            style={{ flex: 1, justifyContent: "center", color: C.red, borderColor: C.red + "55" }}
+            onClick={onYes}
+          >
+            Remove
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function AddMember({ onClose, save }: any) {
   const [f, setF] = useState({ name: "", relation: "Parent", dob: "1960-01-01", bloodGroup: "O+" });
   const colors = [C.cyan, C.emerald, C.pink, C.violet, C.gold];
