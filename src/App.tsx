@@ -5,6 +5,7 @@ import {
   Plane,
   FolderOpen,
   HeartPulse,
+  CalendarClock,
   Users,
   Wallet,
   KeyRound,
@@ -1791,6 +1792,43 @@ function Home({ store, go, toast }: any) {
   const wealthMiss = guarded.reduce((n: number, h: Holding) => n + (h.docId ? 0 : 1) + (h.accessNote ? 0 : 1) + (h.nominee ? 0 : 1), 0);
   const wealthScore = guarded.length ? Math.round(100 * (1 - wealthMiss / (guarded.length * 3))) : null;
   const topActs = groups.flatMap((g) => g.acts.map((a) => ({ ...a, to: g.to, gcolor: g.color }))).slice(0, 3);
+  /* Time-bound goes to Home, state stays in its module: appointments, refills, renewals,
+     maturities, expiries and follow-ups due within 30 days, across every module and member. */
+  type Due = { id: string; label: string; who?: string; whoColor?: string; days: number; to: string; icon: any };
+  const comingUp: Due[] = useMemo(() => {
+    const out: Due[] = [];
+    const within = (d?: string) => !!d && daysTo(d) <= 30;
+    store.reminders
+      .filter((r: Reminder) => !r.done && within(r.due))
+      .forEach((r: Reminder) => {
+        const mm = store.members.find((x: Member) => x.id === r.memberId);
+        out.push({
+          id: "rem" + r.id,
+          label: r.title,
+          who: mm?.name.split(" ")[0],
+          whoColor: mm?.color,
+          days: daysTo(r.due),
+          to: "health",
+          icon: HeartPulse,
+        });
+      });
+    store.holdings.forEach((h: Holding) => {
+      if (h.kind === "cover" && within(h.renewalDate))
+        out.push({ id: "ren" + h.id, label: `${h.name} renews`, days: daysTo(h.renewalDate!), to: "wealth", icon: Wallet });
+      if (within(h.maturityDate))
+        out.push({ id: "mat" + h.id, label: `${h.name} matures`, days: daysTo(h.maturityDate!), to: "wealth", icon: Wallet });
+    });
+    (store.transactions || []).forEach((t: Transaction) => {
+      if (!t.followUpDone && within(t.followUpOn))
+        out.push({ id: "tx" + t.id, label: `Follow up: ${t.purpose}`, days: daysTo(t.followUpOn!), to: "wealth", icon: Coins });
+    });
+    store.docs.forEach((d: Doc) => {
+      if (within(d.expiry))
+        out.push({ id: "exp" + d.id, label: `${d.docType} expires`, days: daysTo(d.expiry!), to: "documents", icon: FileText });
+    });
+    return out.sort((a, b) => a.days - b.days);
+  }, [store.reminders, store.members, store.holdings, store.transactions, store.docs]);
+  const [allDue, setAllDue] = useState(false);
   const welcomeCard =
     store.dataMode === "empty" && store.docs.length === 0 ? (
       <Card
@@ -1991,6 +2029,77 @@ function Home({ store, go, toast }: any) {
           <Card style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
             <CheckCircle2 size={17} color={T.mint} />
             <span style={{ fontSize: 13.5, color: T.muted }}>Nothing needs you today. Everything is in place.</span>
+          </Card>
+        )}
+        {comingUp.length > 0 && (
+          <Card style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
+              <CalendarClock size={16} color={T.muted} />
+              <b style={{ color: T.white, fontSize: 14.5 }}>Coming up</b>
+              <span style={{ marginLeft: "auto", fontSize: 12.5, color: T.muted }}>next 30 days</span>
+            </div>
+            {(allDue ? comingUp : comingUp.slice(0, 5)).map((d) => (
+              <button
+                key={d.id}
+                onClick={() => go(d.to)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 11,
+                  width: "100%",
+                  minHeight: 48,
+                  padding: "11px 16px",
+                  background: "none",
+                  border: "none",
+                  borderTop: `1px solid ${T.border}`,
+                  textAlign: "left",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                <d.icon size={15} color={T.muted} />
+                <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.text }}>
+                  {d.label}
+                  {d.who && (
+                    <span style={{ color: d.whoColor || T.muted, fontWeight: 600 }}> · {d.who}</span>
+                  )}
+                </span>
+                <span
+                  style={{
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    whiteSpace: "nowrap",
+                    color: d.days < 0 ? T.coral : d.days <= 7 ? SEM.warning : T.muted,
+                  }}
+                >
+                  {d.days < 0 ? `${-d.days}d overdue` : d.days === 0 ? "today" : `in ${d.days}d`}
+                </span>
+              </button>
+            ))}
+            {comingUp.length > 5 && (
+              <button
+                onClick={() => setAllDue((v) => !v)}
+                style={{
+                  width: "100%",
+                  minHeight: 44,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  background: "transparent",
+                  border: "none",
+                  borderTop: `1px solid ${T.border}`,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: SEM.action,
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                {allDue ? "Show less" : `View all ${comingUp.length}`}
+                <ChevronDown size={14} style={{ transform: allDue ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
+              </button>
+            )}
           </Card>
         )}
         {insights.length > 0 && (

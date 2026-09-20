@@ -186,7 +186,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
 
   const [sel, setSel] = useState(s.members[0]?.id || "you");
   const isMobile = useIsMobile();
-  const [mView, setMView] = useState<"family" | "person">("family");
+  /* Health opens on a person: the family is a switcher in the header, not a screen to get past.
+     "family" is now the manage-family view, reached deliberately. */
+  const [mView, setMView] = useState<"family" | "person">("person");
   const [tab, setTab] = useState<"overview" | "timeline" | "meds" | "records">("overview");
   const [modal, setModal] = useState<
     null | "reading" | "member" | "med" | "reminder" | "profile" | "emergency" | "visit"
@@ -460,7 +462,26 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       <div className="lh-root">
         <style>{CSS()}</style>
         <MNav
-          title="Health" aria-label="Health"
+          left={
+            <button
+              onClick={() => setMView("person")}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                background: "none",
+                border: "none",
+                color: C.sub,
+                fontSize: 14,
+                fontWeight: 600,
+                cursor: "pointer",
+                padding: "6px 6px 6px 0",
+                fontFamily: "inherit",
+              }}
+            >
+              <ChevronRight size={16} style={{ transform: "rotate(180deg)" }} /> Health
+            </button>
+          }
           right={
             <button className="lh-btn-g" style={{ padding: 9, borderRadius: 99 }} onClick={() => setModal("member")} title="Add a family member" aria-label="Add a family member">
               <UserPlus size={16} />
@@ -541,111 +562,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             );
           })}
         </div>
-        {upcomingAppts.length > 0 && (
-          <>
-            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: C.faint, textTransform: "uppercase", margin: "0 0 8px 2px" }}>
-              Upcoming
-            </div>
-            <div className="lh-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
-              {upcomingAppts.map((r, i) => {
-                const mm = s.members.find((x) => x.id === r.memberId);
-                return (
-                  <button
-                    key={r.id}
-                    onClick={() => openPerson(r.memberId)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 11,
-                      width: "100%",
-                      padding: "12px 14px",
-                      background: "none",
-                      border: "none",
-                      borderTop: i ? `1px solid ${C.border}` : "none",
-                      cursor: "pointer",
-                      textAlign: "left",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    <span className="lh-ic" style={{ background: C.gold + "22", flexShrink: 0 }}>
-                      <CalendarClock size={16} color={C.gold} />
-                    </span>
-                    <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: "block", fontSize: 13.5, fontWeight: 600, color: C.text }}>{r.title}</span>
-                      <span style={{ display: "block", fontSize: 12, color: C.sub, marginTop: 1 }}>
-                        {fmt(r.due)} · in {daysTo(r.due)}d · {mm?.name.split(" ")[0]}
-                      </span>
-                    </span>
-                    <ChevronRight size={15} color={C.faint} />
-                  </button>
-                );
-              })}
-            </div>
-          </>
-        )}
-        {familyActions.length > 0 && (
-          <>
-            <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: C.faint, textTransform: "uppercase", margin: "0 0 8px 2px" }}>
-              Needs attention
-            </div>
-            <div className="lh-card" style={{ padding: 0, overflow: "hidden" }}>
-              {familyActions.slice(0, 4).map((a, i) => (
-                <button
-                  key={i}
-                  onClick={() => openPerson(a.mid)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 11,
-                    width: "100%",
-                    padding: "12px 14px",
-                    background: "none",
-                    border: "none",
-                    borderTop: i ? `1px solid ${C.border}` : "none",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    fontFamily: "inherit",
-                  }}
-                >
-                  <span className="lh-ic" style={{ background: a.iconC + "22", flexShrink: 0 }}>
-                    <a.icon size={15} color={a.iconC} />
-                  </span>
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: C.text }}>
-                    <b style={{ color: a.color }}>{a.name}</b> · {a.label}
-                  </span>
-                  <span style={{ fontSize: 12, color: a.iconC, whiteSpace: "nowrap" }}>{a.when}</span>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-        {modal === "member" && (
-          <AddMember
-            onClose={() => setModal(null)}
-            save={(mm: Member) => {
-              s.addMember(mm);
-              s.updateCare(mm.id, {
-                conditions: [],
-                medications: [],
-                allergies: "None recorded",
-                doctor: "",
-                emergency: "",
-              });
-              setSel(mm.id);
-              toast("Member added");
-              setModal(null);
-            }}
-          />
-        )}
-        {!extToast && (
-          <AnimatePresence>
-            {localToast && (
-              <motion.div className="lh-toast" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }}>
-                <CheckCircle2 size={17} color={C.emerald} /> {localToast}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        )}
       </div>
     );
   }
@@ -654,28 +570,61 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     <div className="lh-root">
       <style>{CSS()}</style>
       {isMobile && (
-        <MNav
-          left={
-            <button
-              onClick={() => setMView("family")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                background: "none",
-                border: "none",
-                color: C.sub,
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: "pointer",
-                padding: "6px 6px 6px 0",
-                fontFamily: "inherit",
-              }}
-            >
-              <ChevronRight size={16} style={{ transform: "rotate(180deg)" }} /> Family
+        <>
+          <MNav
+            title="Health" aria-label="Health"
+            right={
+              <button
+                className="lh-btn-g"
+                style={{ padding: 9, borderRadius: 99 }}
+                onClick={() => setMView("family")}
+                title="Manage family" aria-label="Manage family"
+              >
+                <Users size={16} />
+              </button>
+            }
+          />
+          {/* Who you are looking at, always on screen. Tapping switches without leaving Health. */}
+          <div className="lh-swrail">
+            {s.members.map((mm) => {
+              const on = mm.id === sel;
+              return (
+                <button
+                  key={mm.id}
+                  onClick={() => {
+                    setSel(mm.id);
+                    setTab("overview");
+                  }}
+                  className={"lh-sw" + (on ? " on" : "")}
+                  aria-current={on ? "true" : undefined}
+                  title={mm.name} aria-label={mm.name}
+                >
+                  <span
+                    className="lh-swav"
+                    style={{
+                      background: mm.color + (on ? "33" : "1C"),
+                      color: inkOf(mm.color),
+                      borderColor: on ? mm.color : "transparent",
+                    }}
+                  >
+                    {mm.name[0]}
+                  </span>
+                  <span className="lh-swnm" style={{ color: on ? C.text : C.sub }}>
+                    {mm.name.split(" ")[0]}
+                  </span>
+                </button>
+              );
+            })}
+            <button onClick={() => setModal("member")} className="lh-sw" title="Add a family member" aria-label="Add a family member">
+              <span className="lh-swav" style={{ background: "transparent", color: C.faint, borderColor: C.border, borderStyle: "dashed" }}>
+                +
+              </span>
+              <span className="lh-swnm" style={{ color: C.sub }}>
+                Add
+              </span>
             </button>
-          }
-        />
+          </div>
+        </>
       )}
       {!isMobile && (
       <div className="lh-head">
@@ -2206,6 +2155,11 @@ const CSS = () => `
 .lh-famcard{display:flex;align-items:center;gap:10px;text-align:left;background:${C.panel};border:1px solid ${C.border};border-radius:13px;padding:11px 12px;cursor:pointer;font-family:inherit;transition:.15s}
 .lh-famcard:hover{background:${C.panel2}}
 .lh-famcard.on{border-color:${C.gold}77;background:linear-gradient(180deg,rgba(216,178,90,.08),${C.panel})}
+.lh-swrail{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 0 12px;margin:0 -2px}
+.lh-swrail::-webkit-scrollbar{display:none}
+.lh-sw{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px;min-height:66px;background:none;border:none;padding:2px;cursor:pointer;font-family:inherit}
+.lh-swav{width:40px;height:40px;border-radius:99px;display:grid;place-items:center;font-weight:800;font-size:15px;border:2px solid transparent}
+.lh-swnm{font-size:12px;font-weight:600;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lh-famav{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-weight:700;font-size:15px;letter-spacing:-0.015em;flex-shrink:0}
 .lh-famnm{display:block;font-size:13.5px;font-weight:700;color:${C.text};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lh-famst{display:block;font-size:11.5px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
