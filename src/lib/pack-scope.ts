@@ -44,7 +44,10 @@ export const DESTINATION_PACKS: Record<string, string> = {
  */
 export function packInCountry(packId: string, country: string, custom?: boolean): boolean {
   if (custom) return true;
-  if (DESTINATION_PACKS[packId]) return true;
+  const dest = DESTINATION_PACKS[packId];
+  /* A visa pack is about going somewhere, so it travels with the applicant but disappears once
+     they are already there: nobody preparing documents in the US needs a US visitor visa. */
+  if (dest) return dest !== country;
   if (INDIA_ONLY.has(packId)) return country === "IN";
   return true;
 }
