@@ -3184,16 +3184,20 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
             <X size={16} />
           </button>
         </div>
-        <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 4px" }}>
-          For situations the catalog does not cover. Describe it in your own words.
-        </p>
-        <label style={lbl}>What do you need documents for?</label>
-        <textarea
-          style={{ ...inp, minHeight: 92, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit" }}
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-          placeholder={"My son's school admission, or the documents my new employer asked for"}
-        />
+        {!drafted && (
+          <>
+            <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 4px" }}>
+              For situations the catalog does not cover.
+            </p>
+            <label style={lbl}>What do you need documents for?</label>
+            <textarea
+              style={{ ...inp, minHeight: 72, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit" }}
+              value={desc}
+              onChange={(e) => setDesc(e.target.value)}
+              placeholder={"My son's school admission"}
+            />
+          </>
+        )}
         {!drafted && similar.length > 0 && (
           <div style={{ marginTop: 10 }}>
             <div style={{ fontSize: 12, color: T.muted, marginBottom: 6 }}>
@@ -3251,7 +3255,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
             <button
               onClick={() => {
                 if (!name.trim() && desc.trim()) setName(desc.trim().slice(0, 44));
-                setReqs(["", "", ""]);
+                setReqs(["", ""]);
                 setDrafted(true);
               }}
               style={{ ...btnGhost, width: "100%", justifyContent: "center", minHeight: 44 }}
@@ -3269,22 +3273,23 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
             )}
             <label style={lbl}>Pack name</label>
             <input style={inp} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name this pack" />
-            <label style={lbl}>Checklist · edit freely</label>
-            <div
-              style={{
-                fontSize: 12,
-                color: SEM.action,
-                background: SEM.action + "1F",
-                border: `1px solid ${SEM.action}44`,
-                borderRadius: 9,
-                padding: "8px 11px",
-                marginBottom: 8,
-                lineHeight: 1.5,
-              }}
-            >
-              A starting draft from your description, not officially verified. Edit it to match what you were actually
-              asked for.
-            </div>
+            <label style={lbl}>Documents needed</label>
+            {meta && (
+              <div
+                style={{
+                  fontSize: 12,
+                  color: SEM.action,
+                  background: SEM.action + "1F",
+                  border: `1px solid ${SEM.action}44`,
+                  borderRadius: 9,
+                  padding: "8px 11px",
+                  marginBottom: 8,
+                  lineHeight: 1.5,
+                }}
+              >
+                A starting draft, not officially verified. Edit it to match what you were asked for.
+              </div>
+            )}
             <datalist id="lp-doc-vocab">
               {DOC_VOCAB.map((v) => (
                 <option key={v} value={v} />
@@ -3298,7 +3303,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                     style={{ ...inp, borderColor: onFile ? T.mint + "66" : T.border }}
                     value={r}
                     list="lp-doc-vocab"
-                    placeholder="Type; standard document names suggest themselves"
+                    placeholder="Document name"
                     onChange={(e) => setReqs(reqs.map((x, j) => (j === i ? e.target.value : x)))}
                   />
                   <span
