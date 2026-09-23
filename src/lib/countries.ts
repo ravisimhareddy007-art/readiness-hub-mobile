@@ -7,25 +7,52 @@ export interface Country {
   flag: string;
 }
 
-/* The markets a family vault plausibly serves first: India, the diaspora corridors, and the
-   destinations Indian applicants most often prepare for. */
-export const COUNTRIES: Country[] = [
-  { code: "IN", name: "India", flag: "🇮🇳" },
-  { code: "AE", name: "United Arab Emirates", flag: "🇦🇪" },
-  { code: "AU", name: "Australia", flag: "🇦🇺" },
-  { code: "CA", name: "Canada", flag: "🇨🇦" },
-  { code: "DE", name: "Germany", flag: "🇩🇪" },
-  { code: "FR", name: "France", flag: "🇫🇷" },
-  { code: "IE", name: "Ireland", flag: "🇮🇪" },
-  { code: "MY", name: "Malaysia", flag: "🇲🇾" },
-  { code: "NL", name: "Netherlands", flag: "🇳🇱" },
-  { code: "NZ", name: "New Zealand", flag: "🇳🇿" },
-  { code: "QA", name: "Qatar", flag: "🇶🇦" },
-  { code: "SA", name: "Saudi Arabia", flag: "🇸🇦" },
-  { code: "SG", name: "Singapore", flag: "🇸🇬" },
-  { code: "GB", name: "United Kingdom", flag: "🇬🇧" },
-  { code: "US", name: "United States", flag: "🇺🇸" },
+/* Where a user prepares documents. Deliberately a short list rather than all 195.
+   Three reasons: inference runs through Bedrock, whose geographic restrictions are stricter than
+   Anthropic's direct API; a handful of regions serve these markets; and a curated pack catalogue
+   is only worth showing where it has real coverage. The list is the Indian diaspora corridors.
+
+   Every entry below was checked against the sanctions position: none appear on the US
+   comprehensively sanctioned list (Cuba, Iran, North Korea, Syria, and the occupied regions of
+   Ukraine), none are subject to a UN Security Council embargo that India implements, and none sit
+   in the regions Anthropic excludes (China, Hong Kong, Russia, Belarus). Add a country here only
+   after making the same check. */
+const CODES = [
+  "IN", // home market
+  "AE", "SA", "QA", "KW", "OM", "BH", // Gulf: the largest Indian expatriate population anywhere
+  "US", "CA", "GB", "IE", // the qualification and settlement corridors
+  "AU", "NZ", "SG", "MY", // Asia Pacific
+  "DE", "NL", // Europe, the growing skilled-work corridor
+  "ZA", "MU", // long-settled Indian-origin communities
+  "NP", "LK", // neighbours with constant document traffic
 ];
+
+/* Shown first because they carry the most traffic; the rest follow alphabetically. */
+export const PINNED = ["IN", "AE", "US", "GB", "CA", "AU", "SG", "SA"];
+
+const flagOf = (code: string) =>
+  String.fromCodePoint(...[...code.toUpperCase()].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
+
+const nameOf = (code: string) => {
+  try {
+    return new Intl.DisplayNames(["en"], { type: "region" }).of(code) || code;
+  } catch {
+    return code;
+  }
+};
+
+export const COUNTRIES: Country[] = CODES.map((code) => ({ code, name: nameOf(code), flag: flagOf(code) })).sort(
+  (a, b) => {
+    const pa = PINNED.indexOf(a.code);
+    const pb = PINNED.indexOf(b.code);
+    if (pa !== -1 || pb !== -1) return (pa === -1 ? 999 : pa) - (pb === -1 ? 999 : pb);
+    return a.name.localeCompare(b.name);
+  },
+);
+
+/* Never add these: comprehensively sanctioned, or outside the regions our inference provider
+   serves. Kept explicit so the reason survives the person who knew it. */
+export const NEVER_SUPPORTED = ["CU", "IR", "KP", "SY", "RU", "BY", "CN", "HK"];
 
 export const countryName = (code?: string) => COUNTRIES.find((c) => c.code === code)?.name || "India";
 export const countryFlag = (code?: string) => COUNTRIES.find((c) => c.code === code)?.flag || "🇮🇳";
@@ -35,10 +62,17 @@ export function defaultCountry(): string {
   try {
     const loc = typeof navigator !== "undefined" ? navigator.language : "en-IN";
     const region = new Intl.Locale(loc).maximize().region;
-    return COUNTRIES.some((c) => c.code === region) ? (region as string) : "IN";
+    return CODES.includes(region as string) ? (region as string) : "IN";
   } catch {
     return "IN";
   }
+}
+
+/** Match a typed query against a country's name or code. */
+export function searchCountries(q: string): Country[] {
+  const n = q.trim().toLowerCase();
+  if (!n) return COUNTRIES;
+  return COUNTRIES.filter((c) => c.name.toLowerCase().includes(n) || c.code.toLowerCase() === n);
 }
 
 /* Documents that only exist in one country. A pack asking for an Aadhaar card is meaningless in
