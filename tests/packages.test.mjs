@@ -49,7 +49,7 @@ t("the curated list shows while the live check runs", () => {
   assert.ok(/origin: "curated"/.test(app), "the sheet must never open empty");
 });
 t("the pack states where its list came from", () => {
-  for (const s of ["Curated list", "Offline list", "checked against published sources"])
+  for (const s of ["Curated list", "from published sources"])
     assert.ok(app.includes(s), s);
 });
 t("sources are linked and official ones are marked", () => {
@@ -118,7 +118,7 @@ t("setting aside is reversible", () => {
   assert.ok(/setPackSkip\(ev\.id, label, false\)/.test(pkg));
 });
 t("a set-aside requirement stops dragging the score down", () => {
-  assert.ok(/live\.reqs\.filter\(\(r: string\) => !skipped\.includes\(r\)\)/.test(pkg));
+  assert.ok(/base\.filter\(\(r: string\) => !skipped\.includes\(r\)\)/.test(pkg));
 });
 t("setting aside never deletes from the published list", () => {
   assert.ok(/packSkips/.test(store), "skips are per pack, separate from the requirements themselves");
