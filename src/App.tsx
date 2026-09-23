@@ -154,6 +154,7 @@ body{background:var(--lpv-bg)}
 .lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up 280ms cubic-bezier(.2,.9,.3,1.08)}
 .lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:var(--lpv-border);margin:4px auto 10px}
 .lp-grabonly{display:none}
+@keyframes lp-spin{to{transform:rotate(360deg)}}
 .lp-sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:50px;padding:0 10px;background:none;border:none;border-radius:12px;color:var(--lpv-text);font-size:15px;font-weight:600;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
 .lp-sheet-item:active{background:var(--lpv-raised)}
 @keyframes lp-sheet-up{from{transform:translateY(36px);opacity:.6}to{transform:translateY(0);opacity:1}}
@@ -3337,10 +3338,11 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
     },
     [query, store.country],
   );
-  /* Only a held answer that has aged past 30 days refreshes on its own. A pack never checked
-     before waits for the user to ask, so opening the catalog costs nothing. */
+  /* A pack knows its requirements without being asked: the point of the product is that the
+     research is already done. The lookup is shared and cached for 30 days, so opening a pack
+     costs nothing after the first person in a country opens it. */
   useEffect(() => {
-    if (!ev.custom && held?.stale) refresh();
+    if (!ev.custom && (!held || held.stale)) refresh();
   }, []);
   const skipped: string[] = store.packSkips?.[ev.id] || [];
   const evLive = useMemo(
@@ -3464,7 +3466,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 flexWrap: "wrap",
                 gap: 8,
                 marginTop: 10,
-                padding: "10px 12px",
+                padding: "9px 11px",
                 borderRadius: 10,
                 border: `1px solid ${T.border}`,
                 background: T.raised,
@@ -3472,47 +3474,70 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 color: T.muted,
               }}
             >
-              <span style={{ flex: "1 1 200px", lineHeight: 1.5 }}>
-                {live.origin === "curated"
-                  ? `This is our curated list for ${countryName(store.country)}. Check it against published sources when you are ready to apply.`
-                  : "Requirements change. Open the source below before you submit anything."}
-              </span>
-              <button
-                onClick={() => refresh(live.origin !== "curated")}
-                disabled={checking}
-                style={
-                  live.origin === "curated"
-                    ? { ...btnGold, padding: "8px 13px", fontSize: 12.5, minHeight: 44, opacity: checking ? 0.6 : 1 }
-                    : { ...btnGhost, padding: "6px 11px", fontSize: 12, minHeight: 44, opacity: checking ? 0.6 : 1 }
-                }
-              >
-                <RefreshCw size={13} />
-                {checking ? "Checking…" : live.origin === "curated" ? "Check official requirements" : "Check again"}
-              </button>
-              {live.sources.slice(0, 3).map((src: any) => (
-                <a
-                  key={src.url}
-                  href={src.url}
-                  target="_blank"
-                  rel="noreferrer noopener"
+              {live.sources.length > 0 ? (
+                <>
+                  <span style={{ color: T.faint }}>Sources</span>
+                  {live.sources.slice(0, 3).map((src: any) => (
+                    <a
+                      key={src.url}
+                      href={src.url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      title={src.title || src.url}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 5,
+                        maxWidth: 190,
+                        padding: "4px 9px",
+                        borderRadius: 8,
+                        border: `1px solid ${T.border}`,
+                        color: SEM.action,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        textDecoration: "none",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {src.tier === "official" || src.tier === "embassy" ? (
+                        <ShieldCheck size={12} style={{ flexShrink: 0 }} />
+                      ) : (
+                        <ExternalLink size={12} style={{ flexShrink: 0 }} />
+                      )}
+                      {src.title || new URL(src.url).hostname.replace(/^www\./, "")}
+                    </a>
+                  ))}
+                </>
+              ) : (
+                <span style={{ flex: "1 1 auto" }}>
+                  {checking ? "Checking published sources…" : `Curated for ${countryName(store.country)}.`}
+                </span>
+              )}
+              <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                {live.lastChecked && <span style={{ color: T.faint }}>Checked {fmtDate(live.lastChecked)}</span>}
+                <button
+                  onClick={() => refresh(true)}
+                  disabled={checking}
+                  title="Check again now" aria-label="Check again now"
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 5,
+                    minWidth: 44,
                     minHeight: 44,
-                    padding: "6px 10px",
-                    borderRadius: 9,
-                    border: `1px solid ${T.border}`,
-                    color: SEM.action,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    textDecoration: "none",
+                    display: "grid",
+                    placeItems: "center",
+                    background: "none",
+                    border: "none",
+                    color: T.muted,
+                    cursor: checking ? "default" : "pointer",
                   }}
                 >
-                  {src.tier === "official" || src.tier === "embassy" ? <ShieldCheck size={12} /> : <ExternalLink size={12} />}
-                  {(src.title || src.url).slice(0, 34)}
-                </a>
-              ))}
+                  <RefreshCw
+                    size={14}
+                    style={{ animation: checking ? "lp-spin 1s linear infinite" : "none" }}
+                  />
+                </button>
+              </span>
             </div>
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
