@@ -3,6 +3,7 @@ import type { ReactNode, CSSProperties } from "react";
 import {
   LayoutGrid,
   Plane,
+  ListChecks,
   FolderOpen,
   HeartPulse,
   CalendarClock,
@@ -1880,7 +1881,7 @@ function Home({ store, go, toast }: any) {
     const nearPacks = scored.filter((x: any) => x.score >= 70 && x.score < 100).length;
     const mods: { key: string; label: string; sub: string; icon: any; color: string; badge?: number }[] = [
       { key: "documents", label: "Documents", sub: `${store.docs.length} total`, icon: FolderOpen, color: A.blue, badge: expiring.length },
-      { key: "packages", label: "Packages", sub: readyPacks ? `${readyPacks} ready` : nearPacks ? `${nearPacks} nearly there` : "Explore", icon: Plane, color: A.green },
+      { key: "packages", label: "Packages", sub: readyPacks ? `${readyPacks} ready` : nearPacks ? `${nearPacks} nearly there` : "Explore", icon: ListChecks, color: A.green },
       { key: "health", label: "Health", sub: healthActs.length ? `${healthActs.length} due soon` : "Up to date", icon: HeartPulse, color: A.pink, badge: healthActs.length },
       { key: "wealth", label: "Wealth", sub: wealthScore == null ? "Start" : wealthScore >= 80 ? "On track" : `${wealthActs.length || wealthMiss} to review`, icon: Wallet, color: A.gold, badge: wealthActs.length },
       { key: "trust", label: "Family", sub: `${store.members.length} member${store.members.length === 1 ? "" : "s"}`, icon: Users, color: A.purple },
@@ -2221,7 +2222,7 @@ function Home({ store, go, toast }: any) {
               />
             </label>
             <button onClick={() => go("packages")} style={btnGhost}>
-              <Plane size={15} /> Browse the 100 packs
+              <ListChecks size={15} /> Browse the 100 packs
             </button>
           </div>
         </Card>
@@ -6525,7 +6526,7 @@ function Trust({ store, toast }: any) {
 const NAV: [string, string, any][] = [
   ["home", "Home", LayoutGrid],
   ["documents", "Documents", FolderOpen],
-  ["packages", "Packages", Plane],
+  ["packages", "Packages", ListChecks],
   ["health", "Health", HeartPulse],
   ["wealth", "Wealth", Wallet],
   ["settings", "Settings", SettingsIcon],
@@ -9571,7 +9572,7 @@ export default function App() {
             [
               ["home", "Home", LayoutGrid],
               ["documents", "Documents", FolderOpen],
-              ["packages", "Packages", Plane],
+              ["packages", "Packages", ListChecks],
               ["health", "Health", HeartPulse],
               ["wealth", "Wealth", Wallet],
             ] as [string, string, any][]
