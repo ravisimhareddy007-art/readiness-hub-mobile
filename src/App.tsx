@@ -8,6 +8,7 @@ import {
   CalendarClock,
   ExternalLink,
   Globe,
+  BookUser,
   Users,
   Wallet,
   KeyRound,
@@ -74,7 +75,7 @@ import { ensureVaultReady } from "@/lib/session";
 import DocViewer from "@/components/DocViewer";
 import { getPackRequirements, cachedRequirements } from "@/lib/requirements";
 import { COUNTRIES, PINNED, searchCountries, countryName, countryFlag } from "@/lib/countries";
-import { packInCountry } from "@/lib/pack-scope";
+import { packInCountry, DESTINATION_PACKS } from "@/lib/pack-scope";
 import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav, MobileNavCtx } from "./components/MobileNav";
@@ -2564,11 +2565,11 @@ const PACK_CATS = [
 ];
 /* Choosing where documents are being prepared. Used by Settings, which owns the setting, and by
    Packages, which is where it visibly takes effect. */
-function CountrySheet({ current, onPick, onClose }: { current: string; onPick: (c: string) => void; onClose: () => void }) {
+function CountrySheet({ current, onPick, onClose, title }: { current: string; onPick: (c: string) => void; onClose: () => void; title?: string }) {
   const [cq, setCq] = useState("");
   const results = searchCountries(cq);
   return (
-    <MSheet title="Preparing documents for" onClose={onClose}>
+    <MSheet title={title || "Preparing documents for"} onClose={onClose}>
       <input
         autoFocus
         value={cq}
@@ -2651,6 +2652,7 @@ function Packages({ store, toast }: any) {
   const [open, setOpen] = useState<AnyPack | null>(null);
   const [creating, setCreating] = useState(false);
   const [pickCountry, setPickCountry] = useState(false);
+  const [pickNationality, setPickNationality] = useState(false);
   const [editing, setEditing] = useState<AnyPack | null>(null);
   const customAsPacks: AnyPack[] = (store.customPacks || []).map((c: any) => ({
     id: c.id,
@@ -3399,7 +3401,14 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
      Checking costs an outside lookup, so it follows intent rather than curiosity: browsing a pack
      spends nothing, the curated list is shown, and a check happens when the user asks for it.
      Once checked, the answer is reused for 30 days and refreshed quietly after that. */
-  const query = `${ev.name}${store.country && store.country !== "IN" ? ` in ${countryName(store.country)}` : ""}`;
+  /* For a visa, the passport decides the list; for anything else, where you are does. Naming the
+     right one in the query is the difference between a usable answer and a plausible one. */
+  const isVisaPack = !!DESTINATION_PACKS[ev.id];
+  const query = isVisaPack
+    ? `${ev.name} for a ${countryName(store.nationality)} passport holder${
+        store.country && store.country !== store.nationality ? ` resident in ${countryName(store.country)}` : ""
+      }`
+    : `${ev.name}${store.country && store.country !== "IN" ? ` in ${countryName(store.country)}` : ""}`;
   const held = ev.custom ? null : cachedRequirements(query, store.country);
   const [live, setLive] = useState<{
     reqs: string[];
@@ -8143,6 +8152,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
 
 function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, onAccountUpdated }: any) {
   const [pickCountry, setPickCountry] = useState(false);
+  const [pickNationality, setPickNationality] = useState(false);
   const [modal, setModal] = useState<null | "whatsnew" | "faq" | "feedback" | "about" | "delete" | "privacy" | "email" | "password">(null);
   const [f1, setF1] = useState("");
   const [f2, setF2] = useState("");
@@ -8399,6 +8409,33 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                   store.setCountry(c);
                   setPickCountry(false);
                   toast(`Requirements now shown for ${countryName(c)}`);
+                }}
+              />
+            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderTop: `1px solid ${T.border}` }}>
+              <BookUser size={16} color={SEM.action} />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.text }}>Passport</span>
+                <span style={{ display: "block", fontSize: 12, color: T.muted }}>
+                  For a visa, the documents asked of you depend on this, not on where you live.
+                </span>
+              </span>
+              <button
+                onClick={() => setPickNationality(true)}
+                style={{ ...btnGhost, padding: "9px 12px", fontSize: 14, minHeight: 44, whiteSpace: "nowrap" }}
+              >
+                {countryFlag(store.nationality)} {countryName(store.nationality)}
+              </button>
+            </div>
+            {pickNationality && (
+              <CountrySheet
+                current={store.nationality}
+                title="Passport held"
+                onClose={() => setPickNationality(false)}
+                onPick={(c) => {
+                  store.setNationality(c);
+                  setPickNationality(false);
+                  toast(`Visa requirements now shown for a ${countryName(c)} passport`);
                 }}
               />
             )}
