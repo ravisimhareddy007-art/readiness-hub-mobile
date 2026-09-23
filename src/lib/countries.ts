@@ -7,6 +7,8 @@ export interface Country {
   flag: string;
 }
 
+/* The markets a family vault plausibly serves first: India, the diaspora corridors, and the
+   destinations Indian applicants most often prepare for. */
 /* Where a user prepares documents. Deliberately a short list rather than all 195.
    Three reasons: inference runs through Bedrock, whose geographic restrictions are stricter than
    Anthropic's direct API; a handful of regions serve these markets; and a curated pack catalogue
