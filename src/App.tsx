@@ -2670,32 +2670,29 @@ function Packages({ store, toast }: any) {
   const cats = ["All", ...PACK_CATS.filter((c) => all.some((p) => p.cat === c)), `My packs (${customAsPacks.length})`];
   /* 195 countries do not fit a dropdown, so the picker is a searchable sheet: the current choice
      is one line, and finding another is one tap and a few letters. */
-  const CountryPicker = () => (
+  const CountryChip = () => (
     <button
       onClick={() => setPickCountry(true)}
+      title={`Requirements for ${countryName(country)}`} aria-label={`Requirements for ${countryName(country)}. Change country.`}
       style={{
-        display: "flex",
+        display: "inline-flex",
         alignItems: "center",
-        gap: 9,
-        width: "100%",
-        minHeight: 44,
-        padding: "8px 12px",
-        marginBottom: 12,
-        borderRadius: 10,
+        gap: 5,
+        minHeight: 34,
+        padding: "0 9px",
+        borderRadius: 9,
         border: `1px solid ${T.border}`,
         background: T.raised,
-        cursor: "pointer",
-        textAlign: "left",
-        fontFamily: "inherit",
-        fontSize: 13,
         color: T.muted,
+        fontSize: 12.5,
+        fontWeight: 600,
+        cursor: "pointer",
+        fontFamily: "inherit",
+        flexShrink: 0,
       }}
     >
-      <span style={{ fontSize: 16 }}>{countryFlag(country)}</span>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        Requirements for <b style={{ color: T.text }}>{countryName(country)}</b>
-      </span>
-      <span style={{ color: SEM.action, fontWeight: 700, fontSize: 12.5, whiteSpace: "nowrap" }}>Change</span>
+      <span style={{ fontSize: 14 }}>{countryFlag(country)}</span>
+      {country}
     </button>
   );
   const needle = q.trim().toLowerCase();
@@ -2722,32 +2719,35 @@ function Packages({ store, toast }: any) {
             </button>
           }
         />
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 9,
-            background: T.panel,
-            border: `1px solid ${q ? SEM.action + "66" : T.border}`,
-            borderRadius: 11,
-            padding: "7px 12px",
-            marginBottom: 10,
-          }}
-        >
-          <Search size={15} color={T.muted} />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Visa, loan, admission…"
-            style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text }}
-          />
-          {q && (
-            <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, display: "flex" }}>
-              <X size={14} />
-            </button>
-          )}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <CountryChip />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 9,
+              flex: 1,
+              minWidth: 0,
+              background: T.panel,
+              border: `1px solid ${q ? SEM.action + "66" : T.border}`,
+              borderRadius: 11,
+              padding: "7px 12px",
+            }}
+          >
+            <Search size={15} color={T.muted} />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Visa, loan, admission…"
+              style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text }}
+            />
+            {q && (
+              <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, display: "flex" }}>
+                <X size={14} />
+              </button>
+            )}
+          </div>
         </div>
-        <CountryPicker />
         {pickCountry && (
           <CountrySheet
             current={country}
@@ -2894,7 +2894,6 @@ function Packages({ store, toast }: any) {
           <Plus size={15} /> Create a custom pack
         </button>
       </div>
-      <CountryPicker />
       {pickCountry && (
           <CountrySheet
             current={country}
@@ -2906,18 +2905,21 @@ function Packages({ store, toast }: any) {
             }}
           />
         )}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          background: T.panel,
-          border: `1px solid ${q ? SEM.action + "66" : T.border}`,
-          borderRadius: 12,
-          padding: "10px 14px",
-          marginBottom: 12,
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <CountryChip />
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flex: 1,
+            minWidth: 0,
+            background: T.panel,
+            border: `1px solid ${q ? SEM.action + "66" : T.border}`,
+            borderRadius: 12,
+            padding: "10px 14px",
+          }}
+        >
         <Search size={16} color={T.muted} />
         <input
           value={q}
@@ -2933,6 +2935,7 @@ function Packages({ store, toast }: any) {
             <X size={14} />
           </button>
         )}
+      </div>
       </div>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
         {cats.map((raw) => {
