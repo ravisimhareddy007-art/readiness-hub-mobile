@@ -153,6 +153,7 @@ body{background:var(--lpv-bg)}
 .lp-scrim{position:fixed;inset:0;z-index:65;background:var(--lpv-scrim)}
 .lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up 280ms cubic-bezier(.2,.9,.3,1.08)}
 .lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:var(--lpv-border);margin:4px auto 10px}
+.lp-grabonly{display:none}
 .lp-sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:50px;padding:0 10px;background:none;border:none;border-radius:12px;color:var(--lpv-text);font-size:15px;font-weight:600;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
 .lp-sheet-item:active{background:var(--lpv-raised)}
 @keyframes lp-sheet-up{from{transform:translateY(36px);opacity:.6}to{transform:translateY(0);opacity:1}}
@@ -187,6 +188,9 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-cardpad{padding:14px !important}
 .lp-chiprail{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap !important;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .lp-chiprail::-webkit-scrollbar{display:none}
+.lp-modalwrap{align-items:flex-end !important;padding:0 !important}
+.lp-modalbox{width:100% !important;max-width:100% !important;max-height:88vh !important;border-radius:22px 22px 0 0 !important;border-bottom:0 !important;padding:14px 16px calc(20px + env(safe-area-inset-bottom)) !important}
+.lp-grabonly{display:block}
 .lp-chipsticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px;padding:8px 14px 6px}
 .lp-hrow,.lp-txrow{display:grid !important;column-gap:12px;row-gap:6px;align-items:center}
 .lp-hrow{grid-template-columns:36px minmax(0,1fr) auto 16px;grid-template-areas:"icon name amt chev" "chips chips chips chev"}
@@ -2639,7 +2643,7 @@ function Packages({ store, toast }: any) {
             alignItems: "center",
             gap: 9,
             background: T.panel,
-            border: `1px solid ${q ? T.gold + "66" : T.border}`,
+            border: `1px solid ${q ? SEM.action + "66" : T.border}`,
             borderRadius: 11,
             padding: "7px 12px",
             marginBottom: 10,
@@ -2675,7 +2679,7 @@ function Packages({ store, toast }: any) {
                   cursor: "pointer",
                   whiteSpace: "nowrap",
                   flexShrink: 0,
-                  border: `1px solid ${on ? T.gold + "77" : T.border}`,
+                  border: `1px solid ${on ? SEM.action + "77" : T.border}`,
                   background: on ? T.raised : "transparent",
                   color: on ? T.white : T.muted,
                 }}
@@ -2714,7 +2718,7 @@ function Packages({ store, toast }: any) {
                     {e.custom && <span style={pill(T.gold)}>custom</span>}
                   </div>
                   <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
-                    {score === 100 ? "Everything in place" : `${total - got} missing · ${got} of ${total} ready`}
+                    {score === 100 ? "Everything in place" : `${got} of ${total} ready`}
                   </div>
                 </div>
                 {score === 100 ? <Stamp /> : <ChevronRight size={16} color={T.faint} />}
@@ -2801,7 +2805,7 @@ function Packages({ store, toast }: any) {
           alignItems: "center",
           gap: 10,
           background: T.panel,
-          border: `1px solid ${q ? T.gold + "66" : T.border}`,
+          border: `1px solid ${q ? SEM.action + "66" : T.border}`,
           borderRadius: 12,
           padding: "10px 14px",
           marginBottom: 12,
@@ -2837,7 +2841,7 @@ function Packages({ store, toast }: any) {
                 fontSize: 12.5,
                 fontWeight: 600,
                 cursor: "pointer",
-                border: `1px solid ${on ? T.gold + "77" : T.border}`,
+                border: `1px solid ${on ? SEM.action + "77" : T.border}`,
                 background: on ? T.raised : "transparent",
                 color: on ? T.white : T.muted,
               }}
@@ -2874,7 +2878,7 @@ function Packages({ store, toast }: any) {
                   {e.custom && <span style={pill(T.gold)}>custom</span>}
                 </div>
                 <div style={{ fontSize: 13, color: T.muted, marginTop: 3 }}>
-                  {score === 100 ? "Everything in place" : `${total - got} missing · ${got} of ${total} ready`}
+                  {score === 100 ? "Everything in place" : `${got} of ${total} ready`}
                 </div>
               </div>
               {score === 100 ? <Stamp /> : <ChevronRight size={18} color={T.muted} />}
@@ -3065,6 +3069,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
   return (
     <div
       onClick={onClose}
+      className="lp-modalwrap"
       style={{
         position: "fixed",
         inset: 0,
@@ -3078,6 +3083,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="lp-modalbox"
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
@@ -3088,6 +3094,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
           padding: 22,
         }}
       >
+        <div className="lp-sheet-grab lp-grabonly" />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <b style={{ color: T.white, fontSize: 18 }}>{existing ? "Edit custom pack" : "Create a custom pack"}</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
@@ -3099,12 +3106,10 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         </p>
         <label style={lbl}>What do you need documents for?</label>
         <textarea
-          style={{ ...inp, minHeight: 60, resize: "vertical", fontFamily: "inherit" }}
+          style={{ ...inp, minHeight: 92, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit" }}
           value={desc}
           onChange={(e) => setDesc(e.target.value)}
-          placeholder={
-            'e.g. "Documents needed for my son\u2019s school admission" or "Documents requested by my new employer"'
-          }
+          placeholder={"My son's school admission, or the documents my new employer asked for"}
         />
         {!drafted && similar.length > 0 && (
           <div style={{ marginTop: 10 }}>
@@ -3154,7 +3159,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         {drafted && (
           <>
             {loading && (
-              <div style={{ fontSize: 12, color: T.gold, margin: "4px 0" }}>
+              <div style={{ fontSize: 12, color: T.muted, margin: "4px 0" }}>
                 ⟳ Refining with current official sources… (up to a minute)
               </div>
             )}
@@ -3164,9 +3169,9 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
             <div
               style={{
                 fontSize: 12,
-                color: T.gold,
-                background: T.gold + "1F",
-                border: `1px solid ${T.gold}44`,
+                color: SEM.action,
+                background: SEM.action + "1F",
+                border: `1px solid ${SEM.action}44`,
                 borderRadius: 9,
                 padding: "8px 11px",
                 marginBottom: 8,
@@ -3337,7 +3342,11 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
   useEffect(() => {
     if (!ev.custom && held?.stale) refresh();
   }, []);
-  const evLive = useMemo(() => ({ ...ev, reqs: live.reqs }), [ev, live.reqs]);
+  const skipped: string[] = store.packSkips?.[ev.id] || [];
+  const evLive = useMemo(
+    () => ({ ...ev, reqs: live.reqs.filter((r: string) => !skipped.includes(r)) }),
+    [ev, live.reqs, skipped.join("|")],
+  );
   const { rows, got, total, score } = evalEvent(evLive, have);
   const included: Doc[] = [
     ...new Set(
@@ -3530,7 +3539,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 gap: 8,
               }}
             >
-              <CheckCircle2 size={16} color={T.mint} /> Found in ReadiNes ({rows.filter((r) => r.have).length})
+              <CheckCircle2 size={16} color={T.mint} /> Already in your vault ({rows.filter((r) => r.have).length})
             </div>
             {rows
               .filter((r) => r.have)
@@ -3560,8 +3569,9 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                           placeItems: "center",
                           width: 20,
                           height: 20,
-                          borderRadius: 6,
+                          borderRadius: 99,
                           background: T.mint + "26",
+                          flexShrink: 0,
                         }}
                       >
                         <Check size={12} color={T.mint} />
@@ -3604,6 +3614,39 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 );
               })}
           </Card>
+          {skipped.length > 0 && (
+            <Card style={{ padding: 0, marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
+                <X size={15} color={T.muted} />
+                <b style={{ color: T.white, fontSize: 14.5 }}>Not needed ({skipped.length})</b>
+                <span style={{ marginLeft: "auto", fontSize: 12.5, color: T.muted }}>set aside by you</span>
+              </div>
+              {skipped.map((label) => (
+                <div
+                  key={label}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "10px 16px",
+                    borderTop: `1px solid ${T.border}`,
+                    minHeight: 48,
+                  }}
+                >
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.muted }}>{label}</span>
+                  <button
+                    onClick={() => {
+                      store.setPackSkip(ev.id, label, false);
+                      toast(`"${label}" is needed again`);
+                    }}
+                    style={{ ...btnGhost, padding: "7px 11px", fontSize: 12.5, minHeight: 44 }}
+                  >
+                    Need it after all
+                  </button>
+                </div>
+              ))}
+            </Card>
+          )}
           {rows.some((r) => !r.have) && (
             <Card style={{ padding: 0, marginBottom: 16 }}>
               <div
@@ -3633,11 +3676,12 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                             placeItems: "center",
                             width: 20,
                             height: 20,
-                            borderRadius: 6,
-                            background: T.gold + "26",
+                            borderRadius: 99,
+                            background: SEM.warning + "26",
+                            flexShrink: 0,
                           }}
                         >
-                          <X size={12} color={T.gold} />
+                          <X size={12} color={SEM.warning} />
                         </span>
                         <span style={{ flex: 1, fontSize: 14, color: T.text, minWidth: 0 }}>
                           {r.label}
@@ -3653,32 +3697,42 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                             ...btnGhost,
                             padding: "5px 12px",
                             fontSize: 12.5,
-                            color: T.gold,
-                            borderColor: T.gold + "55",
+                            color: SEM.action,
+                            borderColor: SEM.action + "55",
                           }}
                         >
                           Add
                         </button>
                       </div>
                       {menuOpen && (
-                        <div style={{ display: "flex", gap: 8, padding: "0 16px 11px 48px" }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "0 16px 11px 48px" }}>
                           <button
                             onClick={() => {
                               upReq.current = r.label;
                               upRef.current?.click();
                             }}
-                            style={{ ...btnGhost, padding: "6px 11px", fontSize: 12 }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12.5, minHeight: 44, whiteSpace: "nowrap" }}
                           >
-                            <UploadCloud size={13} /> Upload document
+                            <UploadCloud size={13} /> Upload
                           </button>
                           <button
                             onClick={() => {
                               setAddFor(null);
                               setPickFor(r.label);
                             }}
-                            style={{ ...btnGhost, padding: "6px 11px", fontSize: 12 }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12.5, minHeight: 44, whiteSpace: "nowrap" }}
                           >
-                            <FolderOpen size={13} /> Choose from Documents
+                            <FolderOpen size={13} /> Pick from Documents
+                          </button>
+                          <button
+                            onClick={() => {
+                              setAddFor(null);
+                              store.setPackSkip(ev.id, r.label, true);
+                              toast(`"${r.label}" marked as not needed`);
+                            }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12.5, minHeight: 44, whiteSpace: "nowrap", color: T.muted }}
+                          >
+                            <X size={13} /> Not needed
                           </button>
                         </div>
                       )}
@@ -3904,7 +3958,7 @@ function Documents({ store, toast, go }: any) {
   const expiryCell = (d: Doc) => {
     if (!d.expiry) return <span style={{ color: T.faint }}>—</span>;
     const n = daysTo(d.expiry);
-    const c = n < 0 ? T.coral : n < 60 ? T.gold : T.muted;
+    const c = n < 0 ? T.coral : n < 60 ? SEM.warning : T.muted;
     return <span style={{ color: c, fontWeight: n < 60 ? 700 : 400 }}>{n < 0 ? "expired" : `${n}d`}</span>;
   };
   const panels = (
@@ -3957,7 +4011,7 @@ function Documents({ store, toast, go }: any) {
           fontSize: 12.5,
           fontWeight: 600,
           cursor: "pointer",
-          border: `1px solid ${on ? T.gold + "77" : T.border}`,
+          border: `1px solid ${on ? SEM.action + "77" : T.border}`,
           background: on ? T.raised : "transparent",
           color: on ? T.white : T.muted,
         }}
@@ -3992,7 +4046,7 @@ function Documents({ store, toast, go }: any) {
             alignItems: "center",
             gap: 9,
             background: T.panel,
-            border: `1px solid ${q ? T.gold + "66" : T.border}`,
+            border: `1px solid ${q ? SEM.action + "66" : T.border}`,
             borderRadius: 11,
             padding: "7px 12px",
             marginBottom: 10,
@@ -4413,7 +4467,7 @@ function Documents({ store, toast, go }: any) {
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
-                border: `1px solid ${on ? T.gold + "77" : T.border}`,
+                border: `1px solid ${on ? SEM.action + "77" : T.border}`,
                 background: on ? T.raised : "transparent",
                 color: on ? T.white : T.muted,
               }}
@@ -4435,7 +4489,7 @@ function Documents({ store, toast, go }: any) {
             alignItems: "center",
             gap: 8,
             background: T.panel,
-            border: `1px solid ${q ? T.gold + "66" : T.border}`,
+            border: `1px solid ${q ? SEM.action + "66" : T.border}`,
             borderRadius: 10,
             padding: "8px 12px",
             flex: "1 1 220px",
