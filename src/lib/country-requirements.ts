@@ -71,6 +71,8 @@ const BASE: Record<string, { reqs: string[]; source: string }> = {
     home catalogue, which carries the same date). */
 const CHECKED = "2026-07-25";
 
+/** Local situation lists were checked in the September pass. */
+const CHECKED_LOCAL = "2026-09-24";
 /** What replaces an India-anchored item, per country of residence. Drawn from the same
     country ontology the scoring uses, so a seed can always be satisfied by a held document. */
 const SWAPS: Record<string, Record<string, string>> = {
