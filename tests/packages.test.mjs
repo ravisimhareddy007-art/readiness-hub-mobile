@@ -30,6 +30,12 @@ t("country falls back to India when the device region is not covered", () => {
 t("every country has a name and a flag", () => {
   c.COUNTRIES.forEach((x) => { assert.ok(x.name.length > 2); assert.ok(x.flag.length > 0); });
 });
+t("the country is set in Settings and costs no room in Packages", () => {
+  assert.ok(/<Globe size=\{16\}/.test(app), "Settings must own the setting");
+  assert.ok(/const CountryChip/.test(app), "Packages shows the jurisdiction as a chip, not a bar");
+  assert.ok(!/Requirements for <b/.test(app), "a full-width bar for a setting owned elsewhere is waste");
+  assert.ok(/function CountrySheet\(\{ current, onPick, onClose, title \}/.test(app), "one picker, used by both");
+});
 t("requirements are cached per country, not per pack alone", () => {
   assert.ok(/jurisdiction \? `\$\{query\}::\$\{jurisdiction\}` : query/.test(idx), "cache key must include the country");
 });
