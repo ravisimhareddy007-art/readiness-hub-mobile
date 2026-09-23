@@ -23,3 +23,18 @@ export function getCached(query: string): PackRequirements | null {
 export function setCached(query: string, data: PackRequirements): void {
   try { localStorage.setItem(PREFIX + norm(query), JSON.stringify({ at: Date.now(), data })); } catch {}
 }
+
+/** A cached answer regardless of age, so a stale list can still be shown while it is re-checked. */
+export function getCachedAny(query: string): { data: PackRequirements; at: number; stale: boolean } | null {
+  try {
+    const raw = localStorage.getItem(PREFIX + norm(query));
+    if (!raw) return null;
+    const e: Entry = JSON.parse(raw);
+    return { data: e.data, at: e.at, stale: Date.now() - e.at > TTL_MS };
+  } catch { return null; }
+}
+
+/** Has this pack ever been checked here? Used to decide whether a lookup costs anything. */
+export function isCached(query: string): boolean {
+  return getCachedAny(query) !== null;
+}

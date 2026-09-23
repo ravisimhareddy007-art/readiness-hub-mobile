@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, lazy, Suspense } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode, CSSProperties } from "react";
 import {
   LayoutGrid,
@@ -6,6 +6,7 @@ import {
   FolderOpen,
   HeartPulse,
   CalendarClock,
+  ExternalLink,
   Users,
   Wallet,
   KeyRound,
@@ -70,7 +71,8 @@ import { buildZip } from "@/lib/zip";
 import { getSession, signup, login, logout, deleteAccount, updateAccountName, changePassword, changeEmail, type Account } from "@/lib/auth";
 import { ensureVaultReady } from "@/lib/session";
 import DocViewer from "@/components/DocViewer";
-import { getPackRequirements } from "@/lib/requirements";
+import { getPackRequirements, cachedRequirements } from "@/lib/requirements";
+import { COUNTRIES, countryName, countryFlag, packFitsCountry } from "@/lib/countries";
 import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav, MobileNavCtx } from "./components/MobileNav";
@@ -2573,8 +2575,44 @@ function Packages({ store, toast }: any) {
   }));
   const all: AnyPack[] = [...(EVENTS as AnyPack[]), ...customAsPacks];
   const cats = ["All", ...PACK_CATS.filter((c) => all.some((p) => p.cat === c)), `My packs (${customAsPacks.length})`];
+  const CountryPicker = () => (
+    <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+      <span style={{ fontSize: 13, color: T.muted }}>Preparing documents in</span>
+      <select
+        value={country}
+        onChange={(e) => {
+          store.setCountry(e.target.value);
+          toast(`Packs and requirements now shown for ${countryName(e.target.value)}`);
+        }}
+        style={{
+          background: T.raised,
+          border: `1px solid ${T.border}`,
+          borderRadius: 9,
+          padding: "9px 11px",
+          color: T.text,
+          fontSize: 14,
+          minHeight: 44,
+          fontFamily: "inherit",
+        }}
+      >
+        {COUNTRIES.map((c) => (
+          <option key={c.code} value={c.code} style={{ color: "#000" }}>
+            {c.flag} {c.name}
+          </option>
+        ))}
+      </select>
+      {hidden > 0 && (
+        <span style={{ fontSize: 12.5, color: T.faint }}>
+          {hidden} pack{hidden === 1 ? "" : "s"} hidden
+        </span>
+      )}
+    </div>
+  );
   const needle = q.trim().toLowerCase();
-  const list = all.filter(
+  const country = store.country || "IN";
+  const inCountry = all.filter((e) => e.custom || packFitsCountry(e.reqs, country));
+  const hidden = all.length - inCountry.length;
+  const list = inCountry.filter(
     (e) =>
       (cat === "All" || e.cat === cat) &&
       (!needle || `${e.name} ${e.blurb} ${e.cat} ${e.reqs.join(" ")}`.toLowerCase().includes(needle)),
@@ -2620,6 +2658,7 @@ function Packages({ store, toast }: any) {
             </button>
           )}
         </div>
+        <CountryPicker />
         <div className="lp-chiprail" style={{ marginBottom: 12 }}>
           {cats.map((raw) => {
             const c = raw.startsWith("My packs") ? "My packs" : raw;
@@ -2755,6 +2794,7 @@ function Packages({ store, toast }: any) {
           <Plus size={15} /> Create a custom pack
         </button>
       </div>
+      <CountryPicker />
       <div
         style={{
           display: "flex",
@@ -3244,7 +3284,61 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
       .filter((p: any) => (p.reqs || []).includes(docType) && p.id !== ev.id)
       .map((p: any) => p.name);
   const memberName = (mid?: string) => store.members.find((m: Member) => m.id === mid)?.name || "Unassigned";
-  const { rows, got, total, score } = evalEvent(ev, have);
+  /* A requirements list goes stale: consulates and registrars change what they ask for.
+     Checking costs an outside lookup, so it follows intent rather than curiosity: browsing a pack
+     spends nothing, the curated list is shown, and a check happens when the user asks for it.
+     Once checked, the answer is reused for 30 days and refreshed quietly after that. */
+  const query = `${ev.name}${store.country && store.country !== "IN" ? ` in ${countryName(store.country)}` : ""}`;
+  const held = ev.custom ? null : cachedRequirements(query, store.country);
+  const [live, setLive] = useState<{
+    reqs: string[];
+    sources: any[];
+    lastChecked?: string;
+    confidence?: string;
+    disclaimer?: string;
+    origin: "curated" | "cache" | "ai" | "fallback";
+    error?: string;
+  }>(
+    held
+      ? {
+          reqs: held.data.requirements.map((r: any) => (r.ontology && r.ontology !== "Other" ? r.ontology : r.item)),
+          sources: held.data.sources || [],
+          lastChecked: held.data.lastChecked,
+          confidence: held.data.confidence,
+          disclaimer: held.data.disclaimer,
+          origin: "cache",
+        }
+      : { reqs: ev.reqs, sources: [], origin: "curated" },
+  );
+  const [checking, setChecking] = useState(false);
+  const refresh = useCallback(
+    async (force?: boolean) => {
+      setChecking(true);
+      try {
+        const { data, source } = await getPackRequirements(query, store.country, force);
+        setLive({
+          reqs: data.requirements.map((r: any) => (r.ontology && r.ontology !== "Other" ? r.ontology : r.item)),
+          sources: data.sources || [],
+          lastChecked: data.lastChecked,
+          confidence: data.confidence,
+          disclaimer: data.disclaimer,
+          origin: source,
+        });
+      } catch (e: any) {
+        setLive((p) => ({ ...p, origin: "fallback", error: e?.message }));
+      } finally {
+        setChecking(false);
+      }
+    },
+    [query, store.country],
+  );
+  /* Only a held answer that has aged past 30 days refreshes on its own. A pack never checked
+     before waits for the user to ask, so opening the catalog costs nothing. */
+  useEffect(() => {
+    if (!ev.custom && held?.stale) refresh();
+  }, []);
+  const evLive = useMemo(() => ({ ...ev, reqs: live.reqs }), [ev, live.reqs]);
+  const { rows, got, total, score } = evalEvent(evLive, have);
   const included: Doc[] = [
     ...new Set(
       rows
@@ -3341,10 +3435,77 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               </>
             ) : (
               <span>
-                Curated · Source: {ev.source} · Last checked {ev.lastChecked}
+                {checking
+                  ? "Checking published sources…"
+                  : live.origin === "curated"
+                    ? `Curated list · ${ev.source} · last checked ${ev.lastChecked}`
+                    : live.origin === "cache"
+                      ? `${countryFlag(store.country)} ${countryName(store.country)} · checked against published sources${live.lastChecked ? ` on ${fmtDate(live.lastChecked)}` : ""}`
+                      : live.origin === "fallback"
+                        ? `Offline list · could not reach published sources · showing ${ev.source}, last checked ${ev.lastChecked}`
+                        : `${countryFlag(store.country)} ${countryName(store.country)} · checked against published sources${live.lastChecked ? ` on ${fmtDate(live.lastChecked)}` : ""}`}
               </span>
             )}
           </div>
+          {!ev.custom && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 8,
+                marginTop: 10,
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: `1px solid ${T.border}`,
+                background: T.raised,
+                fontSize: 12.5,
+                color: T.muted,
+              }}
+            >
+              <span style={{ flex: "1 1 200px", lineHeight: 1.5 }}>
+                {live.origin === "curated"
+                  ? `This is our curated list for ${countryName(store.country)}. Check it against published sources when you are ready to apply.`
+                  : "Requirements change. Open the source below before you submit anything."}
+              </span>
+              <button
+                onClick={() => refresh(live.origin !== "curated")}
+                disabled={checking}
+                style={
+                  live.origin === "curated"
+                    ? { ...btnGold, padding: "8px 13px", fontSize: 12.5, minHeight: 44, opacity: checking ? 0.6 : 1 }
+                    : { ...btnGhost, padding: "6px 11px", fontSize: 12, minHeight: 44, opacity: checking ? 0.6 : 1 }
+                }
+              >
+                <RefreshCw size={13} />
+                {checking ? "Checking…" : live.origin === "curated" ? "Check official requirements" : "Check again"}
+              </button>
+              {live.sources.slice(0, 3).map((src: any) => (
+                <a
+                  key={src.url}
+                  href={src.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    minHeight: 44,
+                    padding: "6px 10px",
+                    borderRadius: 9,
+                    border: `1px solid ${T.border}`,
+                    color: SEM.action,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                  }}
+                >
+                  {src.tier === "official" || src.tier === "embassy" ? <ShieldCheck size={12} /> : <ExternalLink size={12} />}
+                  {(src.title || src.url).slice(0, 34)}
+                </a>
+              ))}
+            </div>
+          )}
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
             <Ring score={score} size={64} />
             {score === 100 ? (
