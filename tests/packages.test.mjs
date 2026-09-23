@@ -36,9 +36,8 @@ t("requirements are cached per country, not per pack alone", () => {
 t("a forced check bypasses the cache", () => {
   assert.ok(/force \? null : getCached\(key\)/.test(idx));
 });
-t("every pack can be checked against live sources, not only custom ones", () => {
+t("every pack is checked against live sources, not only custom ones", () => {
   assert.ok(/getPackRequirements\(query, store\.country, force\)/.test(app));
-  assert.ok(/Check official requirements/.test(app), "a built-in pack must offer the check");
 });
 t("the curated list shows while the live check runs", () => {
   assert.ok(/origin: "curated"/.test(app), "the sheet must never open empty");
@@ -51,17 +50,17 @@ t("sources are linked and official ones are marked", () => {
   assert.ok(/live\.sources\.slice\(0, 3\)/.test(app));
   assert.ok(/src\.tier === "official" \|\| src\.tier === "embassy"/.test(app));
 });
-t("the user is told requirements change", () => {
-  assert.ok(/Requirements change\./.test(app));
+t("official sources are distinguishable from general ones", () => {
+  assert.ok(/src\.tier === "official" \|\| src\.tier === "embassy"/.test(app));
 });
 
 
 /* ── cost: an outside lookup follows intent, never curiosity ── */
 const cache = readFileSync(join(root, "src/lib/requirements/cache.ts"), "utf8");
-t("browsing a pack never triggers a lookup", () => {
-  assert.ok(/if \(!ev\.custom && held\?\.stale\) refresh\(\)/.test(app),
-    "only a held answer past its 30 days may refresh on its own");
-  assert.ok(!/if \(!ev\.custom\) refresh\(\);/.test(app), "a bare refresh on open would cost a call per glance");
+t("a pack knows its requirements without being asked", () => {
+  assert.ok(/if \(!ev\.custom && \(!held \|\| held\.stale\)\) refresh\(\)/.test(app),
+    "the research must already be done when the pack opens");
+  assert.ok(!/Check official requirements/.test(app), "the user must never be sent to do the research");
 });
 t("a held answer is reused for 30 days", () => {
   assert.ok(/TTL_MS = 30 \* 24 \* 60 \* 60 \* 1000/.test(cache));
@@ -75,8 +74,9 @@ t("a stale answer is shown while it refreshes, never a blank sheet", () => {
   assert.ok(/getCachedAny/.test(cache), "an expired entry must still be readable");
   assert.ok(/stale: Date\.now\(\) - e\.at > TTL_MS/.test(cache));
 });
-t("the user is offered the check rather than charged for it", () => {
-  assert.ok(/Check official requirements/.test(app));
+t("provenance is shown, and a recheck is one tap", () => {
+  assert.ok(/Checked \{fmtDate\(live\.lastChecked\)\}/.test(app), "the date it was checked must be visible");
+  assert.ok(/title="Check again now"/.test(app), "a manual recheck must be available");
 });
 
 /* ── the module obeys the colour constitution ── */
