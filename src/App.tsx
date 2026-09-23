@@ -77,6 +77,8 @@ import DocViewer from "@/components/DocViewer";
 import { getPackRequirements, cachedRequirements } from "@/lib/requirements";
 import { COUNTRIES, PINNED, searchCountries, countryName, countryFlag } from "@/lib/countries";
 import { packInCountry, DESTINATION_PACKS } from "@/lib/pack-scope";
+import { resolveRequirement, satisfiedBy } from "@/lib/ontology";
+import { seededFor } from "@/lib/country-requirements";
 import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav, MobileNavCtx } from "./components/MobileNav";
@@ -176,7 +178,7 @@ body{background:var(--lpv-bg)}
 .lp-dc-meta{display:contents}
 .lp-mh-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;justify-items:center;padding:6px 0 12px}
 .lp-mh-mod{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}
-.lp-mh-modlbl{font-size:10.5px;font-weight:600;color:var(--lpv-muted)}
+.lp-mh-modlbl{font-size:12px;font-weight:600;color:var(--lpv-muted)}
 .lp-mh-insrail{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .lp-mh-insrail::-webkit-scrollbar{display:none}
 .lp-chip{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 9px;border-radius:7px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap}
@@ -283,39 +285,10 @@ const CAT_META: Record<Category, { icon: any; color: string }> = {
 /* ── document ontology: capability requirements and the real documents that satisfy them.
    This is the single matching truth — evalEvent, the drawer, exports, and dashboard insights all use it,
    so a requirement can never read "available" in one pack and "missing" in another. ── */
-const SATISFIES: Record<string, string[]> = {
-  "Identity Proof": ["Aadhaar Card", "PAN Card", "Passport", "Voter ID", "Driving License"],
-  "Address Proof": [
-    "Aadhaar Card",
-    "Passport",
-    "Utility Bill",
-    "Rental Agreement",
-    "Voter ID",
-    "Driving License",
-    "Bank Statement",
-  ],
-  "Date of Birth Proof": ["Birth Certificate", "Aadhaar Card", "Passport", "PAN Card"],
-  "Photo ID": ["Aadhaar Card", "Passport", "PAN Card", "Driving License", "Voter ID"],
-  "Income Proof": ["Payslip", "Form 16", "ITR Acknowledgement", "Salary Certificate"],
-  "Employment Proof": ["Employment Offer", "Salary Certificate", "Payslip"],
-  "Proof of Funds": ["Bank Statement", "Investment Statement"],
-  "Accommodation Proof": ["Hotel Booking", "Rental Agreement", "Invitation Letter"],
-  "Travel Itinerary": ["Flight Reservation"],
-  "Property Ownership Proof": ["Property Deed", "Sale Agreement"],
-};
-const satisfies = (req: string, have: Set<string>): string | null => {
-  if (have.has(req)) return req;
-  for (const t of SATISFIES[req] || []) if (have.has(t)) return t;
-  return null;
-};
-const satisfyingDoc = (req: string, docs: Doc[]): Doc | undefined => {
-  const direct = docs.find((d) => d.docType === req);
-  if (direct) return direct;
-  for (const t of SATISFIES[req] || []) {
-    const d = docs.find((x) => x.docType === t);
-    if (d) return d;
-  }
-  return undefined;
+const satisfyingDoc = (req: string, docs: Doc[], country = "IN"): Doc | undefined => {
+  const held = new Set(docs.map((d) => d.docType));
+  const via = resolveRequirement(req, held, country);
+  return via ? docs.find((d) => d.docType === via) : undefined;
 };
 /* ── curated catalog: the documented life of an educated adult, 100 high-frequency situations ── */
 const PACK_CAT_META: Record<string, { color: string; icon: any; source: string }> = {
@@ -1451,9 +1424,9 @@ const EVENTS = [
   ),
 ];
 const DOC_VOCAB = [...new Set(EVENTS.flatMap((e) => e.reqs))].sort();
-const evalEvent = (ev: { reqs: string[] }, have: Set<string>) => {
+const evalEvent = (ev: { reqs: string[] }, have: Set<string>, country = "IN") => {
   const rows = ev.reqs.map((r) => {
-    const via = satisfies(r, have);
+    const via = resolveRequirement(r, have, country);
     return { label: r, have: !!via, via };
   });
   const got = rows.filter((r) => r.have).length;
@@ -1638,7 +1611,7 @@ const pill = (color: string): CSSProperties => ({
 /* ═══════════════ HOME (dashboard, not the package grid) ═══════════════ */
 function Home({ store, go, toast }: any) {
   const have: Set<string> = useMemo(() => new Set(store.docs.map((d: Doc) => d.docType)), [store.docs]);
-  const scored = EVENTS.map((e) => ({ e, ...evalEvent(e, have) }));
+  const scored = EVENTS.map((e) => ({ e, ...evalEvent(e, have, store.country) }));
   const started = scored.filter((x) => x.score > 0);
   const overall = started.length ? Math.round(started.reduce((s, x) => s + x.score, 0) / started.length) : 0;
   const best = [...scored].sort((a, b) => b.score - a.score)[0];
@@ -1731,7 +1704,7 @@ function Home({ store, go, toast }: any) {
       const who = store.members.find((m: Member) => m.id === appt.memberId)?.name.split(" ")[0];
       const hosp = EVENTS.find((e) => e.id === "hospital");
       if (hosp) {
-        const hv = evalEvent(hosp, have);
+        const hv = evalEvent(hosp, have, store.country);
         const missing = hv.rows.filter((r) => !r.have).map((r) => r.label);
         insights.push({
           icons: [HeartPulse, Plane],
@@ -1758,7 +1731,7 @@ function Home({ store, go, toast }: any) {
       store.docs.filter((d: Doc) => d.expiry).sort((a: Doc, b: Doc) => +new Date(a.expiry!) - +new Date(b.expiry!))[0];
     if (expDoc) {
       const powered = EVENTS.filter((e) =>
-        e.reqs.some((r) => r === expDoc.docType || (SATISFIES[r] || []).includes(expDoc.docType)),
+        e.reqs.some((r) => r === expDoc.docType || satisfiedBy(r, store.country || "IN").includes(expDoc.docType)),
       );
       if (powered.length > 1) {
         insights.push({
@@ -1936,7 +1909,7 @@ function Home({ store, go, toast }: any) {
                 )}
               </span>
               <span className="lp-mh-modlbl" style={{ color: T.text }}>{m.label}</span>
-              <span style={{ fontSize: 9.5, color: T.muted, marginTop: -3 }}>{m.sub}</span>
+              <span style={{ fontSize: 12, color: T.muted, marginTop: -2 }}>{m.sub}</span>
             </button>
           ))}
         </div>
@@ -2337,7 +2310,7 @@ function Home({ store, go, toast }: any) {
       <div className="lp-cols2">
         <Card style={{ padding: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px 16px" }}>
-            <AlertTriangle size={16} color={totalActs ? T.gold : T.mint} />
+            <AlertTriangle size={16} color={totalActs ? SEM.warning : T.mint} />
             <b style={{ color: T.white, fontSize: 15 }}>Action center</b>
             <span style={{ marginLeft: "auto", ...pill(totalActs ? T.gold : T.mint) }}>{totalActs || "all clear"}</span>
           </div>
@@ -2787,7 +2760,7 @@ function Packages({ store, toast }: any) {
         </div>
         <div style={{ display: "grid", gap: 8 }}>
           {list.map((e) => {
-            const { score, got, total } = evalEvent(e, have);
+            const { score, got, total } = evalEvent(e, have, country);
             return (
               <button
                 key={e.id}
@@ -2963,7 +2936,7 @@ function Packages({ store, toast }: any) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(300px,100%),1fr))", gap: 12 }}>
         {list.map((e) => {
-          const { score, got, total } = evalEvent(e, have);
+          const { score, got, total } = evalEvent(e, have, country);
           return (
             <button
               key={e.id}
@@ -3349,7 +3322,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                 </div>
                 {meta.sources?.slice(0, 4).map((s: any, i: number) => (
                   <a key={i} href={s.url} target="_blank" rel="noreferrer" style={{ display: "block", fontSize: 12, color: T.gold, marginTop: 4 }}>
-                    <span style={{ textTransform: "uppercase", fontSize: 9, color: T.muted, marginRight: 6 }}>{s.tier}</span>
+                    <span style={{ textTransform: "uppercase", fontSize: 12, color: T.muted, marginRight: 6 }}>{s.tier}</span>
                     {s.title}
                   </a>
                 ))}
@@ -3461,16 +3434,23 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
     if (!ev.custom && (!held || held.stale)) refresh();
   }, []);
   const skipped: string[] = store.packSkips?.[ev.id] || [];
-  const evLive = useMemo(
-    () => ({ ...ev, reqs: live.reqs.filter((r: string) => !skipped.includes(r)) }),
-    [ev, live.reqs, skipped.join("|")],
-  );
-  const { rows, got, total, score } = evalEvent(evLive, have);
+  const isHome = (store.country || "IN") === "IN";
+  /* A list written for this country, with a published source behind it. Shown immediately so a
+     pack opens with a real answer, and superseded by the live lookup when that returns. */
+  const seeded = isHome ? null : seededFor(ev.id, store.country);
+  /* Only a list actually meant for this country is a checklist. The curated catalogue was written
+     for India, so elsewhere it is a guess, and a guess scored to two figures is a lie. */
+  const researched = ev.custom || isHome || !!seeded || live.origin === "cache" || live.origin === "ai";
+  const evLive = useMemo(() => {
+    const base = live.origin === "curated" && seeded ? seeded.reqs : live.reqs;
+    return { ...ev, reqs: base.filter((r: string) => !skipped.includes(r)) };
+  }, [ev, live.reqs, live.origin, seeded, skipped.join("|")]);
+  const { rows, got, total, score } = evalEvent(evLive, have, store.country);
   const included: Doc[] = [
     ...new Set(
       rows
         .filter((r: any) => r.have)
-        .map((r: any) => satisfyingDoc(r.label, store.docs))
+        .map((r: any) => satisfyingDoc(r.label, store.docs, store.country))
         .filter(Boolean) as Doc[],
     ),
   ];
@@ -3557,7 +3537,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ color: T.white, fontSize: 18, fontWeight: 800 }}>{ev.name}</div>
-              <div style={{ color: T.muted, fontSize: 13 }}>{ev.blurb}</div>
+              {isHome && <div style={{ color: T.muted, fontSize: 13 }}>{ev.blurb}</div>}
             </div>
           </div>
           <div
@@ -3587,14 +3567,14 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             ) : (
               <span>
                 {checking
-                  ? "Checking published sources…"
-                  : live.origin === "curated"
-                    ? `Curated list · ${ev.source} · last checked ${ev.lastChecked}`
-                    : live.origin === "cache"
-                      ? `${countryFlag(store.country)} ${countryName(store.country)} · checked against published sources${live.lastChecked ? ` on ${fmtDate(live.lastChecked)}` : ""}`
-                      : live.origin === "fallback"
-                        ? `Offline list · could not reach published sources · showing ${ev.source}, last checked ${ev.lastChecked}`
-                        : `${countryFlag(store.country)} ${countryName(store.country)} · checked against published sources${live.lastChecked ? ` on ${fmtDate(live.lastChecked)}` : ""}`}
+                  ? `Checking published sources for ${countryName(store.country)}…`
+                  : live.origin === "curated" && seeded
+                    ? `${countryFlag(store.country)} ${seeded.source} · checked ${fmtDate(seeded.checked)}`
+                    : researched
+                      ? isHome && live.origin === "curated"
+                        ? `Curated list · ${ev.source} · last checked ${ev.lastChecked}`
+                        : `${countryFlag(store.country)} ${countryName(store.country)} · from published sources${live.lastChecked ? `, checked ${fmtDate(live.lastChecked)}` : ""}`
+                      : `Not yet researched for ${countryName(store.country)}`}
               </span>
             )}
           </div>
@@ -3680,6 +3660,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               </span>
             </div>
           )}
+          {researched && (
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
             <Ring score={score} size={64} />
             {score === 100 ? (
@@ -3690,8 +3671,25 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               </div>
             )}
           </div>
+          )}
         </div>
         <div style={{ padding: 18 }}>
+          {!researched && (
+            <Card style={{ padding: 20, marginBottom: 12, textAlign: "center" }}>
+              <Globe size={20} color={T.muted} />
+              <h3 style={{ color: T.white, fontSize: 16, margin: "10px 0 6px", fontWeight: 700 }}>
+                Not researched for {countryName(store.country)} yet
+              </h3>
+              <p style={{ color: T.muted, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 16px" }}>
+                We have not checked what this needs in {countryName(store.country)}. Rather than show a list that could
+                be wrong at the counter, we will look up the official requirements.
+              </p>
+              <button onClick={() => refresh(true)} disabled={checking} style={{ ...btnGold, margin: "0 auto", opacity: checking ? 0.6 : 1 }}>
+                <RefreshCw size={15} /> {checking ? "Looking it up…" : "Look up the requirements"}
+              </button>
+            </Card>
+          )}
+          {researched && (
           <Card style={{ padding: 0, marginBottom: 12 }}>
             <div
               style={{
@@ -3709,7 +3707,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             {rows
               .filter((r) => r.have)
               .map((r) => {
-                const d = satisfyingDoc(r.label, store.docs);
+                const d = satisfyingDoc(r.label, store.docs, store.country);
                 const isOpen = expanded === r.label;
                 const reuse = otherPacks(r.label);
                 return (
@@ -3779,6 +3777,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 );
               })}
           </Card>
+          )}
           {skipped.length > 0 && (
             <Card style={{ padding: 0, marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
@@ -3923,12 +3922,12 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
           />
           <button
             onClick={exportPack}
-            disabled={packing || included.length === 0}
+            disabled={packing || included.length === 0 || !researched}
             style={{
               ...btnGold,
               width: "100%",
               justifyContent: "center",
-              opacity: packing || included.length === 0 ? 0.55 : 1,
+              opacity: packing || included.length === 0 || !researched ? 0.55 : 1,
             }}
           >
             <Download size={16} />
@@ -6410,7 +6409,7 @@ function Wealth({ store, go, toast }: any) {
               }}
             />
           )}
-          {sos && <SOSHandoffModal store={store} toast={toast} onClose={() => setSos(false)} />}
+          {sos && <SOSHandoffModal store={store} toast={toast} go={go} onClose={() => setSos(false)} />}
           {estate && <EstateSheet store={store} onClose={() => setEstate(false)} toast={toast} />}
           {viewDoc && <DocViewer doc={viewDoc} store={store} onClose={() => setViewDoc(null)} />}
           {confirm && <ConfirmSheet {...confirm} onClose={() => setConfirm(null)} />}
@@ -6651,6 +6650,21 @@ function SearchResults({ store, query, go }: any) {
       <div style={{ fontSize: 13.5, color: T.muted, marginBottom: 14 }}>
         {total === 0 ? `No matches for "${query}"` : `${total} result${total > 1 ? "s" : ""} for "${query}"`}
       </div>
+      {total === 0 && (
+        <Card style={{ padding: 18, marginBottom: 14 }}>
+          <p style={{ fontSize: 13.5, color: T.muted, lineHeight: 1.6, margin: "0 0 14px" }}>
+            Nothing in your vault matches that yet. You can add it, or find the situation that needs it.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <button onClick={() => go("documents")} style={{ ...btnGold, minHeight: 44 }}>
+              <UploadCloud size={15} /> Add a document
+            </button>
+            <button onClick={() => go("packages")} style={{ ...btnGhost, minHeight: 44 }}>
+              <ListChecks size={15} /> Browse situations
+            </button>
+          </div>
+        </Card>
+      )}
       <Group label="Documents" count={docs.length}>
         {docs.map((d: Doc) => (
           <Row
@@ -6716,7 +6730,7 @@ function SearchResults({ store, query, go }: any) {
 }
 
 
-function SOSHandoffModal({ store, toast, onClose }: any) {
+function SOSHandoffModal({ store, toast, onClose, go }: any) {
   const recipients: Member[] = store.members.filter(
     (m: Member) => m.access === "Emergency access" || m.access === "Full member",
   );
@@ -6817,9 +6831,20 @@ function SOSHandoffModal({ store, toast, onClose }: any) {
           Who steps in
         </div>
         {recipients.length === 0 ? (
-          <p style={{ fontSize: 13, color: T.coral }}>
-            No one has Emergency or Full access yet. Set that up in Trust center first.
-          </p>
+          <div>
+            <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.6, margin: "0 0 12px" }}>
+              Nobody can step in yet. Give someone Emergency or Full access and they will appear here.
+            </p>
+            <button
+              onClick={() => {
+                onClose?.();
+                go?.("trust");
+              }}
+              style={{ ...btnGhost, minHeight: 44 }}
+            >
+              <ShieldCheck size={15} /> Open Trust center
+            </button>
+          </div>
         ) : (
           recipients.map((m) => (
             <label
@@ -7273,7 +7298,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
       setFill({
         busy: false,
         note: n
-          ? `Filled ${n} field${n > 1 ? "s" : ""} from your document${when ? " as of " + new Date(when).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : ""}. Check and confirm.`
+          ? `Filled ${n} field${n > 1 ? "s" : ""} from your document${when ? " as of " + fmtDate(when) : ""}. Check and confirm.`
           : "Nothing readable in this document. Fill in by hand.",
       });
     } catch {
@@ -7888,7 +7913,7 @@ function DesignSystem({ store }: any) {
           {DS.space.map((v) => (
             <span key={v} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
               <span style={{ width: 14, height: v, background: SEM.action + "55", borderRadius: 3 }} />
-              <span style={{ fontSize: 9, color: T.faint }}>{v}</span>
+              <span style={{ fontSize: 12, color: T.faint }}>{v}</span>
             </span>
           ))}
         </div>
