@@ -2831,12 +2831,12 @@ function Packages({ store, toast }: any) {
               setCreating(false);
               setEditing(null);
             }}
-            onSave={(name: string, desc: string, reqs: string[]) => {
+            onSave={(name: string, desc: string, reqs: string[], extra: any) => {
               if (editing) {
-                store.updateCustomPack(editing.id, { name, desc, reqs });
+                store.updateCustomPack(editing.id, { name, desc, reqs, ...extra });
                 toast("Custom pack updated");
               } else {
-                store.addCustomPack({ name, desc, reqs });
+                store.addCustomPack({ name, desc, reqs, country: store.country, ...extra });
                 toast("Custom pack created");
               }
               setCreating(false);
@@ -3010,12 +3010,12 @@ function Packages({ store, toast }: any) {
             setCreating(false);
             setEditing(null);
           }}
-          onSave={(name: string, desc: string, reqs: string[]) => {
+          onSave={(name: string, desc: string, reqs: string[], extra: any) => {
             if (editing) {
-              store.updateCustomPack(editing.id, { name, desc, reqs });
+              store.updateCustomPack(editing.id, { name, desc, reqs, ...extra });
               toast("Custom pack updated");
             } else {
-              store.addCustomPack({ name, desc, reqs });
+              store.addCustomPack({ name, desc, reqs, country: store.country, ...extra });
               toast("Custom pack created");
             }
             setCreating(false);
@@ -3236,8 +3236,29 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
               opacity: desc.trim() && !loading ? 1 : 0.4,
             }}
           >
-            Draft the checklist
+            {loading ? "Looking it up…" : "Look it up for me"}
           </button>
+        )}
+        {!drafted && (
+          <>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "14px 0 12px" }}>
+              <span style={{ flex: 1, height: 1, background: T.border }} />
+              <span style={{ fontSize: 12, color: T.faint }}>or</span>
+              <span style={{ flex: 1, height: 1, background: T.border }} />
+            </div>
+            {/* Building by hand is a first-class path, not something you find by accident: plenty of
+                situations are a list somebody handed you, and no lookup will improve on that. */}
+            <button
+              onClick={() => {
+                if (!name.trim() && desc.trim()) setName(desc.trim().slice(0, 44));
+                setReqs(["", "", ""]);
+                setDrafted(true);
+              }}
+              style={{ ...btnGhost, width: "100%", justifyContent: "center", minHeight: 44 }}
+            >
+              <Pencil size={15} /> Add the documents myself
+            </button>
+          </>
         )}
         {drafted && (
           <>
@@ -3339,7 +3360,11 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                 onClick={() =>
                   name.trim() &&
                   reqs.filter((r) => r.trim()).length &&
-                  onSave(name.trim(), desc.trim(), reqs.map((r) => r.trim()).filter(Boolean))
+                  onSave(name.trim(), desc.trim(), reqs.map((r) => r.trim()).filter(Boolean), {
+                    builtBy: meta ? "lookup" : "hand",
+                    sources: meta?.sources || undefined,
+                    checked: meta?.lastChecked || undefined,
+                  })
                 }
                 disabled={!name.trim() || !reqs.filter((r) => r.trim()).length}
                 style={{
@@ -3438,6 +3463,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
   /* A list written for this country, with a published source behind it. Shown immediately so a
      pack opens with a real answer, and superseded by the live lookup when that returns. */
   const seeded = isHome ? null : seededFor(ev.id, store.country);
+  /* A custom pack is the user's own work, so it follows them everywhere. But a list researched in
+     Dubai is not a list for Delhi, so it carries where it was made and offers a fresh look. */
+  const packCountry = ev.custom ? ev.country : undefined;
+  const elsewhere = !!packCountry && packCountry !== store.country;
   /* Only a list actually meant for this country is a checklist. The curated catalogue was written
      for India, so elsewhere it is a guess, and a guess scored to two figures is a lie. */
   const researched = ev.custom || isHome || !!seeded || live.origin === "cache" || live.origin === "ai";
@@ -3568,6 +3597,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               <span>
                 {checking
                   ? `Checking published sources for ${countryName(store.country)}…`
+                  : ev.custom
+                    ? `${ev.builtBy === "lookup" ? "Looked up" : "Written by you"}${packCountry ? ` for ${countryName(packCountry)}` : ""}${ev.checked ? ` · checked ${fmtDate(ev.checked)}` : ""}`
                   : live.origin === "curated" && seeded
                     ? `${countryFlag(store.country)} ${seeded.source} · checked ${fmtDate(seeded.checked)}`
                     : researched
@@ -3674,6 +3705,35 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
           )}
         </div>
         <div style={{ padding: 18 }}>
+          {elsewhere && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 9,
+                marginBottom: 12,
+                padding: "10px 12px",
+                borderRadius: 10,
+                border: `1px solid ${SEM.warning}44`,
+                background: SEM.warning + "1F",
+                fontSize: 12.5,
+                color: T.muted,
+              }}
+            >
+              <span style={{ flex: "1 1 200px", lineHeight: 1.5 }}>
+                You made this for {countryName(packCountry)}. The documents are likely different in{" "}
+                {countryName(store.country)}.
+              </span>
+              <button
+                onClick={() => refresh(true)}
+                disabled={checking}
+                style={{ ...btnGhost, padding: "7px 11px", fontSize: 12.5, minHeight: 44, whiteSpace: "nowrap" }}
+              >
+                <RefreshCw size={13} /> {checking ? "Checking…" : `Check for ${countryName(store.country)}`}
+              </button>
+            </div>
+          )}
           {!researched && (
             <Card style={{ padding: 20, marginBottom: 12, textAlign: "center" }}>
               <Globe size={20} color={T.muted} />
