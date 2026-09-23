@@ -73,7 +73,8 @@ import { getSession, signup, login, logout, deleteAccount, updateAccountName, ch
 import { ensureVaultReady } from "@/lib/session";
 import DocViewer from "@/components/DocViewer";
 import { getPackRequirements, cachedRequirements } from "@/lib/requirements";
-import { COUNTRIES, PINNED, searchCountries, countryName, countryFlag, packFitsCountry } from "@/lib/countries";
+import { COUNTRIES, PINNED, searchCountries, countryName, countryFlag } from "@/lib/countries";
+import { packInCountry } from "@/lib/pack-scope";
 import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav, MobileNavCtx } from "./components/MobileNav";
@@ -2697,7 +2698,7 @@ function Packages({ store, toast }: any) {
   );
   const needle = q.trim().toLowerCase();
   const country = store.country || "IN";
-  const inCountry = all.filter((e) => e.custom || packFitsCountry(e.reqs, country));
+  const inCountry = all.filter((e) => packInCountry(e.id, country, e.custom));
   const hidden = all.length - inCountry.length;
   const list = inCountry.filter(
     (e) =>
