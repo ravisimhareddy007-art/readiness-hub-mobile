@@ -99,12 +99,71 @@ const COVERED = new Set([
   "SG", "MY", "DE", "NL", "ZA", "MU", "NP", "LK",
 ]);
 
+/* ── Local situations ──
+   The catalogue's non-visa packs were written for India: a driving licence pack asks for Parivahan
+   paperwork, which means nothing in Dubai. These are the documents the local authority actually
+   asks for, so a resident opens the pack and sees a real list rather than an empty state. */
+const LOCAL: Record<string, Record<string, { reqs: string[]; source: string }>> = {
+  AE: {
+    "bank-account": {
+      source: "UAE bank published account-opening requirements",
+      reqs: ["Passport", "Residence Visa", "Emirates ID", "Salary Certificate"],
+    },
+    "dl-new": {
+      source: "RTA driver licensing requirements",
+      reqs: ["Emirates ID", "Passport", "Residence Visa", "Eye Test Certificate", "Passport Photos"],
+    },
+    "rent-tenant": {
+      source: "Ejari tenancy registration requirements",
+      reqs: ["Passport", "Residence Visa", "Emirates ID", "Tenancy Contract", "Salary Certificate"],
+    },
+    "sim-kyc": { source: "UAE telecom subscriber registration rules", reqs: ["Emirates ID", "Passport"] },
+    onboarding: {
+      source: "MoHRE employment documentation",
+      reqs: ["Passport", "Residence Visa", "Emirates ID", "Labour Contract", "Degree Certificate"],
+    },
+    "new-health-ins": {
+      source: "UAE mandatory health insurance requirements",
+      reqs: ["Emirates ID", "Passport", "Residence Visa"],
+    },
+    "school-adm": {
+      source: "KHDA and ADEK school enrolment requirements",
+      reqs: ["Passport", "Residence Visa", "Emirates ID", "Birth Certificate", "Vaccination Record", "Previous School Report"],
+    },
+    newborn: {
+      source: "UAE birth registration requirements",
+      reqs: ["Birth Certificate", "Passport", "Residence Visa", "Marriage Certificate", "Emirates ID"],
+    },
+    "marriage-reg": {
+      source: "UAE marriage registration requirements",
+      reqs: ["Passport", "Residence Visa", "Emirates ID", "Medical Fitness Certificate"],
+    },
+    "death-cert": {
+      source: "UAE death registration requirements",
+      reqs: ["Passport", "Emirates ID", "Medical Death Notification"],
+    },
+    "vehicle-transfer": {
+      source: "RTA vehicle ownership transfer requirements",
+      reqs: ["Emirates ID", "Driving License", "Vehicle Registration Card", "Insurance Certificate"],
+    },
+    "home-ins": { source: "UAE insurer published requirements", reqs: ["Emirates ID", "Tenancy Contract"] },
+  },
+};
+
+/** How many local situations are covered for a country. */
+export function localCount(country: string): number {
+  return Object.keys(LOCAL[country] || {}).length;
+}
+
 /**
  * The destination pack's checklist as written for a resident of `country`, or null when there
  * is no published variant. India returns null — its list is already in the catalogue.
  */
 export function seededFor(packId: string, country?: string): { reqs: string[]; source: string; checked: string } | null {
   if (!country || country === "IN" || !COVERED.has(country)) return null;
+  /* A local situation is answered by the local authority's own list. */
+  const local = LOCAL[country]?.[packId];
+  if (local) return { reqs: local.reqs, source: local.source, checked: CHECKED_LOCAL };
   if (!DESTINATION_PACKS[packId]) return null;
   const base = BASE[packId];
   if (!base) return null;
