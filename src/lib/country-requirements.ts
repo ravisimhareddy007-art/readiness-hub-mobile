@@ -8,7 +8,7 @@
 // Shown immediately so a pack opens with a real answer; superseded by the live lookup when it
 // returns. India needs no seed — the built-in catalogue was written for it.
 
-import { DESTINATION_PACKS } from "./pack-scope";
+import { DESTINATION_PACKS } from "./pack-scope.ts";
 
 /** The published checklists, as written for the destination. Mirrors the catalogue's travel packs. */
 const BASE: Record<string, { reqs: string[]; source: string }> = {
