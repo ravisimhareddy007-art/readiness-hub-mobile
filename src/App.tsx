@@ -3274,6 +3274,9 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
             <label style={lbl}>Pack name</label>
             <input style={inp} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name this pack" />
             <label style={lbl}>Documents needed</label>
+            <p style={{ fontSize: 12, color: T.muted, margin: "0 0 8px", lineHeight: 1.5 }}>
+              List what you were asked for. You can attach the actual documents once the pack is saved.
+            </p>
             {meta && (
               <div
                 style={{
