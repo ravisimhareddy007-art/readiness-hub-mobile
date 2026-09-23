@@ -25,7 +25,7 @@ import { myPublicKey } from "./vault";
 import { ensureVaultReady } from "./session";
 import type { DocCrypto } from "./vault";
 
-const LS = "lifepack.v6"; // bumped: Indian sample family (stored data from v3 is ignored)
+const LS = "lifepack.v7"; // bumped: Indian sample family (stored data from v3 is ignored)
 const rel = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
 const iso = (n: number) => new Date(Date.now() + n * 86400000).toISOString();
 const id = () => Math.random().toString(36).slice(2, 9);
@@ -55,6 +55,7 @@ interface State {
   dataMode: "sample" | "empty"; // empty = 1Shelf-style day-0; sample = seeded family
   currency: string; // home currency for display and totals
   country: string; // where the user is preparing documents: scopes every pack and lookup
+  nationality: string; // the passport held: for a visa, this decides the list, not where you live
   packSkips: Record<string, string[]>; // requirements the user marked as not applying to them
 }
 
@@ -585,7 +586,7 @@ const seedCare: Record<string, CareProfile> = {
 
 
 const emptyOwner: Member = { id: "you", name: "You", relation: "Self", color: "#5B8DEF", access: "Owner" };
-const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency" | "country" | "packSkips"> = {
+const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency" | "country" | "packSkips" | "nationality"> = {
   members: [emptyOwner],
   docs: [],
   labs: [],
@@ -597,7 +598,7 @@ const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | 
   handoff: null,
   customPacks: [],
 };
-const SAMPLE: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency" | "country" | "packSkips"> = {
+const SAMPLE: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency" | "country" | "packSkips" | "nationality"> = {
   members: seedMembers,
   docs: seedDocs,
   labs: seedLabs,
@@ -626,10 +627,11 @@ const DEFAULT: State = {
   notifications: false,
   currency: defaultCurrency(),
   country: defaultCountry(),
+  nationality: defaultCountry(),
   packSkips: {},
 };
 // user-scoped bundles preserved across a mode switch (so switching back is instant and lossless)
-type Bundle = Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency" | "country" | "packSkips">;
+type Bundle = Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency" | "country" | "packSkips" | "nationality">;
 const BUNDLE_KEYS: (keyof Bundle)[] = [
   "members",
   "docs",
@@ -642,7 +644,7 @@ const BUNDLE_KEYS: (keyof Bundle)[] = [
   "handoff",
   "customPacks",
 ];
-const LS_SAVED = "lifepack.v6.saved"; // { sample?: Bundle, empty?: Bundle }
+const LS_SAVED = "lifepack.v7.saved"; // { sample?: Bundle, empty?: Bundle }
 type Saved = { sample?: Bundle; empty?: Bundle };
 function loadSaved(): Saved {
   if (typeof window === "undefined") return {};
@@ -1015,6 +1017,12 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     state = { ...state, packSkips: { ...(state.packSkips || {}), [packId]: next } };
     persist();
   }, []);
+  /* A visa list is set by the passport, not the address. Kept separate from country so someone
+     on an Indian passport living in Dubai gets the requirements they will actually face. */
+  const setNationality = useCallback((c: string) => {
+    state = { ...state, nationality: c };
+    persist();
+  }, []);
   const setCountry = useCallback((c: string) => {
     state = { ...state, country: c };
     persist();
@@ -1121,6 +1129,7 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     setTheme,
     setCurrency,
     setCountry,
+    setNationality,
     setPackSkip,
     setNotifications,
     addCustomPack,
