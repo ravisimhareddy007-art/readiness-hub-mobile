@@ -122,6 +122,13 @@ export interface CustomPack {
   desc?: string; // the user's description that generated it
   reqs: string[];
   createdAt: string;
+  /* The country this list was researched or written for. A checklist made in Dubai is wrong in
+     Delhi, so the pack carries its jurisdiction rather than quietly applying everywhere. */
+  country?: string;
+  /* Where the list came from, when it was built by lookup rather than by hand. */
+  sources?: { url: string; title?: string; tier?: string }[];
+  checked?: string; // YYYY-MM-DD
+  builtBy?: "hand" | "lookup";
 }
 
 export type HandoffReason =
