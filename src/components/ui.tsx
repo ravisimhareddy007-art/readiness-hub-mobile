@@ -21,7 +21,7 @@ export const EVENT_ICONS: Record<string, any> = {
 };
 
 export const fmtDate = (s?: string) =>
-  s ? new Date(s).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+  s ? new Date(s).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
 export function Ring({ value, size = 54, stroke = 5, color = "#0B0E24", track = "#EAEDF6", label }:
   { value: number; size?: number; stroke?: number; color?: string; track?: string; label?: string }) {
