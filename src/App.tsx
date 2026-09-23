@@ -77,7 +77,6 @@ import DocViewer from "@/components/DocViewer";
 import { getPackRequirements, cachedRequirements } from "@/lib/requirements";
 import { COUNTRIES, PINNED, searchCountries, countryName, countryFlag } from "@/lib/countries";
 import { packInCountry, DESTINATION_PACKS } from "@/lib/pack-scope";
-import { resolveRequirement, satisfiedBy } from "@/lib/ontology";
 import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav, MobileNavCtx } from "./components/MobileNav";
@@ -284,10 +283,39 @@ const CAT_META: Record<Category, { icon: any; color: string }> = {
 /* ── document ontology: capability requirements and the real documents that satisfy them.
    This is the single matching truth — evalEvent, the drawer, exports, and dashboard insights all use it,
    so a requirement can never read "available" in one pack and "missing" in another. ── */
-const satisfyingDoc = (req: string, docs: Doc[], country = "IN"): Doc | undefined => {
-  const held = new Set(docs.map((d) => d.docType));
-  const via = resolveRequirement(req, held, country);
-  return via ? docs.find((d) => d.docType === via) : undefined;
+const SATISFIES: Record<string, string[]> = {
+  "Identity Proof": ["Aadhaar Card", "PAN Card", "Passport", "Voter ID", "Driving License"],
+  "Address Proof": [
+    "Aadhaar Card",
+    "Passport",
+    "Utility Bill",
+    "Rental Agreement",
+    "Voter ID",
+    "Driving License",
+    "Bank Statement",
+  ],
+  "Date of Birth Proof": ["Birth Certificate", "Aadhaar Card", "Passport", "PAN Card"],
+  "Photo ID": ["Aadhaar Card", "Passport", "PAN Card", "Driving License", "Voter ID"],
+  "Income Proof": ["Payslip", "Form 16", "ITR Acknowledgement", "Salary Certificate"],
+  "Employment Proof": ["Employment Offer", "Salary Certificate", "Payslip"],
+  "Proof of Funds": ["Bank Statement", "Investment Statement"],
+  "Accommodation Proof": ["Hotel Booking", "Rental Agreement", "Invitation Letter"],
+  "Travel Itinerary": ["Flight Reservation"],
+  "Property Ownership Proof": ["Property Deed", "Sale Agreement"],
+};
+const satisfies = (req: string, have: Set<string>): string | null => {
+  if (have.has(req)) return req;
+  for (const t of SATISFIES[req] || []) if (have.has(t)) return t;
+  return null;
+};
+const satisfyingDoc = (req: string, docs: Doc[]): Doc | undefined => {
+  const direct = docs.find((d) => d.docType === req);
+  if (direct) return direct;
+  for (const t of SATISFIES[req] || []) {
+    const d = docs.find((x) => x.docType === t);
+    if (d) return d;
+  }
+  return undefined;
 };
 /* ── curated catalog: the documented life of an educated adult, 100 high-frequency situations ── */
 const PACK_CAT_META: Record<string, { color: string; icon: any; source: string }> = {
@@ -1423,9 +1451,9 @@ const EVENTS = [
   ),
 ];
 const DOC_VOCAB = [...new Set(EVENTS.flatMap((e) => e.reqs))].sort();
-const evalEvent = (ev: { reqs: string[] }, have: Set<string>, country = "IN") => {
+const evalEvent = (ev: { reqs: string[] }, have: Set<string>) => {
   const rows = ev.reqs.map((r) => {
-    const via = resolveRequirement(r, have, country);
+    const via = satisfies(r, have);
     return { label: r, have: !!via, via };
   });
   const got = rows.filter((r) => r.have).length;
@@ -1610,7 +1638,7 @@ const pill = (color: string): CSSProperties => ({
 /* ═══════════════ HOME (dashboard, not the package grid) ═══════════════ */
 function Home({ store, go, toast }: any) {
   const have: Set<string> = useMemo(() => new Set(store.docs.map((d: Doc) => d.docType)), [store.docs]);
-  const scored = EVENTS.map((e) => ({ e, ...evalEvent(e, have, store.country) }));
+  const scored = EVENTS.map((e) => ({ e, ...evalEvent(e, have) }));
   const started = scored.filter((x) => x.score > 0);
   const overall = started.length ? Math.round(started.reduce((s, x) => s + x.score, 0) / started.length) : 0;
   const best = [...scored].sort((a, b) => b.score - a.score)[0];
@@ -1703,7 +1731,7 @@ function Home({ store, go, toast }: any) {
       const who = store.members.find((m: Member) => m.id === appt.memberId)?.name.split(" ")[0];
       const hosp = EVENTS.find((e) => e.id === "hospital");
       if (hosp) {
-        const hv = evalEvent(hosp, have, store.country);
+        const hv = evalEvent(hosp, have);
         const missing = hv.rows.filter((r) => !r.have).map((r) => r.label);
         insights.push({
           icons: [HeartPulse, Plane],
@@ -1730,7 +1758,7 @@ function Home({ store, go, toast }: any) {
       store.docs.filter((d: Doc) => d.expiry).sort((a: Doc, b: Doc) => +new Date(a.expiry!) - +new Date(b.expiry!))[0];
     if (expDoc) {
       const powered = EVENTS.filter((e) =>
-        e.reqs.some((r) => r === expDoc.docType || satisfiedBy(r, store.country || "IN").includes(expDoc.docType)),
+        e.reqs.some((r) => r === expDoc.docType || (SATISFIES[r] || []).includes(expDoc.docType)),
       );
       if (powered.length > 1) {
         insights.push({
@@ -2759,7 +2787,7 @@ function Packages({ store, toast }: any) {
         </div>
         <div style={{ display: "grid", gap: 8 }}>
           {list.map((e) => {
-            const { score, got, total } = evalEvent(e, have, country);
+            const { score, got, total } = evalEvent(e, have);
             return (
               <button
                 key={e.id}
@@ -2935,7 +2963,7 @@ function Packages({ store, toast }: any) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(300px,100%),1fr))", gap: 12 }}>
         {list.map((e) => {
-          const { score, got, total } = evalEvent(e, have, country);
+          const { score, got, total } = evalEvent(e, have);
           return (
             <button
               key={e.id}
@@ -3437,32 +3465,56 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
     () => ({ ...ev, reqs: live.reqs.filter((r: string) => !skipped.includes(r)) }),
     [ev, live.reqs, skipped.join("|")],
   );
-  const { rows, got, total, score } = evalEvent(evLive, have, store.country);
+  const { rows, got, total, score } = evalEvent(evLive, have);
   const included: Doc[] = [
     ...new Set(
       rows
         .filter((r: any) => r.have)
-        .map((r: any) => satisfyingDoc(r.label, store.docs, store.country))
+        .map((r: any) => satisfyingDoc(r.label, store.docs))
         .filter(Boolean) as Doc[],
     ),
   ];
-  const exportPack = () => {
-    const body =
-      `ReadiNes . ${ev.name}\nGenerated ${new Date().toLocaleString()}\nReadiness ${score}% (${got} of ${total})\n\nINCLUDED:\n` +
-      included.map((d: Doc, i: number) => `${i + 1}. ${d.name} [${d.docType}]`).join("\n") +
-      `\n\nSTILL NEEDED:\n` +
-      rows
-        .filter((r) => !r.have)
-        .map((r) => `- ${r.label}`)
+  const [packing, setPacking] = useState(false);
+  /* A list of filenames is not a pack. What goes to a counter is the documents themselves, named
+     so they can be handed over in order, with a cover sheet saying what is still missing. */
+  const exportPack = async () => {
+    if (packing) return;
+    setPacking(true);
+    try {
+      const missing = rows.filter((r) => !r.have).map((r) => r.label);
+      const cover = [
+        `${ev.name}`,
+        `Prepared ${new Date().toLocaleString()} · ReadiNes`,
+        `For ${countryName(store.country)}${DESTINATION_PACKS[ev.id] ? ` · ${countryName(store.nationality)} passport` : ""}`,
+        "",
+        `Ready: ${got} of ${total}`,
+        "",
+        "IN THIS PACK",
+        ...included.map((d: Doc, i: number) => `  ${String(i + 1).padStart(2, "0")}. ${d.docType}${d.name ? ` — ${d.name}` : ""}`),
+        ...(missing.length ? ["", "STILL NEEDED", ...missing.map((m) => `  - ${m}`)] : []),
+        "",
+        live.sources.length ? "SOURCES" : "",
+        ...live.sources.map((x: any) => `  ${x.title || x.url}\n  ${x.url}`),
+        "",
+        "Checklist based on published requirements; completeness and eligibility are not guaranteed.",
+      ]
+        .filter((l) => l !== "")
         .join("\n");
-    const b = new Blob([body], { type: "text/plain" });
-    const u = URL.createObjectURL(b);
-    const a = document.createElement("a");
-    a.href = u;
-    a.download = `${ev.id}_pack.txt`;
-    a.click();
-    URL.revokeObjectURL(u);
-    toast("Pack exported");
+      const res = await buildZip(`${ev.name.replace(/[^A-Za-z0-9]+/g, "_")}_${countryName(store.country).replace(/\s+/g, "")}`, included, [
+        { name: "00_Checklist.txt", content: cover },
+      ]);
+      if (res.added === 0)
+        toast(
+          included.length
+            ? "No document files could be read, so nothing was downloaded."
+            : "Nothing to pack yet: add a document first.",
+        );
+      else if (res.missing.length)
+        toast(`Downloaded ${res.added} document${res.added === 1 ? "" : "s"} · ${res.missing.length} could not be read`);
+      else toast(`Downloaded ${res.added} original document${res.added === 1 ? "" : "s"}`);
+    } finally {
+      setPacking(false);
+    }
   };
   return (
     <div
@@ -3657,7 +3709,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             {rows
               .filter((r) => r.have)
               .map((r) => {
-                const d = satisfyingDoc(r.label, store.docs, store.country);
+                const d = satisfyingDoc(r.label, store.docs);
                 const isOpen = expanded === r.label;
                 const reuse = otherPacks(r.label);
                 return (
@@ -3869,8 +3921,22 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               setAddFor(null);
             }}
           />
-          <button onClick={exportPack} style={{ ...btnGold, width: "100%", justifyContent: "center" }}>
-            <Download size={16} /> Export pack
+          <button
+            onClick={exportPack}
+            disabled={packing || included.length === 0}
+            style={{
+              ...btnGold,
+              width: "100%",
+              justifyContent: "center",
+              opacity: packing || included.length === 0 ? 0.55 : 1,
+            }}
+          >
+            <Download size={16} />
+            {packing
+              ? "Packing…"
+              : included.length === 0
+                ? "Nothing to download yet"
+                : `Download ${included.length} document${included.length === 1 ? "" : "s"}`}
           </button>
           <p
             style={{
