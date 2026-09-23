@@ -109,6 +109,25 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
   else console.log("ok   extracted data is correctable");
 }
 
+// The store is passed around as `any`, so calling a function it does not export compiles fine and
+// fails at the user's finger. Check every store.<fn>() the UI calls actually exists.
+{
+  const st = readFileSync("src/lib/store.ts", "utf8");
+  const block = (st.match(/\n  return \{([\s\S]*?)\n  \};/) || ["", ""])[1];
+  const exported = new Set([...block.matchAll(/^\s{4}(\w+),$/gm)].map((m) => m[1]));
+  for (const m of block.matchAll(/^\s{4}(\w+):/gm)) exported.add(m[1]);
+  const hits = [];
+  for (const p of all) {
+    const src = readFileSync(p, "utf8");
+    for (const m of src.matchAll(/\bstore\.(\w+)\(/g))
+      if (!exported.has(m[1])) hits.push(`${p}: store.${m[1]}() is called but the store does not export it`);
+    for (const m of src.matchAll(/\bs\.(\w+)\(/g))
+      if (!exported.has(m[1]) && /Healthcare/.test(p)) hits.push(`${p}: s.${m[1]}() is called but the store does not export it`);
+  }
+  if (hits.length) { status = 1; console.log(`FAIL store calls that do not exist (${[...new Set(hits)].length})`); [...new Set(hits)].forEach((h) => console.log("  " + h)); }
+  else console.log("ok   store calls that do not exist");
+}
+
 step("release blockers (listed, not failing yet)");
 let dev = 0;
 for (const p of all) readFileSync(p, "utf8").split("\n").forEach((l, i) => { if (/DEV ONLY/.test(l)) { dev++; console.log(`  ${p}:${i + 1}: ${l.trim().slice(0, 120)}`); } });

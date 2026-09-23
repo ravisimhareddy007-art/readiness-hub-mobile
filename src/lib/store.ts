@@ -19,12 +19,13 @@ import { classifyContent } from "./classify-content";
 import { extractHoldingFields } from "./extract-holding";
 import { extractMedical } from "./extract-medical";
 import { defaultCurrency, rateBetween } from "./currency";
+import { defaultCountry } from "./countries";
 import { getDecrypted, putEncrypted } from "./secure-idb";
 import { myPublicKey } from "./vault";
 import { ensureVaultReady } from "./session";
 import type { DocCrypto } from "./vault";
 
-const LS = "lifepack.v5"; // bumped: Indian sample family (stored data from v3 is ignored)
+const LS = "lifepack.v6"; // bumped: Indian sample family (stored data from v3 is ignored)
 const rel = (n: number) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
 const iso = (n: number) => new Date(Date.now() + n * 86400000).toISOString();
 const id = () => Math.random().toString(36).slice(2, 9);
@@ -53,6 +54,8 @@ interface State {
   notifications: boolean;
   dataMode: "sample" | "empty"; // empty = 1Shelf-style day-0; sample = seeded family
   currency: string; // home currency for display and totals
+  country: string; // where the user is preparing documents: scopes every pack and lookup
+  packSkips: Record<string, string[]>; // requirements the user marked as not applying to them
 }
 
 /* ── members (enterprise-neutral) ── */
@@ -582,7 +585,7 @@ const seedCare: Record<string, CareProfile> = {
 
 
 const emptyOwner: Member = { id: "you", name: "You", relation: "Self", color: "#5B8DEF", access: "Owner" };
-const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency"> = {
+const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency" | "country" | "packSkips"> = {
   members: [emptyOwner],
   docs: [],
   labs: [],
@@ -594,7 +597,7 @@ const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | 
   handoff: null,
   customPacks: [],
 };
-const SAMPLE: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency"> = {
+const SAMPLE: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency" | "country" | "packSkips"> = {
   members: seedMembers,
   docs: seedDocs,
   labs: seedLabs,
@@ -622,9 +625,11 @@ const DEFAULT: State = {
   theme: "dark",
   notifications: false,
   currency: defaultCurrency(),
+  country: defaultCountry(),
+  packSkips: {},
 };
 // user-scoped bundles preserved across a mode switch (so switching back is instant and lossless)
-type Bundle = Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency">;
+type Bundle = Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency" | "country" | "packSkips">;
 const BUNDLE_KEYS: (keyof Bundle)[] = [
   "members",
   "docs",
@@ -637,7 +642,7 @@ const BUNDLE_KEYS: (keyof Bundle)[] = [
   "handoff",
   "customPacks",
 ];
-const LS_SAVED = "lifepack.v5.saved"; // { sample?: Bundle, empty?: Bundle }
+const LS_SAVED = "lifepack.v6.saved"; // { sample?: Bundle, empty?: Bundle }
 type Saved = { sample?: Bundle; empty?: Bundle };
 function loadSaved(): Saved {
   if (typeof window === "undefined") return {};
@@ -1002,6 +1007,18 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
   }, []);
   /* Re-express every amount in the new home currency. Entries made in another currency use their own
      recorded amount; entries made in the old home currency are converted at the bundled rate. */
+  /* A requirement the user says does not apply to them. Reversible, and it never deletes anything
+     from the published list: it only stops this pack demanding it. */
+  const setPackSkip = useCallback((packId: string, req: string, skip: boolean) => {
+    const cur = state.packSkips?.[packId] || [];
+    const next = skip ? [...new Set([...cur, req])] : cur.filter((x) => x !== req);
+    state = { ...state, packSkips: { ...(state.packSkips || {}), [packId]: next } };
+    persist();
+  }, []);
+  const setCountry = useCallback((c: string) => {
+    state = { ...state, country: c };
+    persist();
+  }, []);
   const setCurrency = useCallback((to: string) => {
     const from = state.currency || "INR";
     if (to === from) return;
@@ -1103,6 +1120,8 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     setDataMode,
     setTheme,
     setCurrency,
+    setCountry,
+    setPackSkip,
     setNotifications,
     addCustomPack,
     updateCustomPack,
