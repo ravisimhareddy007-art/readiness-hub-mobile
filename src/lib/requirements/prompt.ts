@@ -8,7 +8,7 @@
 // a page that has not been updated since 2019, and a state-level rule presented as national.
 
 import { ONTOLOGY_KEYS } from "./schema";
-import { TRUSTED_SOURCES } from "../pack-scope";
+import { TRUSTED_SOURCES } from "../pack-scope.ts";
 
 const ONTOLOGY = ONTOLOGY_KEYS.filter((k) => k !== "Other").join(", ");
 
