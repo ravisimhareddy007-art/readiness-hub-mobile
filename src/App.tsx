@@ -7,6 +7,7 @@ import {
   HeartPulse,
   CalendarClock,
   ExternalLink,
+  Globe,
   Users,
   Wallet,
   KeyRound,
@@ -72,7 +73,7 @@ import { getSession, signup, login, logout, deleteAccount, updateAccountName, ch
 import { ensureVaultReady } from "@/lib/session";
 import DocViewer from "@/components/DocViewer";
 import { getPackRequirements, cachedRequirements } from "@/lib/requirements";
-import { COUNTRIES, countryName, countryFlag, packFitsCountry } from "@/lib/countries";
+import { COUNTRIES, PINNED, searchCountries, countryName, countryFlag, packFitsCountry } from "@/lib/countries";
 import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav, MobileNavCtx } from "./components/MobileNav";
@@ -2560,12 +2561,95 @@ const PACK_CATS = [
   "Home & Property",
   "Family & Life",
 ];
+/* Choosing where documents are being prepared. Used by Settings, which owns the setting, and by
+   Packages, which is where it visibly takes effect. */
+function CountrySheet({ current, onPick, onClose }: { current: string; onPick: (c: string) => void; onClose: () => void }) {
+  const [cq, setCq] = useState("");
+  const results = searchCountries(cq);
+  return (
+    <MSheet title="Preparing documents for" onClose={onClose}>
+      <input
+        autoFocus
+        value={cq}
+        onChange={(e) => setCq(e.target.value)}
+        placeholder="Search"
+        style={{
+          width: "100%",
+          background: T.raised,
+          border: `1px solid ${T.border}`,
+          borderRadius: 10,
+          padding: "11px 12px",
+          color: T.text,
+          fontSize: 16,
+          minHeight: 44,
+          outline: "none",
+          fontFamily: "inherit",
+          marginBottom: 10,
+        }}
+      />
+      <div style={{ maxHeight: "52vh", overflowY: "auto" }}>
+        {results.map((c, i) => {
+          const firstOther = !cq.trim() && i === PINNED.length;
+          return (
+            <div key={c.code}>
+              {firstOther && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                    textTransform: "uppercase",
+                    color: T.faint,
+                    padding: "14px 4px 6px",
+                  }}
+                >
+                  More
+                </div>
+              )}
+              <button
+                onClick={() => onPick(c.code)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 11,
+                  width: "100%",
+                  minHeight: 48,
+                  padding: "9px 4px",
+                  background: "none",
+                  border: "none",
+                  borderTop: `1px solid ${T.border}`,
+                  cursor: "pointer",
+                  textAlign: "left",
+                  fontFamily: "inherit",
+                }}
+              >
+                <span style={{ fontSize: 18 }}>{c.flag}</span>
+                <span
+                  style={{ flex: 1, minWidth: 0, fontSize: 14.5, color: T.text, fontWeight: c.code === current ? 700 : 500 }}
+                >
+                  {c.name}
+                </span>
+                {c.code === current && <Check size={15} color={SEM.action} />}
+              </button>
+            </div>
+          );
+        })}
+        {results.length === 0 && <div style={{ padding: 20, fontSize: 13.5, color: T.faint }}>No match.</div>}
+      </div>
+      <p style={{ fontSize: 12, color: T.faint, lineHeight: 1.5, margin: "14px 4px 0" }}>
+        We cover the countries where Indian families most often need documents. Tell us if yours is missing.
+      </p>
+    </MSheet>
+  );
+}
+
 function Packages({ store, toast }: any) {
   const have: Set<string> = useMemo(() => new Set(store.docs.map((d: Doc) => d.docType)), [store.docs]);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("All");
   const [open, setOpen] = useState<AnyPack | null>(null);
   const [creating, setCreating] = useState(false);
+  const [pickCountry, setPickCountry] = useState(false);
   const [editing, setEditing] = useState<AnyPack | null>(null);
   const customAsPacks: AnyPack[] = (store.customPacks || []).map((c: any) => ({
     id: c.id,
@@ -2580,38 +2664,36 @@ function Packages({ store, toast }: any) {
   }));
   const all: AnyPack[] = [...(EVENTS as AnyPack[]), ...customAsPacks];
   const cats = ["All", ...PACK_CATS.filter((c) => all.some((p) => p.cat === c)), `My packs (${customAsPacks.length})`];
+  /* 195 countries do not fit a dropdown, so the picker is a searchable sheet: the current choice
+     is one line, and finding another is one tap and a few letters. */
   const CountryPicker = () => (
-    <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
-      <span style={{ fontSize: 13, color: T.muted }}>Preparing documents in</span>
-      <select
-        value={country}
-        onChange={(e) => {
-          store.setCountry(e.target.value);
-          toast(`Packs and requirements now shown for ${countryName(e.target.value)}`);
-        }}
-        style={{
-          background: T.raised,
-          border: `1px solid ${T.border}`,
-          borderRadius: 9,
-          padding: "9px 11px",
-          color: T.text,
-          fontSize: 14,
-          minHeight: 44,
-          fontFamily: "inherit",
-        }}
-      >
-        {COUNTRIES.map((c) => (
-          <option key={c.code} value={c.code} style={{ color: "#000" }}>
-            {c.flag} {c.name}
-          </option>
-        ))}
-      </select>
-      {hidden > 0 && (
-        <span style={{ fontSize: 12.5, color: T.faint }}>
-          {hidden} pack{hidden === 1 ? "" : "s"} hidden
-        </span>
-      )}
-    </div>
+    <button
+      onClick={() => setPickCountry(true)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 9,
+        width: "100%",
+        minHeight: 44,
+        padding: "8px 12px",
+        marginBottom: 12,
+        borderRadius: 10,
+        border: `1px solid ${T.border}`,
+        background: T.raised,
+        cursor: "pointer",
+        textAlign: "left",
+        fontFamily: "inherit",
+        fontSize: 13,
+        color: T.muted,
+      }}
+    >
+      <span style={{ fontSize: 16 }}>{countryFlag(country)}</span>
+      <span style={{ flex: 1, minWidth: 0 }}>
+        Requirements for <b style={{ color: T.text }}>{countryName(country)}</b>
+        {hidden > 0 && <span style={{ color: T.faint }}> · {hidden} packs not shown here</span>}
+      </span>
+      <span style={{ color: SEM.action, fontWeight: 700, fontSize: 12.5, whiteSpace: "nowrap" }}>Change</span>
+    </button>
   );
   const needle = q.trim().toLowerCase();
   const country = store.country || "IN";
@@ -2664,6 +2746,17 @@ function Packages({ store, toast }: any) {
           )}
         </div>
         <CountryPicker />
+        {pickCountry && (
+          <CountrySheet
+            current={country}
+            onClose={() => setPickCountry(false)}
+            onPick={(c) => {
+              store.setCountry(c);
+              setPickCountry(false);
+              toast(`Requirements now shown for ${countryName(c)}`);
+            }}
+          />
+        )}
         <div className="lp-chiprail" style={{ marginBottom: 12 }}>
           {cats.map((raw) => {
             const c = raw.startsWith("My packs") ? "My packs" : raw;
@@ -2800,6 +2893,17 @@ function Packages({ store, toast }: any) {
         </button>
       </div>
       <CountryPicker />
+      {pickCountry && (
+          <CountrySheet
+            current={country}
+            onClose={() => setPickCountry(false)}
+            onPick={(c) => {
+              store.setCountry(c);
+              setPickCountry(false);
+              toast(`Requirements now shown for ${countryName(c)}`);
+            }}
+          />
+        )}
       <div
         style={{
           display: "flex",
@@ -8037,6 +8141,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
 }
 
 function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, onAccountUpdated }: any) {
+  const [pickCountry, setPickCountry] = useState(false);
   const [modal, setModal] = useState<null | "whatsnew" | "faq" | "feedback" | "about" | "delete" | "privacy" | "email" | "password">(null);
   const [f1, setF1] = useState("");
   const [f2, setF2] = useState("");
@@ -8271,6 +8376,32 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           </Section>
           <Section label="Preferences">
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+              <Globe size={16} color={SEM.action} />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.text }}>Country</span>
+                <span style={{ display: "block", fontSize: 12, color: T.muted }}>
+                  Where you prepare documents. Sets which packs and requirements you see.
+                </span>
+              </span>
+              <button
+                onClick={() => setPickCountry(true)}
+                style={{ ...btnGhost, padding: "9px 12px", fontSize: 14, minHeight: 44, whiteSpace: "nowrap" }}
+              >
+                {countryFlag(store.country)} {countryName(store.country)}
+              </button>
+            </div>
+            {pickCountry && (
+              <CountrySheet
+                current={store.country}
+                onClose={() => setPickCountry(false)}
+                onPick={(c) => {
+                  store.setCountry(c);
+                  setPickCountry(false);
+                  toast(`Requirements now shown for ${countryName(c)}`);
+                }}
+              />
+            )}
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderTop: `1px solid ${T.border}` }}>
               <Coins size={16} color={SEM.action} />
               <span style={{ flex: 1 }}>
                 <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.text }}>Home currency</span>
