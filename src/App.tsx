@@ -2694,7 +2694,6 @@ function Packages({ store, toast }: any) {
       <span style={{ fontSize: 16 }}>{countryFlag(country)}</span>
       <span style={{ flex: 1, minWidth: 0 }}>
         Requirements for <b style={{ color: T.text }}>{countryName(country)}</b>
-        {hidden > 0 && <span style={{ color: T.faint }}> · {hidden} apply only in {countryName("IN")}</span>}
       </span>
       <span style={{ color: SEM.action, fontWeight: 700, fontSize: 12.5, whiteSpace: "nowrap" }}>Change</span>
     </button>
@@ -2702,7 +2701,6 @@ function Packages({ store, toast }: any) {
   const needle = q.trim().toLowerCase();
   const country = store.country || "IN";
   const inCountry = all.filter((e) => packInCountry(e.id, country, e.custom));
-  const hidden = all.length - inCountry.length;
   const list = inCountry.filter(
     (e) =>
       (cat === "All" || e.cat === cat) &&
@@ -2715,7 +2713,7 @@ function Packages({ store, toast }: any) {
         <MNav
           title={
             <>
-              Packages <span style={pill(T.muted)}>{inCountry.length}</span>
+              Packages <span style={pill(T.muted)}>{all.length}</span>
             </>
           }
           right={
@@ -3460,9 +3458,6 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
     if (!ev.custom && (!held || held.stale)) refresh();
   }, []);
   const skipped: string[] = store.packSkips?.[ev.id] || [];
-  /* The curated catalogue was written for India. Its blurbs and sources name Indian portals, so
-     outside India they are not shown: a general starting point is honest, a wrong citation is not. */
-  const isHome = (store.country || "IN") === "IN";
   const evLive = useMemo(
     () => ({ ...ev, reqs: live.reqs.filter((r: string) => !skipped.includes(r)) }),
     [ev, live.reqs, skipped.join("|")],
@@ -3535,7 +3530,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ color: T.white, fontSize: 18, fontWeight: 800 }}>{ev.name}</div>
-              {isHome && <div style={{ color: T.muted, fontSize: 13 }}>{ev.blurb}</div>}
+              <div style={{ color: T.muted, fontSize: 13 }}>{ev.blurb}</div>
             </div>
           </div>
           <div
@@ -3565,14 +3560,14 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             ) : (
               <span>
                 {checking
-                  ? `Checking published sources for ${countryName(store.country)}…`
+                  ? "Checking published sources…"
                   : live.origin === "curated"
-                    ? isHome
-                      ? `Curated list · ${ev.source} · last checked ${ev.lastChecked}`
-                      : `Starting point only · not yet checked for ${countryName(store.country)}`
-                    : live.origin === "fallback"
-                      ? `Could not reach published sources · showing a general list, not one checked for ${countryName(store.country)}`
-                      : `${countryFlag(store.country)} ${countryName(store.country)} · from published sources${live.lastChecked ? `, checked ${fmtDate(live.lastChecked)}` : ""}`}
+                    ? `Curated list · ${ev.source} · last checked ${ev.lastChecked}`
+                    : live.origin === "cache"
+                      ? `${countryFlag(store.country)} ${countryName(store.country)} · checked against published sources${live.lastChecked ? ` on ${fmtDate(live.lastChecked)}` : ""}`
+                      : live.origin === "fallback"
+                        ? `Offline list · could not reach published sources · showing ${ev.source}, last checked ${ev.lastChecked}`
+                        : `${countryFlag(store.country)} ${countryName(store.country)} · checked against published sources${live.lastChecked ? ` on ${fmtDate(live.lastChecked)}` : ""}`}
               </span>
             )}
           </div>
@@ -3630,17 +3625,11 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 </>
               ) : (
                 <span style={{ flex: "1 1 auto" }}>
-                  {checking
-                    ? "Looking for the official list…"
-                    : isHome
-                      ? "Our curated list. Check it against the official source before you apply."
-                      : `Not yet checked for ${countryName(store.country)}. Tap refresh to look it up.`}
+                  {checking ? "Checking published sources…" : `Curated for ${countryName(store.country)}.`}
                 </span>
               )}
               <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                {live.lastChecked && live.origin !== "curated" && (
-                  <span style={{ color: T.faint }}>Checked {fmtDate(live.lastChecked)}</span>
-                )}
+                {live.lastChecked && <span style={{ color: T.faint }}>Checked {fmtDate(live.lastChecked)}</span>}
                 <button
                   onClick={() => refresh(true)}
                   disabled={checking}
