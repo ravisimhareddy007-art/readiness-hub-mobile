@@ -208,6 +208,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     null | "reading" | "member" | "med" | "reminder" | "profile" | "emergency" | "visit"
   >(null);
   const [printHTML, setPrintHTML] = useState("");
+  const [showWhy, setShowWhy] = useState(false);
   const [viewDoc, setViewDoc] = useState<Doc | null>(null);
   const recRef = useRef<HTMLInputElement>(null);
   const pendingRec = useRef<{ override: Partial<Doc>; label: string } | null>(null);
@@ -1028,6 +1029,25 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         {pct}%
                       </span>
                       <span style={{ fontSize: 12, color: C.faint }}>document completeness, not a health score</span>
+                      <button
+                        onClick={() => setShowWhy((v) => !v)}
+                        style={{
+                          marginLeft: "auto",
+                          minHeight: 34,
+                          padding: "6px 11px",
+                          borderRadius: 9,
+                          border: `1px solid ${C.border}`,
+                          background: C.panel2,
+                          color: C.sub,
+                          fontSize: 12.5,
+                          fontWeight: 600,
+                          fontFamily: "inherit",
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {showWhy ? "Hide" : "How?"}
+                      </button>
                     </div>
                     <div
                       style={{
@@ -1040,7 +1060,14 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     >
                       <div style={{ width: `${pct}%`, height: "100%", background: pc, borderRadius: 9, transition: "width 600ms cubic-bezier(.22,.9,.3,1)" }} />
                     </div>
-                    {items.map(([label, ok]) => (
+                    {/* Closed, the missing ones still speak: a complete profile needs no list. */}
+                    {!showWhy && done < items.length && (
+                      <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 2 }}>
+                        Still needed: {items.filter(([, ok]) => !ok).map(([label]) => label.replace(/ (answered|on file)$/, "")).join(", ")}
+                      </div>
+                    )}
+                    {showWhy &&
+                      items.map(([label, ok]) => (
                       <div
                         key={label}
                         style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", fontSize: 12.5 }}
@@ -1049,8 +1076,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                           {ok ? "✓" : "✗"}
                         </span>
                         <span style={{ color: ok ? C.text : C.sub }}>{label}</span>
-                      </div>
-                    ))}
+                        </div>
+                      ))}
                   </>
                 );
               })()}
