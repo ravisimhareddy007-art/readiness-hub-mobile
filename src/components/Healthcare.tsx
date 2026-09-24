@@ -176,6 +176,10 @@ const RECORD_TYPES: { label: string; short: string; icon: any; c: string; overri
   },
 ];
 
+/** Name and number as one readable line, or nothing when the contact is not recorded. */
+const emergencyLine = (c: { emergencyName?: string; emergencyPhone?: string }) =>
+  c.emergencyName?.trim() ? `${c.emergencyName.trim()}${c.emergencyPhone ? ` · ${c.emergencyPhone}` : ""}` : "";
+
 export default function Healthcare({ toast: extToast }: { toast?: (m: string) => void }) {
   const s = useStore();
   applyC(s.theme);
@@ -440,7 +444,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               onClose={() => setModal(null)}
               save={(mm: Member) => {
                 s.addMember(mm);
-                s.updateCare(mm.id, { conditions: [], medications: [], allergies: "", doctor: "", emergency: "" });
+                s.updateCare(mm.id, { conditions: [], medications: [], allergies: "", doctor: "", emergencyName: "", emergencyPhone: "" });
                 setSel(mm.id);
                 toast(`${mm.name.split(" ")[0]} added`);
                 setModal(null);
@@ -586,7 +590,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               onClose={() => setModal(null)}
               save={(mm: Member) => {
                 s.addMember(mm);
-                s.updateCare(mm.id, { conditions: [], medications: [], allergies: "", doctor: "", emergency: "" });
+                s.updateCare(mm.id, { conditions: [], medications: [], allergies: "", doctor: "", emergencyName: "", emergencyPhone: "" });
                 setSel(mm.id);
                 toast(`${mm.name.split(" ")[0]} added`);
                 setModal(null);
@@ -597,6 +601,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             <EditProfile
               member={m}
               care={care}
+              family={s.members}
+              onMemberPhone={(id: string, phone: string) => s.updateMember(id, { phone })}
               onClose={() => setModal(null)}
               save={(cp: any, mp: any) => {
                 s.updateCare(sel, cp);
@@ -760,14 +766,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       <div className="lh-actions">
         <button className="lh-act lh-act-on" onClick={() => setModal("visit")}>
           <ClipboardList size={17} />
-          <span style={{ display: "block" }}>
-            Prepare for a visit
-            {nextVisit && (
-              <span style={{ display: "block", fontSize: 12, fontWeight: 600, opacity: 0.8, marginTop: 1 }}>
-                {nextVisit.title} · {fmt(nextVisit.due)}
-              </span>
-            )}
-          </span>
+          <span>Prepare for a visit</span>
         </button>
         <button className="lh-act" onClick={() => setModal("reading")}>
           <Plus size={17} />
@@ -1012,7 +1011,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   ["Blood group", !!m.bloodGroup],
                   ["Conditions answered", (care.conditions || []).length > 0 || !!care.noConditions],
                   ["Allergies answered", !!care.allergies?.trim() || !!care.noKnownAllergies],
-                  ["Emergency contact", !!care.emergency],
+                  ["Emergency contact", !!care.emergencyName?.trim() && !!care.emergencyPhone?.trim()],
                   ["Primary doctor", !!care.doctor],
                   ["Insurance on file", !!insuranceOf(m, s.docs)],
                   ["Prescription on file", records.some((r) => r.medType === "prescription")],
@@ -1071,7 +1070,14 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   val={care.allergies?.trim() || (care.noKnownAllergies ? "No known allergies" : "Not answered yet")}
                   warn={!!care.allergies?.trim()}
                 />
-                <Info2 label="Emergency" val={care.emergency || "—"} />
+                <Info2
+                  label="Emergency"
+                  val={
+                    care.emergencyName?.trim()
+                      ? `${care.emergencyName}${care.emergencyPhone ? ` · ${care.emergencyPhone}` : ""}`
+                      : "Not answered yet"
+                  }
+                />
               </div>
             </div>
           </div>
@@ -1532,7 +1538,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 medications: [],
                 allergies: "",
                 doctor: "",
-                emergency: "",
+                emergencyName: "",
+                emergencyPhone: "",
               });
               setSel(mm.id);
               toast("Member added");
@@ -1564,6 +1571,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           <EditProfile
             member={m}
             care={care}
+            family={s.members}
+            onMemberPhone={(id: string, phone: string) => s.updateMember(id, { phone })}
             onClose={() => setModal(null)}
             save={(cp: any, mp: any) => {
               s.updateCare(sel, cp);
@@ -2224,7 +2233,9 @@ function AddReminder({ onClose, save }: any) {
     </Modal>
   );
 }
-function EditProfile({ member, care, onClose, save }: any) {
+function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }: any) {
+  /* Everyone else in the family: the likeliest emergency contact is already recorded. */
+  const others = (family as Member[]).filter((x) => x.id !== member.id);
   const [cond, setCond] = useState<string[]>(care.conditions);
   const [ci, setCi] = useState("");
   const [noAll, setNoAll] = useState(!!care.noKnownAllergies);
@@ -2232,7 +2243,10 @@ function EditProfile({ member, care, onClose, save }: any) {
   const [allergies, setAll] = useState(care.allergies || "");
   const [doctor, setDoc] = useState(care.doctor || "");
   const [hospital, setHosp] = useState(care.hospital || "");
-  const [emergency, setEm] = useState(care.emergency || "");
+  const [emName, setEmName] = useState(care.emergencyName || "");
+  const [emPhone, setEmPhone] = useState(care.emergencyPhone || "");
+  /* Which family member this contact is, when it is one: lets a new number be saved back to them. */
+  const [emFrom, setEmFrom] = useState<string | null>(null);
   const [blood, setBlood] = useState(member.bloodGroup || "");
   return (
     <Modal title={`Edit ${member.name.split(" ")[0]}'s care profile`} onClose={onClose}>
@@ -2336,19 +2350,65 @@ function EditProfile({ member, care, onClose, save }: any) {
       </div>
       <div style={{ marginTop: 12 }}>
         <Lbl>Emergency contact</Lbl>
-        <input
-          className="lh-in"
-          value={emergency}
-          onChange={(e) => setEm(e.target.value)}
-          placeholder="Name (relation)"
-        />
+        {/* Usually this is someone already in the family. Picking them fills both fields and, if
+            their number is new, records it on them so the next profile can reuse it. */}
+        {others.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+            {others.map((o: Member) => (
+              <button
+                key={o.id}
+                onClick={() => {
+                  setEmName(`${o.name} (${o.relation.toLowerCase()})`);
+                  if (o.phone) setEmPhone(o.phone);
+                  setEmFrom(o.id);
+                }}
+                style={{
+                  minHeight: 36,
+                  padding: "6px 11px",
+                  borderRadius: 9,
+                  border: `1px solid ${emFrom === o.id ? C.action : C.border}`,
+                  background: emFrom === o.id ? C.action + "1F" : C.panel2,
+                  color: emFrom === o.id ? C.action : C.sub,
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  fontFamily: "inherit",
+                  cursor: "pointer",
+                }}
+              >
+                {o.name.split(" ")[0]}
+              </button>
+            ))}
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 10 }}>
+          <input
+            className="lh-in"
+            style={{ flex: 3 }}
+            value={emName}
+            onChange={(e) => {
+              setEmName(e.target.value);
+              setEmFrom(null);
+            }}
+            placeholder="Name (relation)"
+          />
+          <input
+            className="lh-in"
+            style={{ flex: 2 }}
+            type="tel"
+            inputMode="tel"
+            value={emPhone}
+            onChange={(e) => setEmPhone(e.target.value)}
+            placeholder="Phone"
+          />
+        </div>
       </div>
       <button
         className="lh-btn"
         style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
-        onClick={() =>
-          save({ conditions: cond, allergies, doctor, hospital, emergency, noKnownAllergies: noAll && !allergies.trim(), noConditions: noCond && cond.length === 0 }, { bloodGroup: blood || undefined })
-        }
+        onClick={() => {
+          if (emFrom && emPhone.trim()) onMemberPhone?.(emFrom, emPhone.trim());
+          save({ conditions: cond, allergies, doctor, hospital, emergencyName: emName.trim(), emergencyPhone: emPhone.trim(), noKnownAllergies: noAll && !allergies.trim(), noConditions: noCond && cond.length === 0 }, { bloodGroup: blood || undefined });
+        }}
       >
         Save profile
       </button>
@@ -2745,7 +2805,7 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
     ${row("Current meds", meds.map((x) => `${x.name} ${x.dose}`).join(", ") || "None")}
     ${row("Primary physician", care.doctor || "—")}
     ${row("Preferred hospital", care.hospital || "—")}
-    ${row("Emergency contact", care.emergency || "—")}
+    ${row("Emergency contact", emergencyLine(care) || "—")}
     ${row("Insurance", ins ? ins.name : "—")}
     ${row("Medical documents", `${medDocs} on file in ReadiNes`)}
   </table></div>
