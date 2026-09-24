@@ -177,6 +177,9 @@ const RECORD_TYPES: { label: string; short: string; icon: any; c: string; overri
 ];
 
 /** Name and number as one readable line, or nothing when the contact is not recorded. */
+/** Whole days since a date. */
+const daysSince = (iso: string) => (Date.now() - +new Date(iso)) / 86400000;
+
 const emergencyLine = (c: { emergencyName?: string; emergencyPhone?: string }) =>
   c.emergencyName?.trim() ? `${c.emergencyName.trim()}${c.emergencyPhone ? ` · ${c.emergencyPhone}` : ""}` : "";
 
@@ -209,6 +212,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
   >(null);
   const [printHTML, setPrintHTML] = useState("");
   const [showWhy, setShowWhy] = useState(false);
+  const [stopping, setStopping] = useState<Medication | null>(null);
+  const [stopNote, setStopNote] = useState("");
   const [viewDoc, setViewDoc] = useState<Doc | null>(null);
   const recRef = useRef<HTMLInputElement>(null);
   const pendingRec = useRef<{ override: Partial<Doc>; label: string } | null>(null);
@@ -222,6 +227,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     emergency: "",
   };
   const meds = s.meds.filter((x) => x.memberId === sel);
+  /* Only what is still being taken leaves this screen: a stopped medicine on an emergency card or
+     in a visit pack is a wrong answer to the only question that matters. */
+  const taking = meds.filter((x) => x.status !== "stopped");
   const reminders = s.reminders.filter((x) => x.memberId === sel && !x.done).sort((a, b) => a.due.localeCompare(b.due));
   const records = useMemo(
     () =>
@@ -406,7 +414,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
   const lastRecord = records[0];
 
 
-  const emergHTML = useMemo(() => buildEmergency(m, care, meds, s.docs), [m, care, meds, s.docs]);
+  const emergHTML = useMemo(() => buildEmergency(m, care, taking, s.docs), [m, care, taking, s.docs]);
   const doExport = (html: string, name: string) => {
     const b = new Blob([html], { type: "text/html" });
     const u = URL.createObjectURL(b);
@@ -805,7 +813,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         ).map(([k, label, Ic]) => (
           <button key={k} className={"lh-tab" + (tab === k ? " on" : "")} onClick={() => setTab(k)}>
             <Ic size={15} /> {label}
-            {k === "meds" && meds.length > 0 && <span className="lh-tc">{meds.length}</span>}
+            {k === "meds" && taking.length > 0 && <span className="lh-tc">{taking.length}</span>}
             {k === "records" && records.length > 0 && <span className="lh-tc">{records.length}</span>}
           </button>
         ))}
@@ -1176,73 +1184,116 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 <Plus size={13} /> Add
               </button>
             </div>
-            <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 10, lineHeight: 1.5 }}>
-              What this person is currently taking, as the prescriptions state it. This is the list a doctor asks for,
-              and the one that travels in a visit pack and on the emergency card.
-            </div>
+            <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 10 }}>Confirm what is still being taken.</div>
             {meds.length === 0 ? (
               <div style={{ padding: "16px 4px", textAlign: "center" }}>
                 <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
-                  No medicines recorded. Upload a prescription and they are read from it, with the dose and schedule as
-                  written.
+                  No medicines recorded. Upload a prescription and they are read from it.
                 </p>
                 <button className="lh-btn-g" style={{ margin: "0 auto" }} onClick={() => setModal("med")}>
                   <Plus size={15} /> Add one by hand
                 </button>
               </div>
             ) : (
-              meds.map((med) => {
-                const rf = med.refillBy ? daysTo(med.refillBy) : null;
-                const latestRx = records
-                  .filter((r) => r.medType === "prescription")
-                  .sort((a, b) => (b.docDate || b.addedAt).localeCompare(a.docDate || a.addedAt))[0];
-                return (
-                  <div key={med.id} className="lh-med">
-                    <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
-                      <span className="lh-ic" style={{ background: C.violet + "22", flexShrink: 0 }}>
-                        <PillIcon size={16} color={C.violet} />
-                      </span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14.5, fontWeight: 600, color: C.text, lineHeight: 1.35 }}>
-                          {med.name}
-                          {med.dose && <span style={{ color: C.sub, fontWeight: 400 }}> {med.dose}</span>}
-                        </div>
-                        <div style={{ fontSize: 12.5, color: C.sub, marginTop: 1 }}>{med.freq}</div>
-                        {latestRx && (
-                          <button
-                            className="lh-lnk"
-                            style={{ padding: 0, marginTop: 4, fontSize: 12 }}
-                            onClick={() => setViewDoc(latestRx)}
+              meds
+                .slice()
+                .sort((a, b) => (a.status === "stopped" ? 1 : 0) - (b.status === "stopped" ? 1 : 0))
+                .map((med) => {
+                  const stopped = med.status === "stopped";
+                  const rf = med.refillBy && !stopped ? daysTo(med.refillBy) : null;
+                  /* How long since anyone said this was still being taken. A list nobody has
+                     confirmed in months is not a current medication list. */
+                  const since = med.confirmedOn ? Math.floor(daysSince(med.confirmedOn)) : null;
+                  const stale = !stopped && (since === null || since > 90);
+                  const latestRx = records
+                    .filter((r) => r.medType === "prescription")
+                    .sort((a, b) => (b.docDate || b.addedAt).localeCompare(a.docDate || a.addedAt))[0];
+                  return (
+                    <div key={med.id} className="lh-med" style={{ opacity: stopped ? 0.6 : 1 }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
+                        <span className="lh-ic" style={{ background: (stopped ? C.faint : C.violet) + "22", flexShrink: 0 }}>
+                          <PillIcon size={16} color={stopped ? C.faint : C.violet} />
+                        </span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div
+                            style={{
+                              fontSize: 14.5,
+                              fontWeight: 600,
+                              color: C.text,
+                              lineHeight: 1.35,
+                              textDecoration: stopped ? "line-through" : "none",
+                            }}
                           >
-                            {latestRx.docType}, {fmt(latestRx.docDate || latestRx.addedAt)}
-                          </button>
-                        )}
-                        {rf !== null && rf <= 14 && (
-                          <div style={{ marginTop: 6 }}>
-                            <span
-                              className="lh-tag"
-                              style={{
-                                color: rf < 0 ? C.red : C.warning,
-                                background: (rf < 0 ? C.red : C.warning) + "1f",
-                              }}
-                            >
-                              {rf < 0 ? "Repeat overdue" : `Repeat due ${fmt(med.refillBy)}`}
-                            </span>
+                            {med.name}
+                            {med.dose && <span style={{ color: C.sub, fontWeight: 400 }}> {med.dose}</span>}
                           </div>
-                        )}
+                          <div style={{ fontSize: 12.5, color: C.sub, marginTop: 1 }}>
+                            {stopped
+                              ? `Stopped ${med.stoppedOn ? fmt(med.stoppedOn) : ""}${med.stoppedNote ? ` · ${med.stoppedNote}` : ""}`
+                              : med.freq}
+                          </div>
+                          {!stopped && (
+                            <div style={{ fontSize: 12, color: stale ? C.warning : C.faint, marginTop: 3 }}>
+                              {since === null
+                                ? "Not confirmed yet"
+                                : since === 0
+                                  ? "Confirmed today"
+                                  : `Confirmed ${since} day${since === 1 ? "" : "s"} ago`}
+                            </div>
+                          )}
+                          {rf !== null && rf <= 14 && (
+                            <div style={{ marginTop: 6 }}>
+                              <span
+                                className="lh-tag"
+                                style={{ color: rf < 0 ? C.red : C.warning, background: (rf < 0 ? C.red : C.warning) + "1f" }}
+                              >
+                                {rf < 0 ? "Repeat overdue" : `Repeat due ${fmt(med.refillBy)}`}
+                              </span>
+                            </div>
+                          )}
+                          {!stopped && (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+                              <button
+                                className="lh-btn-g"
+                                style={{ padding: "7px 12px", fontSize: 12.5, minHeight: 40 }}
+                                onClick={() => {
+                                  s.confirmMed(med.id);
+                                  toast(`${med.name} confirmed`);
+                                }}
+                              >
+                                <Check size={13} /> Still taking
+                              </button>
+                              <button
+                                className="lh-btn-g"
+                                style={{ padding: "7px 12px", fontSize: 12.5, minHeight: 40, color: C.sub }}
+                                onClick={() => setStopping(med)}
+                              >
+                                Stopped
+                              </button>
+                              {latestRx && (
+                                <button
+                                  className="lh-lnk"
+                                  style={{ padding: "7px 4px", fontSize: 12.5 }}
+                                  onClick={() => setViewDoc(latestRx)}
+                                >
+                                  Prescription
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          className="lh-ib"
+                          onClick={() => s.removeMed(med.id)}
+                          title="Remove this medicine" aria-label="Remove this medicine"
+                          style={{ flexShrink: 0, minWidth: 44, minHeight: 44 }}
+                        >
+                          <Trash2 size={14} color={C.faint} />
+                        </button>
                       </div>
-                      <button
-                        className="lh-ib"
-                        onClick={() => s.removeMed(med.id)}
-                        title="Remove this medicine" aria-label="Remove this medicine"
-                        style={{ flexShrink: 0, minWidth: 44, minHeight: 44 }}
-                      >
-                        <Trash2 size={14} color={C.faint} />
-                      </button>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                })
             )}
           </div>
         </div>
@@ -1582,6 +1633,33 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             }}
           />
         )}
+        {stopping && (
+          <Modal title={`Stopped ${stopping.name}?`} onClose={() => setStopping(null)}>
+            <p style={{ fontSize: 13, color: C.sub, margin: "0 0 14px", lineHeight: 1.5 }}>
+              It stays on file with the date, so a doctor can see what changed.
+            </p>
+            <Lbl>Why, if you know</Lbl>
+            <input
+              className="lh-in"
+              autoFocus
+              value={stopNote}
+              onChange={(e) => setStopNote(e.target.value)}
+              placeholder="Changed by Dr Rao"
+            />
+            <button
+              className="lh-btn"
+              style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
+              onClick={() => {
+                s.stopMed(stopping.id, stopNote.trim() || undefined);
+                toast(`${stopping.name} marked stopped`);
+                setStopping(null);
+                setStopNote("");
+              }}
+            >
+              Mark stopped
+            </button>
+          </Modal>
+        )}
         {modal === "med" && (
           <AddMed
             onClose={() => setModal(null)}
@@ -1636,7 +1714,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               .sort((a, b) => a.due.localeCompare(b.due))}
             member={m}
             care={care}
-            meds={meds}
+            meds={taking}
             vitals={vitals}
             records={records}
             docs={s.docs}
@@ -2211,9 +2289,7 @@ function AddMed({ onClose, save }: any) {
           />
         </div>
       </div>
-      <p style={{ fontSize: 12, color: C.faint, marginTop: 6, lineHeight: 1.5 }}>
-        Optional. If the prescription says how long it lasts, this is that date, and you will be told before it passes.
-      </p>
+      <p style={{ fontSize: 12, color: C.faint, marginTop: 6 }}>Optional.</p>
       <button
         className="lh-btn"
         style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
@@ -2840,7 +2916,7 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
     ${row("Blood group", m.bloodGroup || "—")}
     ${row("Critical allergies", care.allergies?.trim() || (care.noKnownAllergies ? "No known allergies" : "NOT ANSWERED"))}
     ${row("Conditions", (care.conditions || []).join(", ") || (care.noConditions ? "None" : "NOT ANSWERED"))}
-    ${row("Current meds", meds.map((x) => `${x.name} ${x.dose}`).join(", ") || "None")}
+    ${row("Current meds", meds.map((x: Medication) => `${x.name} ${x.dose}`).join(", ") || "None")}
     ${row("Primary physician", care.doctor || "—")}
     ${row("Preferred hospital", care.hospital || "—")}
     ${row("Emergency contact", emergencyLine(care) || "—")}
