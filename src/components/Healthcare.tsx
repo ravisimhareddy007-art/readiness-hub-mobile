@@ -204,7 +204,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     null | "reading" | "member" | "med" | "reminder" | "profile" | "emergency" | "visit"
   >(null);
   const [printHTML, setPrintHTML] = useState("");
-  const [insightOpen, setInsightOpen] = useState(false);
   const [viewDoc, setViewDoc] = useState<Doc | null>(null);
   const recRef = useRef<HTMLInputElement>(null);
   const pendingRec = useRef<{ override: Partial<Doc>; label: string } | null>(null);
@@ -400,57 +399,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
     [s.reminders, sel],
   );
   const lastRecord = records[0];
-  const changedLine = useMemo(() => {
-    const outs: string[] = [];
-    Object.keys(vitals).forEach((k) => {
-      const arr = vitals[k];
-      if (arr.length < 2 || k === "Weight") return;
-      const st = statusOf(k, arr);
-      const l = arr[arr.length - 1],
-        f = arr[0];
-      if (st === "out") {
-        const dir = l.value > f.value ? "up" : "down";
-        outs.push(`${seriesName(arr)} ${readingText(l)}`);
-      }
-    });
-    return outs.length ? outs.slice(0, 2).join(", ") : "Readings holding in range";
-  }, [vitals]);
-  const shortInsight = useMemo(() => {
-    const sts = Object.keys(vitals)
-      .filter((k) => k !== "Weight")
-      .map((k) => ({ k, st: statusOf(k, vitals[k]) }));
-    if (!sts.length) return "No readings tracked yet";
-    const bad = sts.filter((x) => x.st === "out").map((x) => x.k);
-    const ok = sts.filter((x) => x.st === "in").map((x) => x.k);
-    if (!bad.length) return "All readings within their printed ranges";
-    return `${bad.join(", ")} outside printed range${ok.length ? ` · ${ok.join(", ")} within` : ""}`;
-  }, [vitals]);
 
-  const insight = useMemo(() => {
-    const parts: string[] = [];
-    Object.keys(vitals).forEach((k) => {
-      const arr = vitals[k];
-      if (arr.length < 2 || k === "Weight") return;
-      const l = arr[arr.length - 1],
-        f = arr[0];
-      const st = statusOf(k, arr);
-      const dir = l.value > f.value ? "risen" : l.value < f.value ? "eased" : "held steady";
-      const val = `${readingText(l)} ${seriesUnit(arr)}`.trim();
-      const rng =
-        st === "out"
-          ? `outside the range printed on the report (${l.refText})`
-          : st === "in"
-            ? `within the range printed on the report (${l.refText})`
-            : "with no range printed on the report";
-      parts.push(`${k} has ${dir} across ${m?.name.split(" ")[0]}'s last ${arr.length} readings to ${val}, ${rng}.`);
-    });
-    if (!parts.length)
-      return `No tracked readings yet for ${m?.name.split(" ")[0]}. Use "Log a reading" to build a factual trend.`;
-    return parts
-      .sort((a) => (a.includes("above") ? -1 : 1))
-      .slice(0, 3)
-      .join(" ");
-  }, [vitals, m]);
 
   const emergHTML = useMemo(() => buildEmergency(m, care, meds, s.docs), [m, care, meds, s.docs]);
   const doExport = (html: string, name: string) => {
@@ -548,7 +497,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             <div style={{ padding: "22px 16px", textAlign: "center" }}>
               <p style={{ fontSize: 13.5, color: C.sub, lineHeight: 1.6, margin: "0 0 14px" }}>
                 Add the people whose health records you keep. Each one gets their own records, readings, medicines, and
-                emergency card.
+                emergency information.
               </p>
               <button className="lh-btn" style={{ margin: "0 auto" }} onClick={() => setModal("member")}>
                 <UserPlus size={15} /> Add a family member
@@ -734,14 +683,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 </button>
               );
             })}
-            <button onClick={() => setModal("member")} className="lh-sw" title="Add a family member" aria-label="Add a family member">
-              <span className="lh-swav" style={{ background: "transparent", color: C.faint, borderColor: C.border, borderStyle: "dashed" }}>
-                +
-              </span>
-              <span className="lh-swnm" style={{ color: C.sub }}>
-                Add
-              </span>
-            </button>
           </div>
         </>
       )}
@@ -793,14 +734,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             </button>
           );
         })}
-        <button
-          className="lh-famcard"
-          style={{ borderStyle: "dashed", justifyContent: "center" }}
-          onClick={() => setModal("member")}
-        >
-          <UserPlus size={15} color={C.action} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: C.action }}>Add</span>
-        </button>
       </div>
       )}
 
@@ -820,11 +753,36 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             {care.doctor && <span>· {care.doctor}</span>}
           </div>
         </div>
-        <button className="lh-btn-g" onClick={() => setModal("emergency")}>
-          <IdCard size={15} /> Emergency card
+      </div>
+
+      {/* Everything Health does for this person, in one row. Prepare for a visit leads because it
+          is the only one that produces something to hand over. */}
+      <div className="lh-actions">
+        <button className="lh-act lh-act-on" onClick={() => setModal("visit")}>
+          <ClipboardList size={17} />
+          <span>Prepare for a visit</span>
         </button>
-        <button className="lh-btn-g" onClick={() => setModal("reading")}>
-          <Plus size={15} /> Log reading
+        <button className="lh-act" onClick={() => setModal("reading")}>
+          <Plus size={17} />
+          <span>Log a reading</span>
+        </button>
+        <button className="lh-act" onClick={() => setModal("emergency")}>
+          <IdCard size={17} />
+          <span>In an emergency</span>
+        </button>
+        <button
+          className="lh-act"
+          onClick={() => {
+            const ins = insuranceOf(m, s.docs);
+            if (ins) setViewDoc(ins);
+            else {
+              setTab("records");
+              toast(`No insurance card on file for ${m.name.split(" ")[0]}`);
+            }
+          }}
+        >
+          <ShieldCheck size={17} />
+          <span>Insurance card</span>
         </button>
       </div>
 
@@ -870,35 +828,11 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   {fmt(nextVisit.due)} · in {daysTo(nextVisit.due)} days
                 </div>
               )}
-              <div style={{ fontSize: 12.5, color: C.sub, marginTop: 2 }}>
-                Bring {meds.length} medication{meds.length !== 1 ? "s" : ""},{" "}
-                {records.filter((r) => r.medType === "lab_report").length} recent report
-                {records.filter((r) => r.medType === "lab_report").length !== 1 ? "s" : ""}
-                {insuranceOf(m, s.docs) ? ", insurance card" : ""} · {changedLine}
-              </div>
             </div>
-            <button className="lh-btn" onClick={() => setModal("visit")}>
-              <ClipboardList size={15} /> Prepare for a visit
-            </button>
+            {nextVisit && care.doctor && (
+              <span style={{ fontSize: 12.5, color: C.sub, whiteSpace: "nowrap" }}>{care.doctor}</span>
+            )}
           </div>
-          <button className="lh-infobar" onClick={() => setInsightOpen((o) => !o)}>
-            <Info size={15} color={C.action} />
-            <span className="lh-infoshort">{shortInsight}</span>
-            <ChevronDown
-              size={15}
-              color={C.sub}
-              style={{ transform: insightOpen ? "rotate(180deg)" : "none", transition: ".15s", flexShrink: 0 }}
-            />
-          </button>
-          {insightOpen && (
-            <div className="lh-card" style={{ padding: 16, marginBottom: 16 }}>
-              <p style={{ fontSize: 14.5, lineHeight: 1.6, color: C.text, margin: 0 }}>{insight}</p>
-              <p style={{ fontSize: 12, color: C.faint, marginTop: 10 }}>
-                Restates your own logged numbers against standard published reference ranges. Not medical advice or a
-                diagnosis.
-              </p>
-            </div>
-          )}
           {seriesOrder.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
               <span style={{ fontSize: 12.5, color: C.sub }}>
@@ -1552,7 +1486,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 { icon: Plus, label: "A reading", sub: "Copy a value and its range from a report", run: () => setModal("reading") },
                 { icon: Bell, label: "A reminder", sub: "Appointment, refill, or vaccination", run: () => setModal("reminder") },
                 { icon: PillIcon, label: "A medicine", sub: "Name, dose, and refill date", run: () => setModal("med") },
-                { icon: UserPlus, label: "A family member", sub: "Someone else whose records you keep", run: () => setModal("member") },
               ].map((o) => (
                 <button
                   key={o.label}
@@ -2807,7 +2740,6 @@ const CSS = () => `
 .lh-h1{letter-spacing:-0.015em;font-weight:700;font-size:27px;letter-spacing:-.5px;margin:0;color:${C.text}}
 .lh-h2{letter-spacing:-0.015em;font-weight:700;margin:0;color:${C.text}}
 .lh-card{background:${C.panel};border:1px solid ${C.border};border-radius:16px}
-.lh-insight{background:linear-gradient(180deg,rgba(216,178,90,.06),${C.panel})}
 .lh-switch{display:flex;align-items:center;gap:16px;overflow-x:auto;padding:2px 2px 16px}
 .lh-mm{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;cursor:pointer;flex-shrink:0;padding:0}
 .lh-av{position:relative;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:700;font-size:18px;border:2px solid transparent;letter-spacing:-0.015em;transition:.15s}
@@ -2829,8 +2761,6 @@ const CSS = () => `
 .lh-cdot{width:8px;height:8px;border-radius:9px;flex-shrink:0}
 .lh-attndot{width:6px;height:6px;border-radius:9px;background:${C.warning}}
 .lh-addpill{border-style:dashed}
-.lh-infobar{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:linear-gradient(180deg,rgba(216,178,90,.06),${C.panel});border:1px solid ${C.border};border-radius:12px;padding:12px 14px;cursor:pointer;font-family:inherit;margin-bottom:16px}
-.lh-infoshort{flex:1;font-size:14px;color:${C.text}}
 .lh-vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px}
 .lh-attnrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
 .lh-chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:6px 12px;cursor:pointer;font-family:inherit}
@@ -2918,6 +2848,10 @@ const CSS = () => `
 .lh-root input,.lh-root select,.lh-root textarea{min-width:0}
 .lh-h2{font-size:17px !important;letter-spacing:-0.015em}
 .lh-tab{font-size:13px;padding:9px 8px;gap:0}
+.lh-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0 4px}
+.lh-act{display:flex;align-items:center;gap:9px;min-height:52px;padding:10px 12px;border-radius:12px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};font-size:13.5px;font-weight:600;font-family:inherit;cursor:pointer;text-align:left}
+.lh-act span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.lh-act-on{background:${C.action};border-color:${C.action};color:#04221f;grid-column:1 / -1}
 .lh-tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px 14px;padding:6px 14px 0}
 .lh-tab>svg{display:none}
 .lh-pane .lh-card{padding:14px !important}
