@@ -1176,14 +1176,15 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 <Plus size={13} /> Add
               </button>
             </div>
-            <div style={{ fontSize: 12, color: C.faint, marginBottom: 8 }}>
-              What the latest prescriptions say, not a pill tracker. Medicines and refill dates are read from the
-              prescription itself.
+            <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 10, lineHeight: 1.5 }}>
+              What this person is currently taking, as the prescriptions state it. This is the list a doctor asks for,
+              and the one that travels in a visit pack and on the emergency card.
             </div>
             {meds.length === 0 ? (
-              <div style={{ padding: "18px 4px", textAlign: "center" }}>
+              <div style={{ padding: "16px 4px", textAlign: "center" }}>
                 <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
-                  No medicines recorded. Upload a prescription and they arrive with dose, schedule, and refill date.
+                  No medicines recorded. Upload a prescription and they are read from it, with the dose and schedule as
+                  written.
                 </p>
                 <button className="lh-btn-g" style={{ margin: "0 auto" }} onClick={() => setModal("med")}>
                   <Plus size={15} /> Add one by hand
@@ -1197,38 +1198,45 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   .sort((a, b) => (b.docDate || b.addedAt).localeCompare(a.docDate || a.addedAt))[0];
                 return (
                   <div key={med.id} className="lh-med">
-                    <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-                      <span className="lh-ic" style={{ background: C.violet + "22" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
+                      <span className="lh-ic" style={{ background: C.violet + "22", flexShrink: 0 }}>
                         <PillIcon size={16} color={C.violet} />
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14.5, fontWeight: 600, color: C.text }}>
-                          {med.name} <span style={{ color: C.sub, fontWeight: 400 }}>{med.dose}</span>
+                        <div style={{ fontSize: 14.5, fontWeight: 600, color: C.text, lineHeight: 1.35 }}>
+                          {med.name}
+                          {med.dose && <span style={{ color: C.sub, fontWeight: 400 }}> {med.dose}</span>}
                         </div>
-                        <div style={{ fontSize: 12, color: C.faint }}>
-                          {med.freq}
-                          {latestRx
-                            ? ` · source: ${latestRx.docType}, ${fmt(latestRx.docDate || latestRx.addedAt)}`
-                            : ""}
-                        </div>
+                        <div style={{ fontSize: 12.5, color: C.sub, marginTop: 1 }}>{med.freq}</div>
+                        {latestRx && (
+                          <button
+                            className="lh-lnk"
+                            style={{ padding: 0, marginTop: 4, fontSize: 12 }}
+                            onClick={() => setViewDoc(latestRx)}
+                          >
+                            {latestRx.docType}, {fmt(latestRx.docDate || latestRx.addedAt)}
+                          </button>
+                        )}
+                        {rf !== null && rf <= 14 && (
+                          <div style={{ marginTop: 6 }}>
+                            <span
+                              className="lh-tag"
+                              style={{
+                                color: rf < 0 ? C.red : C.warning,
+                                background: (rf < 0 ? C.red : C.warning) + "1f",
+                              }}
+                            >
+                              {rf < 0 ? "Repeat overdue" : `Repeat due ${fmt(med.refillBy)}`}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      {rf !== null && rf <= 14 && (
-                        <span
-                          className="lh-tag"
-                          style={{
-                            color: rf < 0 ? C.red : C.warning,
-                            background: (rf < 0 ? C.red : C.warning) + "1f",
-                          }}
-                        >
-                          {rf < 0 ? "refill overdue" : `refill due ${fmt(med.refillBy)}`}
-                        </span>
-                      )}
-                      {latestRx && (
-                        <button className="lh-lnk" onClick={() => setViewDoc(latestRx)}>
-                          Latest prescription
-                        </button>
-                      )}
-                      <button className="lh-ib" onClick={() => s.removeMed(med.id)}>
+                      <button
+                        className="lh-ib"
+                        onClick={() => s.removeMed(med.id)}
+                        title="Remove this medicine" aria-label="Remove this medicine"
+                        style={{ flexShrink: 0, minWidth: 44, minHeight: 44 }}
+                      >
                         <Trash2 size={14} color={C.faint} />
                       </button>
                     </div>
@@ -2165,7 +2173,7 @@ function AddMember({ onClose, save }: any) {
   );
 }
 function AddMed({ onClose, save }: any) {
-  const [f, setF] = useState({ name: "", dose: "", freq: "Once daily", refillBy: rel(30) });
+  const [f, setF] = useState({ name: "", dose: "", freq: "Once daily", refillBy: "" });
   return (
     <Modal title="Add medication" aria-label="Add medication" onClose={onClose}>
       <div style={{ display: "flex", gap: 10 }}>
@@ -2194,7 +2202,7 @@ function AddMed({ onClose, save }: any) {
           <input className="lh-in" value={f.freq} onChange={(e) => setF({ ...f, freq: e.target.value })} />
         </div>
         <div style={{ flex: 1 }}>
-          <Lbl>Refill by</Lbl>
+          <Lbl>Repeat runs out</Lbl>
           <input
             className="lh-in"
             type="date"
@@ -2203,6 +2211,9 @@ function AddMed({ onClose, save }: any) {
           />
         </div>
       </div>
+      <p style={{ fontSize: 12, color: C.faint, marginTop: 6, lineHeight: 1.5 }}>
+        Optional. If the prescription says how long it lasts, this is that date, and you will be told before it passes.
+      </p>
       <button
         className="lh-btn"
         style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
