@@ -212,7 +212,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
   const care = s.care[sel] || {
     conditions: [],
     medications: [],
-    allergies: "None recorded",
+    allergies: "",
     doctor: "",
     emergency: "",
   };
@@ -440,7 +440,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               onClose={() => setModal(null)}
               save={(mm: Member) => {
                 s.addMember(mm);
-                s.updateCare(mm.id, { conditions: [], medications: [], allergies: "None recorded", doctor: "", emergency: "" });
+                s.updateCare(mm.id, { conditions: [], medications: [], allergies: "", doctor: "", emergency: "" });
                 setSel(mm.id);
                 toast(`${mm.name.split(" ")[0]} added`);
                 setModal(null);
@@ -586,7 +586,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               onClose={() => setModal(null)}
               save={(mm: Member) => {
                 s.addMember(mm);
-                s.updateCare(mm.id, { conditions: [], medications: [], allergies: "None recorded", doctor: "", emergency: "" });
+                s.updateCare(mm.id, { conditions: [], medications: [], allergies: "", doctor: "", emergency: "" });
                 setSel(mm.id);
                 toast(`${mm.name.split(" ")[0]} added`);
                 setModal(null);
@@ -760,7 +760,14 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       <div className="lh-actions">
         <button className="lh-act lh-act-on" onClick={() => setModal("visit")}>
           <ClipboardList size={17} />
-          <span>Prepare for a visit</span>
+          <span style={{ display: "block" }}>
+            Prepare for a visit
+            {nextVisit && (
+              <span style={{ display: "block", fontSize: 12, fontWeight: 600, opacity: 0.8, marginTop: 1 }}>
+                {nextVisit.title} · {fmt(nextVisit.due)}
+              </span>
+            )}
+          </span>
         </button>
         <button className="lh-act" onClick={() => setModal("reading")}>
           <Plus size={17} />
@@ -807,32 +814,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       {/* ── OVERVIEW ── */}
       {tab === "overview" && (
         <div className="lh-pane">
-          <div
-            className="lh-card"
-            style={{
-              padding: "14px 16px",
-              marginBottom: 16,
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              flexWrap: "wrap",
-            }}
-          >
-            <CalendarClock size={16} color={C.sub} />
-            <div style={{ flex: 1, minWidth: 220 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>
-                {nextVisit ? nextVisit.title : "No visit scheduled"}
-              </div>
-              {nextVisit && (
-                <div style={{ fontSize: 12.5, color: C.sub, marginTop: 1, fontWeight: 600 }}>
-                  {fmt(nextVisit.due)} · in {daysTo(nextVisit.due)} days
-                </div>
-              )}
-            </div>
-            {nextVisit && care.doctor && (
-              <span style={{ fontSize: 12.5, color: C.sub, whiteSpace: "nowrap" }}>{care.doctor}</span>
-            )}
-          </div>
           {seriesOrder.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
               <span style={{ fontSize: 12.5, color: C.sub }}>
@@ -1029,7 +1010,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               {(() => {
                 const items: [string, boolean][] = [
                   ["Blood group", !!m.bloodGroup],
-                  ["Allergies recorded", !!care.allergies && care.allergies !== ""],
+                  ["Conditions answered", (care.conditions || []).length > 0 || !!care.noConditions],
+                  ["Allergies answered", !!care.allergies?.trim() || !!care.noKnownAllergies],
                   ["Emergency contact", !!care.emergency],
                   ["Primary doctor", !!care.doctor],
                   ["Insurance on file", !!insuranceOf(m, s.docs)],
@@ -1074,11 +1056,20 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 );
               })()}
               <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 10, paddingTop: 8 }}>
-                <Info2 label="Conditions" val={care.conditions.length ? care.conditions.join(", ") : "None recorded"} />
+                <Info2
+                  label="Conditions"
+                  val={
+                    care.conditions.length
+                      ? care.conditions.join(", ")
+                      : care.noConditions
+                        ? "None"
+                        : "Not answered yet"
+                  }
+                />
                 <Info2
                   label="Allergies"
-                  val={care.allergies || "None recorded"}
-                  warn={!!care.allergies && care.allergies !== "None recorded"}
+                  val={care.allergies?.trim() || (care.noKnownAllergies ? "No known allergies" : "Not answered yet")}
+                  warn={!!care.allergies?.trim()}
                 />
                 <Info2 label="Emergency" val={care.emergency || "—"} />
               </div>
@@ -1539,7 +1530,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               s.updateCare(mm.id, {
                 conditions: [],
                 medications: [],
-                allergies: "None recorded",
+                allergies: "",
                 doctor: "",
                 emergency: "",
               });
@@ -2236,6 +2227,8 @@ function AddReminder({ onClose, save }: any) {
 function EditProfile({ member, care, onClose, save }: any) {
   const [cond, setCond] = useState<string[]>(care.conditions);
   const [ci, setCi] = useState("");
+  const [noAll, setNoAll] = useState(!!care.noKnownAllergies);
+  const [noCond, setNoCond] = useState(!!care.noConditions);
   const [allergies, setAll] = useState(care.allergies || "");
   const [doctor, setDoc] = useState(care.doctor || "");
   const [hospital, setHosp] = useState(care.hospital || "");
@@ -2279,10 +2272,29 @@ function EditProfile({ member, care, onClose, save }: any) {
           <Plus size={15} />
         </button>
       </div>
+      <label
+        style={{ display: "flex", alignItems: "center", gap: 9, minHeight: 44, marginTop: 4, cursor: "pointer" }}
+      >
+        <input
+          type="checkbox"
+          checked={noCond}
+          disabled={cond.length > 0}
+          onChange={(e) => setNoCond(e.target.checked)}
+          style={{ width: 18, height: 18, accentColor: C.action }}
+        />
+        <span style={{ fontSize: 13.5, color: cond.length > 0 ? C.faint : C.text }}>No known conditions</span>
+      </label>
       <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
         <div style={{ flex: 2 }}>
           <Lbl>Allergies</Lbl>
-          <input className="lh-in" value={allergies} onChange={(e) => setAll(e.target.value)} />
+          <input
+            className="lh-in"
+            value={allergies}
+            disabled={noAll}
+            onChange={(e) => setAll(e.target.value)}
+            placeholder={noAll ? "No known allergies" : "Penicillin, sulfa drugs"}
+            style={noAll ? { opacity: 0.5 } : undefined}
+          />
         </div>
         <div style={{ flex: 1 }}>
           <Lbl>Blood</Lbl>
@@ -2293,6 +2305,16 @@ function EditProfile({ member, care, onClose, save }: any) {
             ))}
           </select>
         </div>
+      <label style={{ display: "flex", alignItems: "center", gap: 9, minHeight: 44, cursor: "pointer" }}>
+        <input
+          type="checkbox"
+          checked={noAll}
+          disabled={!!allergies.trim()}
+          onChange={(e) => setNoAll(e.target.checked)}
+          style={{ width: 18, height: 18, accentColor: C.action }}
+        />
+        <span style={{ fontSize: 13.5, color: allergies.trim() ? C.faint : C.text }}>No known allergies</span>
+      </label>
       </div>
       <div style={{ marginTop: 12 }}>
         <Lbl>Primary doctor</Lbl>
@@ -2325,7 +2347,7 @@ function EditProfile({ member, care, onClose, save }: any) {
         className="lh-btn"
         style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
         onClick={() =>
-          save({ conditions: cond, allergies, doctor, hospital, emergency }, { bloodGroup: blood || undefined })
+          save({ conditions: cond, allergies, doctor, hospital, emergency, noKnownAllergies: noAll && !allergies.trim(), noConditions: noCond && cond.length === 0 }, { bloodGroup: blood || undefined })
         }
       >
         Save profile
@@ -2718,8 +2740,8 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
   <div style="padding:6px 4px"><table style="width:100%;border-collapse:collapse">
     ${row("Name", m.name)}
     ${row("Blood group", m.bloodGroup || "—")}
-    ${row("Critical allergies", care.allergies || "None recorded", care.allergies && care.allergies !== "None recorded")}
-    ${row("Conditions", (care.conditions || []).join(", ") || "None recorded")}
+    ${row("Critical allergies", care.allergies?.trim() || (care.noKnownAllergies ? "No known allergies" : "NOT ANSWERED"))}
+    ${row("Conditions", (care.conditions || []).join(", ") || (care.noConditions ? "None" : "NOT ANSWERED"))}
     ${row("Current meds", meds.map((x) => `${x.name} ${x.dose}`).join(", ") || "None")}
     ${row("Primary physician", care.doctor || "—")}
     ${row("Preferred hospital", care.hospital || "—")}
