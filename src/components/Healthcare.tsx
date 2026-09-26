@@ -2846,11 +2846,6 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
           </>
         ) : (
           <>
-            {nextAppt && (
-              <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 10 }}>
-                Next appointment: {nextAppt.title} on {fmt(nextAppt.due)}.
-              </div>
-            )}
             <button
               onClick={() => setPicking(true)}
               style={{
@@ -2869,15 +2864,8 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                 fontFamily: "inherit",
               }}
             >
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 12, color: C.faint }}>{GROUP_LABEL[cur.kind]}</span>
-                <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: C.text, marginTop: 1 }}>
-                  {curLabel}
-                </span>
-                <span style={{ display: "block", fontSize: 12.5, color: C.sub, marginTop: 2 }}>
-                  {packDocs.length} document{packDocs.length === 1 ? "" : "s"} · tap to choose another doctor, hospital,
-                  or specialisation
-                </span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {curLabel}
               </span>
               <span
                 style={{
@@ -2896,21 +2884,13 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                 Change <ChevronRight size={14} />
               </span>
             </button>
-            {targets.length === 1 && (
-              <div style={{ fontSize: 12.5, color: C.sub, margin: "0 0 12px", lineHeight: 1.5 }}>
-                Doctors, hospitals, and specialisations appear here once {member.name.split(" ")[0]} has records naming
-                them. Add a prescription or report and they are picked up automatically.
-              </div>
-            )}
           </>
         )}
         {!picking && (
         <div style={{ flex: 1, minHeight: 168, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
           {packDocs.length === 0 ? (
-            <div style={{ padding: 20, fontSize: 13.5, color: C.faint, lineHeight: 1.6 }}>
-              {member.name.split(" ")[0]} has no matching medical records on file yet. The cover sheet still carries
-              allergies, conditions, medications, readings, and physician details, so the pack is useful on its own. Add
-              prescriptions or reports under Records and they will be picked up here.
+            <div style={{ padding: 20, fontSize: 13.5, color: C.faint }}>
+              No records yet. The cover sheet still travels.
             </div>
           ) : (
             packDocs.map((d, i) => {
@@ -2990,28 +2970,9 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
         </div>
         )}
         {!picking && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 9,
-            marginTop: 12,
-            padding: "10px 13px",
-            borderRadius: 11,
-            border: `1px solid ${C.border}`,
-            background: C.panel2,
-            fontSize: 12.5,
-            color: C.sub,
-          }}
-        >
-          <ClipboardList size={14} color={C.action} style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1 }}>
-            Cover sheet included: allergies, conditions, medicines, and latest readings.
-          </span>
-          <button className="lh-lnk" style={{ flexShrink: 0, fontWeight: 700 }} onClick={previewCover}>
-            Preview
-          </button>
-        </div>
+        <button className="lh-lnk" style={{ marginTop: 10, fontSize: 12.5 }} onClick={previewCover}>
+          Preview cover sheet
+        </button>
         )}
         {!picking && (
         <button
