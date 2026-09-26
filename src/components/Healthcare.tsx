@@ -2671,13 +2671,25 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
     return named >= 0 ? named : 0;
   });
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
+  const [extra, setExtra] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [picking, setPicking] = useState(false);
   const [q, setQ] = useState("");
   const cur = targets[chosen] || targets[targets.length - 1];
   const curLabel = targetLabel(cur);
-  const packDocs: Doc[] = useMemo(() => selectVisitDocs(docs, member.id, cur), [docs, member.id, cur]);
-  const included = packDocs.filter((d) => !excluded.has(d.id));
+  const suggested: Doc[] = useMemo(() => selectVisitDocs(docs, member.id, cur), [docs, member.id, cur]);
+  /* Everything this person has, suggested first. A visit to someone new matches no filter, and
+     the pack has to be buildable by hand. */
+  const packDocs: Doc[] = useMemo(() => {
+    const ids = new Set(suggested.map((d) => d.id));
+    const rest = docs
+      .filter((d: Doc) => d.memberId === member.id && d.category === "Medical" && !ids.has(d.id))
+      .sort((a: Doc, b: Doc) => (b.docDate || b.addedAt).localeCompare(a.docDate || a.addedAt));
+    return [...suggested, ...rest];
+  }, [suggested, docs, member.id]);
+  const suggestedIds = useMemo(() => new Set(suggested.map((d) => d.id)), [suggested]);
+  /* Only the suggested ones start ticked; anything else is opt-in. */
+  const included = packDocs.filter((d) => (suggestedIds.has(d.id) ? !excluded.has(d.id) : extra.has(d.id)));
   /* Which readings a visit cares about, taken from the specialisation on the matching records. */
   const GROUP_LABEL: Record<string, string> = {
     doctor: "Doctors",
@@ -2905,23 +2917,49 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
               const K = KIND[d.medType || "other"] || KIND.other;
               const Ic = d.docType === "Health Insurance" ? ShieldCheck : K.icon;
               const c = d.docType === "Health Insurance" ? C.emerald : K.c;
-              const on = !excluded.has(d.id);
+              const isSuggested = suggestedIds.has(d.id);
+              const on = isSuggested ? !excluded.has(d.id) : extra.has(d.id);
+              const firstOther = !isSuggested && suggestedIds.has(packDocs[i - 1]?.id);
               return (
+                <div key={d.id}>
+                {firstOther && (
+                  <div
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      letterSpacing: 0.5,
+                      textTransform: "uppercase",
+                      color: C.faint,
+                      padding: "12px 13px 6px",
+                      borderTop: `1px solid ${C.border}`,
+                      background: C.panel2,
+                    }}
+                  >
+                    Anything else on file
+                  </div>
+                )}
                 <div
-                  key={d.id}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 11,
                     padding: "10px 13px",
-                    borderTop: i ? `1px solid ${C.border}` : "none",
+                    borderTop: i && !firstOther ? `1px solid ${C.border}` : "none",
                     opacity: on ? 1 : 0.45,
                   }}
                 >
                   <input
                     type="checkbox"
                     checked={on}
-                    onChange={() => toggle(d.id)}
+                    onChange={() =>
+                      isSuggested
+                        ? toggle(d.id)
+                        : setExtra((prev) => {
+                            const next = new Set(prev);
+                            next.has(d.id) ? next.delete(d.id) : next.add(d.id);
+                            return next;
+                          })
+                    }
                     style={{ accentColor: C.action, cursor: "pointer", flexShrink: 0 }}
                   />
                   <span className="lh-ic" style={{ background: c + "22" }}>
@@ -2944,6 +2982,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                   <button className="lh-lnk" onClick={() => onView(d)}>
                     View
                   </button>
+                </div>
                 </div>
               );
             })
@@ -2981,7 +3020,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
           disabled={busy}
           onClick={download}
         >
-          <Download size={16} /> {busy ? "Packing…" : `Download visit pack (cover + ${included.length})`}
+          <Download size={16} /> {busy ? "Preparing…" : "Download"}
         </button>
         )}
       </motion.div>
