@@ -41,7 +41,7 @@ import { useStore, selectVisitDocs, visitTargets, targetLabel, type VisitTarget 
 import { buildZip } from "../lib/zip";
 import { normaliseTestName } from "../lib/extract-medical";
 import DocViewer from "./DocViewer";
-import type { Doc, Member, LabLog, Medication, ReminderKind } from "../lib/types";
+import type { Doc, Member, LabLog, Medication, ReminderKind, ReminderRepeat } from "../lib/types";
 
 /* ── theme ──
    The same values as the app's shared tokens (docs/READINES_DESIGN_SYSTEM.md). Health keeps a local
@@ -383,11 +383,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       } else if (r.kind === "refill" && dd <= 30) {
         refills++;
         attn.add(r.memberId);
-      } else if (r.kind === "vaccination" && dd <= 60) {
-        vaccinations++;
-        attn.add(r.memberId);
-      } else if (r.kind === "insurance" && dd <= 45) {
-        renewals++;
+      } else if (r.kind === "medication" && dd <= 1) {
+        refills++;
         attn.add(r.memberId);
       }
     });
@@ -1058,79 +1055,64 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       {/* ── TIMELINE ── */}
       {tab === "timeline" && (
         <div className="lh-pane">
-          <div className="lh-grid-2-1">
-            <div className="lh-card" style={{ padding: 20 }}>
-              <div className="lh-sechead">
-                <Bell size={16} color={C.sub} /> Reminders{" "}
-                <button className="lh-mini" onClick={() => setModal("reminder")}>
-                  <Plus size={13} /> Add
-                </button>
-              </div>
-              {reminders.length === 0 ? (
-                <div style={{ padding: "18px 4px", textAlign: "center" }}>
-                  <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
-                    Nothing due. Appointments and refills read from a prescription land here, or add one yourself.
-                  </p>
-                  <button className="lh-btn-g" style={{ margin: "0 auto" }} onClick={() => setModal("reminder")}>
-                    <Plus size={15} /> Add a reminder
-                  </button>
-                </div>
-              ) : (
-                reminders.map((r) => {
-                  const Ic =
-                    (
-                      {
-                        refill: RefreshCw,
-                        appointment: CalendarClock,
-                        insurance: ShieldCheck,
-                        vaccination: Syringe,
-                        other: Bell,
-                      } as any
-                    )[r.kind] || CalendarClock;
-                  const dd = daysTo(r.due);
-                  return (
-                    <div key={r.id} className="lh-row">
-                      <span className="lh-ic" style={{ background: C.warning + "1f" }}>
-                        <Ic size={15} color={C.warning} />
-                      </span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.title}</div>
-                        <div style={{ fontSize: 12, color: dd < 7 ? C.warning : C.faint }}>
-                          {dd < 0 ? "overdue" : dd === 0 ? "today" : `in ${dd} days`}
-                        </div>
-                      </div>
-                      <button
-                        className="lh-ib"
-                        title="Remove" aria-label="Remove"
-                        onClick={() => {
-                          s.removeReminder(r.id);
-                          toast("Reminder removed");
-                        }}
-                      >
-                        <Trash2 size={15} color={C.faint} />
-                      </button>
-                      <button
-                        className="lh-ib"
-                        title="Mark done" aria-label="Mark done"
-                        onClick={() => {
-                          s.completeReminder(r.id);
-                          toast("Marked done");
-                        }}
-                      >
-                        <CheckCircle2 size={16} color={C.emerald} />
-                      </button>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
 
 
           <div className="lh-card" style={{ padding: 22 }}>
             <div className="lh-sechead lh-sechead-tab">
               <CalendarClock size={16} color={C.sub} /> Health timeline
             </div>
+            {reminders.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                    textTransform: "uppercase",
+                    color: C.faint,
+                    marginBottom: 8,
+                  }}
+                >
+                  Coming up
+                </div>
+                {reminders.map((r) => (
+                  <div
+                    key={r.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      minHeight: 48,
+                      padding: "8px 0",
+                      borderTop: `1px solid ${C.border}`,
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.title}</div>
+                      <div style={{ fontSize: 12, color: C.sub }}>
+                        {[fmt(r.due), r.time, r.repeat && r.repeat !== "once" ? r.repeat : ""].filter(Boolean).join(" · ")}
+                      </div>
+                    </div>
+                    <button
+                      className="lh-ib"
+                      onClick={() => s.completeReminder(r.id)}
+                      title="Mark done" aria-label="Mark done"
+                      style={{ minWidth: 44, minHeight: 44 }}
+                    >
+                      <Check size={14} color={C.emerald} />
+                    </button>
+                    <button
+                      className="lh-ib"
+                      onClick={() => s.removeReminder(r.id)}
+                      title="Remove" aria-label="Remove"
+                      style={{ minWidth: 44, minHeight: 44 }}
+                    >
+                      <Trash2 size={14} color={C.faint} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             {timeline.length === 0 ? (
               <div style={{ padding: "18px 4px", textAlign: "center" }}>
                 <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
@@ -1189,7 +1171,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 <Plus size={13} /> Add
               </button>
             </div>
-            <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 10 }}>Confirm what is still being taken.</div>
             {meds.length === 0 ? (
               <div style={{ padding: "16px 4px", textAlign: "center" }}>
                 <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
@@ -1238,26 +1219,31 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                               : [scheduleText(med.freq), med.timing].filter(Boolean).join(" · ")}
                           </div>
                           {!stopped && (
-                            <div style={{ fontSize: 12, color: stale ? C.warning : C.faint, marginTop: 3 }}>
-                              {since === null
-                                ? "Not confirmed yet"
-                                : since === 0
-                                  ? "Confirmed today"
-                                  : `Confirmed ${since} day${since === 1 ? "" : "s"} ago`}
-                            </div>
-                          )}
-                          {rf !== null && rf <= 14 && (
-                            <div style={{ marginTop: 6 }}>
-                              <span
-                                className="lh-tag"
-                                style={{ color: rf < 0 ? C.red : C.warning, background: (rf < 0 ? C.red : C.warning) + "1f" }}
-                              >
-                                {rf < 0 ? "Repeat overdue" : `Repeat due ${fmt(med.refillBy)}`}
-                              </span>
+                            <div
+                              style={{
+                                fontSize: 12,
+                                color: stale ? C.warning : C.faint,
+                                marginTop: 3,
+                              }}
+                            >
+                              {[
+                                since === null
+                                  ? "Not confirmed"
+                                  : since === 0
+                                    ? "Confirmed today"
+                                    : `Confirmed ${since} day${since === 1 ? "" : "s"} ago`,
+                                rf !== null && rf <= 14
+                                  ? rf < 0
+                                    ? "repeat overdue"
+                                    : `repeat due ${fmt(med.refillBy)}`
+                                  : "",
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
                             </div>
                           )}
                           {!stopped && (
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+                            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                               <button
                                 className="lh-btn-g"
                                 style={{ padding: "7px 12px", fontSize: 12.5, minHeight: 40 }}
@@ -1275,15 +1261,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                               >
                                 Stopped
                               </button>
-                              {latestRx && (
-                                <button
-                                  className="lh-lnk"
-                                  style={{ padding: "7px 4px", fontSize: 12.5 }}
-                                  onClick={() => setViewDoc(latestRx)}
-                                >
-                                  Prescription
-                                </button>
-                              )}
                             </div>
                           )}
                         </div>
@@ -1645,7 +1622,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         {modal === "reminder" && (
           <AddReminder
             onClose={() => setModal(null)}
-            save={(r: { title: string; kind: ReminderKind; due: string }) => {
+            save={(r: { title: string; kind: ReminderKind; due: string; repeat?: ReminderRepeat; time?: string }) => {
               s.addReminder({ id: uid(), memberId: sel, done: false, ...r });
               toast("Reminder added");
               setModal(null);
@@ -2344,10 +2321,12 @@ function AddMed({ onClose, save }: any) {
   );
 }
 function AddReminder({ onClose, save }: any) {
-  const [f, setF] = useState<{ title: string; kind: ReminderKind; due: string }>({
+  const [f, setF] = useState<{ title: string; kind: ReminderKind; due: string; repeat: ReminderRepeat; time: string }>({
     title: "",
     kind: "appointment",
     due: rel(14),
+    repeat: "once",
+    time: "",
   });
   return (
     <Modal title="Add reminder" aria-label="Add reminder" onClose={onClose}>
@@ -2358,24 +2337,80 @@ function AddReminder({ onClose, save }: any) {
         onChange={(e) => setF({ ...f, title: e.target.value })}
         placeholder="e.g. Cardiology follow-up"
       />
+      <div style={{ marginTop: 12 }}>
+        <Lbl>What for</Lbl>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {(
+            [
+              ["appointment", "Appointment"],
+              ["medication", "Take a medicine"],
+              ["refill", "Refill"],
+              ["other", "Something else"],
+            ] as const
+          ).map(([k, label]) => (
+            <button
+              key={k}
+              onClick={() => setF({ ...f, kind: k, repeat: k === "medication" ? "daily" : "once" })}
+              style={{
+                minHeight: 44,
+                padding: "0 12px",
+                borderRadius: 9,
+                border: `1px solid ${f.kind === k ? C.action : C.border}`,
+                background: f.kind === k ? C.action + "1F" : C.panel2,
+                color: f.kind === k ? C.action : C.sub,
+                fontSize: 12.5,
+                fontWeight: 600,
+                fontFamily: "inherit",
+                cursor: "pointer",
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
       <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
         <div style={{ flex: 1 }}>
-          <Lbl>Type</Lbl>
-          <select
-            className="lh-in"
-            value={f.kind}
-            onChange={(e) => setF({ ...f, kind: e.target.value as ReminderKind })}
-          >
-            {["appointment", "refill", "vaccination", "insurance", "other"].map((k) => (
-              <option key={k} value={k}>
-                {k[0].toUpperCase() + k.slice(1)}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div style={{ flex: 1 }}>
-          <Lbl>Due</Lbl>
+          <Lbl>{f.repeat === "once" ? "Due" : "Starting"}</Lbl>
           <input className="lh-in" type="date" value={f.due} onChange={(e) => setF({ ...f, due: e.target.value })} />
+        </div>
+        {f.kind === "medication" && (
+          <div style={{ flex: 1 }}>
+            <Lbl>Time</Lbl>
+            <input className="lh-in" type="time" value={f.time} onChange={(e) => setF({ ...f, time: e.target.value })} />
+          </div>
+        )}
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <Lbl>How often</Lbl>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {(
+            [
+              ["once", "Once"],
+              ["daily", "Every day"],
+              ["weekly", "Every week"],
+              ["monthly", "Every month"],
+            ] as const
+          ).map(([r, label]) => (
+            <button
+              key={r}
+              onClick={() => setF({ ...f, repeat: r })}
+              style={{
+                minHeight: 44,
+                padding: "0 12px",
+                borderRadius: 9,
+                border: `1px solid ${f.repeat === r ? C.action : C.border}`,
+                background: f.repeat === r ? C.action + "1F" : C.panel2,
+                color: f.repeat === r ? C.action : C.sub,
+                fontSize: 12.5,
+                fontWeight: 600,
+                fontFamily: "inherit",
+                cursor: "pointer",
+              }}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
       <button
