@@ -129,6 +129,21 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
   else console.log("ok   store calls that do not exist");
 }
 
+// Prose creep: explanatory sentences accumulate one fix at a time until a sheet is mostly caption.
+// A paragraph inside a sheet or a card is almost always something to cut.
+{
+  const hits = [];
+  for (const p of all) {
+    const src = readFileSync(p, "utf8");
+    for (const m of src.matchAll(/>\s*\n\s*([A-Z][^<>{}]{110,})\n/g))
+      hits.push(`${p}: ${m[1].trim().slice(0, 64)}…`);
+  }
+  /* Listed, not failing: a few of these are consent wording that has to be exact. Everything else
+     is a caption that accumulated one fix at a time and should be cut. */
+  if (hits.length) { console.log(`note prose creep (${hits.length} paragraphs inside UI)`); hits.slice(0, 12).forEach((h) => console.log("  " + h)); }
+  else console.log("ok   prose creep");
+}
+
 step("release blockers (listed, not failing yet)");
 let dev = 0;
 for (const p of all) readFileSync(p, "utf8").split("\n").forEach((l, i) => { if (/DEV ONLY/.test(l)) { dev++; console.log(`  ${p}:${i + 1}: ${l.trim().slice(0, 120)}`); } });
