@@ -37,6 +37,10 @@ export interface CareProfile {
   doctor?: string;
   hospital?: string;
   emergency?: string;
+  emergencyName?: string;
+  emergencyPhone?: string;
+  noConditions?: boolean;
+  noKnownAllergies?: boolean;
 }
 interface State {
   onboarded: boolean;
@@ -847,6 +851,16 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     state = { ...state, meds: state.meds.filter((x) => x.id !== mid) };
     persist();
   }, []);
+  const confirmMed = useCallback((mid: string) => {
+    const today = new Date().toISOString().slice(0, 10);
+    state = { ...state, meds: state.meds.map((x) => (x.id === mid ? { ...x, confirmedOn: today } : x)) };
+    persist();
+  }, []);
+  const stopMed = useCallback((mid: string, note?: string) => {
+    const today = new Date().toISOString().slice(0, 10);
+    state = { ...state, meds: state.meds.map((x) => (x.id === mid ? { ...x, status: "stopped" as const, stoppedOn: today, stoppedNote: note } : x)) };
+    persist();
+  }, []);
   const addReminder = useCallback((r: Reminder) => {
     state = { ...state, reminders: [...state.reminders, r] };
     persist();
@@ -1113,6 +1127,8 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     updateCare,
     addMed,
     removeMed,
+    confirmMed,
+    stopMed,
     addReminder,
     completeReminder,
     removeReminder,
