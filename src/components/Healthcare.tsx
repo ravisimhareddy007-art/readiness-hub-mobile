@@ -694,7 +694,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               title="Manage family" aria-label="Manage family"
               style={{ opacity: 0.85 }}
             >
-              <span className="lh-swav" style={{ background: C.panel2, color: C.sub, border: `1px dashed ${C.border}` }}>
+              <span className="lh-swav" style={{ background: C.panel2, color: C.sub, border: `1px dashed ${C.border}`, display: "grid", placeItems: "center" }}>
                 <Users size={16} />
               </span>
               <span className="lh-swname">Manage</span>
@@ -773,13 +773,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       {/* Everything Health does for this person, in one row. Prepare for a visit leads because it
           is the only one that produces something to hand over. */}
       <div className="lh-actions">
-        <button className="lh-act" onClick={() => setModal("reading")}>
-          <Plus size={17} />
-          <span>Log a reading</span>
+        <button className="lh-act lh-act-on lh-act-wide" onClick={() => setModal("visit")}>
+          <ClipboardList size={17} />
+          <span>Prepare for a visit</span>
         </button>
         <button className="lh-act" onClick={() => setModal("emergency")}>
           <IdCard size={17} />
-          <span>In an emergency</span>
+          <span>Emergency info</span>
         </button>
         <button
           className="lh-act"
@@ -794,10 +794,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         >
           <ShieldCheck size={17} />
           <span>Insurance card</span>
-        </button>
-        <button className="lh-act lh-act-on" onClick={() => setModal("visit")}>
-          <ClipboardList size={17} />
-          <span>Prepare for a visit</span>
         </button>
       </div>
 
@@ -1359,9 +1355,28 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         <Ic size={15} color={K.c} />
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.name}</div>
-                        <div style={{ fontSize: 12, color: C.faint }}>
-                          {[r.docType, fmt(r.docDate || r.addedAt), r.doctor].filter(Boolean).join(" · ")}
+                        <div
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 600,
+                            color: C.text,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {r.docType}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: C.faint,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {[fmt(r.docDate || r.addedAt), r.doctor].filter(Boolean).join(" · ")}
                         </div>
                       </div>
                       </div>
@@ -3126,6 +3141,7 @@ const CSS = () => `
 .lh-act{display:flex;align-items:center;gap:9px;min-height:52px;padding:10px 12px;border-radius:12px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};font-size:13.5px;font-weight:600;font-family:inherit;cursor:pointer;text-align:left}
 .lh-act span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .lh-act-on{background:${C.action};border-color:${C.action};color:#04221f}
+.lh-act-wide{grid-column:1 / -1;min-height:56px;font-size:15px}
 .lh-tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px 14px;padding:6px 14px 0}
 .lh-tab>svg{display:none}
 .lh-pane .lh-card{padding:14px !important}
