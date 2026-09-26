@@ -13,6 +13,7 @@ export interface Member {
   bloodGroup?: string;
   access?: Access;
   publicJwk?: JsonWebKey;
+  phone?: string;
 }
 export interface Doc {
   id: string;
@@ -65,8 +66,14 @@ export interface Medication {
   dose: string;
   freq: string;
   refillBy: string;
+  timing?: "before food" | "after food" | "with food" | "any time";
+  status?: "taking" | "stopped";
+  confirmedOn?: string;
+  stoppedOn?: string;
+  stoppedNote?: string;
 }
-export type ReminderKind = "appointment" | "refill" | "vaccination" | "insurance" | "other";
+export type ReminderKind = "appointment" | "refill" | "vaccination" | "insurance" | "medication" | "other";
+export type ReminderRepeat = "once" | "daily" | "weekly" | "monthly";
 export interface Reminder {
   id: string;
   memberId: string;
@@ -74,6 +81,8 @@ export interface Reminder {
   kind: ReminderKind;
   due: string;
   done: boolean;
+  repeat?: ReminderRepeat;
+  time?: string;
 }
 
 export interface Transaction {
