@@ -178,6 +178,16 @@ const RECORD_TYPES: { label: string; short: string; icon: any; c: string; overri
 
 /** Name and number as one readable line, or nothing when the contact is not recorded. */
 /** Whole days since a date. */
+/** "1-0-1" is how a prescription writes it; this is how a person reads it. */
+const scheduleText = (freq: string) => {
+  const parts = (freq || "").split("-");
+  if (parts.length !== 3) return freq;
+  const when = ["Morning", "Afternoon", "Night"].filter((_, i) => parts[i] && parts[i] !== "0");
+  if (when.length === 0) return "As needed";
+  if (when.length === 3) return "Morning, afternoon and night";
+  return when.join(" and ");
+};
+
 const daysSince = (iso: string) => (Date.now() - +new Date(iso)) / 86400000;
 
 const emergencyLine = (c: { emergencyName?: string; emergencyPhone?: string }) =>
@@ -681,6 +691,17 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 </button>
               );
             })}
+            <button
+              className="lh-sw"
+              onClick={() => setMView("family")}
+              title="Manage family" aria-label="Manage family"
+              style={{ opacity: 0.85 }}
+            >
+              <span className="lh-swav" style={{ background: C.panel2, color: C.sub, border: `1px dashed ${C.border}` }}>
+                <Users size={16} />
+              </span>
+              <span className="lh-swname">Manage</span>
+            </button>
           </div>
         </>
       )}
@@ -923,79 +944,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 </div>
               );
             })}
-          </div>
-        </div>
-      )}
-
-      {/* ── TIMELINE ── */}
-      {tab === "timeline" && (
-        <div className="lh-pane">
-          <div className="lh-grid-2-1">
-            <div className="lh-card" style={{ padding: 20 }}>
-              <div className="lh-sechead">
-                <Bell size={16} color={C.sub} /> Reminders{" "}
-                <button className="lh-mini" onClick={() => setModal("reminder")}>
-                  <Plus size={13} /> Add
-                </button>
-              </div>
-              {reminders.length === 0 ? (
-                <div style={{ padding: "18px 4px", textAlign: "center" }}>
-                  <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
-                    Nothing due. Appointments and refills read from a prescription land here, or add one yourself.
-                  </p>
-                  <button className="lh-btn-g" style={{ margin: "0 auto" }} onClick={() => setModal("reminder")}>
-                    <Plus size={15} /> Add a reminder
-                  </button>
-                </div>
-              ) : (
-                reminders.map((r) => {
-                  const Ic =
-                    (
-                      {
-                        refill: RefreshCw,
-                        appointment: CalendarClock,
-                        insurance: ShieldCheck,
-                        vaccination: Syringe,
-                        other: Bell,
-                      } as any
-                    )[r.kind] || CalendarClock;
-                  const dd = daysTo(r.due);
-                  return (
-                    <div key={r.id} className="lh-row">
-                      <span className="lh-ic" style={{ background: C.warning + "1f" }}>
-                        <Ic size={15} color={C.warning} />
-                      </span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.title}</div>
-                        <div style={{ fontSize: 12, color: dd < 7 ? C.warning : C.faint }}>
-                          {dd < 0 ? "overdue" : dd === 0 ? "today" : `in ${dd} days`}
-                        </div>
-                      </div>
-                      <button
-                        className="lh-ib"
-                        title="Remove" aria-label="Remove"
-                        onClick={() => {
-                          s.removeReminder(r.id);
-                          toast("Reminder removed");
-                        }}
-                      >
-                        <Trash2 size={15} color={C.faint} />
-                      </button>
-                      <button
-                        className="lh-ib"
-                        title="Mark done" aria-label="Mark done"
-                        onClick={() => {
-                          s.completeReminder(r.id);
-                          toast("Marked done");
-                        }}
-                      >
-                        <CheckCircle2 size={16} color={C.emerald} />
-                      </button>
-                    </div>
-                  );
-                })
-              )}
-            </div>
             <div className="lh-card" style={{ padding: 20 }}>
               <div className="lh-sechead">
                 <ShieldCheck size={16} color={C.sub} /> Medical readiness{" "}
@@ -1102,6 +1050,79 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   }
                 />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── TIMELINE ── */}
+      {tab === "timeline" && (
+        <div className="lh-pane">
+          <div className="lh-grid-2-1">
+            <div className="lh-card" style={{ padding: 20 }}>
+              <div className="lh-sechead">
+                <Bell size={16} color={C.sub} /> Reminders{" "}
+                <button className="lh-mini" onClick={() => setModal("reminder")}>
+                  <Plus size={13} /> Add
+                </button>
+              </div>
+              {reminders.length === 0 ? (
+                <div style={{ padding: "18px 4px", textAlign: "center" }}>
+                  <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
+                    Nothing due. Appointments and refills read from a prescription land here, or add one yourself.
+                  </p>
+                  <button className="lh-btn-g" style={{ margin: "0 auto" }} onClick={() => setModal("reminder")}>
+                    <Plus size={15} /> Add a reminder
+                  </button>
+                </div>
+              ) : (
+                reminders.map((r) => {
+                  const Ic =
+                    (
+                      {
+                        refill: RefreshCw,
+                        appointment: CalendarClock,
+                        insurance: ShieldCheck,
+                        vaccination: Syringe,
+                        other: Bell,
+                      } as any
+                    )[r.kind] || CalendarClock;
+                  const dd = daysTo(r.due);
+                  return (
+                    <div key={r.id} className="lh-row">
+                      <span className="lh-ic" style={{ background: C.warning + "1f" }}>
+                        <Ic size={15} color={C.warning} />
+                      </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.title}</div>
+                        <div style={{ fontSize: 12, color: dd < 7 ? C.warning : C.faint }}>
+                          {dd < 0 ? "overdue" : dd === 0 ? "today" : `in ${dd} days`}
+                        </div>
+                      </div>
+                      <button
+                        className="lh-ib"
+                        title="Remove" aria-label="Remove"
+                        onClick={() => {
+                          s.removeReminder(r.id);
+                          toast("Reminder removed");
+                        }}
+                      >
+                        <Trash2 size={15} color={C.faint} />
+                      </button>
+                      <button
+                        className="lh-ib"
+                        title="Mark done" aria-label="Mark done"
+                        onClick={() => {
+                          s.completeReminder(r.id);
+                          toast("Marked done");
+                        }}
+                      >
+                        <CheckCircle2 size={16} color={C.emerald} />
+                      </button>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -1214,7 +1235,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                           <div style={{ fontSize: 12.5, color: C.sub, marginTop: 1 }}>
                             {stopped
                               ? `Stopped ${med.stoppedOn ? fmt(med.stoppedOn) : ""}${med.stoppedNote ? ` · ${med.stoppedNote}` : ""}`
-                              : med.freq}
+                              : [scheduleText(med.freq), med.timing].filter(Boolean).join(" · ")}
                           </div>
                           {!stopped && (
                             <div style={{ fontSize: 12, color: stale ? C.warning : C.faint, marginTop: 3 }}>
@@ -1516,9 +1537,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 { icon: PillIcon, label: "A medicine", sub: "Name, dose, and how often", run: () => setModal("med") },
                 {
                   icon: Users,
-                  label: "Add or manage a family member",
-                  sub: "Everyone whose health records you keep",
-                  run: () => setMView("family"),
+                  label: "A family member",
+                  sub: "Someone else whose records you keep",
+                  run: () => setModal("member"),
                 },
               ].map((o) => (
                 <button
@@ -2216,7 +2237,7 @@ function AddMember({ onClose, save }: any) {
   );
 }
 function AddMed({ onClose, save }: any) {
-  const [f, setF] = useState({ name: "", dose: "", freq: "Once daily", refillBy: "" });
+  const [f, setF] = useState<{ name: string; dose: string; freq: string; timing: Medication["timing"]; refillBy: string }>({ name: "", dose: "", freq: "1-0-0", timing: "after food", refillBy: "" });
   return (
     <Modal title="Add medication" aria-label="Add medication" onClose={onClose}>
       <div style={{ display: "flex", gap: 10 }}>
@@ -2241,8 +2262,38 @@ function AddMed({ onClose, save }: any) {
       </div>
       <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
         <div style={{ flex: 1 }}>
-          <Lbl>Frequency</Lbl>
-          <input className="lh-in" value={f.freq} onChange={(e) => setF({ ...f, freq: e.target.value })} />
+          <Lbl>When to take it</Lbl>
+          {/* A prescription says morning, afternoon, night. Typing "Once daily" loses which one. */}
+          <div style={{ display: "flex", gap: 6 }}>
+            {(["Morning", "Afternoon", "Night"] as const).map((slot, i) => {
+              const parts = (f.freq || "0-0-0").split("-");
+              const on = parts[i] !== "0";
+              return (
+                <button
+                  key={slot}
+                  onClick={() => {
+                    const next = [...parts];
+                    next[i] = on ? "0" : "1";
+                    setF({ ...f, freq: next.join("-") });
+                  }}
+                  style={{
+                    flex: 1,
+                    minHeight: 44,
+                    borderRadius: 9,
+                    border: `1px solid ${on ? C.action : C.border}`,
+                    background: on ? C.action + "1F" : C.panel2,
+                    color: on ? C.action : C.sub,
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    fontFamily: "inherit",
+                    cursor: "pointer",
+                  }}
+                >
+                  {slot.slice(0, 3)}
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div style={{ flex: 1 }}>
           <Lbl>Repeat runs out</Lbl>
@@ -2254,7 +2305,33 @@ function AddMed({ onClose, save }: any) {
           />
         </div>
       </div>
-      <p style={{ fontSize: 12, color: C.faint, marginTop: 6 }}>Optional.</p>
+      <div style={{ marginTop: 12 }}>
+        <Lbl>With meals</Lbl>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {(["before food", "after food", "with food", "any time"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setF({ ...f, timing: t })}
+              style={{
+                minHeight: 44,
+                padding: "0 12px",
+                borderRadius: 9,
+                border: `1px solid ${f.timing === t ? C.action : C.border}`,
+                background: f.timing === t ? C.action + "1F" : C.panel2,
+                color: f.timing === t ? C.action : C.sub,
+                fontSize: 12.5,
+                fontWeight: 600,
+                fontFamily: "inherit",
+                cursor: "pointer",
+                textTransform: "capitalize",
+              }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p style={{ fontSize: 12, color: C.faint, marginTop: 10 }}>Repeat date is optional.</p>
       <button
         className="lh-btn"
         style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
