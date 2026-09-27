@@ -1,5 +1,6 @@
 // Unit fixtures for Wealth libraries. Run: node --experimental-strip-types tests/wealth.test.mjs
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -62,6 +63,25 @@ for (const [name, text, exp] of cases) {
     for (const k of Object.keys(x)) if (!(k in exp)) throw new Error("unexpected " + k + "=" + x[k]);
   });
 }
+
+/* ── who receives the handoff ── */
+const ok2 = (c, m) => { if (!c) throw new Error(m || "assertion failed"); };
+const appSrc = readFileSync(join(root, "src/App.tsx"), "utf8");
+t("it is not called a nominee", () => {
+  ok2(/Who steps in/.test(appSrc), "a bank nominee is a legal designation; this is not");
+  ok2(!/label: "Family", sub:/.test(appSrc));
+});
+t("several people can step in, one of them primary", () => {
+  ok2(/Make primary/.test(appSrc));
+  ok2(/Only one primary: whoever held it steps back to backup/.test(appSrc), "two primaries is nobody in charge");
+});
+t("membership is not managed here", () => {
+  ok2(!/<Plus size=\{15\} \/> Add member/.test(appSrc), "people are added in Health");
+  ok2(/Add people in Health, then choose who steps in here/.test(appSrc));
+});
+t("the owner cannot be their own recipient", () => {
+  ok2(/\.filter\(\(m: Member\) => m\.id !== "you"\)/.test(appSrc));
+});
 
 console.log(fails ? `\n${fails} FAILED` : "\nall passed");
 process.exit(fails ? 1 : 0);
