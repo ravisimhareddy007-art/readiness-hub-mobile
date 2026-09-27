@@ -8811,12 +8811,40 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
       {modal === "delete" && (
         <Overlay title="Delete account?" aria-label="Delete account?">
           <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.6, margin: 0 }}>
-            This removes your account and erases the archive stored on this device: documents, holdings, packs,
-            everything. There is no undo.
+            This erases everything on this device: documents, holdings, packs. There is no undo.
           </p>
+          <label style={{ display: "block", fontSize: 12.5, color: T.muted, margin: "14px 0 6px" }}>
+            Type <b style={{ color: T.text }}>delete</b> to confirm
+          </label>
+          <input
+            autoFocus
+            value={delWord}
+            onChange={(e) => setDelWord(e.target.value)}
+            placeholder="delete"
+            style={{
+              width: "100%",
+              background: T.raised,
+              border: `1px solid ${T.border}`,
+              borderRadius: 10,
+              padding: "11px 12px",
+              color: T.text,
+              fontSize: 16,
+              minHeight: 44,
+              outline: "none",
+              fontFamily: "inherit",
+            }}
+          />
           <button
             onClick={onDeleteAccount}
-            style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 14, background: T.coral }}
+            disabled={delWord.trim().toLowerCase() !== "delete"}
+            style={{
+              ...btnGold,
+              width: "100%",
+              justifyContent: "center",
+              marginTop: 14,
+              background: T.coral,
+              opacity: delWord.trim().toLowerCase() === "delete" ? 1 : 0.4,
+            }}
           >
             <Trash2 size={14} /> Delete everything
           </button>
