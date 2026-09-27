@@ -30,6 +30,7 @@ import {
   AlertTriangle,
   Clock,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   ChevronDown,
   UploadCloud,
@@ -2627,6 +2628,7 @@ function Packages({ store, toast }: any) {
   const [creating, setCreating] = useState(false);
   const [pickCountry, setPickCountry] = useState(false);
   const [pickNationality, setPickNationality] = useState(false);
+  const [delWord, setDelWord] = useState("");
   const [editing, setEditing] = useState<AnyPack | null>(null);
   const customAsPacks: AnyPack[] = (store.customPacks || []).map((c: any) => ({
     id: c.id,
@@ -6459,7 +6461,8 @@ function Wealth({ store, go, toast }: any) {
 }
 
 /* ═══════════════ TRUST ═══════════════ */
-function Trust({ store, toast }: any) {
+function Trust({ store, toast, go }: any) {
+  const isMobile = useIsMobile();
   const withAccess = store.members.filter((m: Member) => m.access);
   const [add, setAdd] = useState(false);
   const accessColor: Record<Access, string> = {
@@ -6470,10 +6473,28 @@ function Trust({ store, toast }: any) {
   };
   return (
     <div>
-      <SectionHead
-        title="Trust center" aria-label="Trust center"
-        sub="In plain language: what is protected, who is in your archive, and what each person can reach."
-      />
+      {isMobile && (
+        <MNav
+          title="Family and access"
+          aria-label="Family and access"
+          left={
+            <button
+              onClick={() => go("home")}
+              title="Back" aria-label="Back"
+              style={{ ...btnGhost, padding: 9, borderRadius: 99, minHeight: 40 }}
+            >
+              <ChevronLeft size={17} />
+            </button>
+          }
+        />
+      )}
+      {!isMobile && (
+        <SectionHead
+          title="Family and access"
+          aria-label="Family and access"
+          sub="Who is in your archive, and what each person can reach."
+        />
+      )}
       <div
         className="lp-truststats"
         style={{
@@ -6580,21 +6601,6 @@ function Trust({ store, toast }: any) {
           }}
         />
       )}
-      <Card>
-        <b style={{ color: T.white, fontSize: 15 }}>Reset demo data</b>
-        <p style={{ fontSize: 13, color: T.muted, margin: "6px 0 12px" }}>
-          Restore the sample family and documents on this device.
-        </p>
-        <button
-          onClick={() => {
-            store.reset();
-            toast("Demo data restored");
-          }}
-          style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55" }}
-        >
-          <RotateCcw size={15} /> Reset everything
-        </button>
-      </Card>
     </div>
   );
 }
@@ -7838,6 +7844,9 @@ function buildEstate(store: any): string {
 }
 
 /* ═════ SETTINGS ═════ */
+/* Where feedback actually goes. A note saved on the device is a note nobody reads. */
+const FEEDBACK_EMAIL = "hello@readines.in";
+
 const CHANGELOG: [string, string][] = [
   ["Semantic document ontology", "One Aadhaar now satisfies Address Proof across all 34 packs that ask for it."],
   ["100 curated packs", "Requirements gathered from published government, bank, embassy, and insurer checklists."],
@@ -8256,6 +8265,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
 function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, onAccountUpdated }: any) {
   const [pickCountry, setPickCountry] = useState(false);
   const [pickNationality, setPickNationality] = useState(false);
+  const [delWord, setDelWord] = useState("");
   const [modal, setModal] = useState<null | "whatsnew" | "faq" | "feedback" | "about" | "delete" | "privacy" | "email" | "password">(null);
   const [f1, setF1] = useState("");
   const [f2, setF2] = useState("");
@@ -8284,14 +8294,22 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
       return;
     }
     if (!("Notification" in window)) return toast("This browser does not support notifications");
-    const perm = await Notification.requestPermission();
+    if (Notification.permission === "denied")
+      return toast("Notifications are blocked for this site in your browser settings");
+    let perm: NotificationPermission;
+    try {
+      perm = await Notification.requestPermission();
+    } catch {
+      return toast("Could not ask for permission. Open the app from its own window and try again.");
+    }
     if (perm === "granted") {
       store.setNotifications(true);
       new Notification("ReadiNes reminders are on", {
         body: "Due reminders will alert on this device while the app is open.",
       });
       toast("Notifications on");
-    } else toast("Permission was not granted");
+    } else if (perm === "denied") toast("Notifications are blocked for this site in your browser settings");
+    else toast("Permission was not granted");
   };
   const RowBtn = ({ icon: Ic, label, sub, onClick, danger }: any) => (
     <button
@@ -8712,13 +8730,12 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           <button
             disabled={!fb.trim()}
             onClick={() => {
-              const k = "lifepack.feedback";
-              const arr = JSON.parse(localStorage.getItem(k) || "[]");
-              arr.push({ at: new Date().toISOString(), text: fb.trim() });
-              localStorage.setItem(k, JSON.stringify(arr));
+              /* Straight to a person. Anything stored on the device is feedback nobody reads. */
+              const body = `${fb.trim()}\n\n---\nReadiNes ${CHANGELOG[0]?.[0] || ""}\n${navigator.userAgent}`;
+              window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent("ReadiNes feedback")}&body=${encodeURIComponent(body)}`;
               setFb("");
               setModal(null);
-              toast("Thank you — feedback recorded");
+              toast("Opening your mail app");
             }}
             style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 12, opacity: fb.trim() ? 1 : 0.4 }}
           >
@@ -9559,7 +9576,7 @@ export default function App() {
         {route === "wealth" && (
           <Wealth store={store} go={go} toast={toast} />
         )}
-        {route === "trust" && <Trust store={store} toast={toast} />}
+        {route === "trust" && <Trust store={store} toast={toast} go={go} />}
         {route === "design" && <DesignSystem store={store} />}
         </div>
         </MobileNavCtx.Provider>
