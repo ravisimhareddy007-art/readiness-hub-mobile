@@ -1855,7 +1855,7 @@ function Home({ store, go, toast }: any) {
       { key: "packages", label: "Packages", sub: readyPacks ? `${readyPacks} ready` : nearPacks ? `${nearPacks} nearly there` : "Explore", icon: ListChecks, color: A.green },
       { key: "health", label: "Health", sub: healthActs.length ? `${healthActs.length} due soon` : "Up to date", icon: HeartPulse, color: A.pink, badge: healthActs.length },
       { key: "wealth", label: "Wealth", sub: wealthScore == null ? "Start" : wealthScore >= 80 ? "On track" : `${wealthActs.length || wealthMiss} to review`, icon: Wallet, color: A.gold, badge: wealthActs.length },
-      { key: "trust", label: "Family", sub: `${store.members.length} member${store.members.length === 1 ? "" : "s"}`, icon: Users, color: A.purple },
+      { key: "trust", label: "Who steps in", sub: `${store.members.filter((m: Member) => m.access).length} chosen${""}`, icon: Users, color: A.purple },
     ];
     return (
       <div>
@@ -6461,7 +6461,6 @@ function Wealth({ store, go, toast }: any) {
 function Trust({ store, toast, go }: any) {
   const isMobile = useIsMobile();
   const withAccess = store.members.filter((m: Member) => m.access);
-  const [add, setAdd] = useState(false);
   const accessColor: Record<Access, string> = {
     Owner: T.gold,
     "Full member": T.mint,
@@ -6472,8 +6471,8 @@ function Trust({ store, toast, go }: any) {
     <div>
       {isMobile && (
         <MNav
-          title="Family and access"
-          aria-label="Family and access"
+          title="Who steps in"
+          aria-label="Who steps in"
           left={
             <button
               onClick={() => go("home")}
@@ -6487,85 +6486,94 @@ function Trust({ store, toast, go }: any) {
       )}
       {!isMobile && (
         <SectionHead
-          title="Family and access"
-          aria-label="Family and access"
-          sub="Who is in your archive, and what each person can reach."
+          title="Who steps in"
+          aria-label="Who steps in"
+          sub="Who your holdings and documents go to if you use the SOS handoff."
         />
       )}
       <Card style={{ padding: 0, marginBottom: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 16px" }}>
-          <span style={{ fontWeight: 700, color: T.white, fontSize: 14.5 }}>Family &amp; access</span>
-          <button onClick={() => setAdd(true)} style={btnGold}>
-            <Plus size={15} /> Add member
-          </button>
+        <div style={{ padding: "13px 16px" }}>
+          <span style={{ fontWeight: 700, color: T.white, fontSize: 14.5 }}>Who steps in</span>
+          <p style={{ fontSize: 12.5, color: T.muted, margin: "4px 0 0", lineHeight: 1.5 }}>
+            The people your holdings and documents go to if you use the SOS handoff.
+          </p>
         </div>
-        {store.members.map((m: Member) => (
-          <div
-            key={m.id}
-            className="lp-wrow"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              padding: "11px 16px",
-              borderTop: `1px solid ${T.border}`,
-            }}
-          >
-            <span
-              style={{
-                display: "grid",
-                placeItems: "center",
-                width: 34,
-                height: 34,
-                borderRadius: 9,
-                background: m.color + "26",
-                color: inkOf(m.color),
-                fontWeight: 800,
-              }}
-            >
-              {m.name[0]}
-            </span>
-            <span className="lp-wname" style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.white }}>
-              {m.name}
-              <span style={{ color: T.muted, fontWeight: 400 }}> · {m.relation}</span>
-            </span>
-            <select
-              value={m.access || "View only"}
-              onChange={(e) => {
-                store.updateMember(m.id, { access: e.target.value as Access });
-                toast("Access updated");
-              }}
-              style={{
-                background: T.raised,
-                color: accessColor[(m.access || "View only") as Access],
-                border: `1px solid ${T.border}`,
-                borderRadius: 8,
-                padding: "6px 10px",
-                fontSize: 12.5,
-                fontWeight: 600,
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              {(["Owner", "Full member", "Emergency access", "View only"] as Access[]).map((a) => (
-                <option key={a} style={{ color: "#000" }}>
-                  {a}
-                </option>
-              ))}
-            </select>
+        {store.members
+          .filter((m: Member) => m.id !== "you")
+          .map((m: Member) => {
+            const steps = m.access === "Full member" || m.access === "Emergency access";
+            const primary = m.access === "Full member";
+            return (
+              <div
+                key={m.id}
+                className="lp-wrow"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "11px 16px",
+                  borderTop: `1px solid ${T.border}`,
+                }}
+              >
+                <span
+                  style={{
+                    display: "grid",
+                    placeItems: "center",
+                    width: 34,
+                    height: 34,
+                    borderRadius: 9,
+                    background: m.color + "26",
+                    color: inkOf(m.color),
+                    fontWeight: 800,
+                    flexShrink: 0,
+                  }}
+                >
+                  {m.name[0]}
+                </span>
+                <span className="lp-wname" style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.white }}>
+                  {m.name}
+                  <span style={{ color: T.muted, fontWeight: 400 }}> · {m.relation}</span>
+                  {primary && (
+                    <span style={{ display: "block", fontSize: 12, color: SEM.action, fontWeight: 700 }}>Primary</span>
+                  )}
+                </span>
+                {steps && !primary && (
+                  <button
+                    onClick={() => {
+                      /* Only one primary: whoever held it steps back to backup. */
+                      store.members
+                        .filter((o: Member) => o.access === "Full member")
+                        .forEach((o: Member) => store.updateMember(o.id, { access: "Emergency access" as Access }));
+                      store.updateMember(m.id, { access: "Full member" as Access });
+                      toast(`${m.name.split(" ")[0]} is now primary`);
+                    }}
+                    style={{ ...btnGhost, padding: "7px 11px", fontSize: 12.5, minHeight: 40, whiteSpace: "nowrap" }}
+                  >
+                    Make primary
+                  </button>
+                )}
+                <label style={{ display: "inline-flex", alignItems: "center", minHeight: 44, cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={steps}
+                    onChange={(e) => {
+                      const first = !store.members.some((o: Member) => o.access === "Full member");
+                      store.updateMember(m.id, {
+                        access: e.target.checked ? ((first ? "Full member" : "Emergency access") as Access) : undefined,
+                      });
+                    }}
+                    style={{ accentColor: SEM.action, width: 20, height: 20 }}
+                  />
+                </label>
+              </div>
+            );
+          })}
+        {store.members.filter((m: Member) => m.id !== "you").length === 0 && (
+          <div style={{ padding: "16px", fontSize: 13.5, color: T.faint }}>
+            Add people in Health, then choose who steps in here.
           </div>
-        ))}
+        )}
       </Card>
-      {add && (
-        <AddMember
-          onClose={() => setAdd(false)}
-          save={(mm: Member, care: any) => {
-            store.addMember(mm);
-            store.updateCare(mm.id, care);
-            toast("Member added");
-            setAdd(false);
-          }}
-        />
-      )}
     </div>
   );
 }
@@ -8171,7 +8179,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
             <div style={{ padding: 8, borderTop: `1px solid ${T.border}` }}>
               {[
                 ["Profile and settings", SettingsIcon, () => go("settings")],
-                ["Family", Users, () => go("trust")],
+                ["Who steps in", Users, () => go("trust")],
                 ["Design system", Sparkles, () => go("design")],
               ].map(([label, Ic, fn]: any, i) => (
                 <button
