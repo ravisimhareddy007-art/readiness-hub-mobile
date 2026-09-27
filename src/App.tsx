@@ -185,7 +185,7 @@ body{background:var(--lpv-bg)}
 .lp-tap{position:relative;cursor:pointer}
 .lp-tap::after{content:"";position:absolute;inset:-8px}
 .lp-iconbtn{min-width:44px;min-height:44px;display:inline-grid;place-items:center}
-.lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:18px;border:none;display:grid;place-items:center;background:var(--lpv-action);box-shadow:0 12px 32px var(--lpv-shadow-soft);cursor:pointer}
+.lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:99px;border:none;display:grid;place-items:center;background:var(--lpv-action);box-shadow:0 12px 32px var(--lpv-shadow-soft);cursor:pointer}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
@@ -5785,7 +5785,7 @@ function Wealth({ store, go, toast }: any) {
                   setDocPick(true);
                 }}
               >
-                <FileText size={19} color={T.muted} /> An account or policy, from a document
+                <FileText size={19} color={T.muted} /> From a document
               </button>
               <button
                 className="lp-sheet-item"
@@ -5794,7 +5794,7 @@ function Wealth({ store, go, toast }: any) {
                   setAddH(true);
                 }}
               >
-                <Plus size={19} color={T.muted} /> An account or policy, by hand
+                <Plus size={19} color={T.muted} /> Enter manually
               </button>
               <button
                 className="lp-sheet-item"
@@ -5803,7 +5803,7 @@ function Wealth({ store, go, toast }: any) {
                   setAddTx(true);
                 }}
               >
-                <Coins size={19} color={T.muted} /> Money lent or borrowed
+                <Coins size={19} color={T.muted} /> Lent or borrowed
               </button>
             </MSheet>
           )}
