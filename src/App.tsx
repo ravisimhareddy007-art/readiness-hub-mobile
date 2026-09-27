@@ -5764,14 +5764,12 @@ function Wealth({ store, go, toast }: any) {
       {(
         <>
           {isMobile ? (
-            <MNav
-              title="Wealth" aria-label="Wealth"
-              right={
-                <button onClick={() => setActSheet(true)} title="Actions" aria-label="Actions" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
-                  <Plus size={17} />
-                </button>
-              }
-            />
+            <>
+              <MNav title="Wealth" aria-label="Wealth" />
+              <button className="lp-fab" onClick={() => setActSheet(true)} title="Add" aria-label="Add">
+                <Plus size={22} />
+              </button>
+            </>
           ) : (
             <SectionHead
               title="Wealth" aria-label="Wealth"
@@ -5779,7 +5777,7 @@ function Wealth({ store, go, toast }: any) {
             />
           )}
           {actSheet && (
-            <MSheet title="Wealth actions" aria-label="Wealth actions" onClose={() => setActSheet(false)}>
+            <MSheet title="Add to Wealth" aria-label="Add to Wealth" onClose={() => setActSheet(false)}>
               <button
                 className="lp-sheet-item"
                 onClick={() => {
@@ -5787,7 +5785,7 @@ function Wealth({ store, go, toast }: any) {
                   setDocPick(true);
                 }}
               >
-                <FileText size={19} color={T.muted} /> From a document in your vault
+                <FileText size={19} color={T.muted} /> An account or policy, from a document
               </button>
               <button
                 className="lp-sheet-item"
@@ -5796,7 +5794,7 @@ function Wealth({ store, go, toast }: any) {
                   setAddH(true);
                 }}
               >
-                <Plus size={19} color={T.muted} /> Without a document (cash, gold, informal)
+                <Plus size={19} color={T.muted} /> An account or policy, by hand
               </button>
               <button
                 className="lp-sheet-item"
@@ -5805,7 +5803,7 @@ function Wealth({ store, go, toast }: any) {
                   setAddTx(true);
                 }}
               >
-                <Coins size={19} color={T.muted} /> Record money lent or borrowed
+                <Coins size={19} color={T.muted} /> Money lent or borrowed
               </button>
             </MSheet>
           )}
@@ -5967,6 +5965,8 @@ function Wealth({ store, go, toast }: any) {
                 minHeight: 52,
                 fontSize: 15,
                 marginBottom: 12,
+                background: T.coral,
+                color: "#2a0806",
               }}
             >
               <Siren size={17} /> SOS handoff
@@ -6298,7 +6298,7 @@ function Wealth({ store, go, toast }: any) {
             }}
           />
           {docPick && (
-            <MSheet title="From a document in your vault" onClose={() => setDocPick(false)}>
+            <MSheet title="Pick a document" onClose={() => setDocPick(false)}>
               <input
                 ref={pickUpRef}
                 type="file"
@@ -7624,7 +7624,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
             }}
             style={{ ...btnGold, flex: 1, justifyContent: "center", opacity: f.name ? 1 : 0.4 }}
           >
-            {holding ? "Save" : "Add holding"}
+            {holding ? "Save" : "Add"}
           </button>
           {onDelete && (
             <button
