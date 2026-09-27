@@ -237,9 +237,6 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-networth{display:grid !important;grid-template-columns:1fr 1fr;gap:14px 16px !important;font-family:inherit !important;padding:14px 16px !important}
 .lp-metric{display:flex;flex-direction:column;gap:3px;font-size:12px}
 .lp-metric b{font-size:20px;letter-spacing:-0.02em}
-.lp-truststats{grid-template-columns:repeat(3,1fr) !important;gap:8px !important}
-.lp-truststats .lp-card{padding:12px 10px !important;text-align:center}
-.lp-truststats .lp-card>span{margin:0 auto}
 .lp-ts-t{font-size:13px !important;margin-top:8px !important;line-height:1.25}
 .lp-ts-s{display:none}
 .lp-wchips{order:3;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}
@@ -6495,38 +6492,6 @@ function Trust({ store, toast, go }: any) {
           sub="Who is in your archive, and what each person can reach."
         />
       )}
-      <div
-        className="lp-truststats"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
-          gap: 12,
-          marginBottom: 20,
-        }}
-      >
-        {[
-          { icon: Lock, t: "Encrypted on device", s: "Your archive is encrypted locally. Even we cannot read it." },
-          { icon: FolderOpen, t: `${store.docs.length} documents`, s: "All stored in one private, searchable graph." },
-          { icon: Users, t: `${withAccess.length} people`, s: "Have some level of access, set by you." },
-        ].map((x) => (
-          <Card key={x.t}>
-            <span
-              style={{
-                display: "grid",
-                placeItems: "center",
-                width: 34,
-                height: 34,
-                borderRadius: 9,
-                background: T.mint + "22",
-              }}
-            >
-              <x.icon size={17} color={T.mint} />
-            </span>
-            <div className="lp-ts-t" style={{ fontSize: 15.5, fontWeight: 700, color: T.white, marginTop: 12 }}>{x.t}</div>
-            <div className="lp-ts-s" style={{ fontSize: 13, color: T.muted, marginTop: 3 }}>{x.s}</div>
-          </Card>
-        ))}
-      </div>
       <Card style={{ padding: 0, marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 16px" }}>
           <span style={{ fontWeight: 700, color: T.white, fontSize: 14.5 }}>Family &amp; access</span>
