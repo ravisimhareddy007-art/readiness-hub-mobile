@@ -5748,6 +5748,7 @@ function Wealth({ store, go, toast }: any) {
   ];
   const [wg, setWg] = useState<"all" | "Accounts and investments" | "Loans" | "Insurance" | "Lent and borrowed">("all");
   const [allGaps, setAllGaps] = useState(false);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const shownGaps = allGaps ? gaps : gaps.slice(0, 3);
   const goLent = () => {
     if (isMobile && wg !== "all") setWg("Lent and borrowed");
@@ -5955,21 +5956,22 @@ function Wealth({ store, go, toast }: any) {
                 <ChevronRight size={13} color={T.faint} />
               </button>
             )}
-            <span className="lp-vdiv" style={{ width: 1, alignSelf: "stretch", background: T.border }} />
-            <div className="lp-es-cta">
-              <button onClick={() => setEstate(true)} style={{ ...btnGold, padding: "8px 14px", fontSize: 13, minHeight: 44, whiteSpace: "nowrap" }}>
-                <FileText size={14} /> Family summary
-              </button>
-              {!store.handoff && (
-                <button
-                  onClick={() => setSos(true)}
-                  style={{ ...btnGhost, padding: "8px 14px", fontSize: 13, minHeight: 44, whiteSpace: "nowrap", color: T.coral, borderColor: T.coral + "55" }}
-                >
-                  <Siren size={14} /> SOS handoff
-                </button>
-              )}
-            </div>
           </div>
+          {!store.handoff && (
+            <button
+              onClick={() => setSos(true)}
+              style={{
+                ...btnGold,
+                width: "100%",
+                justifyContent: "center",
+                minHeight: 52,
+                fontSize: 15,
+                marginBottom: 12,
+              }}
+            >
+              <Siren size={17} /> SOS handoff
+            </button>
+          )}
           {showMath && (
             <Card style={{ marginBottom: 12, padding: "12px 16px" }}>
               <p style={{ fontSize: 12, color: T.muted, margin: "0 0 8px", lineHeight: 1.6 }}>
@@ -6020,92 +6022,6 @@ function Wealth({ store, go, toast }: any) {
             </Card>
           )}
 
-          {gaps.length > 0 && (
-            <Card style={{ padding: 0, marginBottom: 18 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
-                <AlertTriangle size={16} color={SEM.warning} />
-                <b style={{ color: T.white, fontSize: 14.5 }}>Needs attention</b>
-                <span style={{ marginLeft: "auto", ...pill(SEM.warning) }}>{gaps.length}</span>
-              </div>
-              {shownGaps.map((g, i) => (
-                <div
-                  key={i}
-                  onClick={() => {
-                    if (g.kind === "evidence" && g.t) attachTx(g.t);
-                    else if (g.kind === "contact" && g.t) setEditTx(g.t);
-                    else if (g.kind === "nominee") setNomineeFor(g.h);
-                    else if (g.kind === "doc") attach(g.h);
-                    else if (g.kind === "access") {
-                      setFocusField("access");
-                      setEdit(g.h);
-                    } else setEdit(g.h);
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "11px 16px",
-                    borderTop: `1px solid ${T.border}`,
-                    cursor: "pointer",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: SEVC[g.sev],
-                      display: "inline-flex",
-                      alignItems: "center",
-                      flexShrink: 0,
-                      width: 84,
-                    }}
-                  >
-                    <span style={{ width: 7, height: 7, borderRadius: 9, background: SEVC[g.sev], display: "inline-block", marginRight: 6 }} />
-                    {g.sev[0].toUpperCase() + g.sev.slice(1)}
-                  </span>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 14, color: T.text, fontWeight: 600 }}>{g.label}</span>
-                    <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 1 }}>{g.impact}</span>
-                  </span>
-                  <span style={{ fontSize: 12.5, color: SEVC[g.sev], fontWeight: 700, flexShrink: 0 }}>
-                    {g.kind === "evidence" || g.kind === "contact"
-                      ? "Attach"
-                      : g.kind === "nominee"
-                      ? "Add nominee"
-                      : g.kind === "doc"
-                        ? "Attach"
-                        : g.kind === "access"
-                          ? "Add note"
-                          : "Review"}
-                  </span>
-                  <ChevronRight size={14} color={T.faint} />
-                </div>
-              ))}
-              {gaps.length > 3 && (
-                <button
-                  onClick={() => setAllGaps((v) => !v)}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    background: "transparent",
-                    border: "none",
-                    borderTop: `1px solid ${T.border}`,
-                    padding: "11px 16px",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: SEM.action,
-                    cursor: "pointer",
-                  }}
-                >
-                  {allGaps ? "Show less" : `View all ${gaps.length}`}
-                  <ChevronDown size={14} style={{ transform: allGaps ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
-                </button>
-              )}
-            </Card>
-          )}
 
           <div className="lp-cols2">
             <div style={{ display: "grid", gap: 16 }}>
@@ -6168,9 +6084,34 @@ function Wealth({ store, go, toast }: any) {
                         {money(sum(arr))}
                       </span>
                     </div>
-                    {arr.map((h) => (
+                    {(expanded.has(label) ? arr : arr.slice(0, 3)).map((h) => (
                       <Row key={h.id} h={h} />
                     ))}
+                    {arr.length > 3 && (
+                      <button
+                        onClick={() =>
+                          setExpanded((prev) => {
+                            const next = new Set(prev);
+                            next.has(label) ? next.delete(label) : next.add(label);
+                            return next;
+                          })
+                        }
+                        style={{
+                          width: "100%",
+                          minHeight: 44,
+                          background: "none",
+                          border: "none",
+                          borderTop: `1px solid ${T.border}`,
+                          color: SEM.action,
+                          fontSize: 13,
+                          fontWeight: 700,
+                          fontFamily: "inherit",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {expanded.has(label) ? "Show less" : `Show all ${arr.length}`}
+                      </button>
+                    )}
                   </Card>
                 ) : null,
               )}
@@ -6193,7 +6134,10 @@ function Wealth({ store, go, toast }: any) {
                     would ever tell your family.
                   </p>
                 ) : (
-                  [...openTx, ...txs.filter((t) => t.followUpDone)].map((t) => {
+                  (() => {
+                    const all = [...openTx, ...txs.filter((t) => t.followUpDone)];
+                    return expanded.has("Lent and borrowed") ? all : all.slice(0, 3);
+                  })().map((t) => {
                     const ev = store.docs.find((d: Doc) => d.id === t.docId);
                     const settled = !!t.followUpDone;
                     const overdueFu = t.followUpOn && !settled;
@@ -6311,6 +6255,33 @@ function Wealth({ store, go, toast }: any) {
                       </div>
                     );
                   })
+                )}
+                {[...openTx, ...txs.filter((t) => t.followUpDone)].length > 3 && (
+                  <button
+                    onClick={() =>
+                      setExpanded((prev) => {
+                        const next = new Set(prev);
+                        next.has("Lent and borrowed") ? next.delete("Lent and borrowed") : next.add("Lent and borrowed");
+                        return next;
+                      })
+                    }
+                    style={{
+                      width: "100%",
+                      minHeight: 44,
+                      background: "none",
+                      border: "none",
+                      borderTop: `1px solid ${T.border}`,
+                      color: SEM.action,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      fontFamily: "inherit",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {expanded.has("Lent and borrowed")
+                      ? "Show less"
+                      : `Show all ${[...openTx, ...txs.filter((t) => t.followUpDone)].length}`}
+                  </button>
                 )}
               </Card>
               )}
@@ -6821,8 +6792,9 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
       n.has(id) ? n.delete(id) : n.add(id);
       return n;
     });
+  const [confirming, setConfirming] = useState(false);
   const release = async () => {
-    if (!chosen.size || !reason || !ack || busy) return;
+    if (!chosen.size || !ack || busy) return;
     setBusy(true);
     try {
       const estate = buildEstate(store);
@@ -6881,9 +6853,8 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
           </button>
         </div>
         <p style={{ fontSize: 13, color: T.muted, margin: "0 0 14px", lineHeight: 1.55 }}>
-          For a real emergency. Releases the estate summary, {wealthDocs.length} wealth documents, and every access
-          instruction to the people below, so nothing is locked away when it matters. You can cancel any time and access
-          is revoked.
+          Sends your holdings register, wealth documents, and access instructions to the people below. Once sent, it
+          cannot be taken back.
         </p>
         <div
           style={{
@@ -6957,41 +6928,6 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
         )}
         <div
           style={{
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: 0.5,
-            textTransform: "uppercase",
-            color: T.muted,
-            fontVariantNumeric: "tabular-nums",
-            margin: "16px 0 6px",
-          }}
-        >
-          Why is this being released?
-        </div>
-        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
-          {(["Medical emergency", "Travel emergency", "Death of a family member", "Temporary incapacity"] as const).map(
-            (r) => (
-              <button
-                key={r}
-                onClick={() => setReason(r)}
-                style={{
-                  fontSize: 12.5,
-                  fontWeight: 600,
-                  padding: "7px 12px",
-                  borderRadius: 9,
-                  cursor: "pointer",
-                  border: `1px solid ${reason === r ? T.coral : T.border}`,
-                  background: reason === r ? T.coral + "1f" : "transparent",
-                  color: reason === r ? T.coral : T.muted,
-                }}
-              >
-                {r}
-              </button>
-            ),
-          )}
-        </div>
-        <div
-          style={{
             marginTop: 14,
             borderRadius: 11,
             border: `1px solid ${T.border}`,
@@ -7025,26 +6961,60 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
             type="checkbox"
             checked={ack}
             onChange={(e) => setAck(e.target.checked)}
-            style={{ accentColor: T.coral, marginTop: 2 }}
+            style={{ accentColor: T.coral, width: 20, height: 20, flexShrink: 0, marginTop: 1 }}
           />
-          I understand this shares my financial documents with the selected people now, and that I can cancel and revoke
-          access at any time.
+          I understand this sends my financial documents to the people I chose, and that it cannot be undone.
         </label>
+        {confirming && (
+          <div
+            style={{
+              marginTop: 16,
+              padding: "14px 15px",
+              borderRadius: 12,
+              border: `1px solid ${T.coral}55`,
+              background: T.coral + "1F",
+            }}
+          >
+            <b style={{ color: T.white, fontSize: 14.5, display: "block", marginBottom: 4 }}>
+              Send to {chosen.size} {chosen.size === 1 ? "person" : "people"} now?
+            </b>
+            <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>
+              This cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={release}
+                disabled={busy}
+                style={{ ...btnGold, flex: 1, justifyContent: "center", minHeight: 44, background: T.coral }}
+              >
+                {busy ? "Sending…" : "Yes, send"}
+              </button>
+              <button
+                onClick={() => setConfirming(false)}
+                style={{ ...btnGhost, flex: 1, justifyContent: "center", minHeight: 44 }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+        {!confirming && (
         <button
-          disabled={!chosen.size || !reason || !ack || busy}
-          onClick={release}
+          disabled={!chosen.size || !ack || busy}
+          onClick={() => setConfirming(true)}
           style={{
             ...btnGold,
             width: "100%",
             justifyContent: "center",
             marginTop: 16,
             background: T.coral,
-            opacity: chosen.size && reason && ack && !busy ? 1 : 0.4,
+            opacity: chosen.size && ack && !busy ? 1 : 0.4,
           }}
         >
           <Siren size={15} />{" "}
           {busy ? "Releasing…" : `Release handoff to ${chosen.size} ${chosen.size === 1 ? "person" : "people"}`}
         </button>
+        )}
       </div>
     </div>
   );
