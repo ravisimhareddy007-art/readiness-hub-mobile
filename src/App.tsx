@@ -1857,7 +1857,7 @@ function Home({ store, go, toast }: any) {
      date will fix, like a holding with no access note. Two lists of the same thing read as random. */
   const [allDue, setAllDue] = useState(false);
   const welcomeCard =
-    store.dataMode === "empty" && store.docs.length === 0 ? (
+    store.docs.length === 0 ? (
       <Card
         style={{
           padding: 20,
@@ -1871,8 +1871,8 @@ function Home({ store, go, toast }: any) {
           <b style={{ color: T.white, fontSize: 16 }}>Welcome to ReadiNes</b>
         </div>
         <p style={{ fontSize: 13.5, color: T.muted, lineHeight: 1.6, margin: "0 0 14px", maxWidth: 560 }}>
-          Add one document and watch the whole app come to life: readiness scores fill in, packs start matching, and
-          the next big moment starts becoming the easy one.
+          Add one document and the rest follows: packs start matching what you hold, and expiry dates start
+          watching themselves.
         </p>
         <label style={{ ...btnGold, cursor: "pointer" }}>
           <UploadCloud size={15} /> Add your first document
@@ -1905,6 +1905,8 @@ function Home({ store, go, toast }: any) {
           <div style={{ fontSize: 12.5, color: "var(--lpv-bandsub)", marginTop: 2 }}>Small steps today. A more ready tomorrow.</div>
         </div>
         {welcomeCard}
+        {store.docs.length > 0 && (
+          <>
         {/* One list, ordered by how soon it matters. Every row acts where it sits. */}
         <Card style={{ padding: 0, marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
@@ -1914,9 +1916,24 @@ function Home({ store, go, toast }: any) {
             )}
           </div>
           {needs.length === 0 ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderTop: `1px solid ${T.border}` }}>
-              <CheckCircle2 size={17} color={T.mint} />
-              <span style={{ fontSize: 13.5, color: T.muted }}>Nothing needs you right now.</span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 11,
+                padding: "16px",
+                borderTop: `1px solid ${T.border}`,
+              }}
+            >
+              <CheckCircle2 size={19} color={T.mint} />
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.white }}>
+                  You are up to date
+                </span>
+                <span style={{ display: "block", fontSize: 12.5, color: T.muted, marginTop: 1 }}>
+                  Nothing is due, expiring, or missing.
+                </span>
+              </span>
             </div>
           ) : (
             (showAll ? needs : needs.slice(0, 6)).map((n: any) => (
@@ -2011,6 +2028,8 @@ function Home({ store, go, toast }: any) {
           </span>
           <ChevronRight size={15} color={T.faint} />
         </button>
+          </>
+        )}
         {fixing && (
           <HoldingModal
             holding={fixing.holding}
@@ -2600,12 +2619,10 @@ function Packages({ store, toast }: any) {
               Packages <span style={pill(T.muted)}>{all.length}</span>
             </>
           }
-          right={
-            <button onClick={() => setCreating(true)} title="Create a custom pack" aria-label="Create a custom pack" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
-              <Plus size={17} />
-            </button>
-          }
         />
+        <button className="lp-fab" onClick={() => setCreating(true)} title="Create a custom pack" aria-label="Create a custom pack">
+          <Plus size={22} />
+        </button>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
           <CountryChip />
           <div
@@ -4192,14 +4209,10 @@ function Documents({ store, toast, go }: any) {
     if (sort !== "newest") activeChips.push({ label: { oldest: "Oldest first", name: "By name", expiry: "By expiry" }[sort]!, clear: () => setSort("newest") });
     return (
       <div>
-        <MNav
-          title="Documents" aria-label="Documents"
-          right={
-            <button onClick={() => setAddSheet(true)} title="Add documents" aria-label="Add documents" style={{ ...btnGhost, padding: 9, borderRadius: 99 }}>
-              <Plus size={17} />
-            </button>
-          }
-        />
+        <MNav title="Documents" aria-label="Documents" />
+        <button className="lp-fab" onClick={() => setAddSheet(true)} title="Add" aria-label="Add">
+          <Plus size={22} />
+        </button>
         <div
           style={{
             display: "flex",
