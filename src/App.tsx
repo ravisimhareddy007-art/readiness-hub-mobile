@@ -1625,6 +1625,8 @@ function Home({ store, go, toast }: any) {
     tone: string;
     rid?: string;
     txId?: string;
+    memberId?: string;
+    holdingId?: string;
   };
   const docActs: Act[] = expiring
     .sort((a: Doc, b: Doc) => +new Date(a.expiry!) - +new Date(b.expiry!))
@@ -1648,6 +1650,7 @@ function Home({ store, go, toast }: any) {
           acts.push({
             id: r.id,
             rid: r.id,
+            memberId: mm.id,
             label: r.title,
             who: first,
             whoColor: mm.color,
@@ -1666,11 +1669,11 @@ function Home({ store, go, toast }: any) {
   store.holdings.forEach((h: Holding) => {
     const guarded = h.kind === "asset" || h.kind === "cover";
     if (guarded && !h.docId)
-      holdingGaps.push({ id: h.id + "d", label: `${h.name} · no document on file`, when: "attach", tone: T.gold });
+      holdingGaps.push({ id: h.id + "d", holdingId: h.id, label: `${h.name} · no document on file`, when: "attach", tone: T.gold });
     if (guarded && !h.accessNote)
-      holdingGaps.push({ id: h.id + "a", label: `${h.name} · no access instructions`, when: "add", tone: T.gold });
+      holdingGaps.push({ id: h.id + "a", holdingId: h.id, label: `${h.name} · no access instructions`, when: "add", tone: T.gold });
     if (guarded && !h.nominee)
-      holdingGaps.push({ id: h.id + "n", label: `${h.name} · no nominee named`, when: "fix", tone: T.coral });
+      holdingGaps.push({ id: h.id + "n", holdingId: h.id, label: `${h.name} · no nominee named`, when: "fix", tone: T.coral });
     if (h.maturityDate && daysTo(h.maturityDate) >= 0 && daysTo(h.maturityDate) < 60)
       holdingGaps.push({
         id: h.id + "m",
@@ -1679,7 +1682,7 @@ function Home({ store, go, toast }: any) {
         tone: T.gold,
       });
     if (h.kind === "cover" && h.renewalDate && daysTo(h.renewalDate) < 60)
-      holdingGaps.push({ id: h.id + "r", label: `${h.name} renews`, when: `${daysTo(h.renewalDate)}d`, tone: T.gold });
+      holdingGaps.push({ id: h.id + "r", holdingId: h.id, label: `${h.name} renews`, when: `${daysTo(h.renewalDate)}d`, tone: T.gold });
   });
   const wealthActs: Act[] = [
     ...txFollowUps.map((t: Transaction) => ({
@@ -1781,7 +1784,7 @@ function Home({ store, go, toast }: any) {
     .slice(0, 5);
   /* Time-bound goes to Home, state stays in its module: appointments, refills, renewals,
      maturities, expiries and follow-ups due within 30 days, across every module and member. */
-  type Due = { id: string; label: string; who?: string; whoColor?: string; days: number; to: string; icon: any };
+  type Due = { id: string; label: string; who?: string; whoColor?: string; days: number; to: string; icon: any; memberId?: string };
   const comingUp: Due[] = useMemo(() => {
     const out: Due[] = [];
     const within = (d?: string) => !!d && daysTo(d) <= 30;
@@ -1791,6 +1794,7 @@ function Home({ store, go, toast }: any) {
         const mm = store.members.find((x: Member) => x.id === r.memberId);
         out.push({
           id: "rem" + r.id,
+          memberId: r.memberId,
           label: r.title,
           who: mm?.name.split(" ")[0],
           whoColor: mm?.color,
@@ -1906,7 +1910,13 @@ function Home({ store, go, toast }: any) {
                 return (
                 <div
                   key={a.id}
-                  onClick={() => go(a.to)}
+                  onClick={() => {
+                    /* Land on the thing the row is about. Opening the module's front door with a
+                       different person selected is worse than not linking at all. */
+                    if (a.to === "health" && a.memberId) store.setHealthIntent({ memberId: a.memberId });
+                    if (a.to === "wealth" && a.holdingId) store.setWealthIntent({ holdingId: a.holdingId } as any);
+                    go(a.to);
+                  }}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -1922,6 +1932,18 @@ function Home({ store, go, toast }: any) {
                     <ChipIc size={16} color={chipC} />
                   </span>
                   <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.text, lineHeight: 1.4 }}>
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: 0.3,
+                        color: chipC,
+                        marginBottom: 1,
+                      }}
+                    >
+                      {a.to === "health" ? "Health" : a.to === "wealth" ? "Wealth" : "Documents"}
+                    </span>
                     {a.who ? (
                       <>
                         <b style={{ color: T.white }}>{a.who}</b> · {a.label}
@@ -1977,7 +1999,10 @@ function Home({ store, go, toast }: any) {
             {(allDue ? comingUp : comingUp.slice(0, 5)).map((d) => (
               <button
                 key={d.id}
-                onClick={() => go(d.to)}
+                onClick={() => {
+                  if (d.to === "health" && d.memberId) store.setHealthIntent({ memberId: d.memberId });
+                  go(d.to);
+                }}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -1995,6 +2020,9 @@ function Home({ store, go, toast }: any) {
               >
                 <d.icon size={15} color={T.muted} />
                 <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.text }}>
+                  <span style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.faint, marginBottom: 1 }}>
+                    {d.to === "health" ? "Health" : d.to === "wealth" ? "Wealth" : "Documents"}
+                  </span>
                   {d.label}
                   {d.who && (
                     <span style={{ color: d.whoColor || T.muted, fontWeight: 600 }}> · {d.who}</span>
