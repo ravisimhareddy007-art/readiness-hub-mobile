@@ -1610,6 +1610,80 @@ const pill = (color: string): CSSProperties => ({
 function Home({ store, go, toast }: any) {
   /* A holding being fixed from the dashboard, and which field sent us here. */
   const [fixing, setFixing] = useState<{ holding: Holding; focus?: string } | null>(null);
+  const [showAll, setShowAll] = useState(false);
+
+  /* Everything that needs this person, from every module, in one order: overdue first, then by how
+     soon. Each carries the action that resolves it, so nothing here is a link to a screen that
+     shows the same row again. */
+  const needs = useMemo(() => {
+    const out: any[] = [];
+    store.members.forEach((mm: Member) => {
+      const first = mm.name.split(" ")[0];
+      store.reminders
+        .filter((r: Reminder) => r.memberId === mm.id && !r.done && daysTo(r.due) <= 30)
+        .forEach((r: Reminder) => {
+          const dd = daysTo(r.due);
+          out.push({
+            id: "r" + r.id,
+            label: r.title,
+            who: first,
+            when: dd < 0 ? `${-dd} days overdue` : dd === 0 ? "Today" : `In ${dd} days`,
+            tone: dd < 0 ? T.coral : dd <= 7 ? T.gold : T.muted,
+            sort: dd < 0 ? -1000 + dd : dd,
+            icon: HeartPulse,
+            color: A.pink,
+            action: "Done",
+            run: () => {
+              store.completeReminder(r.id);
+              toast("Marked done");
+            },
+            open: () => {
+              store.setHealthIntent({ memberId: mm.id });
+              go("health");
+            },
+          });
+        });
+    });
+    store.docs
+      .filter((d: Doc) => d.expiry && daysTo(d.expiry) <= 60)
+      .forEach((d: Doc) => {
+        const dd = daysTo(d.expiry!);
+        out.push({
+          id: "d" + d.id,
+          label: `${d.docType} ${dd < 0 ? "expired" : "expires"}`,
+          who: store.members.find((m2: Member) => m2.id === d.memberId)?.name.split(" ")[0],
+          when: dd < 0 ? `${-dd} days ago` : `In ${dd} days`,
+          tone: dd < 0 ? T.coral : T.gold,
+          sort: dd < 0 ? -500 + dd : dd,
+          icon: FileText,
+          color: A.blue,
+          action: "Open",
+          run: () => go("documents"),
+        });
+      });
+    store.holdings.forEach((h: Holding) => {
+      const guarded = h.kind === "asset" || h.kind === "cover";
+      if (!guarded) return;
+      const missing: [string, string, string][] = [];
+      if (!h.docId) missing.push(["docId", "no document on file", "Attach"]);
+      if (!h.accessNote) missing.push(["accessNote", "no access instructions", "Add"]);
+      if (!h.nominee) missing.push(["nominee", "no nominee named", "Add"]);
+      missing.forEach(([field, label, action]) =>
+        out.push({
+          id: h.id + field,
+          label: `${h.name} · ${label}`,
+          when: "Your family could not reach this",
+          tone: T.muted,
+          sort: 900,
+          icon: Wallet,
+          color: T.gold,
+          action,
+          run: () => setFixing({ holding: h, focus: field }),
+        }),
+      );
+    });
+    return out.sort((a, b) => a.sort - b.sort);
+  }, [store.members, store.reminders, store.docs, store.holdings]);
   const have: Set<string> = useMemo(() => new Set(store.docs.map((d: Doc) => d.docType)), [store.docs]);
   const scored = EVENTS.map((e) => ({ e, ...evalEvent(e, have, store.country) }));
   const started = scored.filter((x) => x.score > 0);
@@ -1781,47 +1855,6 @@ function Home({ store, go, toast }: any) {
   const wealthScore = guarded.length ? Math.round(100 * (1 - wealthMiss / (guarded.length * 3))) : null;
   /* Dated items belong to Coming up. What stays here is the other kind: something missing that no
      date will fix, like a holding with no access note. Two lists of the same thing read as random. */
-  const topActs = groups
-    .flatMap((g) => g.acts.map((a) => ({ ...a, to: g.to, gcolor: g.color })))
-    .filter((a) => !a.rid)
-    .slice(0, 5);
-  /* Time-bound goes to Home, state stays in its module: appointments, refills, renewals,
-     maturities, expiries and follow-ups due within 30 days, across every module and member. */
-  type Due = { id: string; label: string; who?: string; whoColor?: string; days: number; to: string; icon: any; memberId?: string };
-  const comingUp: Due[] = useMemo(() => {
-    const out: Due[] = [];
-    const within = (d?: string) => !!d && daysTo(d) <= 30;
-    store.reminders
-      .filter((r: Reminder) => !r.done && within(r.due))
-      .forEach((r: Reminder) => {
-        const mm = store.members.find((x: Member) => x.id === r.memberId);
-        out.push({
-          id: "rem" + r.id,
-          memberId: r.memberId,
-          label: r.title,
-          who: mm?.name.split(" ")[0],
-          whoColor: mm?.color,
-          days: daysTo(r.due),
-          to: "health",
-          icon: HeartPulse,
-        });
-      });
-    store.holdings.forEach((h: Holding) => {
-      if (h.kind === "cover" && within(h.renewalDate))
-        out.push({ id: "ren" + h.id, label: `${h.name} renews`, days: daysTo(h.renewalDate!), to: "wealth", icon: Wallet });
-      if (within(h.maturityDate))
-        out.push({ id: "mat" + h.id, label: `${h.name} matures`, days: daysTo(h.maturityDate!), to: "wealth", icon: Wallet });
-    });
-    (store.transactions || []).forEach((t: Transaction) => {
-      if (!t.followUpDone && within(t.followUpOn))
-        out.push({ id: "tx" + t.id, label: `Follow up: ${t.purpose}`, days: daysTo(t.followUpOn!), to: "wealth", icon: Coins });
-    });
-    store.docs.forEach((d: Doc) => {
-      if (within(d.expiry))
-        out.push({ id: "exp" + d.id, label: `${d.docType} expires`, days: daysTo(d.expiry!), to: "documents", icon: FileText });
-    });
-    return out.sort((a, b) => a.days - b.days);
-  }, [store.reminders, store.members, store.holdings, store.transactions, store.docs]);
   const [allDue, setAllDue] = useState(false);
   const welcomeCard =
     store.dataMode === "empty" && store.docs.length === 0 ? (
@@ -1872,204 +1905,112 @@ function Home({ store, go, toast }: any) {
           <div style={{ fontSize: 12.5, color: "var(--lpv-bandsub)", marginTop: 2 }}>Small steps today. A more ready tomorrow.</div>
         </div>
         {welcomeCard}
+        {/* One list, ordered by how soon it matters. Every row acts where it sits. */}
+        <Card style={{ padding: 0, marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
+            <b style={{ color: T.white, fontSize: 14.5 }}>Needs you</b>
+            {needs.length > 0 && (
+              <span style={{ marginLeft: "auto", fontSize: 12.5, color: T.muted }}>{needs.length}</span>
+            )}
+          </div>
+          {needs.length === 0 ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 16px", borderTop: `1px solid ${T.border}` }}>
+              <CheckCircle2 size={17} color={T.mint} />
+              <span style={{ fontSize: 13.5, color: T.muted }}>Nothing needs you right now.</span>
+            </div>
+          ) : (
+            (showAll ? needs : needs.slice(0, 6)).map((n: any) => (
+              <div
+                key={n.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 11,
+                  padding: "11px 13px",
+                  borderTop: `1px solid ${T.border}`,
+                }}
+              >
+                <span
+                  style={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: 11,
+                    background: n.color + "1F",
+                    display: "grid",
+                    placeItems: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <n.icon size={15} color={n.color} />
+                </span>
+                <span
+                  style={{ flex: 1, minWidth: 0, cursor: n.open ? "pointer" : "default" }}
+                  onClick={() => n.open?.()}
+                >
+                  <span style={{ display: "block", fontSize: 13.5, color: T.text, lineHeight: 1.35 }}>
+                    {n.who && <b style={{ color: T.white }}>{n.who} · </b>}
+                    {n.label}
+                  </span>
+                  <span style={{ display: "block", fontSize: 12, color: n.tone, marginTop: 1 }}>{n.when}</span>
+                </span>
+                <button
+                  onClick={n.run}
+                  style={{
+                    ...btnGhost,
+                    padding: "8px 12px",
+                    fontSize: 12.5,
+                    minHeight: 40,
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
+                >
+                  {n.action}
+                </button>
+              </div>
+            ))
+          )}
+          {needs.length > 6 && (
+            <button
+              onClick={() => setShowAll((v) => !v)}
+              style={{
+                width: "100%",
+                minHeight: 44,
+                background: "none",
+                border: "none",
+                borderTop: `1px solid ${T.border}`,
+                color: SEM.action,
+                fontSize: 13,
+                fontWeight: 700,
+                fontFamily: "inherit",
+                cursor: "pointer",
+              }}
+            >
+              {showAll ? "Show less" : `Show all ${needs.length}`}
+            </button>
+          )}
+        </Card>
         <button
           onClick={() => go("packages")}
           style={{
             width: "100%",
             display: "flex",
             alignItems: "center",
-            gap: 14,
-            background: T.panel,
+            gap: 12,
+            background: "none",
             border: `1px solid ${T.border}`,
-            borderRadius: 16,
-            padding: 16,
+            borderRadius: 14,
+            padding: "12px 14px",
             cursor: "pointer",
             textAlign: "left",
-            marginBottom: 16,
+            marginBottom: 14,
           }}
         >
-          <Ring score={overall} size={54} />
-          <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 15, fontWeight: 700, color: T.white }}>
-              {overall >= 90 ? "You're ready for what's next" : "Your readiness is building"}
-            </span>
-            <span style={{ display: "block", fontSize: 12.5, color: T.muted, marginTop: 2 }}>
-              {readyPacks || nearPacks
-                ? `${readyPacks} pack${readyPacks === 1 ? "" : "s"} ready · ${nearPacks} nearly there`
-                : "Pick a life moment to start preparing"}
-            </span>
+          <Ring score={overall} size={38} />
+          <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.muted }}>
+            {readyPacks} of {readyPacks + nearPacks + 1} situations ready
           </span>
-          <ChevronRight size={16} color={T.faint} />
+          <ChevronRight size={15} color={T.faint} />
         </button>
-        {topActs.length > 0 && (
-          <>
-            <div style={{ fontSize: 13, fontWeight: 700, color: T.muted, letterSpacing: 0.4, margin: "0 0 8px 2px" }}>
-              Needs fixing
-            </div>
-            <Card style={{ padding: 0, marginBottom: 16 }}>
-              {topActs.map((a: any, i: number) => {
-                const ChipIc = a.to === "health" ? HeartPulse : a.to === "wealth" ? Wallet : FileText;
-                const chipC = a.to === "health" ? A.pink : a.to === "wealth" ? A.gold : A.blue;
-                return (
-                <div
-                  key={a.id}
-                  onClick={() => {
-                    /* A row that names what is wrong should open the thing that fixes it. Sending
-                       someone to a screen showing the same row again is a detour, not a link. */
-                    const h = a.holdingId && store.holdings.find((x: Holding) => x.id === a.holdingId);
-                    if (h) return setFixing({ holding: h, focus: a.fix });
-                    if (a.to === "health" && a.memberId) store.setHealthIntent({ memberId: a.memberId });
-                    go(a.to);
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 11,
-                    padding: "12px 13px",
-                    borderTop: i ? `1px solid ${T.border}` : "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  <span
-                    style={{ width: 36, height: 36, borderRadius: 12, background: chipC + "1F", display: "grid", placeItems: "center", flexShrink: 0 }}
-                  >
-                    <ChipIc size={16} color={chipC} />
-                  </span>
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.text, lineHeight: 1.4 }}>
-                    <span
-                      style={{
-                        display: "block",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        letterSpacing: 0.3,
-                        color: chipC,
-                        marginBottom: 1,
-                      }}
-                    >
-                      {a.to === "health" ? "Health" : a.to === "wealth" ? "Wealth" : "Documents"}
-                    </span>
-                    {a.who ? (
-                      <>
-                        <b style={{ color: T.white }}>{a.who}</b> · {a.label}
-                      </>
-                    ) : (
-                      a.label
-                    )}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: a.tone,
-                      background: a.tone + "1C",
-                      borderRadius: 99,
-                      padding: "4px 9px",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {a.when}
-                  </span>
-                  {(a.rid || a.txId) && (
-                    <button
-                      title="Mark done" aria-label="Mark done"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        a.rid ? store.completeReminder(a.rid) : store.completeFollowUp(a.txId);
-                        toast("Marked done");
-                      }}
-                      style={{ ...btnGhost, padding: 8 }}
-                    >
-                      <CheckCircle2 size={15} color={T.mint} />
-                    </button>
-                  )}
-                </div>
-              );})}
-            </Card>
-          </>
-        )}
-        {topActs.length === 0 && store.docs.length > 0 && (
-          <Card style={{ marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
-            <CheckCircle2 size={17} color={T.mint} />
-            <span style={{ fontSize: 13.5, color: T.muted }}>Nothing needs you today. Everything is in place.</span>
-          </Card>
-        )}
-        {comingUp.length > 0 && (
-          <Card style={{ padding: 0, marginBottom: 16, overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
-              <CalendarClock size={16} color={T.muted} />
-              <b style={{ color: T.white, fontSize: 14.5 }}>Coming up</b>
-              <span style={{ marginLeft: "auto", fontSize: 12.5, color: T.muted }}>next 30 days</span>
-            </div>
-            {(allDue ? comingUp : comingUp.slice(0, 5)).map((d) => (
-              <button
-                key={d.id}
-                onClick={() => {
-                  if (d.to === "health" && d.memberId) store.setHealthIntent({ memberId: d.memberId });
-                  go(d.to);
-                }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 11,
-                  width: "100%",
-                  minHeight: 48,
-                  padding: "11px 16px",
-                  background: "none",
-                  border: "none",
-                  borderTop: `1px solid ${T.border}`,
-                  textAlign: "left",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                <d.icon size={15} color={T.muted} />
-                <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.text }}>
-                  <span style={{ display: "block", fontSize: 12, fontWeight: 700, color: T.faint, marginBottom: 1 }}>
-                    {d.to === "health" ? "Health" : d.to === "wealth" ? "Wealth" : "Documents"}
-                  </span>
-                  {d.label}
-                  {d.who && (
-                    <span style={{ color: d.whoColor || T.muted, fontWeight: 600 }}> · {d.who}</span>
-                  )}
-                </span>
-                <span
-                  style={{
-                    fontSize: 12.5,
-                    fontWeight: 700,
-                    whiteSpace: "nowrap",
-                    color: d.days < 0 ? T.coral : d.days <= 7 ? SEM.warning : T.muted,
-                  }}
-                >
-                  {d.days < 0 ? `${-d.days}d overdue` : d.days === 0 ? "today" : `in ${d.days}d`}
-                </span>
-              </button>
-            ))}
-            {comingUp.length > 5 && (
-              <button
-                onClick={() => setAllDue((v) => !v)}
-                style={{
-                  width: "100%",
-                  minHeight: 44,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                  background: "transparent",
-                  border: "none",
-                  borderTop: `1px solid ${T.border}`,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: SEM.action,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                }}
-              >
-                {allDue ? "Show less" : `View all ${comingUp.length}`}
-                <ChevronDown size={14} style={{ transform: allDue ? "rotate(180deg)" : "none", transition: "transform .15s" }} />
-              </button>
-            )}
-          </Card>
-        )}
         {fixing && (
           <HoldingModal
             holding={fixing.holding}
@@ -2088,37 +2029,6 @@ function Home({ store, go, toast }: any) {
               setFixing(null);
             }}
           />
-        )}
-        {insights.length > 0 && (
-          <div className="lp-mh-insrail">
-            {insights.slice(0, 3).map((ins, i) => (
-              <button
-                key={i}
-                onClick={() => go(ins.to)}
-                style={{
-                  flex: "0 0 82%",
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: 10,
-                  background: T.panel,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 14,
-                  padding: 13,
-                  cursor: "pointer",
-                  textAlign: "left",
-                }}
-              >
-                <span style={{ display: "inline-flex", gap: 3, marginTop: 2, flexShrink: 0 }}>
-                  {ins.icons.map((Ic: any, j: number) => (
-                    <span key={j} style={{ display: "grid", placeItems: "center", width: 22, height: 22, borderRadius: 7, background: ins.tone + "1f" }}>
-                      <Ic size={12} color={ins.tone} />
-                    </span>
-                  ))}
-                </span>
-                <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: T.text, lineHeight: 1.5 }}>{ins.text}</span>
-              </button>
-            ))}
-          </div>
         )}
         <label
           style={{
