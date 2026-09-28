@@ -1608,6 +1608,8 @@ const pill = (color: string): CSSProperties => ({
 
 /* ═══════════════ HOME (dashboard, not the package grid) ═══════════════ */
 function Home({ store, go, toast }: any) {
+  /* A holding being fixed from the dashboard, and which field sent us here. */
+  const [fixing, setFixing] = useState<{ holding: Holding; focus?: string } | null>(null);
   const have: Set<string> = useMemo(() => new Set(store.docs.map((d: Doc) => d.docType)), [store.docs]);
   const scored = EVENTS.map((e) => ({ e, ...evalEvent(e, have, store.country) }));
   const started = scored.filter((x) => x.score > 0);
@@ -1627,6 +1629,7 @@ function Home({ store, go, toast }: any) {
     txId?: string;
     memberId?: string;
     holdingId?: string;
+    fix?: string;
   };
   const docActs: Act[] = expiring
     .sort((a: Doc, b: Doc) => +new Date(a.expiry!) - +new Date(b.expiry!))
@@ -1669,11 +1672,11 @@ function Home({ store, go, toast }: any) {
   store.holdings.forEach((h: Holding) => {
     const guarded = h.kind === "asset" || h.kind === "cover";
     if (guarded && !h.docId)
-      holdingGaps.push({ id: h.id + "d", holdingId: h.id, label: `${h.name} · no document on file`, when: "attach", tone: T.gold });
+      holdingGaps.push({ id: h.id + "d", holdingId: h.id, fix: "docId", label: `${h.name} · no document on file`, when: "attach", tone: T.gold });
     if (guarded && !h.accessNote)
-      holdingGaps.push({ id: h.id + "a", holdingId: h.id, label: `${h.name} · no access instructions`, when: "add", tone: T.gold });
+      holdingGaps.push({ id: h.id + "a", holdingId: h.id, fix: "accessNote", label: `${h.name} · no access instructions`, when: "add", tone: T.gold });
     if (guarded && !h.nominee)
-      holdingGaps.push({ id: h.id + "n", holdingId: h.id, label: `${h.name} · no nominee named`, when: "fix", tone: T.coral });
+      holdingGaps.push({ id: h.id + "n", holdingId: h.id, fix: "nominee", label: `${h.name} · no nominee named`, when: "fix", tone: T.coral });
     if (h.maturityDate && daysTo(h.maturityDate) >= 0 && daysTo(h.maturityDate) < 60)
       holdingGaps.push({
         id: h.id + "m",
@@ -1911,10 +1914,11 @@ function Home({ store, go, toast }: any) {
                 <div
                   key={a.id}
                   onClick={() => {
-                    /* Land on the thing the row is about. Opening the module's front door with a
-                       different person selected is worse than not linking at all. */
+                    /* A row that names what is wrong should open the thing that fixes it. Sending
+                       someone to a screen showing the same row again is a detour, not a link. */
+                    const h = a.holdingId && store.holdings.find((x: Holding) => x.id === a.holdingId);
+                    if (h) return setFixing({ holding: h, focus: a.fix });
                     if (a.to === "health" && a.memberId) store.setHealthIntent({ memberId: a.memberId });
-                    if (a.to === "wealth" && a.holdingId) store.setWealthIntent({ holdingId: a.holdingId } as any);
                     go(a.to);
                   }}
                   style={{
@@ -2065,6 +2069,25 @@ function Home({ store, go, toast }: any) {
               </button>
             )}
           </Card>
+        )}
+        {fixing && (
+          <HoldingModal
+            holding={fixing.holding}
+            members={store.members}
+            store={store}
+            focus={fixing.focus}
+            onClose={() => setFixing(null)}
+            onSave={(h: Holding) => {
+              store.updateHolding(h.id, h);
+              toast("Updated");
+              setFixing(null);
+            }}
+            onDelete={() => {
+              store.removeHolding(fixing.holding.id);
+              toast("Removed from your registry");
+              setFixing(null);
+            }}
+          />
         )}
         {insights.length > 0 && (
           <div className="lp-mh-insrail">
