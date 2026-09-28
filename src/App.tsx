@@ -1773,7 +1773,12 @@ function Home({ store, go, toast }: any) {
   const guarded = store.holdings.filter((h: Holding) => h.kind === "asset" || h.kind === "cover");
   const wealthMiss = guarded.reduce((n: number, h: Holding) => n + (h.docId ? 0 : 1) + (h.accessNote ? 0 : 1) + (h.nominee ? 0 : 1), 0);
   const wealthScore = guarded.length ? Math.round(100 * (1 - wealthMiss / (guarded.length * 3))) : null;
-  const topActs = groups.flatMap((g) => g.acts.map((a) => ({ ...a, to: g.to, gcolor: g.color }))).slice(0, 3);
+  /* Dated items belong to Coming up. What stays here is the other kind: something missing that no
+     date will fix, like a holding with no access note. Two lists of the same thing read as random. */
+  const topActs = groups
+    .flatMap((g) => g.acts.map((a) => ({ ...a, to: g.to, gcolor: g.color })))
+    .filter((a) => !a.rid)
+    .slice(0, 5);
   /* Time-bound goes to Home, state stays in its module: appointments, refills, renewals,
      maturities, expiries and follow-ups due within 30 days, across every module and member. */
   type Due = { id: string; label: string; who?: string; whoColor?: string; days: number; to: string; icon: any };
@@ -1850,13 +1855,6 @@ function Home({ store, go, toast }: any) {
   if (isMobile) {
     const readyPacks = scored.filter((x: any) => x.score === 100).length;
     const nearPacks = scored.filter((x: any) => x.score >= 70 && x.score < 100).length;
-    const mods: { key: string; label: string; sub: string; icon: any; color: string; badge?: number }[] = [
-      { key: "documents", label: "Documents", sub: `${store.docs.length} total`, icon: FolderOpen, color: A.blue, badge: expiring.length },
-      { key: "packages", label: "Packages", sub: readyPacks ? `${readyPacks} ready` : nearPacks ? `${nearPacks} nearly there` : "Explore", icon: ListChecks, color: A.green },
-      { key: "health", label: "Health", sub: healthActs.length ? `${healthActs.length} due soon` : "Up to date", icon: HeartPulse, color: A.pink, badge: healthActs.length },
-      { key: "wealth", label: "Wealth", sub: wealthScore == null ? "Start" : wealthScore >= 80 ? "On track" : `${wealthActs.length || wealthMiss} to review`, icon: Wallet, color: A.gold, badge: wealthActs.length },
-      { key: "trust", label: "Who steps in", sub: `${store.members.filter((m: Member) => m.access).length} chosen${""}`, icon: Users, color: A.purple },
-    ];
     return (
       <div>
         <MNav left={<BrandWordmark size={17} color="var(--lpv-bandtext)" />} />
@@ -1867,50 +1865,6 @@ function Home({ store, go, toast }: any) {
           <div style={{ fontSize: 12.5, color: "var(--lpv-bandsub)", marginTop: 2 }}>Small steps today. A more ready tomorrow.</div>
         </div>
         {welcomeCard}
-        <div className="lp-mh-rail">
-          {mods.map((m) => (
-            <button key={m.key} className="lp-mh-mod" onClick={() => go(m.key)}>
-              <span style={{ position: "relative" }}>
-                <span
-                  style={{
-                    width: 54,
-                    height: 54,
-                    borderRadius: 18,
-                    background: `color-mix(in srgb, ${m.color} 20%, var(--lpv-panel))`,
-                    display: "grid",
-                    placeItems: "center",
-                  }}
-                >
-                  <m.icon size={22} color={m.color} />
-                </span>
-                {!!m.badge && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      top: -5,
-                      right: -5,
-                      minWidth: 18,
-                      height: 18,
-                      borderRadius: 99,
-                      background: T.gold,
-                      color: "var(--lpv-golddark)",
-                      fontSize: 12,
-                      fontWeight: 800,
-                      display: "grid",
-                      placeItems: "center",
-                      padding: "0 4px",
-                      boxShadow: "0 2px 6px var(--lpv-shadow-soft)",
-                    }}
-                  >
-                    {m.badge}
-                  </span>
-                )}
-              </span>
-              <span className="lp-mh-modlbl" style={{ color: T.text }}>{m.label}</span>
-              <span style={{ fontSize: 12, color: T.muted, marginTop: -2 }}>{m.sub}</span>
-            </button>
-          ))}
-        </div>
         <button
           onClick={() => go("packages")}
           style={{
@@ -1943,7 +1897,7 @@ function Home({ store, go, toast }: any) {
         {topActs.length > 0 && (
           <>
             <div style={{ fontSize: 13, fontWeight: 700, color: T.muted, letterSpacing: 0.4, margin: "0 0 8px 2px" }}>
-              For you today
+              Needs fixing
             </div>
             <Card style={{ padding: 0, marginBottom: 16 }}>
               {topActs.map((a: any, i: number) => {
