@@ -201,8 +201,8 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-grabonly{display:block}
 .lp-chipsticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px;padding:8px 14px 6px}
 .lp-hrow,.lp-txrow{display:grid !important;column-gap:12px;row-gap:6px;align-items:center}
-.lp-hrow{grid-template-columns:36px minmax(0,1fr) auto 16px;grid-template-areas:"icon name amt chev" "chips chev"}
-.lp-txrow{grid-template-columns:36px minmax(0,1fr) auto;grid-template-areas:"icon name amt" "chips act"}
+.lp-hrow{grid-template-columns:36px minmax(0,1fr) auto 16px;grid-template-areas:"icon name amt chev"}
+.lp-txrow{grid-template-columns:36px minmax(0,1fr) auto auto;grid-template-areas:"icon name amt act"}
 .lp-hrow > span:first-child,.lp-txrow > span:first-child{grid-area:icon}
 .lp-hrow .lp-wname,.lp-txrow .lp-wname{grid-area:name;min-width:0 !important}
 .lp-hrow .lp-wamt,.lp-txrow .lp-wamt{grid-area:amt;margin-left:0;text-align:right;white-space:nowrap}
@@ -5607,7 +5607,8 @@ function Wealth({ store, go, toast }: any) {
             if (guarded && !h.nominee) missing.push("no nominee");
             if (!h.accessNote) missing.push(h.kind === "liability" ? "no closure instructions" : "no access note");
             if (missing.length === 0) return null;
-            const text = missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(", ")} and ${missing.slice(-1)}`;
+            const joined = missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(", ")} and ${missing.slice(-1)}`;
+          const text = joined.charAt(0).toUpperCase() + joined.slice(1);
             return (
               <span
                 className="lp-tap"
@@ -5621,8 +5622,7 @@ function Wealth({ store, go, toast }: any) {
                   fontSize: 12,
                   color: SEM.attention,
                   marginTop: 4,
-                  textTransform: "capitalize" as const,
-                }}
+                  }}
               >
                 {text}
               </span>
