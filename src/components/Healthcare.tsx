@@ -196,6 +196,7 @@ const emergencyLine = (c: { emergencyName?: string; emergencyPhone?: string }) =
 export default function Healthcare({ toast: extToast }: { toast?: (m: string) => void }) {
   const s = useStore();
   applyC(s.theme);
+  const css = useMemo(() => CSS(), [s.theme]);
   const [localToast, setLocalToast] = useState<string | null>(null);
   const toast = (m: string) => {
     if (extToast) extToast(m);
@@ -444,7 +445,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
   if (!m)
     return (
       <div className="lh-root">
-        <style>{CSS()}</style>
+        <style>{css}</style>
         {isMobile && <MNav title="Health" aria-label="Health" />}
         <div className="lh-card" style={{ padding: 24, textAlign: "center", marginTop: 12 }}>
           <Users size={22} color={C.sub} />
@@ -488,7 +489,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
   if (isMobile && mView === "family") {
     return (
       <div className="lh-root">
-        <style>{CSS()}</style>
+        <style>{css}</style>
         <MNav
           left={
             <button
@@ -653,7 +654,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
 
   return (
     <div className="lh-root">
-      <style>{CSS()}</style>
+      <style>{css}</style>
       {isMobile && (
         <>
           <MNav title="Health" aria-label="Health" />

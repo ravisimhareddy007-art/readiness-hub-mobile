@@ -9077,6 +9077,11 @@ export default function App() {
     if (typeof window !== "undefined" && window.innerWidth <= 760) setNavOpen(false);
   }, []);
   useEffect(() => { ensureVaultReady(); }, []);
+  useEffect(() => {
+    const id = (window as any).requestIdleCallback?.(() => import("@/components/Healthcare"))
+      ?? setTimeout(() => import("@/components/Healthcare"), 2000);
+    return () => (window as any).cancelIdleCallback?.(id) ?? clearTimeout(id);
+  }, []);
   const [booted, setBooted] = useState(false);
   const [account, setAccount] = useState<Account | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
