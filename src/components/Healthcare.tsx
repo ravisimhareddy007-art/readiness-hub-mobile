@@ -196,6 +196,7 @@ const emergencyLine = (c: { emergencyName?: string; emergencyPhone?: string }) =
 export default function Healthcare({ toast: extToast }: { toast?: (m: string) => void }) {
   const s = useStore();
   applyC(s.theme);
+  const css = useMemo(() => CSS(), [s.theme]);
   const [localToast, setLocalToast] = useState<string | null>(null);
   const toast = (m: string) => {
     if (extToast) extToast(m);
