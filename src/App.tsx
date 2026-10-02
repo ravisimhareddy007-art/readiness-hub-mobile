@@ -6378,6 +6378,8 @@ function Wealth({ store, go, toast }: any) {
 /* ═══════════════ TRUST ═══════════════ */
 function Trust({ store, toast, go }: any) {
   const isMobile = useIsMobile();
+  const [sheet, setSheet] = useState<null | "add" | Member>(null);
+  const [confirm, setConfirm] = useState<any>(null);
   const withAccess = store.members.filter((m: Member) => m.access);
   const accessColor: Record<Access, string> = {
     Owner: T.gold,
@@ -6410,11 +6412,16 @@ function Trust({ store, toast, go }: any) {
         />
       )}
       <Card style={{ padding: 0, marginBottom: 16 }}>
-        <div style={{ padding: "16px 16px" }}>
-          <span style={{ fontWeight: 700, color: T.white, fontSize: 14 }}>Emergency access</span>
-          <p style={{ fontSize: 12, color: T.muted, margin: "4px 0 0", lineHeight: 1.5 }}>
+        <div style={{ padding: "16px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+          <p style={{ flex: 1, minWidth: 0, fontSize: 12, color: T.muted, margin: 0, lineHeight: 1.5 }}>
             The people your holdings and documents go to if you use the SOS handoff.
           </p>
+          <button
+            onClick={() => setSheet("add")}
+            style={{ ...btnGold, minHeight: 44, padding: "8px 12px", fontSize: 14, whiteSpace: "nowrap" }}
+          >
+            <Plus size={15} /> Add person
+          </button>
         </div>
         {store.members
           .filter((m: Member) => m.id !== "you")
@@ -6470,6 +6477,14 @@ function Trust({ store, toast, go }: any) {
                     Make primary
                   </button>
                 )}
+                <button
+                  onClick={() => setSheet(m)}
+                  title={`Edit ${m.name}`}
+                  aria-label={`Edit ${m.name}`}
+                  style={{ ...btnGhost, padding: 0, width: 44, minHeight: 44, justifyContent: "center" }}
+                >
+                  <Pencil size={15} />
+                </button>
                 <label style={{ display: "inline-flex", alignItems: "center", minHeight: 44, cursor: "pointer" }}>
                   <input
                     type="checkbox"
@@ -6488,11 +6503,105 @@ function Trust({ store, toast, go }: any) {
           })}
         {store.members.filter((m: Member) => m.id !== "you").length === 0 && (
           <div style={{ padding: "16px", fontSize: 14, color: T.faint }}>
-            Add people in Health, then choose who steps in here.
+            Add the people who would step in. You can change or remove them any time.
           </div>
         )}
       </Card>
+      {sheet && (
+        <PersonSheet
+          person={sheet === "add" ? undefined : sheet}
+          onClose={() => setSheet(null)}
+          onSave={(v: { name: string; relation: string; phone: string }) => {
+            if (sheet === "add") {
+              const first = !store.members.some((o: Member) => o.access === "Full member");
+              const id = v.name.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) + Math.random().toString(36).slice(2, 5);
+              store.addMember({
+                id,
+                name: v.name,
+                relation: v.relation,
+                color: [A.blue, A.purple, A.green, A.pink, A.gold, A.teal][store.members.length % 6],
+                phone: v.phone || undefined,
+                access: (first ? "Full member" : "Emergency access") as Access,
+              });
+              store.updateCare(id, { conditions: [], medications: [], allergies: "None recorded" });
+              toast(`${v.name.split(" ")[0]} added`);
+            } else {
+              store.updateMember(sheet.id, { name: v.name, relation: v.relation, phone: v.phone || undefined });
+              toast("Details updated");
+            }
+            setSheet(null);
+          }}
+          onRemove={
+            sheet !== "add"
+              ? () => {
+                  const p = sheet as Member;
+                  setSheet(null);
+                  setConfirm({
+                    title: `Remove ${p.name.split(" ")[0]}?`,
+                    body: `${p.name} will no longer step in, and their health details are removed. Their documents stay in Documents.`,
+                    action: "Remove",
+                    onYes: () => {
+                      store.removeMember(p.id);
+                      toast("Person removed");
+                    },
+                  });
+                }
+              : undefined
+          }
+        />
+      )}
+      {confirm && <ConfirmSheet {...confirm} onClose={() => setConfirm(null)} />}
     </div>
+  );
+}
+
+function PersonSheet({ person, onClose, onSave, onRemove }: any) {
+  const [name, setName] = useState<string>(person?.name || "");
+  const [relation, setRelation] = useState<string>(person?.relation || "Spouse");
+  const [phone, setPhone] = useState<string>(person?.phone || "");
+  const inp: CSSProperties = {
+    width: "100%",
+    boxSizing: "border-box",
+    background: T.raised,
+    border: `1px solid ${T.border}`,
+    borderRadius: 12,
+    padding: 12,
+    minHeight: 44,
+    color: T.text,
+    fontSize: 16,
+    fontFamily: "inherit",
+    outline: "none",
+  };
+  const lbl: CSSProperties = { fontSize: 12, fontWeight: 700, color: T.muted, display: "block", margin: "12px 0 8px" };
+  const ok = name.trim().length > 0;
+  return (
+    <MSheet title={person ? "Edit person" : "Add person"} onClose={onClose}>
+      <label style={lbl}>Name</label>
+      <input style={inp} value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Lakshmi Iyer" autoFocus />
+      <label style={lbl}>Relation</label>
+      <select style={inp} value={relation} onChange={(e) => setRelation(e.target.value)}>
+        {["Spouse", "Father", "Mother", "Son", "Daughter", "Sibling", "Parent", "Other"].map((r) => (
+          <option key={r}>{r}</option>
+        ))}
+      </select>
+      <label style={lbl}>Phone (optional)</label>
+      <input style={inp} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 98765 43210" />
+      <button
+        disabled={!ok}
+        onClick={() => onSave({ name: name.trim(), relation, phone: phone.trim() })}
+        style={{ ...btnGold, width: "100%", justifyContent: "center", minHeight: 44, marginTop: 20, opacity: ok ? 1 : 0.4 }}
+      >
+        {person ? "Save changes" : "Add person"}
+      </button>
+      {onRemove && (
+        <button
+          onClick={onRemove}
+          style={{ ...btnGhost, width: "100%", justifyContent: "center", minHeight: 44, marginTop: 12, color: T.coral, borderColor: T.coral + "55" }}
+        >
+          <Trash2 size={15} /> Remove this person
+        </button>
+      )}
+    </MSheet>
   );
 }
 

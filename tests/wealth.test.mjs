@@ -75,9 +75,10 @@ t("several people can step in, one of them primary", () => {
   ok2(/Make primary/.test(appSrc));
   ok2(/Only one primary: whoever held it steps back to backup/.test(appSrc), "two primaries is nobody in charge");
 });
-t("membership is not managed here", () => {
-  ok2(!/<Plus size=\{15\} \/> Add member/.test(appSrc), "people are added in Health");
-  ok2(/Add people in Health, then choose who steps in here/.test(appSrc));
+t("people who step in can be added, edited and removed here", () => {
+  ok2(/<Plus size=\{15\} \/> Add person/.test(appSrc));
+  ok2(/Remove this person/.test(appSrc));
+  ok2(/function PersonSheet/.test(appSrc));
 });
 t("the owner cannot be their own recipient", () => {
   ok2(/\.filter\(\(m: Member\) => m\.id !== "you"\)/.test(appSrc));
