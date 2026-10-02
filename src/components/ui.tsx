@@ -59,7 +59,7 @@ export function Brand({ large }: { large?: boolean }) {
     <div className="flex items-center gap-2.5">
       <span className="grid place-items-center rounded-xl shadow-soft"
         style={{ width: large ? 40 : 32, height: large ? 40 : 32, background: "#1E242B" }}>
-        <BrandMark size={large ? 24 : 19} color="#D9A441" carve="#1E242B" />
+        <BrandMark size={large ? 24 : 19} />
       </span>
       <span className="font-display font-bold text-ink tracking-tight" style={{ fontSize: large ? 22 : 17 }}>
         Readi<span className="text-seal">N</span>es

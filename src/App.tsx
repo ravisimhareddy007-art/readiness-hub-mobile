@@ -8776,7 +8776,7 @@ function AuthScreen({
       <div style={{ width: "min(400px,100%)" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 24 }}>
           <BrandMark size={48} carve={T.navy} />
-          <BrandWordmark size={22} color={T.white} gold={T.gold} />
+          <BrandWordmark size={22} color={T.white} />
           <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>
             Be ready for life's important moments.
           </div>
@@ -8933,7 +8933,7 @@ function OnboardingWizard({ store, onDone }: any) {
       <div style={{ width: "min(460px,100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, justifyContent: "center" }}>
           <BrandMark size={34} carve={T.navy} />
-          <BrandWordmark size={18} color={T.white} gold={T.gold} />
+          <BrandWordmark size={18} color={T.white} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <button
@@ -9032,6 +9032,7 @@ function OnboardingWizard({ store, onDone }: any) {
           <div style={{ textAlign: "center", padding: "20px 0" }}>
             <div style={{ display: "inline-block", marginBottom: 20 }}>
               <BrandMark size={56} carve={T.navy} />
+              <BrandWordmark size={24} color={T.white} />
             </div>
             <h2 style={{ color: T.white, fontSize: 20, margin: "0 0 16px" }}>
               {name.trim() ? `Sealing ${name.trim().split(" ")[0]}'s family vault` : "Sealing your vault"}
@@ -9157,7 +9158,7 @@ export default function App() {
         <style>{APPCSS}</style>
         <div style={{ width: "min(400px,100%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, animation: "lp-pulse 1.6s ease-in-out infinite" }}>
           <BrandMark size={48} carve={T.navy} />
-          <BrandWordmark size={22} color={T.white} gold={T.gold} />
+          <BrandWordmark size={22} color={T.white} />
           <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>Be ready for life's important moments.</div>
         </div>
       </div>
