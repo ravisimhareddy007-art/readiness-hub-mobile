@@ -201,12 +201,11 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-grabonly{display:block}
 .lp-chipsticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px;padding:8px 14px 6px}
 .lp-hrow,.lp-txrow{display:grid !important;column-gap:12px;row-gap:6px;align-items:center}
-.lp-hrow{grid-template-columns:36px minmax(0,1fr) auto 16px;grid-template-areas:"icon name amt chev" "chips chips chips chev"}
-.lp-txrow{grid-template-columns:36px minmax(0,1fr) auto;grid-template-areas:"icon name amt" "chips chips act"}
+.lp-hrow{grid-template-columns:36px minmax(0,1fr) auto 16px;grid-template-areas:"icon name amt chev" "chips chev"}
+.lp-txrow{grid-template-columns:36px minmax(0,1fr) auto;grid-template-areas:"icon name amt" "chips act"}
 .lp-hrow > span:first-child,.lp-txrow > span:first-child{grid-area:icon}
 .lp-hrow .lp-wname,.lp-txrow .lp-wname{grid-area:name;min-width:0 !important}
 .lp-hrow .lp-wamt,.lp-txrow .lp-wamt{grid-area:amt;margin-left:0;text-align:right;white-space:nowrap}
-.lp-hrow .lp-wchips,.lp-txrow .lp-wchips{grid-area:chips;justify-content:flex-start;margin-left:0}
 .lp-hrow > svg:last-child{grid-area:chev;justify-self:end}
 .lp-txrow > button{grid-area:act;justify-self:end}
 .lp-es-cta{display:flex;gap:8px}
@@ -239,7 +238,6 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-metric b{font-size:20px;letter-spacing:-0.02em}
 .lp-ts-t{font-size:13px !important;margin-top:8px !important;line-height:1.25}
 .lp-ts-s{display:none}
-.lp-wchips{order:3;flex-wrap:wrap;justify-content:flex-end;margin-left:auto;min-width:0}
 .lp-wrow > button{order:3}
 }
 `;
@@ -5360,7 +5358,7 @@ function ConfirmSheet({ title, body, action, onYes, onClose }: any) {
 function Wealth({ store, go, toast }: any) {
   const [showMath, setShowMath] = useState(false);
   const [editTx, setEditTx] = useState<Transaction | null>(null);
-  const [focusField, setFocusField] = useState<"access" | null>(null);
+  const [focusField, setFocusField] = useState<"access" | "doc" | "nominee" | null>(null);
   const [confirm, setConfirm] = useState<{ title: string; body: string; action: string; onYes: () => void } | null>(null);
   const [viewDoc, setViewDoc] = useState<Doc | null>(null);
   const [edit, setEdit] = useState<Holding | null>(null);
@@ -5563,18 +5561,6 @@ function Wealth({ store, go, toast }: any) {
       </div>
     </Card>
   );
-  const Chip = ({ ok, label }: { ok: boolean; label: string }) => (
-    <span
-      className="lp-chip"
-      style={{
-        color: ok ? T.mint : T.coral,
-        background: (ok ? T.mint : T.coral) + "14",
-        border: `1px solid ${ok ? T.mint : T.coral}44`,
-      }}
-    >
-      {ok ? "✓" : "✗"} {label}
-    </span>
-  );
   const Row = ({ h }: { h: Holding }) => {
     const d = linkedDoc(h);
     const accent = h.kind === "liability" ? T.coral : h.kind === "cover" ? A.teal : T.gold;
@@ -5613,6 +5599,35 @@ function Wealth({ store, go, toast }: any) {
             {h.accountRef ? ` ${h.accountRef}` : ""}
             {origLine(h) ? ` · ${origLine(h)}` : ""}
           </div>
+          {/* Only the exception earns ink. A tick saying "nothing wrong here" spends the loudest
+              element in the UI on the default state, and repeats what Home already lists. */}
+          {(() => {
+            const missing: string[] = [];
+            if (guarded && !d) missing.push("no document");
+            if (guarded && !h.nominee) missing.push("no nominee");
+            if (!h.accessNote) missing.push(h.kind === "liability" ? "no closure instructions" : "no access note");
+            if (missing.length === 0) return null;
+            const text = missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(", ")} and ${missing.slice(-1)}`;
+            return (
+              <span
+                className="lp-tap"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFocusField(!d ? "doc" : !h.nominee ? "nominee" : "access");
+                  setEdit(h);
+                }}
+                style={{
+                  display: "block",
+                  fontSize: 12,
+                  color: SEM.attention,
+                  marginTop: 4,
+                  textTransform: "capitalize" as const,
+                }}
+              >
+                {text}
+              </span>
+            );
+          })()}
         </div>
         <span
           className="lp-wamt"
@@ -5625,42 +5640,6 @@ function Wealth({ store, go, toast }: any) {
         >
           {h.kind === "liability" ? "\u2212" : ""}
           {money(h.value || 0)}
-        </span>
-        <span className="lp-wchips" style={{ display: "inline-flex", gap: 8, flexShrink: 0 }}>
-          <span
-            className="lp-tap"
-            onClick={(e) => {
-              e.stopPropagation();
-              d ? setViewDoc(d) : attach(h);
-            }}
-            title={d ? "View document" : "Attach document"} aria-label={d ? "View document" : "Attach document"}
-          >
-            <Chip ok={!!d} label="Doc" />
-          </span>
-          {guardedKind && (
-            <span
-              className="lp-tap"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (!h.nominee) setNomineeFor(h);
-              }}
-              style={{ cursor: h.nominee ? "default" : "pointer" }}
-              title={h.nominee ? h.nomineeName || "Nominee named" : "Add nominee"} aria-label={h.nominee ? h.nomineeName || "Nominee named" : "Add nominee"}
-            >
-              <Chip ok={!!h.nominee} label="Nominee" />
-            </span>
-          )}
-          <span
-            className="lp-tap"
-            onClick={(e) => {
-              e.stopPropagation();
-              setFocusField("access");
-              setEdit(h);
-            }}
-            title="Access instructions" aria-label="Access instructions"
-          >
-            <Chip ok={!!h.accessNote} label={h.kind === "liability" ? "Closure" : "Access"} />
-          </span>
         </span>
         <ChevronRight size={14} color={T.faint} />
       </div>
@@ -5929,7 +5908,9 @@ function Wealth({ store, go, toast }: any) {
                       {h.name}
                     </span>
                     <span style={{ fontVariantNumeric: "tabular-nums", color: T.muted }}>
-                      {h.docId ? "✓" : "✗"}doc {h.nominee ? "✓" : "✗"}nom {h.accessNote ? "✓" : "✗"}access
+                      {[!h.docId && "no document", !h.nominee && "no nominee", !h.accessNote && "no access note"]
+                        .filter(Boolean)
+                        .join(", ") || "complete"}
                     </span>
                     <span
                       style={{
@@ -6129,30 +6110,26 @@ function Wealth({ store, go, toast }: any) {
                             {settled ? "" : lent ? "owed to you" : "you owe"}
                           </span>
                         </span>
-                        {!settled && (
-                          <span className="lp-wchips" style={{ display: "inline-flex", gap: 8, flexShrink: 0 }}>
-                            <span
-                              className="lp-tap"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                ev ? setViewDoc(ev) : attachTx(t);
-                              }}
-                              style={pill(ev ? T.mint : T.coral)}
-                            >
-                              {ev ? "✓ Evidence" : "✗ Evidence"}
-                            </span>
-                            <span
-                              className="lp-tap"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditTx(t);
-                              }}
-                              style={pill((t.counterparty || "").trim() ? T.mint : T.coral)}
-                            >
-                              {(t.counterparty || "").trim() ? "✓ Contact" : "✗ Contact"}
-                            </span>
-                          </span>
-                        )}
+                        {!settled &&
+                          (() => {
+                            /* Same rule as the holdings list: only what is missing is said. */
+                            const gaps: string[] = [];
+                            if (!ev) gaps.push("no evidence");
+                            if (!(t.counterparty || "").trim()) gaps.push("no contact");
+                            if (gaps.length === 0) return null;
+                            return (
+                              <span
+                                className="lp-tap"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  !ev ? (ev ? setViewDoc(ev) : attachTx(t)) : setEditTx(t);
+                                }}
+                                style={{ display: "block", fontSize: 12, color: SEM.attention, marginTop: 4 }}
+                              >
+                                {gaps.join(" and ")}
+                              </span>
+                            );
+                          })()}
                         {settled && (
                           <button
                             onClick={(e) => {
