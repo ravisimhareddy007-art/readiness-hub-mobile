@@ -1171,7 +1171,7 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
 
       <nav className="lp-nav">
         <div className="lp-navinner">
-          <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.ink }}>
             <BrandMark size={32} carve={C.paper} />
             <BrandWordmark size={19} color={C.ink} />
           </div>
@@ -1636,7 +1636,7 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
 
       <footer className="lp-footer">
         <div className="lp-wrap lp-footinner">
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: C.ink }}>
             <BrandMark size={26} carve={C.paper} />
             <BrandWordmark size={15} color={C.ink} />
           </div>
