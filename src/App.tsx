@@ -8388,7 +8388,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
             </div>
             <Row
               icon={Users}
-              label="Family and access"
+              label="Emergency access"
               sub="Members, access levels, emergency contacts, and SOS handoff"
               onClick={() => go("trust")}
             />
