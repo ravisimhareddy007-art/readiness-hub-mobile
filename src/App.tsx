@@ -2572,7 +2572,7 @@ function Packages({ store, toast }: any) {
             );
           })}
         </div>
-        <div style={{ display: "grid", gap: 8 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 8 }}>
           {list.map((e) => {
             const { score, got, total } = evalEvent(e, have, country);
             return (
