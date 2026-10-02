@@ -1,4 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import inter400 from "@fontsource/inter/files/inter-latin-400-normal.woff2?url";
+import inter500 from "@fontsource/inter/files/inter-latin-500-normal.woff2?url";
+import inter700 from "@fontsource/inter/files/inter-latin-700-normal.woff2?url";
 import {
   Outlet,
   Link,
@@ -108,6 +111,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary" },
           ],
     links: [
+      { rel: "preload", href: inter400, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+      { rel: "preload", href: inter500, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+      { rel: "preload", href: inter700, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
         href: appCss,

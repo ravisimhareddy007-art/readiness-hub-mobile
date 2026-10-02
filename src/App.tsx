@@ -1,3 +1,4 @@
+import { ThemeProvider } from "@/lib/tokens";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode, CSSProperties } from "react";
 import {
@@ -9139,6 +9140,7 @@ export default function App() {
 
   if (!authChecked)
     return (
+      <ThemeProvider theme={store.theme}>
       <div style={{ minHeight: "100vh", background: T.navy, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <style>{APPCSS}</style>
         <div style={{ width: "min(400px,100%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, animation: "lp-pulse 1.6s ease-in-out infinite" }}>
@@ -9147,9 +9149,11 @@ export default function App() {
           <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>Be ready for life's important moments.</div>
         </div>
       </div>
+      </ThemeProvider>
     );
   if (!account)
     return (
+      <ThemeProvider theme={store.theme}>
       <div style={{ minHeight: "100vh", background: T.navy }}>
         <style>{APPCSS}</style>
         <AuthScreen
@@ -9166,9 +9170,11 @@ export default function App() {
           }}
         />
       </div>
+      </ThemeProvider>
     );
 
   return (
+    <ThemeProvider theme={store.theme}>
     <div
       style={{
         display: "flex",
@@ -9585,5 +9591,6 @@ export default function App() {
         </div>
       )}
     </div>
+    </ThemeProvider>
   );
 }
