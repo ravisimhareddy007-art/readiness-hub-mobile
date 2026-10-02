@@ -30,11 +30,16 @@ t("country falls back to India when the device region is not covered", () => {
 t("every country has a name and a flag", () => {
   c.COUNTRIES.forEach((x) => { assert.ok(x.name.length > 2); assert.ok(x.flag.length > 0); });
 });
-t("the country is set in Settings and costs no room in Packages", () => {
-  assert.ok(/<Globe size=\{16\}/.test(app), "Settings must own the setting");
-  assert.ok(/const CountryChip/.test(app), "Packages shows the jurisdiction as a chip, not a bar");
-  assert.ok(!/Requirements for <b/.test(app), "a full-width bar for a setting owned elsewhere is waste");
-  assert.ok(/function CountrySheet\(\{ current, onPick, onClose, title \}/.test(app), "one picker, used by both");
+t("the first release offers no country choice", () => {
+  assert.ok(!/const CountryChip/.test(app), "India only until packs and pricing exist elsewhere");
+  assert.ok(!/function CountrySheet\(/.test(app));
+  assert.ok(!/<Globe size=\{16\}/.test(app), "no country row in Settings");
+});
+t("the country cannot drift to a market we do not support", () => {
+  const cc = readFileSync(join(root, "src/lib/countries.ts"), "utf8");
+  assert.ok(!/navigator\.language/.test(cc), "a device set to en-US must not switch the catalogue");
+  const st3 = readFileSync(join(root, "src/lib/store.ts"), "utf8");
+  assert.ok(/country: "IN",/.test(st3), "a stored country from an earlier build must be brought back");
 });
 t("requirements are cached per country, not per pack alone", () => {
   assert.ok(/jurisdiction \? `\$\{query\}::\$\{jurisdiction\}` : query/.test(idx), "cache key must include the country");
@@ -48,9 +53,19 @@ t("every pack is checked against live sources, not only custom ones", () => {
 t("the curated list shows while the live check runs", () => {
   assert.ok(/origin: "curated"/.test(app), "the sheet must never open empty");
 });
-t("the pack states where its list came from", () => {
-  for (const s of ["Curated list", "from published sources"])
-    assert.ok(app.includes(s), s);
+t("one source and one date, not three", () => {
+  const shown = [...app.matchAll(/>\s*(Last checked|Checked)\b/g)].length;
+  assert.ok(shown <= 2, `a date is labelled "checked" ${shown} times`);
+  assert.ok(/Last checked<\/span>/.test(app), "the date must still be shown once");
+});
+t("the date shown belongs to the list on screen", () => {
+  assert.ok(/fmtDate\(live\.lastChecked \|\| seeded\?\.checked \|\| ev\.lastChecked\)/.test(app),
+    "a curated date beside a looked-up list is two answers to one question");
+});
+t("what goes in the download can be chosen", () => {
+  assert.ok(/In this download/.test(app));
+  assert.ok(/Add another document/.test(app));
+  assert.ok(/dropped\.has\(d\.id\)/.test(app));
 });
 t("sources are linked and official ones are marked", () => {
   assert.ok(/live\.sources\.slice\(0, 3\)/.test(app));
@@ -79,10 +94,6 @@ t("a held answer is shown without spending anything", () => {
 t("a stale answer is shown while it refreshes, never a blank sheet", () => {
   assert.ok(/getCachedAny/.test(cache), "an expired entry must still be readable");
   assert.ok(/stale: Date\.now\(\) - e\.at > TTL_MS/.test(cache));
-});
-t("provenance is shown, and a recheck is one tap", () => {
-  assert.ok(/Checked \{fmtDate\(live\.lastChecked\)\}/.test(app), "the date it was checked must be visible");
-  assert.ok(/title="Check again now"/.test(app), "a manual recheck must be available");
 });
 
 /* ── the module obeys the colour constitution ── */

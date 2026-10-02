@@ -60,8 +60,11 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
   const ui = ["src/App.tsx", "src/components/Healthcare.tsx", "src/components/DocViewer.tsx"]
     .map((p) => readFileSync(p, "utf8")).join("\n");
   const block = (st.match(/\n  return \{([\s\S]*?)\n  \};/) || ["", ""])[1];
+  /* Deliberately unused while the country choice is withheld for the India-only release. */
+  const parked = new Set(["setCountry", "setNationality"]);
   for (const m of block.matchAll(/^\s{4}(\w+),$/gm))
-    if (!new RegExp("\\." + m[1] + "\\b").test(ui)) hits.push(`store.${m[1]} exported but never called`);
+    if (!parked.has(m[1]) && !new RegExp("\\." + m[1] + "\\b").test(ui))
+      hits.push(`store.${m[1]} exported but never called`);
   for (const k of ["labs", "meds", "reminders"])
     if (!new RegExp(k + ": state\\." + k + "\\.filter\\(\\(x\\) => x\\.memberId !== mid\\)").test(st))
       hits.push(`removeMember leaves ${k} behind`);
@@ -142,6 +145,32 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
      is a caption that accumulated one fix at a time and should be cut. */
   if (hits.length) { console.log(`note prose creep (${hits.length} paragraphs inside UI)`); hits.slice(0, 12).forEach((h) => console.log("  " + h)); }
   else console.log("ok   prose creep");
+}
+
+// The design system is only a system if nothing escapes it. One off-scale value is how an app ends
+// up with six font sizes half a pixel apart and ten corner radii.
+{
+  const hits = [];
+  const TYPE = [12, 14, 16, 20, 28];
+  const SPACE = [0, 4, 8, 12, 16, 20, 24, 32, 40, 48];
+  const RADIUS = [12, 999];
+  const WEIGHT = [400, 500, 700];
+  for (const p of all) {
+    if (p.endsWith("ds.ts")) continue;
+    const src = readFileSync(p, "utf8");
+    const file = p.split(sep).pop();
+    for (const m of src.matchAll(/fontSize: ([0-9.]+)/g))
+      if (!TYPE.includes(Number(m[1]))) hits.push(`${file}: fontSize ${m[1]} is off the scale`);
+    for (const m of src.matchAll(/borderRadius: ([0-9]+)/g))
+      if (!RADIUS.includes(Number(m[1]))) hits.push(`${file}: borderRadius ${m[1]} is off the scale`);
+    for (const m of src.matchAll(/fontWeight: ([0-9]+)/g))
+      if (!WEIGHT.includes(Number(m[1]))) hits.push(`${file}: fontWeight ${m[1]} is off the scale`);
+    for (const m of src.matchAll(/\b(?:padding|paddingTop|paddingBottom|paddingLeft|paddingRight|gap|rowGap|columnGap|marginTop|marginBottom|marginLeft|marginRight): (\d+)\b/g))
+      if (!SPACE.includes(Number(m[1]))) hits.push(`${file}: spacing ${m[1]} is off the scale`);
+  }
+  const uniq = [...new Set(hits)];
+  if (uniq.length) { status = 1; console.log(`FAIL design system (${uniq.length})`); uniq.slice(0, 14).forEach((h) => console.log("  " + h)); }
+  else console.log("ok   design system");
 }
 
 step("release blockers (listed, not failing yet)");
