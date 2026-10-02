@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav } from "./MobileNav";
 import { motion, AnimatePresence } from "framer-motion";
@@ -222,6 +222,11 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
   >(null);
   const [printHTML, setPrintHTML] = useState("");
   const [showWhy, setShowWhy] = useState(false);
+  /* Arriving from a Home row: open on the person that row was about. */
+  useEffect(() => {
+    const intent = s.takeHealthIntent?.();
+    if (intent?.memberId && s.members.some((m2: Member) => m2.id === intent.memberId)) setSel(intent.memberId);
+  }, []);
   const [stopping, setStopping] = useState<Medication | null>(null);
   const [stopNote, setStopNote] = useState("");
   const [viewDoc, setViewDoc] = useState<Doc | null>(null);
@@ -443,10 +448,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         {isMobile && <MNav title="Health" aria-label="Health" />}
         <div className="lh-card" style={{ padding: 24, textAlign: "center", marginTop: 12 }}>
           <Users size={22} color={C.sub} />
-          <h2 className="lh-h2" style={{ fontSize: 17, margin: "10px 0 6px" }}>
+          <h2 className="lh-h2" style={{ fontSize: 16, margin: "12px 0 8px" }}>
             Add the first person
           </h2>
-          <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 16px" }}>
+          <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, margin: "0 0 16px" }}>
             Health keeps records, readings, medicines, and an emergency card for each person in your family. Start with
             yourself or whoever you look after.
           </p>
@@ -496,9 +501,9 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 border: "none",
                 color: C.sub,
                 fontSize: 14,
-                fontWeight: 600,
+                fontWeight: 500,
                 cursor: "pointer",
-                padding: "6px 6px 6px 0",
+                padding: "8px 8px 8px 0",
                 fontFamily: "inherit",
               }}
             >
@@ -509,13 +514,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         <h1 className="lh-h1" style={{ marginBottom: 4 }}>
           Family
         </h1>
-        <p style={{ color: C.sub, fontSize: 13.5, margin: "0 0 14px", lineHeight: 1.5 }}>
+        <p style={{ color: C.sub, fontSize: 14, margin: "0 0 16px", lineHeight: 1.5 }}>
           Everyone whose health records you keep. Tap a person to edit their details, conditions, allergies, and doctor.
         </p>
-        <div className="lh-card" style={{ padding: 0, overflow: "hidden", marginBottom: 14 }}>
+        <div className="lh-card" style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
           {s.members.length === 0 && (
-            <div style={{ padding: "22px 16px", textAlign: "center" }}>
-              <p style={{ fontSize: 13.5, color: C.sub, lineHeight: 1.6, margin: "0 0 14px" }}>
+            <div style={{ padding: "24px 16px", textAlign: "center" }}>
+              <p style={{ fontSize: 14, color: C.sub, lineHeight: 1.6, margin: "0 0 16px" }}>
                 Add the people whose health records you keep. Each one gets their own records, readings, medicines, and
                 emergency information.
               </p>
@@ -534,7 +539,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
-                  padding: "11px 14px",
+                  padding: "12px 16px",
                   borderTop: i ? `1px solid ${C.border}` : "none",
                 }}
               >
@@ -565,12 +570,12 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     {mm.name[0]}
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 14.5, fontWeight: 700, color: C.text }}>{mm.name}</span>
+                    <span style={{ display: "block", fontSize: 16, fontWeight: 700, color: C.text }}>{mm.name}</span>
                     <span
                       style={{
                         display: "block",
-                        fontSize: 12.5,
-                        marginTop: 1,
+                        fontSize: 12,
+                        marginTop: 4,
                         color: C.sub,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -707,13 +712,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         <div className="lh-headrow">
           <h1 className="lh-h1">Health</h1>
           <span className="lh-famsum" style={{ color: familyActions.length ? C.warning : C.emerald }}>
-            <Users size={13} style={{ verticalAlign: "-2px", marginRight: 6 }} />
+            <Users size={13} style={{ verticalAlign: "-2px", marginRight: 8 }} />
             {familyActions.length
               ? `${familyActions.length} thing${familyActions.length === 1 ? "" : "s"} need attention`
               : "Everyone is up to date"}
           </span>
         </div>
-        <p style={{ color: C.sub, fontSize: 14, marginTop: 3 }}>
+        <p style={{ color: C.sub, fontSize: 14, marginTop: 4 }}>
           Keep the whole family visit-ready. ReadiNes reads your records to organize and surface them. It reports what
           they say and never diagnoses.
         </p>
@@ -759,10 +764,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           {m.name[0]}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h2 className="lh-h2" style={{ fontSize: 18 }}>
+          <h2 className="lh-h2" style={{ fontSize: 20 }}>
             {m.name}
           </h2>
-          <div style={{ fontSize: 12.5, color: C.sub, display: "flex", gap: 8, flexWrap: "wrap", marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: C.sub, display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
             <span>{m.relation}</span>
             {age(m.dob) != null && <span>· {age(m.dob)}</span>}
             {m.bloodGroup && <span>· {m.bloodGroup}</span>}
@@ -819,14 +824,14 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
       {tab === "overview" && (
         <div className="lh-pane">
           {seriesOrder.length > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 12.5, color: C.sub }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 12, color: C.sub }}>
                 Showing {visibleSeries.length} of {seriesOrder.length} tracked test
                 {seriesOrder.length === 1 ? "" : "s"}
               </span>
               <button
                 className="lh-lnk"
-                style={{ fontSize: 13, fontWeight: 700, marginLeft: "auto" }}
+                style={{ fontSize: 16, fontWeight: 700, marginLeft: "auto" }}
                 onClick={() => setPickSeries(true)}
               >
                 Choose tests
@@ -834,7 +839,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               {seriesOrder.length > visibleSeries.length && (
                 <button
                   className="lh-lnk"
-                  style={{ fontSize: 13, fontWeight: 700 }}
+                  style={{ fontSize: 16, fontWeight: 700 }}
                   onClick={() => setShownSeries(new Set(seriesOrder))}
                 >
                   Show all
@@ -845,11 +850,11 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           <div className="lh-vitals" style={{ marginBottom: 16 }}>
             {Object.keys(vitals).length === 0 && (
               <div className="lh-card" style={{ padding: 20, textAlign: "center" }}>
-                <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 14px" }}>
+                <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, margin: "0 0 16px" }}>
                   Upload a lab report and its values arrive here with the ranges printed beside them, or log a reading
                   yourself.
                 </p>
-                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
                   <button className="lh-btn" onClick={() => setTab("records")}>
                     <Upload size={15} /> Add a lab report
                   </button>
@@ -872,7 +877,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               return (
                 <div key={k} className="lh-card" style={{ padding: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 13.5, color: C.sub }}>
+                    <span style={{ fontSize: 14, color: C.sub }}>
                       {k}
                       {isPaired(l) ? " · systolic trend" : ""}
                     </span>
@@ -880,11 +885,11 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   </div>
                   <div
                     className="lh-h2"
-                    style={{ fontSize: 25, margin: "6px 0 4px", display: "flex", alignItems: "baseline", gap: 8 }}
+                    style={{ fontSize: 28, margin: "8px 0 4px", display: "flex", alignItems: "baseline", gap: 8 }}
                   >
                     {readingText(l)}
-                    <span style={{ fontSize: 13, color: C.sub, fontWeight: 500 }}>{seriesUnit(arr)}</span>
-                    <span style={{ display: "block", fontSize: 12, color: C.faint, fontWeight: 500, marginTop: 2 }}>
+                    <span style={{ fontSize: 14, color: C.sub, fontWeight: 500 }}>{seriesUnit(arr)}</span>
+                    <span style={{ display: "block", fontSize: 12, color: C.faint, fontWeight: 500, marginTop: 4 }}>
                       {rangeText(l)}
                     </span>
                     <Tr size={14} color={delta === 0 ? C.faint : delta > 0 ? C.red : C.emerald} />
@@ -906,8 +911,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 6,
-                      marginTop: 10,
+                      gap: 8,
+                      marginTop: 12,
                       fontSize: 12,
                       color: C.faint,
                     }}
@@ -961,7 +966,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   <>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                       <span
-                        style={{ fontVariantNumeric: "tabular-nums", fontSize: 24, fontWeight: 800, color: pc }}
+                        style={{ fontVariantNumeric: "tabular-nums", fontSize: 28, fontWeight: 700, color: pc }}
                       >
                         {pct}%
                       </span>
@@ -971,13 +976,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         style={{
                           marginLeft: "auto",
                           minHeight: 34,
-                          padding: "6px 11px",
-                          borderRadius: 9,
+                          padding: "8px 12px",
+                          borderRadius: 12,
                           border: `1px solid ${C.border}`,
                           background: C.panel2,
                           color: C.sub,
-                          fontSize: 12.5,
-                          fontWeight: 600,
+                          fontSize: 12,
+                          fontWeight: 500,
                           fontFamily: "inherit",
                           cursor: "pointer",
                           whiteSpace: "nowrap",
@@ -989,17 +994,17 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     <div
                       style={{
                         height: 6,
-                        borderRadius: 9,
+                        borderRadius: 12,
                         background: "var(--lpv-raised)",
-                        margin: "9px 0 11px",
+                        margin: "12px 0 12px",
                         overflow: "hidden",
                       }}
                     >
-                      <div style={{ width: `${pct}%`, height: "100%", background: pc, borderRadius: 9, transition: "width 600ms cubic-bezier(.22,.9,.3,1)" }} />
+                      <div style={{ width: `${pct}%`, height: "100%", background: pc, borderRadius: 12, transition: "width 600ms cubic-bezier(.22,.9,.3,1)" }} />
                     </div>
                     {/* Closed, the missing ones still speak: a complete profile needs no list. */}
                     {!showWhy && done < items.length && (
-                      <div style={{ fontSize: 12.5, color: C.sub, marginBottom: 2 }}>
+                      <div style={{ fontSize: 12, color: C.sub, marginBottom: 4 }}>
                         Still needed: {items.filter(([, ok]) => !ok).map(([label]) => label.replace(/ (answered|on file)$/, "")).join(", ")}
                       </div>
                     )}
@@ -1007,7 +1012,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                       items.map(([label, ok]) => (
                       <div
                         key={label}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", fontSize: 12.5 }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", fontSize: 12 }}
                       >
                         <span style={{ color: ok ? C.emerald : C.red, fontWeight: 700, width: 14 }}>
                           {ok ? "✓" : "✗"}
@@ -1018,7 +1023,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   </>
                 );
               })()}
-              <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 10, paddingTop: 8 }}>
+              <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 12, paddingTop: 8 }}>
                 <Info2
                   label="Conditions"
                   val={
@@ -1053,12 +1058,12 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         <div className="lh-pane">
 
 
-          <div className="lh-card" style={{ padding: 22 }}>
+          <div className="lh-card" style={{ padding: 24 }}>
             <div className="lh-sechead lh-sechead-tab">
               <CalendarClock size={16} color={C.sub} /> Health timeline
             </div>
             {reminders.length > 0 && (
-              <div style={{ marginBottom: 14 }}>
+              <div style={{ marginBottom: 16 }}>
                 <div
                   style={{
                     fontSize: 12,
@@ -1077,14 +1082,14 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 10,
+                      gap: 12,
                       minHeight: 48,
                       padding: "8px 0",
                       borderTop: `1px solid ${C.border}`,
                     }}
                   >
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{r.title}</div>
+                      <div style={{ fontSize: 16, fontWeight: 500, color: C.text }}>{r.title}</div>
                       <div style={{ fontSize: 12, color: C.sub }}>
                         {[fmt(r.due), r.time, r.repeat && r.repeat !== "once" ? r.repeat : ""].filter(Boolean).join(" · ")}
                       </div>
@@ -1110,8 +1115,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               </div>
             )}
             {timeline.length === 0 ? (
-              <div style={{ padding: "18px 4px", textAlign: "center" }}>
-                <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
+              <div style={{ padding: "20px 4px", textAlign: "center" }}>
+                <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, margin: "0 0 12px" }}>
                   No history yet. Records you add and readings you log appear here in order, newest first.
                 </p>
                 <button
@@ -1141,7 +1146,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                           <Ic size={15} color={K.c} />
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{e.title}</div>
+                          <div style={{ fontSize: 16, fontWeight: 500, color: C.text }}>{e.title}</div>
                           <div style={{ fontSize: 12, color: C.faint }}>
                             {K.label} · {e.detail}
                           </div>
@@ -1169,7 +1174,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             </div>
             {meds.length === 0 ? (
               <div style={{ padding: "16px 4px", textAlign: "center" }}>
-                <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
+                <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, margin: "0 0 12px" }}>
                   No medicines recorded. Upload a prescription and they are read from it.
                 </p>
                 <button className="lh-btn-g" style={{ margin: "0 auto" }} onClick={() => setModal("med")}>
@@ -1192,15 +1197,15 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     .sort((a, b) => (b.docDate || b.addedAt).localeCompare(a.docDate || a.addedAt))[0];
                   return (
                     <div key={med.id} className="lh-med" style={{ opacity: stopped ? 0.6 : 1 }}>
-                      <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
                         <span className="lh-ic" style={{ background: (stopped ? C.faint : C.violet) + "22", flexShrink: 0 }}>
                           <PillIcon size={16} color={stopped ? C.faint : C.violet} />
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div
                             style={{
-                              fontSize: 14.5,
-                              fontWeight: 600,
+                              fontSize: 14,
+                              fontWeight: 500,
                               color: C.text,
                               lineHeight: 1.35,
                               textDecoration: stopped ? "line-through" : "none",
@@ -1209,7 +1214,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                             {med.name}
                             {med.dose && <span style={{ color: C.sub, fontWeight: 400 }}> {med.dose}</span>}
                           </div>
-                          <div style={{ fontSize: 12.5, color: C.sub, marginTop: 1 }}>
+                          <div style={{ fontSize: 12, color: C.sub, marginTop: 4 }}>
                             {stopped
                               ? `Stopped ${med.stoppedOn ? fmt(med.stoppedOn) : ""}${med.stoppedNote ? ` · ${med.stoppedNote}` : ""}`
                               : [scheduleText(med.freq), med.timing].filter(Boolean).join(" · ")}
@@ -1219,7 +1224,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                               style={{
                                 fontSize: 12,
                                 color: stale ? C.warning : C.faint,
-                                marginTop: 3,
+                                marginTop: 4,
                               }}
                             >
                               {[
@@ -1242,7 +1247,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                               <button
                                 className="lh-btn-g"
-                                style={{ padding: "7px 12px", fontSize: 12.5, minHeight: 40 }}
+                                style={{ padding: "8px 12px", fontSize: 12, minHeight: 40 }}
                                 onClick={() => {
                                   s.confirmMed(med.id);
                                   toast(`${med.name} confirmed`);
@@ -1252,7 +1257,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                               </button>
                               <button
                                 className="lh-btn-g"
-                                style={{ padding: "7px 12px", fontSize: 12.5, minHeight: 40, color: C.sub }}
+                                style={{ padding: "8px 12px", fontSize: 12, minHeight: 40, color: C.sub }}
                                 onClick={() => setStopping(med)}
                               >
                                 Stopped
@@ -1314,8 +1319,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               />
             </div>
             {records.length === 0 ? (
-              <div style={{ padding: "18px 4px", textAlign: "center" }}>
-                <p style={{ color: C.sub, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 12px" }}>
+              <div style={{ padding: "20px 4px", textAlign: "center" }}>
+                <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, margin: "0 0 12px" }}>
                   No records yet. Add a prescription or lab report and it is filed here automatically. and
                   ranges printed on it, and notes the doctor and hospital. A copy lands in Documents too.
                 </p>
@@ -1331,7 +1336,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 </button>
               </div>
             ) : (
-              <div style={{ position: "relative", paddingLeft: 18, marginTop: 6 }}>
+              <div style={{ position: "relative", paddingLeft: 20, marginTop: 8 }}>
                 <div style={{ position: "absolute", left: 4, top: 6, bottom: 6, width: 1, background: C.border }} />
                 {records.map((r) => {
                   const K = KIND[r.medType || "other"] || KIND.other;
@@ -1346,7 +1351,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                           top: 14,
                           width: 9,
                           height: 9,
-                          borderRadius: 9,
+                          borderRadius: 12,
                           background: K.c,
                           boxShadow: `0 0 7px ${K.c}`,
                         }}
@@ -1358,7 +1363,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         <div
                           style={{
                             fontSize: 14,
-                            fontWeight: 600,
+                            fontWeight: 500,
                             color: C.text,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
@@ -1400,10 +1405,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
               transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
             >
-              <h3 className="lh-h2" style={{ fontSize: 18, marginBottom: 4 }}>
+              <h3 className="lh-h2" style={{ fontSize: 20, marginBottom: 4 }}>
                 Which tests to chart
               </h3>
-              <p style={{ fontSize: 13, color: C.sub, margin: "0 0 14px" }}>
+              <p style={{ fontSize: 14, color: C.sub, margin: "0 0 16px" }}>
                 Every test read from {m.name.split(" ")[0]}'s reports. Nothing is hidden, only unpinned from this screen.
               </p>
               <div style={{ maxHeight: "46vh", overflowY: "auto" }}>
@@ -1421,7 +1426,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 11,
+                        gap: 12,
                         width: "100%",
                         minHeight: 48,
                         padding: "8px 4px",
@@ -1437,7 +1442,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         style={{
                           width: 20,
                           height: 20,
-                          borderRadius: 6,
+                          borderRadius: 12,
                           flexShrink: 0,
                           display: "grid",
                           placeItems: "center",
@@ -1449,10 +1454,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         {on ? <Check size={13} /> : null}
                       </span>
                       <span style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: C.text }}>
+                        <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: C.text }}>
                           {seriesName(arr)}
                         </span>
-                        <span style={{ display: "block", fontSize: 12.5, color: C.sub, marginTop: 1 }}>
+                        <span style={{ display: "block", fontSize: 12, color: C.sub, marginTop: 4 }}>
                           {arr.length} reading{arr.length === 1 ? "" : "s"} · latest {readingText(arr[arr.length - 1])}{" "}
                           {seriesUnit(arr)}
                         </span>
@@ -1466,7 +1471,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   );
                 })}
               </div>
-              <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+              <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
                 <button
                   className="lh-btn-g"
                   style={{ flex: 1, justifyContent: "center" }}
@@ -1509,10 +1514,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
               transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
             >
-              <h3 className="lh-h2" style={{ fontSize: 18, marginBottom: 4 }}>
+              <h3 className="lh-h2" style={{ fontSize: 20, marginBottom: 4 }}>
                 Add to Health
               </h3>
-              <p style={{ fontSize: 13, color: C.sub, margin: "0 0 14px" }}>For {m.name.split(" ")[0]}</p>
+              <p style={{ fontSize: 14, color: C.sub, margin: "0 0 16px" }}>For {m.name.split(" ")[0]}</p>
               {[
                 {
                   icon: Upload,
@@ -1546,7 +1551,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     gap: 12,
                     width: "100%",
                     minHeight: 56,
-                    padding: "10px 4px",
+                    padding: "12px 4px",
                     background: "none",
                     border: "none",
                     borderTop: `1px solid ${C.border}`,
@@ -1557,8 +1562,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 >
                   <o.icon size={18} color={C.action} />
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 14.5, fontWeight: 600, color: C.text }}>{o.label}</span>
-                    <span style={{ display: "block", fontSize: 12.5, color: C.sub, marginTop: 1 }}>{o.sub}</span>
+                    <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: C.text }}>{o.label}</span>
+                    <span style={{ display: "block", fontSize: 12, color: C.sub, marginTop: 4 }}>{o.sub}</span>
                   </span>
                   <ChevronRight size={15} color={C.faint} />
                 </button>
@@ -1599,7 +1604,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         )}
         {stopping && (
           <Modal title={`Stopped ${stopping.name}?`} onClose={() => setStopping(null)}>
-            <p style={{ fontSize: 13, color: C.sub, margin: "0 0 14px", lineHeight: 1.5 }}>
+            <p style={{ fontSize: 14, color: C.sub, margin: "0 0 16px", lineHeight: 1.5 }}>
               It stays on file with the date, so a doctor can see what changed.
             </p>
             <Lbl>Why, if you know</Lbl>
@@ -1724,7 +1729,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
 }
 
 /* ── small components ── */
-const Empty = ({ t }: any) => <div style={{ fontSize: 13, color: C.faint, padding: "10px 0" }}>{t}</div>;
+const Empty = ({ t }: any) => <div style={{ fontSize: 14, color: C.faint, padding: "12px 0" }}>{t}</div>;
 const Stat = ({ n, label, c }: any) => (
   <div className="lh-stat">
     <span className="lh-statn" style={{ color: c }}>
@@ -1735,8 +1740,8 @@ const Stat = ({ n, label, c }: any) => (
 );
 const Info2 = ({ label, val, warn }: any) => (
   <div className="lh-info">
-    <span style={{ fontSize: 13, color: C.faint }}>{label}</span>
-    <span style={{ fontSize: 13.5, color: warn ? C.red : C.text, fontWeight: warn ? 600 : 500, textAlign: "right" }}>
+    <span style={{ fontSize: 14, color: C.faint }}>{label}</span>
+    <span style={{ fontSize: 14, color: warn ? C.red : C.text, fontWeight: warn ? 600 : 500, textAlign: "right" }}>
       {val}
     </span>
   </div>
@@ -1840,12 +1845,12 @@ const StatusPill = ({ s }: { s: Status }) => (
     style={{
       fontVariantNumeric: "tabular-nums",
       fontSize: 12,
-      fontWeight: 600,
+      fontWeight: 500,
       color: SM[s].c,
       background: SM[s].c + "20",
       border: `1px solid ${SM[s].c}33`,
-      padding: "3px 9px",
-      borderRadius: 20,
+      padding: "4px 12px",
+      borderRadius: 12,
     }}
   >
     {SM[s].label}
@@ -1862,7 +1867,7 @@ function Modal({ title, onClose, children }: any) {
         transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h3 className="lh-h2" style={{ fontSize: 18 }}>
+          <h3 className="lh-h2" style={{ fontSize: 20 }}>
             {title}
           </h3>
           <button className="lh-x" onClick={onClose} title="Close" aria-label="Close">
@@ -1887,12 +1892,12 @@ function SheetModal({ title, onClose, html, onExport, onPrint, primary }: any) {
         animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
             <div className="lh-eyebrow" style={{ marginBottom: 4 }}>
               One tap · assembled from your archive
             </div>
-            <h3 className="lh-h2" style={{ fontSize: 19 }}>
+            <h3 className="lh-h2" style={{ fontSize: 20 }}>
               {title}
             </h3>
           </div>
@@ -1901,7 +1906,7 @@ function SheetModal({ title, onClose, html, onExport, onPrint, primary }: any) {
           </button>
         </div>
         <div className="lh-preview" style={{ flex: 1, overflow: "auto" }} dangerouslySetInnerHTML={{ __html: html }} />
-        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
           <button
             className={primary ? "lh-btn" : "lh-btn-g"}
             style={{ flex: 1, justifyContent: "center" }}
@@ -1951,7 +1956,7 @@ function LogReading({ member, vitals, onClose, save }: any) {
         </div>
       )}
       {newTest && (
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 12 }}>
           <div style={{ flex: 2 }}>
             <input
               className="lh-in"
@@ -1965,10 +1970,10 @@ function LogReading({ member, vitals, onClose, save }: any) {
           </div>
         </div>
       )}
-      <button className="lh-lnk" style={{ fontSize: 12.5, marginTop: 8 }} onClick={() => setNewTest((x) => !x)}>
+      <button className="lh-lnk" style={{ fontSize: 12, marginTop: 8 }} onClick={() => setNewTest((x) => !x)}>
         {newTest && existing.length > 0 ? "Pick a test already on file" : "Add a test not listed"}
       </button>
-      <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+      <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
         <div style={{ flex: 1 }}>
           <Lbl>
             {isBP ? "Systolic" : "Value"}
@@ -1988,7 +1993,7 @@ function LogReading({ member, vitals, onClose, save }: any) {
         </div>
       </div>
       {!isBP && (
-        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
           <div style={{ flex: 1 }}>
             <Lbl>Range low (optional)</Lbl>
             <input className="lh-in" type="number" value={rl} onChange={(e) => setRl(e.target.value)} placeholder="as printed" />
@@ -1999,7 +2004,7 @@ function LogReading({ member, vitals, onClose, save }: any) {
           </div>
         </div>
       )}
-      <div style={{ fontSize: 12, color: C.faint, marginTop: 10 }}>
+      <div style={{ fontSize: 12, color: C.faint, marginTop: 12 }}>
         Copy the test name, value, unit, and reference range from your report. ReadiNes supplies none of them, so a
         reading with no range is recorded without a status.
       </div>
@@ -2049,14 +2054,14 @@ function EditRecord({ doc, labs, onClose, onSave, onRemoveReading }: any) {
   const mine = labs.filter((l: LabLog) => l.sourceDocId === doc.id);
   return (
     <Modal title="Correct this record" onClose={onClose}>
-      <p style={{ fontSize: 13, color: C.sub, margin: "0 0 14px", lineHeight: 1.5 }}>
+      <p style={{ fontSize: 14, color: C.sub, margin: "0 0 16px", lineHeight: 1.5 }}>
         {doc.readAt
           ? "These were read from the document. Fix anything that came out wrong: a visit is assembled from them."
           : "Nothing was read from this document. Fill in what it says so it can be found later."}
       </p>
       <Lbl>What it is</Lbl>
       <input className="lh-in" value={f.docType} onChange={(e) => setF({ ...f, docType: e.target.value })} placeholder="Prescription, Lab Report, Scan" />
-      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+      <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
         <div style={{ flex: 1 }}>
           <Lbl>Doctor</Lbl>
           <input className="lh-in" value={f.doctor} onChange={(e) => setF({ ...f, doctor: e.target.value })} placeholder="Dr Meera Krishnan" />
@@ -2066,7 +2071,7 @@ function EditRecord({ doc, labs, onClose, onSave, onRemoveReading }: any) {
           <input className="lh-in" type="date" value={f.docDate} onChange={(e) => setF({ ...f, docDate: e.target.value })} />
         </div>
       </div>
-      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+      <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
         <div style={{ flex: 1 }}>
           <Lbl>Hospital or clinic</Lbl>
           <input className="lh-in" value={f.hospital} onChange={(e) => setF({ ...f, hospital: e.target.value })} placeholder="Fortis Hospital" />
@@ -2081,15 +2086,15 @@ function EditRecord({ doc, labs, onClose, onSave, onRemoveReading }: any) {
         <input className="lh-in" value={f.lab} onChange={(e) => setF({ ...f, lab: e.target.value })} placeholder="Apollo Diagnostics" />
       </div>
       {mine.length > 0 && (
-        <div style={{ marginTop: 18 }}>
+        <div style={{ marginTop: 20 }}>
           <Lbl>Readings taken from this record</Lbl>
-          <div style={{ border: `1px solid ${C.border}`, borderRadius: 10, overflow: "hidden" }}>
+          <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" }}>
             {mine.map((l: LabLog, i: number) => (
               <div
                 key={l.id}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 11px", borderTop: i ? `1px solid ${C.border}` : "none" }}
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 12px", borderTop: i ? `1px solid ${C.border}` : "none" }}
               >
-                <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: C.text }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: C.text }}>
                   {l.metric}{" "}
                   <b>
                     {l.qualifier || ""}
@@ -2109,14 +2114,14 @@ function EditRecord({ doc, labs, onClose, onSave, onRemoveReading }: any) {
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 12, color: C.faint, marginTop: 6, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 12, color: C.faint, marginTop: 8, lineHeight: 1.5 }}>
             A value that was misread should be removed here and logged by hand with the number printed on the report.
           </p>
         </div>
       )}
       <button
         className="lh-btn"
-        style={{ width: "100%", justifyContent: "center", marginTop: 18 }}
+        style={{ width: "100%", justifyContent: "center", marginTop: 20 }}
         onClick={() =>
           onSave({
             docType: f.docType.trim() || doc.docType,
@@ -2145,14 +2150,14 @@ function ConfirmRemove({ member, onClose, onYes }: any) {
         animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
       >
-        <h3 className="lh-h2" style={{ fontSize: 18, marginBottom: 8 }}>
+        <h3 className="lh-h2" style={{ fontSize: 20, marginBottom: 8 }}>
           Remove {first}?
         </h3>
-        <p style={{ fontSize: 13.5, color: C.sub, lineHeight: 1.6, margin: "0 0 18px" }}>
+        <p style={{ fontSize: 14, color: C.sub, lineHeight: 1.6, margin: "0 0 20px" }}>
           {first}'s readings, medicines, and reminders are removed with them. Their documents stay in your vault, no
           longer assigned to anyone, so nothing is lost.
         </p>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 12 }}>
           <button className="lh-btn-g" style={{ flex: 1, justifyContent: "center" }} onClick={onClose}>
             Keep
           </button>
@@ -2181,7 +2186,7 @@ function AddMember({ onClose, save }: any) {
         onChange={(e) => setF({ ...f, name: e.target.value })}
         placeholder="e.g. Lakshmi Iyer"
       />
-      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+      <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
         <div style={{ flex: 1 }}>
           <Lbl>Relation</Lbl>
           <select className="lh-in" value={f.relation} onChange={(e) => setF({ ...f, relation: e.target.value })}>
@@ -2232,7 +2237,7 @@ function AddMed({ onClose, save }: any) {
   const [f, setF] = useState<{ name: string; dose: string; freq: string; timing: Medication["timing"]; refillBy: string }>({ name: "", dose: "", freq: "1-0-0", timing: "after food", refillBy: "" });
   return (
     <Modal title="Add medication" aria-label="Add medication" onClose={onClose}>
-      <div style={{ display: "flex", gap: 10 }}>
+      <div style={{ display: "flex", gap: 12 }}>
         <div style={{ flex: 2 }}>
           <Lbl>Name</Lbl>
           <input
@@ -2252,11 +2257,11 @@ function AddMed({ onClose, save }: any) {
           />
         </div>
       </div>
-      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+      <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
         <div style={{ flex: 1 }}>
           <Lbl>When to take it</Lbl>
           {/* A prescription says morning, afternoon, night. Typing "Once daily" loses which one. */}
-          <div style={{ display: "flex", gap: 6 }}>
+          <div style={{ display: "flex", gap: 8 }}>
             {(["Morning", "Afternoon", "Night"] as const).map((slot, i) => {
               const parts = (f.freq || "0-0-0").split("-");
               const on = parts[i] !== "0";
@@ -2271,12 +2276,12 @@ function AddMed({ onClose, save }: any) {
                   style={{
                     flex: 1,
                     minHeight: 44,
-                    borderRadius: 9,
+                    borderRadius: 12,
                     border: `1px solid ${on ? C.action : C.border}`,
                     background: on ? C.action + "1F" : C.panel2,
                     color: on ? C.action : C.sub,
-                    fontSize: 12.5,
-                    fontWeight: 600,
+                    fontSize: 12,
+                    fontWeight: 500,
                     fontFamily: "inherit",
                     cursor: "pointer",
                   }}
@@ -2299,7 +2304,7 @@ function AddMed({ onClose, save }: any) {
       </div>
       <div style={{ marginTop: 12 }}>
         <Lbl>With meals</Lbl>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {(["before food", "after food", "with food", "any time"] as const).map((t) => (
             <button
               key={t}
@@ -2307,12 +2312,12 @@ function AddMed({ onClose, save }: any) {
               style={{
                 minHeight: 44,
                 padding: "0 12px",
-                borderRadius: 9,
+                borderRadius: 12,
                 border: `1px solid ${f.timing === t ? C.action : C.border}`,
                 background: f.timing === t ? C.action + "1F" : C.panel2,
                 color: f.timing === t ? C.action : C.sub,
-                fontSize: 12.5,
-                fontWeight: 600,
+                fontSize: 12,
+                fontWeight: 500,
                 fontFamily: "inherit",
                 cursor: "pointer",
                 textTransform: "capitalize",
@@ -2323,7 +2328,7 @@ function AddMed({ onClose, save }: any) {
           ))}
         </div>
       </div>
-      <p style={{ fontSize: 12, color: C.faint, marginTop: 10 }}>Repeat date is optional.</p>
+      <p style={{ fontSize: 12, color: C.faint, marginTop: 12 }}>Repeat date is optional.</p>
       <button
         className="lh-btn"
         style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
@@ -2354,7 +2359,7 @@ function AddReminder({ onClose, save }: any) {
       />
       <div style={{ marginTop: 12 }}>
         <Lbl>What for</Lbl>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {(
             [
               ["appointment", "Appointment"],
@@ -2369,12 +2374,12 @@ function AddReminder({ onClose, save }: any) {
               style={{
                 minHeight: 44,
                 padding: "0 12px",
-                borderRadius: 9,
+                borderRadius: 12,
                 border: `1px solid ${f.kind === k ? C.action : C.border}`,
                 background: f.kind === k ? C.action + "1F" : C.panel2,
                 color: f.kind === k ? C.action : C.sub,
-                fontSize: 12.5,
-                fontWeight: 600,
+                fontSize: 12,
+                fontWeight: 500,
                 fontFamily: "inherit",
                 cursor: "pointer",
               }}
@@ -2384,7 +2389,7 @@ function AddReminder({ onClose, save }: any) {
           ))}
         </div>
       </div>
-      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+      <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
         <div style={{ flex: 1 }}>
           <Lbl>{f.repeat === "once" ? "Due" : "Starting"}</Lbl>
           <input className="lh-in" type="date" value={f.due} onChange={(e) => setF({ ...f, due: e.target.value })} />
@@ -2398,7 +2403,7 @@ function AddReminder({ onClose, save }: any) {
       </div>
       <div style={{ marginTop: 12 }}>
         <Lbl>How often</Lbl>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {(
             [
               ["once", "Once"],
@@ -2413,12 +2418,12 @@ function AddReminder({ onClose, save }: any) {
               style={{
                 minHeight: 44,
                 padding: "0 12px",
-                borderRadius: 9,
+                borderRadius: 12,
                 border: `1px solid ${f.repeat === r ? C.action : C.border}`,
                 background: f.repeat === r ? C.action + "1F" : C.panel2,
                 color: f.repeat === r ? C.action : C.sub,
-                fontSize: 12.5,
-                fontWeight: 600,
+                fontSize: 12,
+                fontWeight: 500,
                 fontFamily: "inherit",
                 cursor: "pointer",
               }}
@@ -2457,7 +2462,7 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
   return (
     <Modal title={`Edit ${member.name.split(" ")[0]}'s care profile`} onClose={onClose}>
       <Lbl>Conditions</Lbl>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "6px 0" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "8px 0" }}>
         {cond.map((c, i) => (
           <span key={i} className="lh-cond">
             {c}
@@ -2493,7 +2498,7 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
         </button>
       </div>
       <label
-        style={{ display: "flex", alignItems: "center", gap: 9, minHeight: 44, marginTop: 4, cursor: "pointer" }}
+        style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 44, marginTop: 4, cursor: "pointer" }}
       >
         <input
           type="checkbox"
@@ -2502,9 +2507,9 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
           onChange={(e) => setNoCond(e.target.checked)}
           style={{ width: 18, height: 18, accentColor: C.action }}
         />
-        <span style={{ fontSize: 13.5, color: cond.length > 0 ? C.faint : C.text }}>No known conditions</span>
+        <span style={{ fontSize: 14, color: cond.length > 0 ? C.faint : C.text }}>No known conditions</span>
       </label>
-      <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+      <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
         <div style={{ flex: 2 }}>
           <Lbl>Allergies</Lbl>
           <input
@@ -2525,7 +2530,7 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
             ))}
           </select>
         </div>
-      <label style={{ display: "flex", alignItems: "center", gap: 9, minHeight: 44, cursor: "pointer" }}>
+      <label style={{ display: "flex", alignItems: "center", gap: 12, minHeight: 44, cursor: "pointer" }}>
         <input
           type="checkbox"
           checked={noAll}
@@ -2533,7 +2538,7 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
           onChange={(e) => setNoAll(e.target.checked)}
           style={{ width: 18, height: 18, accentColor: C.action }}
         />
-        <span style={{ fontSize: 13.5, color: allergies.trim() ? C.faint : C.text }}>No known allergies</span>
+        <span style={{ fontSize: 14, color: allergies.trim() ? C.faint : C.text }}>No known allergies</span>
       </label>
       </div>
       <div style={{ marginTop: 12 }}>
@@ -2559,7 +2564,7 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
         {/* Usually this is someone already in the family. Picking them fills both fields and, if
             their number is new, records it on them so the next profile can reuse it. */}
         {others.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
             {others.map((o: Member) => (
               <button
                 key={o.id}
@@ -2570,13 +2575,13 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
                 }}
                 style={{
                   minHeight: 36,
-                  padding: "6px 11px",
-                  borderRadius: 9,
+                  padding: "8px 12px",
+                  borderRadius: 12,
                   border: `1px solid ${emFrom === o.id ? C.action : C.border}`,
                   background: emFrom === o.id ? C.action + "1F" : C.panel2,
                   color: emFrom === o.id ? C.action : C.sub,
-                  fontSize: 12.5,
-                  fontWeight: 600,
+                  fontSize: 12,
+                  fontWeight: 500,
                   fontFamily: "inherit",
                   cursor: "pointer",
                 }}
@@ -2586,7 +2591,7 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
             ))}
           </div>
         )}
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 12 }}>
           <input
             className="lh-in"
             style={{ flex: 3 }}
@@ -2745,12 +2750,12 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
         animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
             <div className="lh-eyebrow" style={{ marginBottom: 4 }}>
               Your own records, filtered for this visit
             </div>
-            <h3 className="lh-h2" style={{ fontSize: 19 }}>
+            <h3 className="lh-h2" style={{ fontSize: 20 }}>
               Prepare for a visit
             </h3>
           </div>
@@ -2760,7 +2765,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
         </div>
         {picking ? (
           <>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <button
                 onClick={() => setPicking(false)}
                 className="lh-x"
@@ -2795,7 +2800,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                         letterSpacing: 0.5,
                         textTransform: "uppercase",
                         color: C.faint,
-                        padding: "10px 13px 6px",
+                        padding: "12px 16px 8px",
                         background: C.panel2,
                       }}
                     >
@@ -2814,10 +2819,10 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 10,
+                            gap: 12,
                             width: "100%",
                             minHeight: 48,
-                            padding: "10px 13px",
+                            padding: "12px 16px",
                             background: "none",
                             border: "none",
                             borderTop: `1px solid ${C.border}`,
@@ -2829,7 +2834,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                           <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: C.text, fontWeight: chosen === i ? 700 : 500 }}>
                             {targetLabel(t)}
                           </span>
-                          <span style={{ fontSize: 12.5, color: C.sub, whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: 12, color: C.sub, whiteSpace: "nowrap" }}>
                             {count} doc{count === 1 ? "" : "s"}
                           </span>
                           {chosen === i && <Check size={15} color={C.action} />}
@@ -2840,7 +2845,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                 );
               })}
               {targets.filter((t) => !q.trim() || targetLabel(t).toLowerCase().includes(q.trim().toLowerCase())).length === 0 && (
-                <div style={{ padding: 20, fontSize: 13.5, color: C.faint }}>Nothing matches that.</div>
+                <div style={{ padding: 20, fontSize: 14, color: C.faint }}>Nothing matches that.</div>
               )}
             </div>
           </>
@@ -2851,10 +2856,10 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
+                gap: 12,
                 width: "100%",
                 minHeight: 52,
-                padding: "10px 13px",
+                padding: "12px 16px",
                 marginBottom: 12,
                 borderRadius: 12,
                 border: `1px solid ${C.border}`,
@@ -2864,7 +2869,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                 fontFamily: "inherit",
               }}
             >
-              <span style={{ flex: 1, minWidth: 0, fontSize: 15, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {curLabel}
               </span>
               <span
@@ -2873,11 +2878,11 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                   alignItems: "center",
                   gap: 4,
                   flexShrink: 0,
-                  padding: "7px 11px",
-                  borderRadius: 9,
+                  padding: "8px 12px",
+                  borderRadius: 12,
                   background: C.action + "1F",
                   color: C.action,
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: 700,
                 }}
               >
@@ -2889,7 +2894,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
         {!picking && (
         <div style={{ flex: 1, minHeight: 168, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
           {packDocs.length === 0 ? (
-            <div style={{ padding: 20, fontSize: 13.5, color: C.faint }}>
+            <div style={{ padding: 20, fontSize: 14, color: C.faint }}>
               No records yet. The cover sheet still travels.
             </div>
           ) : (
@@ -2910,7 +2915,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                       letterSpacing: 0.5,
                       textTransform: "uppercase",
                       color: C.faint,
-                      padding: "12px 13px 6px",
+                      padding: "12px 16px 8px",
                       borderTop: `1px solid ${C.border}`,
                       background: C.panel2,
                     }}
@@ -2922,8 +2927,8 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 11,
-                    padding: "10px 13px",
+                    gap: 12,
+                    padding: "12px 16px",
                     borderTop: i && !firstOther ? `1px solid ${C.border}` : "none",
                     opacity: on ? 1 : 0.45,
                   }}
@@ -2946,7 +2951,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                     <Ic size={15} color={c} />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: C.text }}>{d.docType}</div>
+                    <div style={{ fontSize: 16, fontWeight: 500, color: C.text }}>{d.docType}</div>
                     <div
                       style={{
                         fontSize: 12,
@@ -2970,7 +2975,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
         </div>
         )}
         {!picking && (
-        <button className="lh-lnk" style={{ marginTop: 10, fontSize: 12.5 }} onClick={previewCover}>
+        <button className="lh-lnk" style={{ marginTop: 12, fontSize: 12 }} onClick={previewCover}>
           Preview cover sheet
         </button>
         )}

@@ -1438,7 +1438,7 @@ function Card({ children, style, id }: { children: ReactNode; style?: CSSPropert
     <div
       id={id}
       className={hasPad ? "lp-card" : "lp-card lp-cardpad"}
-      style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 14, padding: 18, ...style }}
+      style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 12, padding: 20, ...style }}
     >
       {children}
     </div>
@@ -1465,9 +1465,9 @@ function SectionHead({ title, sub }: { title: string; sub: string }) {
   const isMobile = useIsMobile();
   if (isMobile) return <MNav title={title} aria-label={title} />;
   return (
-    <div style={{ marginBottom: 22 }}>
-      <h1 style={{ fontSize: 26, fontWeight: 800, color: T.white, margin: 0, letterSpacing: -0.5 }}>{title}</h1>
-      <p className="lp-sh-sub" style={{ color: T.muted, fontSize: 14.5, marginTop: 6 }}>{sub}</p>
+    <div style={{ marginBottom: 24 }}>
+      <h1 style={{ fontSize: 28, fontWeight: 700, color: T.white, margin: 0, letterSpacing: -0.5 }}>{title}</h1>
+      <p className="lp-sh-sub" style={{ color: T.muted, fontSize: 14, marginTop: 8 }}>{sub}</p>
     </div>
   );
 }
@@ -1523,10 +1523,10 @@ function Stamp() {
         transform: "rotate(-9deg)",
         border: `2px solid ${T.mint}`,
         color: T.mint,
-        borderRadius: 7,
-        padding: "3px 10px",
+        borderRadius: 12,
+        padding: "4px 12px",
         fontSize: 12,
-        fontWeight: 800,
+        fontWeight: 700,
         letterSpacing: 2,
         fontVariantNumeric: "tabular-nums",
       }}
@@ -1542,10 +1542,10 @@ function MSheet({ title, onClose, children }: { title: string; onClose: () => vo
       <div className="lp-sheet" style={{ zIndex: 73, maxHeight: "82vh", overflowY: "auto" }} role="dialog" aria-label={title}>
         <div className="lp-sheet-grab" />
         <div style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 15.5, flex: 1 }}>{title}</b>
+          <b style={{ color: T.white, fontSize: 16, flex: 1 }}>{title}</b>
           <button
             onClick={onClose}
-            style={{ background: "none", border: "none", color: T.gold, fontWeight: 700, fontSize: 13.5, cursor: "pointer", padding: "8px 4px" }}
+            style={{ background: "none", border: "none", color: T.gold, fontWeight: 700, fontSize: 16, cursor: "pointer", padding: "8px 4px" }}
           >
             Done
           </button>
@@ -1564,7 +1564,7 @@ function ModRing({ score, size = 58, color, children }: { score: number | null; 
         <circle cx={size / 2} cy={size / 2} r={r} stroke={T.raised} strokeWidth={sw} fill="none" />
         <circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={sw} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={off} />
       </svg>
-      <span style={{ position: "absolute", inset: 6, borderRadius: 99, background: T.panel, display: "grid", placeItems: "center" }}>{children}</span>
+      <span style={{ position: "absolute", inset: 6, borderRadius: 999, background: T.panel, display: "grid", placeItems: "center" }}>{children}</span>
     </span>
   );
 }
@@ -1576,9 +1576,9 @@ const btnGold: CSSProperties = {
   background: "var(--lpv-action)",
   color: "var(--lpv-actionink)",
   border: "none",
-  borderRadius: 10,
-  padding: "10px 15px",
-  fontSize: 13,
+  borderRadius: 12,
+  padding: "12px 16px",
+  fontSize: 14,
   fontWeight: 700,
   cursor: "pointer",
 };
@@ -1589,10 +1589,10 @@ const btnGhost: CSSProperties = {
   background: "var(--lpv-raised)",
   color: "var(--lpv-text)",
   border: "1px solid var(--lpv-border)",
-  borderRadius: 10,
-  padding: "10px 15px",
-  fontSize: 13,
-  fontWeight: 600,
+  borderRadius: 12,
+  padding: "12px 16px",
+  fontSize: 14,
+  fontWeight: 500,
   cursor: "pointer",
 };
 const pill = (color: string): CSSProperties => ({
@@ -1602,8 +1602,8 @@ const pill = (color: string): CSSProperties => ({
   color,
   background: color + "22",
   border: `1px solid ${color}44`,
-  padding: "3px 9px",
-  borderRadius: 20,
+  padding: "4px 12px",
+  borderRadius: 12,
 });
 
 /* ═══════════════ HOME (dashboard, not the package grid) ═══════════════ */
@@ -1866,11 +1866,11 @@ function Home({ store, go, toast }: any) {
           background: `linear-gradient(160deg, ${T.gold}12, ${T.panel})`,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
           <Sparkles size={17} color={T.gold} />
           <b style={{ color: T.white, fontSize: 16 }}>Welcome to ReadiNes</b>
         </div>
-        <p style={{ fontSize: 13.5, color: T.muted, lineHeight: 1.6, margin: "0 0 14px", maxWidth: 560 }}>
+        <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 560 }}>
           Add one document and the rest follows: packs start matching what you hold, and expiry dates start
           watching themselves.
         </p>
@@ -1898,21 +1898,21 @@ function Home({ store, go, toast }: any) {
     return (
       <div>
         <MNav left={<BrandWordmark size={17} color="var(--lpv-bandtext)" />} />
-        <div style={{ margin: "2px 0 14px" }}>
-          <div style={{ fontSize: 19, fontWeight: 800, color: "var(--lpv-bandtext)", letterSpacing: -0.3 }}>
+        <div style={{ margin: "4px 0 16px" }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--lpv-bandtext)", letterSpacing: -0.3 }}>
             {hello}, {firstName}
           </div>
-          <div style={{ fontSize: 12.5, color: "var(--lpv-bandsub)", marginTop: 2 }}>Small steps today. A more ready tomorrow.</div>
+          <div style={{ fontSize: 12, color: "var(--lpv-bandsub)", marginTop: 4 }}>Small steps today. A more ready tomorrow.</div>
         </div>
         {welcomeCard}
         {store.docs.length > 0 && (
           <>
         {/* One list, ordered by how soon it matters. Every row acts where it sits. */}
-        <Card style={{ padding: 0, marginBottom: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
-            <b style={{ color: T.white, fontSize: 14.5 }}>Needs you</b>
+        <Card style={{ padding: 0, marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 16px" }}>
+            <b style={{ color: T.white, fontSize: 14 }}>Needs you</b>
             {needs.length > 0 && (
-              <span style={{ marginLeft: "auto", fontSize: 12.5, color: T.muted }}>{needs.length}</span>
+              <span style={{ marginLeft: "auto", fontSize: 12, color: T.muted }}>{needs.length}</span>
             )}
           </div>
           {needs.length === 0 ? (
@@ -1920,17 +1920,17 @@ function Home({ store, go, toast }: any) {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 11,
+                gap: 12,
                 padding: "16px",
                 borderTop: `1px solid ${T.border}`,
               }}
             >
               <CheckCircle2 size={19} color={T.mint} />
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.white }}>
+                <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.white }}>
                   You are up to date
                 </span>
-                <span style={{ display: "block", fontSize: 12.5, color: T.muted, marginTop: 1 }}>
+                <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 4 }}>
                   Nothing is due, expiring, or missing.
                 </span>
               </span>
@@ -1942,8 +1942,8 @@ function Home({ store, go, toast }: any) {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 11,
-                  padding: "11px 13px",
+                  gap: 12,
+                  padding: "12px 16px",
                   borderTop: `1px solid ${T.border}`,
                 }}
               >
@@ -1951,7 +1951,7 @@ function Home({ store, go, toast }: any) {
                   style={{
                     width: 34,
                     height: 34,
-                    borderRadius: 11,
+                    borderRadius: 12,
                     background: n.color + "1F",
                     display: "grid",
                     placeItems: "center",
@@ -1964,18 +1964,18 @@ function Home({ store, go, toast }: any) {
                   style={{ flex: 1, minWidth: 0, cursor: n.open ? "pointer" : "default" }}
                   onClick={() => n.open?.()}
                 >
-                  <span style={{ display: "block", fontSize: 13.5, color: T.text, lineHeight: 1.35 }}>
+                  <span style={{ display: "block", fontSize: 14, color: T.text, lineHeight: 1.35 }}>
                     {n.who && <b style={{ color: T.white }}>{n.who} · </b>}
                     {n.label}
                   </span>
-                  <span style={{ display: "block", fontSize: 12, color: n.tone, marginTop: 1 }}>{n.when}</span>
+                  <span style={{ display: "block", fontSize: 12, color: n.tone, marginTop: 4 }}>{n.when}</span>
                 </span>
                 <button
                   onClick={n.run}
                   style={{
                     ...btnGhost,
                     padding: "8px 12px",
-                    fontSize: 12.5,
+                    fontSize: 12,
                     minHeight: 40,
                     whiteSpace: "nowrap",
                     flexShrink: 0,
@@ -1996,7 +1996,7 @@ function Home({ store, go, toast }: any) {
                 border: "none",
                 borderTop: `1px solid ${T.border}`,
                 color: SEM.action,
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 700,
                 fontFamily: "inherit",
                 cursor: "pointer",
@@ -2015,15 +2015,15 @@ function Home({ store, go, toast }: any) {
             gap: 12,
             background: "none",
             border: `1px solid ${T.border}`,
-            borderRadius: 14,
-            padding: "12px 14px",
+            borderRadius: 12,
+            padding: "12px 16px",
             cursor: "pointer",
             textAlign: "left",
-            marginBottom: 14,
+            marginBottom: 16,
           }}
         >
           <Ring score={overall} size={38} />
-          <span style={{ flex: 1, minWidth: 0, fontSize: 13.5, color: T.muted }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.muted }}>
             {readyPacks} of {readyPacks + nearPacks + 1} situations ready
           </span>
           <ChevronRight size={15} color={T.faint} />
@@ -2054,15 +2054,15 @@ function Home({ store, go, toast }: any) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 9,
+            gap: 12,
             width: "100%",
-            marginTop: 14,
-            padding: "15px 0",
-            borderRadius: 16,
+            marginTop: 16,
+            padding: "16px 0",
+            borderRadius: 12,
             background: "linear-gradient(135deg,var(--lpv-gold),var(--lpv-goldb))",
             color: "var(--lpv-golddark)",
-            fontSize: 15,
-            fontWeight: 800,
+            fontSize: 16,
+            fontWeight: 700,
             cursor: "pointer",
             boxShadow: "0 10px 26px var(--lpv-fabshadow)",
           }}
@@ -2101,16 +2101,16 @@ function Home({ store, go, toast }: any) {
             background: `linear-gradient(160deg, ${T.gold}12, ${T.panel})`,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
             <Sparkles size={17} color={T.gold} />
             <b style={{ color: T.white, fontSize: 16 }}>Welcome to ReadiNes</b>
           </div>
-          <p style={{ fontSize: 13.5, color: T.muted, lineHeight: 1.6, margin: "0 0 14px", maxWidth: 560 }}>
+          <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 560 }}>
             This vault gets smarter with every single page you give it. Add one document and watch the whole app come
             to life: readiness scores fill in, packs start matching, and the next big moment starts becoming the easy
             one.
           </p>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <label style={{ ...btnGold, cursor: "pointer" }}>
               <UploadCloud size={15} /> Add your first document
               <input
@@ -2154,19 +2154,19 @@ function Home({ store, go, toast }: any) {
               return (
                 <Card key={id} style={{ padding: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span style={{ width: 30, height: 30, borderRadius: 99, border: `2.5px solid ${T.gold}`, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 800, color: T.gold }}>0%</span>
+                    <span style={{ width: 30, height: 30, borderRadius: 999, border: `2.5px solid ${T.gold}`, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700, color: T.gold }}>0%</span>
                     <b style={{ color: T.white, fontSize: 14 }}>{title}</b>
                   </div>
-                  <p style={{ color: T.muted, fontSize: 12.5, margin: "0 0 8px" }}>Start with these three:</p>
-                  <div style={{ display: "grid", gap: 5, marginBottom: 12 }}>
+                  <p style={{ color: T.muted, fontSize: 12, margin: "0 0 8px" }}>Start with these three:</p>
+                  <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
                     {docs3.map((d) => (
-                      <div key={d} style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12.5, color: T.text }}>
+                      <div key={d} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: T.text }}>
                         <FileText size={12} color={T.gold} /> {d}
                       </div>
                     ))}
                   </div>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <label style={{ ...btnGold, cursor: "pointer", fontSize: 12.5, padding: "7px 12px" }}>
+                    <label style={{ ...btnGold, cursor: "pointer", fontSize: 12, padding: "8px 12px" }}>
                       <UploadCloud size={13} /> Add these
                       <input
                         type="file"
@@ -2208,7 +2208,7 @@ function Home({ store, go, toast }: any) {
               cursor: "pointer",
               background: T.panel,
               border: `1px solid ${T.border}`,
-              borderRadius: 14,
+              borderRadius: 12,
               padding: 16,
             }}
           >
@@ -2218,7 +2218,7 @@ function Home({ store, go, toast }: any) {
                 placeItems: "center",
                 width: 34,
                 height: 34,
-                borderRadius: 9,
+                borderRadius: 12,
                 background: s.c + "22",
               }}
             >
@@ -2227,27 +2227,27 @@ function Home({ store, go, toast }: any) {
             <div
               style={{
                 fontVariantNumeric: "tabular-nums",
-                fontSize: 24,
-                fontWeight: 800,
+                fontSize: 28,
+                fontWeight: 700,
                 color: T.white,
                 marginTop: 12,
               }}
             >
               {s.value}
             </div>
-            <div style={{ fontSize: 13, color: T.muted }}>{s.label}</div>
+            <div style={{ fontSize: 14, color: T.muted }}>{s.label}</div>
           </button>
         ))}
       </div>
       <div className="lp-cols2">
         <Card style={{ padding: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "14px 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 16px" }}>
             <AlertTriangle size={16} color={totalActs ? SEM.warning : T.mint} />
-            <b style={{ color: T.white, fontSize: 15 }}>Action center</b>
+            <b style={{ color: T.white, fontSize: 16 }}>Action center</b>
             <span style={{ marginLeft: "auto", ...pill(totalActs ? T.gold : T.mint) }}>{totalActs || "all clear"}</span>
           </div>
           {totalActs === 0 ? (
-            <p style={{ color: T.muted, fontSize: 13, padding: "0 16px 16px", margin: 0 }}>
+            <p style={{ color: T.muted, fontSize: 14, padding: "0 16px 16px", margin: 0 }}>
               Nothing pressing across documents, health, or wealth. Nicely handled.
             </p>
           ) : (
@@ -2259,8 +2259,8 @@ function Home({ store, go, toast }: any) {
                     width: "100%",
                     display: "flex",
                     alignItems: "center",
-                    gap: 9,
-                    padding: "10px 16px",
+                    gap: 12,
+                    padding: "12px 16px",
                     borderTop: `1px solid ${T.border}`,
                     background: T.raised + "66",
                     border: "none",
@@ -2294,26 +2294,26 @@ function Home({ store, go, toast }: any) {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 11,
-                      padding: "9px 16px",
+                      gap: 12,
+                      padding: "12px 16px",
                       borderTop: `1px solid ${T.border}`,
                       cursor: "pointer",
                     }}
                   >
-                    <span style={{ width: 8, height: 8, borderRadius: 9, background: a.tone, flexShrink: 0 }} />
+                    <span style={{ width: 8, height: 8, borderRadius: 12, background: a.tone, flexShrink: 0 }} />
                     {a.who && (
                       <span
-                        style={{ display: "inline-flex", alignItems: "center", gap: 6, minWidth: 66, flexShrink: 0 }}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 66, flexShrink: 0 }}
                       >
-                        <span style={{ width: 6, height: 6, borderRadius: 9, background: a.whoColor }} />
-                        <span style={{ fontSize: 12, color: T.muted, fontWeight: 600 }}>{a.who}</span>
+                        <span style={{ width: 6, height: 6, borderRadius: 12, background: a.whoColor }} />
+                        <span style={{ fontSize: 12, color: T.muted, fontWeight: 500 }}>{a.who}</span>
                       </span>
                     )}
                     <span
                       className="lp-act-label"
                       style={{
                         flex: 1,
-                        fontSize: 13.5,
+                        fontSize: 14,
                         color: T.text,
                         minWidth: 0,
                         overflow: "hidden",
@@ -2342,7 +2342,7 @@ function Home({ store, go, toast }: any) {
                           a.rid ? store.completeReminder(a.rid) : store.completeFollowUp(a.txId);
                           toast("Marked done");
                         }}
-                        style={{ ...btnGhost, padding: 6 }}
+                        style={{ ...btnGhost, padding: 8 }}
                       >
                         <CheckCircle2 size={14} color={T.mint} />
                       </button>
@@ -2374,9 +2374,9 @@ function Home({ store, go, toast }: any) {
         <Card>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
             <ShieldCheck size={16} color={T.gold} />
-            <b style={{ color: T.white, fontSize: 15 }}>Connected across ReadiNes</b>
+            <b style={{ color: T.white, fontSize: 16 }}>Connected across ReadiNes</b>
           </div>
-          <p style={{ fontSize: 12, color: T.muted, margin: "0 0 10px" }}>
+          <p style={{ fontSize: 12, color: T.muted, margin: "0 0 12px" }}>
             What your modules mean together, not what they already show apart.
           </p>
           {insights.slice(0, 4).map((ins, i) => (
@@ -2387,8 +2387,8 @@ function Home({ store, go, toast }: any) {
                 width: "100%",
                 display: "flex",
                 alignItems: "flex-start",
-                gap: 11,
-                padding: "11px 0",
+                gap: 12,
+                padding: "12px 0",
                 borderTop: i ? `1px solid ${T.border}` : "none",
                 background: "none",
                 border: "none",
@@ -2396,7 +2396,7 @@ function Home({ store, go, toast }: any) {
                 textAlign: "left",
               }}
             >
-              <span style={{ display: "inline-flex", gap: 3, marginTop: 2, flexShrink: 0 }}>
+              <span style={{ display: "inline-flex", gap: 4, marginTop: 4, flexShrink: 0 }}>
                 {ins.icons.map((Ic: any, j: number) => (
                   <span
                     key={j}
@@ -2405,7 +2405,7 @@ function Home({ store, go, toast }: any) {
                       placeItems: "center",
                       width: 22,
                       height: 22,
-                      borderRadius: 7,
+                      borderRadius: 12,
                       background: ins.tone + "1f",
                     }}
                   >
@@ -2413,7 +2413,7 @@ function Home({ store, go, toast }: any) {
                   </span>
                 ))}
               </span>
-              <span style={{ flex: 1, minWidth: 0, fontSize: 13, color: T.text, lineHeight: 1.55 }}>{ins.text}</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.text, lineHeight: 1.55 }}>{ins.text}</span>
               <ChevronRight size={14} color={T.faint} style={{ marginTop: 4 }} />
             </button>
           ))}
@@ -2421,14 +2421,14 @@ function Home({ store, go, toast }: any) {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 10,
+              gap: 12,
               borderTop: `1px solid ${T.border}`,
               paddingTop: 12,
-              marginTop: 2,
+              marginTop: 4,
             }}
           >
             <Ring score={best.score} size={40} />
-            <span style={{ flex: 1, fontSize: 12.5, color: T.muted }}>
+            <span style={{ flex: 1, fontSize: 12, color: T.muted }}>
               Most ready: <b style={{ color: T.text }}>{best.e.name}</b>
             </span>
           </div>
@@ -2516,18 +2516,18 @@ function Packages({ store, toast }: any) {
         <button className="lp-fab" onClick={() => setCreating(true)} title="Create a custom pack" aria-label="Create a custom pack">
           <Plus size={22} />
         </button>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 9,
+              gap: 12,
               flex: 1,
               minWidth: 0,
               background: T.panel,
               border: `1px solid ${q ? SEM.action + "66" : T.border}`,
-              borderRadius: 11,
-              padding: "7px 12px",
+              borderRadius: 12,
+              padding: "8px 12px",
             }}
           >
             <Search size={15} color={T.muted} />
@@ -2553,10 +2553,10 @@ function Packages({ store, toast }: any) {
                 key={raw}
                 onClick={() => setCat(c)}
                 style={{
-                  padding: "6px 12px",
-                  borderRadius: 99,
+                  padding: "8px 12px",
+                  borderRadius: 999,
                   fontSize: 12,
-                  fontWeight: 600,
+                  fontWeight: 500,
                   cursor: "pointer",
                   whiteSpace: "nowrap",
                   flexShrink: 0,
@@ -2582,23 +2582,23 @@ function Packages({ store, toast }: any) {
                   cursor: "pointer",
                   background: T.panel,
                   border: `1px solid ${T.border}`,
-                  borderRadius: 13,
-                  padding: 11,
+                  borderRadius: 12,
+                  padding: 12,
                   display: "flex",
                   alignItems: "center",
-                  gap: 11,
+                  gap: 12,
                 }}
               >
                 <Ring score={score} size={40} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
-                    <span style={{ width: 22, height: 22, borderRadius: 7, display: "grid", placeItems: "center", flexShrink: 0, background: e.accent + "1F" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                    <span style={{ width: 22, height: 22, borderRadius: 12, display: "grid", placeItems: "center", flexShrink: 0, background: e.accent + "1F" }}>
                       <e.icon size={12} color={e.accent} />
                     </span>
                     <b style={{ color: T.white, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</b>
                     {e.custom && <span style={pill(T.gold)}>custom</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
+                  <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>
                     {score === 100 ? "Everything in place" : `${got} of ${total} ready`}
                   </div>
                 </div>
@@ -2609,7 +2609,7 @@ function Packages({ store, toast }: any) {
         </div>
         {list.length === 0 && (
           <Card style={{ textAlign: "center", padding: 24 }}>
-            <div style={{ color: T.text, fontWeight: 600, fontSize: 14 }}>
+            <div style={{ color: T.text, fontWeight: 500, fontSize: 14 }}>
               {cat === "My packs" && !q ? "You have not created a pack yet" : `No pack covers "${q}" yet`}
             </div>
             <button onClick={() => setCreating(true)} style={{ ...btnGold, margin: "12px auto 0" }}>
@@ -2674,23 +2674,23 @@ function Packages({ store, toast }: any) {
         title="Packages" aria-label="Packages"
         sub={`${all.length} real-world situations. ReadiNes matches your archive against each one and shows how ready you already are.`}
       />
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "0 0 18px" }}>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "0 0 20px" }}>
         <button onClick={() => setCreating(true)} style={btnGold}>
           <Plus size={15} /> Create a custom pack
         </button>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
         <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 10,
+            gap: 12,
             flex: 1,
             minWidth: 0,
             background: T.panel,
             border: `1px solid ${q ? SEM.action + "66" : T.border}`,
             borderRadius: 12,
-            padding: "10px 14px",
+            padding: "12px 16px",
           }}
         >
         <Search size={16} color={T.muted} />
@@ -2719,10 +2719,10 @@ function Packages({ store, toast }: any) {
               key={raw}
               onClick={() => setCat(c)}
               style={{
-                padding: "7px 13px",
-                borderRadius: 99,
-                fontSize: 12.5,
-                fontWeight: 600,
+                padding: "8px 16px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 500,
                 cursor: "pointer",
                 border: `1px solid ${on ? SEM.action + "77" : T.border}`,
                 background: on ? T.raised : "transparent",
@@ -2746,21 +2746,21 @@ function Packages({ store, toast }: any) {
                 cursor: "pointer",
                 background: T.panel,
                 border: `1px solid ${T.border}`,
-                borderRadius: 14,
+                borderRadius: 12,
                 padding: 16,
                 display: "flex",
                 alignItems: "center",
-                gap: 14,
+                gap: 16,
               }}
             >
               <Ring score={score} size={54} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <e.icon size={16} color={e.accent} />
-                  <b style={{ color: T.white, fontSize: 15.5 }}>{e.name}</b>
+                  <b style={{ color: T.white, fontSize: 16 }}>{e.name}</b>
                   {e.custom && <span style={pill(T.gold)}>custom</span>}
                 </div>
-                <div style={{ fontSize: 13, color: T.muted, marginTop: 3 }}>
+                <div style={{ fontSize: 14, color: T.muted, marginTop: 4 }}>
                   {score === 100 ? "Everything in place" : `${got} of ${total} ready`}
                 </div>
               </div>
@@ -2770,11 +2770,11 @@ function Packages({ store, toast }: any) {
         })}
       </div>
       {list.length === 0 && (
-        <Card style={{ textAlign: "center", padding: 30 }}>
-          <div style={{ color: T.text, fontWeight: 600, fontSize: 14.5 }}>
+        <Card style={{ textAlign: "center", padding: 32 }}>
+          <div style={{ color: T.text, fontWeight: 500, fontSize: 14 }}>
             {cat === "My packs" && !q ? "You have not created a pack yet" : `No pack covers "${q}" yet`}
           </div>
-          <div style={{ color: T.muted, fontSize: 13, marginTop: 4 }}>
+          <div style={{ color: T.muted, fontSize: 14, marginTop: 4 }}>
             {cat === "My packs" && !q
               ? "Custom packs you create live here, scored against your archive like any curated pack."
               : "Describe it and ReadiNes drafts the checklist for you."}
@@ -2933,8 +2933,8 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 9,
-    padding: "9px 11px",
+    borderRadius: 12,
+    padding: "12px 12px",
     color: T.text,
     fontSize: 14,
     outline: "none",
@@ -2946,7 +2946,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
     textTransform: "uppercase",
     color: T.muted,
     fontVariantNumeric: "tabular-nums",
-    margin: "12px 0 5px",
+    margin: "12px 0 8px",
     display: "block",
   };
   return (
@@ -2961,7 +2961,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
       }}
     >
       <div
@@ -2970,23 +2970,23 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 16,
+          borderRadius: 12,
           width: "min(480px,100%)",
           maxHeight: "92vh",
           overflowY: "auto",
-          padding: 22,
+          padding: 24,
         }}
       >
         <div className="lp-sheet-grab lp-grabonly" />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 18 }}>{existing ? "Edit custom pack" : "Create a custom pack"}</b>
+          <b style={{ color: T.white, fontSize: 20 }}>{existing ? "Edit custom pack" : "Create a custom pack"}</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
         {!drafted && (
           <>
-            <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 4px" }}>
+            <p style={{ fontSize: 12, color: T.muted, margin: "0 0 4px" }}>
               For situations the catalog does not cover.
             </p>
             <label style={lbl}>What do you need documents for?</label>
@@ -2999,11 +2999,11 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
           </>
         )}
         {!drafted && similar.length > 0 && (
-          <div style={{ marginTop: 10 }}>
-            <div style={{ fontSize: 12, color: T.muted, marginBottom: 6 }}>
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 12, color: T.muted, marginBottom: 8 }}>
               The catalog may already cover this. Start from one, or draft fresh:
             </div>
-            <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {similar.map((sp: any) => (
                 <button
                   key={sp.id}
@@ -3011,11 +3011,11 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: 6,
-                    padding: "6px 11px",
-                    borderRadius: 99,
-                    fontSize: 12.5,
-                    fontWeight: 600,
+                    gap: 8,
+                    padding: "8px 12px",
+                    borderRadius: 999,
+                    fontSize: 12,
+                    fontWeight: 500,
                     cursor: "pointer",
                     border: `1px solid ${T.border}`,
                     background: T.raised,
@@ -3045,7 +3045,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         )}
         {!drafted && (
           <>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "14px 0 12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0 12px" }}>
               <span style={{ flex: 1, height: 1, background: T.border }} />
               <span style={{ fontSize: 12, color: T.faint }}>or</span>
               <span style={{ flex: 1, height: 1, background: T.border }} />
@@ -3084,8 +3084,8 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                   color: SEM.action,
                   background: SEM.action + "1F",
                   border: `1px solid ${SEM.action}44`,
-                  borderRadius: 9,
-                  padding: "8px 11px",
+                  borderRadius: 12,
+                  padding: "8px 12px",
                   marginBottom: 8,
                   lineHeight: 1.5,
                 }}
@@ -3101,7 +3101,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
             {reqs.map((r, i) => {
               const onFile = have?.has(r.trim());
               return (
-                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 7, alignItems: "center" }}>
+                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
                   <input
                     style={{ ...inp, borderColor: onFile ? T.mint + "66" : T.border }}
                     value={r}
@@ -3114,8 +3114,8 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                     style={{
                       width: 20,
                       textAlign: "center",
-                      fontSize: 13,
-                      fontWeight: 800,
+                      fontSize: 14,
+                      fontWeight: 700,
                       color: onFile ? T.mint : T.faint,
                     }}
                   >
@@ -3123,7 +3123,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                   </span>
                   <button
                     onClick={() => setReqs(reqs.filter((_, j) => j !== i))}
-                    style={{ ...btnGhost, padding: "0 11px" }}
+                    style={{ ...btnGhost, padding: "0 12px" }}
                     title="Remove" aria-label="Remove"
                   >
                     <Trash2 size={14} />
@@ -3131,7 +3131,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                 </div>
               );
             })}
-            <button onClick={() => setReqs([...reqs, ""])} style={{ ...btnGhost, padding: "7px 12px", fontSize: 12.5 }}>
+            <button onClick={() => setReqs([...reqs, ""])} style={{ ...btnGhost, padding: "8px 12px", fontSize: 12 }}>
               <Plus size={13} /> Add requirement
             </button>
             {drafted && reqs.some((r) => have?.has(r.trim())) && (
@@ -3141,8 +3141,8 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
               </div>
             )}
             {meta && (
-              <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: T.navy, border: `1px solid ${T.border}` }}>
-                <div style={{ fontSize: 12, color: T.muted, marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ marginTop: 12, padding: 12, borderRadius: 12, background: T.navy, border: `1px solid ${T.border}` }}>
+                <div style={{ fontSize: 12, color: T.muted, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ color: meta.dataSource === "fallback" ? T.coral : T.mint, fontWeight: 700 }}>
                     {meta.dataSource === "fallback" ? "Offline estimate" : "Live · sourced"}
                   </span>
@@ -3151,14 +3151,14 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                 </div>
                 {meta.sources?.slice(0, 4).map((s: any, i: number) => (
                   <a key={i} href={s.url} target="_blank" rel="noreferrer" style={{ display: "block", fontSize: 12, color: T.gold, marginTop: 4 }}>
-                    <span style={{ textTransform: "uppercase", fontSize: 12, color: T.muted, marginRight: 6 }}>{s.tier}</span>
+                    <span style={{ textTransform: "uppercase", fontSize: 12, color: T.muted, marginRight: 8 }}>{s.tier}</span>
                     {s.title}
                   </a>
                 ))}
                 {meta.disclaimer && <p style={{ fontSize: 12, color: T.muted, marginTop: 8, lineHeight: 1.45 }}>{meta.disclaimer}</p>}
               </div>
             )}
-            <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+            <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
               {onDelete && (
                 <button onClick={onDelete} style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55" }}>
                   <Trash2 size={14} /> Delete
@@ -3364,7 +3364,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
           borderLeft: `1px solid ${T.border}`,
         }}
       >
-        <div style={{ background: T.panel, padding: 22, borderBottom: `1px solid ${T.border}`, position: "relative" }}>
+        <div style={{ background: T.panel, padding: 24, borderBottom: `1px solid ${T.border}`, position: "relative" }}>
           <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
@@ -3382,8 +3382,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               <ev.icon size={21} color={ev.accent} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: T.white, fontSize: 18, fontWeight: 800 }}>{ev.name}</div>
-              {isHome && <div style={{ color: T.muted, fontSize: 13 }}>{ev.blurb}</div>}
+              <div style={{ color: T.white, fontSize: 20, fontWeight: 700 }}>{ev.name}</div>
+              {isHome && <div style={{ color: T.muted, fontSize: 14 }}>{ev.blurb}</div>}
             </div>
           </div>
           <div
@@ -3404,7 +3404,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 {onEdit && (
                   <button
                     onClick={onEdit}
-                    style={{ ...btnGhost, padding: "4px 10px", fontSize: 12, marginLeft: "auto" }}
+                    style={{ ...btnGhost, padding: "4px 12px", fontSize: 12, marginLeft: "auto" }}
                   >
                     <Pencil size={11} /> Edit checklist
                   </button>
@@ -3427,12 +3427,12 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 alignItems: "center",
                 flexWrap: "wrap",
                 gap: 8,
-                marginTop: 10,
-                padding: "9px 11px",
-                borderRadius: 10,
+                marginTop: 12,
+                padding: "12px 12px",
+                borderRadius: 12,
                 border: `1px solid ${T.border}`,
                 background: T.raised,
-                fontSize: 12.5,
+                fontSize: 12,
                 color: T.muted,
               }}
             >
@@ -3449,14 +3449,14 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
-                        gap: 5,
+                        gap: 8,
                         maxWidth: 190,
-                        padding: "4px 9px",
-                        borderRadius: 8,
+                        padding: "4px 12px",
+                        borderRadius: 12,
                         border: `1px solid ${T.border}`,
                         color: SEM.action,
                         fontSize: 12,
-                        fontWeight: 600,
+                        fontWeight: 500,
                         textDecoration: "none",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -3484,9 +3484,9 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                           {live.lastChecked ? live.sources[0]?.title || "Published sources" : seeded?.source || ev.source}
                         </b>
                       </span>
-                      <span style={{ display: "block", marginTop: 2 }}>
+                      <span style={{ display: "block", marginTop: 4 }}>
                         <span style={{ color: T.faint }}>Last checked</span>{" "}
-                        <b style={{ color: T.text, fontWeight: 600 }}>
+                        <b style={{ color: T.text, fontWeight: 500 }}>
                           {fmtDate(live.lastChecked || seeded?.checked || ev.lastChecked)}
                         </b>
                       </span>
@@ -3494,7 +3494,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                   )}
                 </span>
               )}
-              <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 8 }}>
                 <button
                   onClick={() => refresh(true)}
                   disabled={checking}
@@ -3519,32 +3519,32 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             </div>
           )}
           {researched && (
-          <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 16 }}>
             <Ring score={score} size={64} />
             {score === 100 ? (
               <Stamp />
             ) : (
-              <div style={{ color: T.muted, fontSize: 13, fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ color: T.muted, fontSize: 14, fontVariantNumeric: "tabular-nums" }}>
                 {got} of {total} ready
               </div>
             )}
           </div>
           )}
         </div>
-        <div style={{ padding: 18 }}>
+        <div style={{ padding: 20 }}>
           {elsewhere && (
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 flexWrap: "wrap",
-                gap: 9,
+                gap: 12,
                 marginBottom: 12,
-                padding: "10px 12px",
-                borderRadius: 10,
+                padding: "12px 12px",
+                borderRadius: 12,
                 border: `1px solid ${SEM.warning}44`,
                 background: SEM.warning + "1F",
-                fontSize: 12.5,
+                fontSize: 12,
                 color: T.muted,
               }}
             >
@@ -3555,7 +3555,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               <button
                 onClick={() => refresh(true)}
                 disabled={checking}
-                style={{ ...btnGhost, padding: "7px 11px", fontSize: 12.5, minHeight: 44, whiteSpace: "nowrap" }}
+                style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44, whiteSpace: "nowrap" }}
               >
                 <RefreshCw size={13} /> {checking ? "Checking…" : `Check for ${countryName(store.country)}`}
               </button>
@@ -3564,10 +3564,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
           {!researched && (
             <Card style={{ padding: 20, marginBottom: 12, textAlign: "center" }}>
               <Globe size={20} color={T.muted} />
-              <h3 style={{ color: T.white, fontSize: 16, margin: "10px 0 6px", fontWeight: 700 }}>
+              <h3 style={{ color: T.white, fontSize: 16, margin: "12px 0 8px", fontWeight: 700 }}>
                 Not checked yet
               </h3>
-              <p style={{ color: T.muted, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 16px" }}>
+              <p style={{ color: T.muted, fontSize: 14, lineHeight: 1.6, margin: "0 0 16px" }}>
                 Rather than show a list that could be wrong at the counter, we will look up the official requirements.
               </p>
               <button onClick={() => refresh(true)} disabled={checking} style={{ ...btnGold, margin: "0 auto", opacity: checking ? 0.6 : 1 }}>
@@ -3579,10 +3579,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
           <Card style={{ padding: 0, marginBottom: 12 }}>
             <div
               style={{
-                padding: "13px 16px",
+                padding: "16px 16px",
                 fontWeight: 700,
                 color: T.white,
-                fontSize: 14.5,
+                fontSize: 14,
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
@@ -3609,7 +3609,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         display: "flex",
                         alignItems: "center",
                         gap: 12,
-                        padding: "9px 16px",
+                        padding: "12px 16px",
                       }}
                     >
                       <span
@@ -3618,7 +3618,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                           placeItems: "center",
                           width: 20,
                           height: 20,
-                          borderRadius: 99,
+                          borderRadius: 999,
                           background: T.mint + "26",
                           flexShrink: 0,
                         }}
@@ -3633,26 +3633,26 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                       />
                     </button>
                     {isOpen && d && (
-                      <div style={{ padding: "2px 16px 12px 48px" }}>
-                        <div style={{ fontSize: 12.5, color: T.text, fontVariantNumeric: "tabular-nums" }}>
+                      <div style={{ padding: "4px 16px 12px 48px" }}>
+                        <div style={{ fontSize: 12, color: T.text, fontVariantNumeric: "tabular-nums" }}>
                           {d.name}
                         </div>
-                        <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>
+                        <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>
                           {memberName(d.memberId)}
                           {d.docType !== r.label ? ` · satisfied by ${d.docType}` : ""}
                         </div>
                         {reuse.length > 0 && (
-                          <div style={{ fontSize: 12, color: T.faint, marginTop: 5, lineHeight: 1.5 }}>
+                          <div style={{ fontSize: 12, color: T.faint, marginTop: 8, lineHeight: 1.5 }}>
                             Stored once, also counts toward: {reuse.join(", ")}
                           </div>
                         )}
-                        <div style={{ display: "flex", gap: 8, marginTop: 9 }}>
-                          <button onClick={() => setView(d)} style={{ ...btnGhost, padding: "6px 11px", fontSize: 12 }}>
+                        <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                          <button onClick={() => setView(d)} style={{ ...btnGhost, padding: "8px 12px", fontSize: 12 }}>
                             View document
                           </button>
                           <button
                             onClick={() => setPickFor(r.label)}
-                            style={{ ...btnGhost, padding: "6px 11px", fontSize: 12 }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12 }}
                           >
                             Replace
                           </button>
@@ -3666,10 +3666,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
           )}
           {skipped.length > 0 && (
             <Card style={{ padding: 0, marginBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 16px" }}>
                 <X size={15} color={T.muted} />
-                <b style={{ color: T.white, fontSize: 14.5 }}>Not needed ({skipped.length})</b>
-                <span style={{ marginLeft: "auto", fontSize: 12.5, color: T.muted }}>set aside by you</span>
+                <b style={{ color: T.white, fontSize: 14 }}>Not needed ({skipped.length})</b>
+                <span style={{ marginLeft: "auto", fontSize: 12, color: T.muted }}>set aside by you</span>
               </div>
               {skipped.map((label) => (
                 <div
@@ -3677,8 +3677,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
-                    padding: "10px 16px",
+                    gap: 12,
+                    padding: "12px 16px",
                     borderTop: `1px solid ${T.border}`,
                     minHeight: 48,
                   }}
@@ -3689,7 +3689,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                       store.setPackSkip(ev.id, label, false);
                       toast(`"${label}" is needed again`);
                     }}
-                    style={{ ...btnGhost, padding: "7px 11px", fontSize: 12.5, minHeight: 44 }}
+                    style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44 }}
                   >
                     Need it after all
                   </button>
@@ -3701,10 +3701,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             <Card style={{ padding: 0, marginBottom: 16 }}>
               <div
                 style={{
-                  padding: "13px 16px",
+                  padding: "16px 16px",
                   fontWeight: 700,
                   color: T.white,
-                  fontSize: 14.5,
+                  fontSize: 14,
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
@@ -3719,14 +3719,14 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                   const cond = (ev.conditional || []).includes(r.label);
                   return (
                     <div key={r.label} style={{ borderTop: `1px solid ${T.border}` }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "9px 16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" }}>
                         <span
                           style={{
                             display: "grid",
                             placeItems: "center",
                             width: 20,
                             height: 20,
-                            borderRadius: 99,
+                            borderRadius: 999,
                             background: SEM.warning + "26",
                             flexShrink: 0,
                           }}
@@ -3745,8 +3745,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                           onClick={() => setAddFor(menuOpen ? null : r.label)}
                           style={{
                             ...btnGhost,
-                            padding: "5px 12px",
-                            fontSize: 12.5,
+                            padding: "8px 12px",
+                            fontSize: 12,
                             color: SEM.action,
                             borderColor: SEM.action + "55",
                           }}
@@ -3755,13 +3755,13 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         </button>
                       </div>
                       {menuOpen && (
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "0 16px 11px 48px" }}>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "0 16px 12px 48px" }}>
                           <button
                             onClick={() => {
                               upReq.current = r.label;
                               upRef.current?.click();
                             }}
-                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12.5, minHeight: 44, whiteSpace: "nowrap" }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44, whiteSpace: "nowrap" }}
                           >
                             <UploadCloud size={13} /> Upload
                           </button>
@@ -3770,7 +3770,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                               setAddFor(null);
                               setPickFor(r.label);
                             }}
-                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12.5, minHeight: 44, whiteSpace: "nowrap" }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44, whiteSpace: "nowrap" }}
                           >
                             <FolderOpen size={13} /> Pick from Documents
                           </button>
@@ -3780,7 +3780,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                               store.setPackSkip(ev.id, r.label, true);
                               toast(`"${r.label}" marked as not needed`);
                             }}
-                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12.5, minHeight: 44, whiteSpace: "nowrap", color: T.muted }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44, whiteSpace: "nowrap", color: T.muted }}
                           >
                             <X size={13} /> Not needed
                           </button>
@@ -3808,10 +3808,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
           />
           {matched.length > 0 && (
             <Card style={{ padding: 0, marginBottom: 12 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 15px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px" }}>
                 <Download size={15} color={T.muted} />
                 <b style={{ color: T.white, fontSize: 14 }}>In this download</b>
-                <span style={{ marginLeft: "auto", fontSize: 12.5, color: T.muted }}>{included.length}</span>
+                <span style={{ marginLeft: "auto", fontSize: 12, color: T.muted }}>{included.length}</span>
               </div>
               {matched.map((d) => (
                 <label
@@ -3819,8 +3819,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
-                    padding: "10px 15px",
+                    gap: 12,
+                    padding: "12px 16px",
                     borderTop: `1px solid ${T.border}`,
                     minHeight: 48,
                     cursor: "pointer",
@@ -3839,7 +3839,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                     style={{ accentColor: SEM.action, width: 18, height: 18, flexShrink: 0 }}
                   />
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 13.5, color: T.text }}>{d.docType}</span>
+                    <span style={{ display: "block", fontSize: 14, color: T.text }}>{d.docType}</span>
                     <span style={{ display: "block", fontSize: 12, color: T.faint }}>{memberName(d.memberId)}</span>
                   </span>
                 </label>
@@ -3856,7 +3856,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         border: "none",
                         borderTop: `1px solid ${T.border}`,
                         color: SEM.action,
-                        fontSize: 13,
+                        fontSize: 14,
                         fontWeight: 700,
                         fontFamily: "inherit",
                         cursor: "pointer",
@@ -3868,7 +3868,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                     <>
                       <div
                         style={{
-                          padding: "10px 15px 4px",
+                          padding: "12px 16px 4px",
                           borderTop: `1px solid ${T.border}`,
                           fontSize: 12,
                           fontWeight: 700,
@@ -3888,8 +3888,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: 10,
-                              padding: "10px 15px",
+                              gap: 12,
+                              padding: "12px 16px",
                               minHeight: 48,
                               cursor: "pointer",
                               opacity: added.has(d.id) ? 1 : 0.6,
@@ -3908,7 +3908,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                               style={{ accentColor: SEM.action, width: 18, height: 18, flexShrink: 0 }}
                             />
                             <span style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ display: "block", fontSize: 13.5, color: T.text }}>{d.docType}</span>
+                              <span style={{ display: "block", fontSize: 14, color: T.text }}>{d.docType}</span>
                               <span style={{ display: "block", fontSize: 12, color: T.faint }}>
                                 {memberName(d.memberId)}
                               </span>
@@ -3939,11 +3939,11 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               fontSize: 12,
               color: T.muted,
               textAlign: "center",
-              marginTop: 14,
+              marginTop: 16,
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              gap: 6,
+              gap: 8,
             }}
           >
             <Lock size={12} /> Checklist based on published requirements; completeness and eligibility are not
@@ -3986,7 +3986,7 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
       }}
     >
       <div
@@ -3994,21 +3994,21 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 16,
+          borderRadius: 12,
           width: "min(440px,100%)",
           maxHeight: "80vh",
           display: "flex",
           flexDirection: "column",
-          padding: 18,
+          padding: 20,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <b style={{ color: T.white, fontSize: 16 }}>Match a document to “{req}”</b>
-          <button onClick={onClose} style={{ ...btnGhost, padding: 7 }}>
+          <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={15} />
           </button>
         </div>
-        <p style={{ fontSize: 12, color: T.muted, margin: "0 0 10px" }}>
+        <p style={{ fontSize: 12, color: T.muted, margin: "0 0 12px" }}>
           The selected document is re-tagged as {req} and reused everywhere that requirement appears.
         </p>
         <input
@@ -4019,17 +4019,17 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
           style={{
             background: T.raised,
             border: `1px solid ${T.border}`,
-            borderRadius: 9,
-            padding: "8px 11px",
+            borderRadius: 12,
+            padding: "8px 12px",
             color: T.text,
-            fontSize: 13.5,
+            fontSize: 14,
             outline: "none",
             marginBottom: 8,
           }}
         />
-        <div style={{ flex: 1, overflowY: "auto", border: `1px solid ${T.border}`, borderRadius: 11 }}>
+        <div style={{ flex: 1, overflowY: "auto", border: `1px solid ${T.border}`, borderRadius: 12 }}>
           {list.length === 0 ? (
-            <div style={{ padding: 16, fontSize: 13, color: T.faint }}>No documents match.</div>
+            <div style={{ padding: 16, fontSize: 14, color: T.faint }}>No documents match.</div>
           ) : (
             list.map((d: Doc, i: number) => (
               <button
@@ -4042,10 +4042,10 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
                   background: "none",
                   border: "none",
                   borderTop: i ? `1px solid ${T.border}` : "none",
-                  padding: "9px 13px",
+                  padding: "12px 16px",
                 }}
               >
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: T.text }}>{d.docType}</div>
+                <div style={{ fontSize: 16, fontWeight: 500, color: T.text }}>{d.docType}</div>
                 <div style={{ fontSize: 12, color: T.faint, fontVariantNumeric: "tabular-nums" }}>
                   {d.name} · {nameOf(d.memberId)}
                 </div>
@@ -4181,10 +4181,10 @@ function Documents({ store, toast, go }: any) {
       <button
         onClick={onClick}
         style={{
-          padding: "7px 13px",
-          borderRadius: 99,
-          fontSize: 12.5,
-          fontWeight: 600,
+          padding: "8px 16px",
+          borderRadius: 999,
+          fontSize: 12,
+          fontWeight: 500,
           cursor: "pointer",
           border: `1px solid ${on ? SEM.action + "77" : T.border}`,
           background: on ? T.raised : "transparent",
@@ -4197,7 +4197,7 @@ function Documents({ store, toast, go }: any) {
     const Sec = ({ label, children }: any) => (
       <div style={{ margin: "12px 0" }}>
         <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>{children}</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{children}</div>
       </div>
     );
     const activeChips: { label: string; clear: () => void }[] = [];
@@ -4215,12 +4215,12 @@ function Documents({ store, toast, go }: any) {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 9,
+            gap: 12,
             background: T.panel,
             border: `1px solid ${q ? SEM.action + "66" : T.border}`,
-            borderRadius: 11,
-            padding: "7px 12px",
-            marginBottom: 10,
+            borderRadius: 12,
+            padding: "8px 12px",
+            marginBottom: 12,
           }}
         >
           <Search size={15} color={T.muted} />
@@ -4236,8 +4236,8 @@ function Documents({ store, toast, go }: any) {
             </button>
           )}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap", marginBottom: 10 }}>
-          <span style={{ fontSize: 12.5, color: T.muted }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+          <span style={{ fontSize: 12, color: T.muted }}>
             {filtered.length === docs.length ? `${docs.length} documents` : `${filtered.length} of ${docs.length}`}
           </span>
           {activeChips.map((c, i) => (
@@ -4247,11 +4247,11 @@ function Documents({ store, toast, go }: any) {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 5,
-                padding: "4px 9px",
-                borderRadius: 99,
+                gap: 8,
+                padding: "4px 12px",
+                borderRadius: 999,
                 fontSize: 12,
-                fontWeight: 600,
+                fontWeight: 500,
                 border: `1px solid ${T.gold}55`,
                 background: T.raised,
                 color: T.white,
@@ -4267,13 +4267,13 @@ function Documents({ store, toast, go }: any) {
               if (selMode) clearSel();
               setSelMode((v) => !v);
             }}
-            style={{ background: "none", border: "none", color: SEM.action, fontSize: 13, fontWeight: 700, cursor: "pointer", padding: "6px 8px" }}
+            style={{ background: "none", border: "none", color: SEM.action, fontSize: 16, fontWeight: 700, cursor: "pointer", padding: "8px 8px" }}
           >
             {selMode ? "Done" : "Select"}
           </button>
           <button
             onClick={() => setFSheet(true)}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", color: SEM.action, fontSize: 13, fontWeight: 700, cursor: "pointer", padding: "6px 2px" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "none", border: "none", color: SEM.action, fontSize: 16, fontWeight: 700, cursor: "pointer", padding: "8px 4px" }}
           >
             <SlidersHorizontal size={14} /> Filter
           </button>
@@ -4281,14 +4281,14 @@ function Documents({ store, toast, go }: any) {
         <Card style={{ padding: 0, overflow: "hidden" }}>
           {filtered.length === 0 ? (
             docs.length === 0 ? (
-              <div style={{ padding: "28px 20px", textAlign: "center" }}>
+              <div style={{ padding: "32px 20px", textAlign: "center" }}>
                 <span
-                  style={{ width: 52, height: 52, borderRadius: 16, background: A.blue + "1F", display: "inline-grid", placeItems: "center", marginBottom: 12 }}
+                  style={{ width: 52, height: 52, borderRadius: 12, background: A.blue + "1F", display: "inline-grid", placeItems: "center", marginBottom: 12 }}
                 >
                   <FolderOpen size={22} color={A.blue} />
                 </span>
-                <div style={{ fontSize: 15.5, fontWeight: 700, color: T.white }}>No documents yet</div>
-                <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 280 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.white }}>No documents yet</div>
+                <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 280 }}>
                   Add a passport, a policy, or a payslip. ReadiNes files it and watches its expiry for you.
                 </p>
                 <button onClick={() => setAddSheet(true)} style={{ ...btnGold, margin: "0 auto" }}>
@@ -4296,8 +4296,8 @@ function Documents({ store, toast, go }: any) {
                 </button>
               </div>
             ) : (
-              <div style={{ padding: 26, textAlign: "center" }}>
-                <div style={{ color: T.muted, fontSize: 13.5 }}>Nothing matches these filters.</div>
+              <div style={{ padding: 32, textAlign: "center" }}>
+                <div style={{ color: T.muted, fontSize: 14 }}>Nothing matches these filters.</div>
                 <button
                   onClick={() => {
                     setQuick("all");
@@ -4323,8 +4323,8 @@ function Documents({ store, toast, go }: any) {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 11,
-                    padding: "12px 13px",
+                    gap: 12,
+                    padding: "12px 16px",
                     borderTop: i ? `1px solid ${T.border}` : "none",
                     cursor: "pointer",
                     background: checked ? T.raised : "transparent",
@@ -4340,15 +4340,15 @@ function Documents({ store, toast, go }: any) {
                     />
                   )}
                   <span
-                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 9, background: col + "22", flexShrink: 0 }}
+                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 12, background: col + "22", flexShrink: 0 }}
                   >
                     <Ic size={15} color={col} />
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {d.docType}
                     </span>
-                    <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {nameOf(d.memberId).split(" ")[0]} · {d.expiry ? <>{expiryCell(d)}</> : fdate(d.addedAt)}
                     </span>
                   </span>
@@ -4368,19 +4368,19 @@ function Documents({ store, toast, go }: any) {
               zIndex: 56,
               display: "flex",
               alignItems: "center",
-              gap: 9,
+              gap: 12,
               background: T.raised,
               border: `1px solid ${T.gold}55`,
-              borderRadius: 14,
-              padding: "9px 12px",
+              borderRadius: 12,
+              padding: "12px 12px",
               boxShadow: "0 14px 40px var(--lpv-shadow)",
             }}
           >
-            <b style={{ fontSize: 13, color: T.white }}>{sel.size} selected</b>
+            <b style={{ fontSize: 14, color: T.white }}>{sel.size} selected</b>
             <select
               onChange={(e) => e.target.value && bulkAssign(e.target.value)}
               defaultValue=""
-              style={{ flex: 1, background: T.panel, color: T.text, border: `1px solid ${T.border}`, borderRadius: 9, padding: "7px 8px", fontSize: 13 }}
+              style={{ flex: 1, background: T.panel, color: T.text, border: `1px solid ${T.border}`, borderRadius: 12, padding: "8px 8px", fontSize: 14 }}
             >
               <option value="" disabled>
                 Assign to…
@@ -4391,10 +4391,10 @@ function Documents({ store, toast, go }: any) {
                 </option>
               ))}
             </select>
-            <button onClick={bulkDelete} title="Delete selected" aria-label="Delete selected" style={{ ...btnGhost, padding: 9, color: T.coral }}>
+            <button onClick={bulkDelete} title="Delete selected" aria-label="Delete selected" style={{ ...btnGhost, padding: 12, color: T.coral }}>
               <Trash2 size={15} color={T.coral} />
             </button>
-            <button onClick={clearSel} title="Clear selection" aria-label="Clear selection" style={{ ...btnGhost, padding: 9 }}>
+            <button onClick={clearSel} title="Clear selection" aria-label="Clear selection" style={{ ...btnGhost, padding: 12 }}>
               <X size={15} />
             </button>
           </div>
@@ -4485,9 +4485,9 @@ function Documents({ store, toast, go }: any) {
     background: T.raised,
     color: T.text,
     border: `1px solid ${T.border}`,
-    borderRadius: 9,
-    padding: "8px 10px",
-    fontSize: 13,
+    borderRadius: 12,
+    padding: "8px 12px",
+    fontSize: 14,
     outline: "none",
   };
   const quickChips: { k: typeof quick; label: string; n: number; tone?: string }[] = [
@@ -4519,7 +4519,7 @@ function Documents({ store, toast, go }: any) {
           title="Documents" aria-label="Documents"
           sub={`${docs.length} records in your archive. Search, filter, and open any row for full context.`}
         />
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
           <div style={{ position: "relative" }}>
             <button onClick={() => setUpMenu((v) => !v)} style={btnGold}>
               <UploadCloud size={15} /> Upload <ChevronDown size={14} />
@@ -4538,7 +4538,7 @@ function Documents({ store, toast, go }: any) {
                     background: T.panel,
                     border: `1px solid ${T.border}`,
                     borderRadius: 12,
-                    padding: 6,
+                    padding: 8,
                     boxShadow: "0 20px 60px var(--lpv-shadow)",
                   }}
                 >
@@ -4546,12 +4546,12 @@ function Documents({ store, toast, go }: any) {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 10,
-                      padding: "9px 11px",
-                      borderRadius: 8,
+                      gap: 12,
+                      padding: "12px 12px",
+                      borderRadius: 12,
                       cursor: "pointer",
-                      fontSize: 13.5,
-                      fontWeight: 600,
+                      fontSize: 14,
+                      fontWeight: 500,
                       color: T.text,
                     }}
                   >
@@ -4574,12 +4574,12 @@ function Documents({ store, toast, go }: any) {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 10,
-                      padding: "9px 11px",
-                      borderRadius: 8,
+                      gap: 12,
+                      padding: "12px 12px",
+                      borderRadius: 12,
                       cursor: "pointer",
-                      fontSize: 13.5,
-                      fontWeight: 600,
+                      fontSize: 14,
+                      fontWeight: 500,
                       color: T.text,
                     }}
                   >
@@ -4622,7 +4622,7 @@ function Documents({ store, toast, go }: any) {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
         {quickChips.map((c) => {
           const on = quick === c.k;
           return (
@@ -4632,18 +4632,18 @@ function Documents({ store, toast, go }: any) {
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 7,
-                padding: "8px 13px",
-                borderRadius: 99,
-                fontSize: 13,
-                fontWeight: 600,
+                gap: 8,
+                padding: "8px 16px",
+                borderRadius: 999,
+                fontSize: 14,
+                fontWeight: 500,
                 cursor: "pointer",
                 border: `1px solid ${on ? SEM.action + "77" : T.border}`,
                 background: on ? T.raised : "transparent",
                 color: on ? T.white : T.muted,
               }}
             >
-              {c.tone && <span style={{ width: 7, height: 7, borderRadius: 9, background: c.tone }} />}
+              {c.tone && <span style={{ width: 7, height: 7, borderRadius: 12, background: c.tone }} />}
               {c.label}
               <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 12, color: on ? T.gold : T.faint }}>
                 {c.n}
@@ -4653,7 +4653,7 @@ function Documents({ store, toast, go }: any) {
         })}
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
         <div
           style={{
             display: "flex",
@@ -4661,7 +4661,7 @@ function Documents({ store, toast, go }: any) {
             gap: 8,
             background: T.panel,
             border: `1px solid ${q ? SEM.action + "66" : T.border}`,
-            borderRadius: 10,
+            borderRadius: 12,
             padding: "8px 12px",
             flex: "1 1 220px",
             minWidth: 200,
@@ -4672,7 +4672,7 @@ function Documents({ store, toast, go }: any) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search type, file, person, notes…"
-            style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: 13.5 }}
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: 14 }}
           />
           {q && (
             <button
@@ -4733,11 +4733,11 @@ function Documents({ store, toast, go }: any) {
             background: T.raised,
             border: `1px solid ${T.gold}55`,
             borderRadius: 12,
-            padding: "10px 14px",
+            padding: "12px 16px",
             marginBottom: 12,
           }}
         >
-          <b style={{ color: T.white, fontSize: 13.5 }}>{sel.size} selected</b>
+          <b style={{ color: T.white, fontSize: 14 }}>{sel.size} selected</b>
           <select style={selStyle} defaultValue="" onChange={(e) => e.target.value && bulkAssign(e.target.value)}>
             <option value="" disabled style={{ color: "#000" }}>
               Assign to…
@@ -4750,11 +4750,11 @@ function Documents({ store, toast, go }: any) {
           </select>
           <button
             onClick={bulkDelete}
-            style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55", padding: "7px 12px", fontSize: 12.5 }}
+            style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55", padding: "8px 12px", fontSize: 12 }}
           >
             <Trash2 size={13} /> Delete
           </button>
-          <button onClick={clearSel} style={{ ...btnGhost, marginLeft: "auto", padding: "7px 12px", fontSize: 12.5 }}>
+          <button onClick={clearSel} style={{ ...btnGhost, marginLeft: "auto", padding: "8px 12px", fontSize: 12 }}>
             Clear
           </button>
         </div>
@@ -4768,7 +4768,7 @@ function Documents({ store, toast, go }: any) {
               style={{
                 display: "grid",
                 gridTemplateColumns: GRID,
-                gap: 10,
+                gap: 12,
                 alignItems: "center",
                 padding: "12px 16px",
                 fontSize: 12,
@@ -4796,10 +4796,10 @@ function Documents({ store, toast, go }: any) {
             {filtered.length === 0 ? (
               <div style={{ padding: "40px 16px", textAlign: "center" }}>
                 <FolderOpen size={30} color={T.faint} style={{ margin: "0 auto 10px", display: "block" }} />
-                <div style={{ color: T.text, fontWeight: 600, fontSize: 14.5 }}>
+                <div style={{ color: T.text, fontWeight: 500, fontSize: 14 }}>
                   {docs.length === 0 ? "Your vault is waiting for its first document" : "No documents match these filters"}
                 </div>
-                <div style={{ color: T.muted, fontSize: 13, marginTop: 4 }}>
+                <div style={{ color: T.muted, fontSize: 14, marginTop: 4 }}>
                   {docs.length === 0
                     ? "Upload a file and it files itself."
                     : "Try clearing the search or switching a filter."}
@@ -4818,9 +4818,9 @@ function Documents({ store, toast, go }: any) {
                     style={{
                       display: "grid",
                       gridTemplateColumns: GRID,
-                      gap: 10,
+                      gap: 12,
                       alignItems: "center",
-                      padding: "11px 16px",
+                      padding: "12px 16px",
                       borderTop: `1px solid ${T.border}`,
                       cursor: "pointer",
                       background: active ? T.raised : sel.has(d.id) ? T.raised + "88" : "transparent",
@@ -4833,14 +4833,14 @@ function Documents({ store, toast, go }: any) {
                       onChange={() => toggle(d.id)}
                       style={{ accentColor: T.gold, cursor: "pointer" }}
                     />
-                    <span style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                       <span
                         style={{
                           display: "grid",
                           placeItems: "center",
                           width: 30,
                           height: 30,
-                          borderRadius: 8,
+                          borderRadius: 12,
                           background: col + "22",
                           flexShrink: 0,
                         }}
@@ -4852,7 +4852,7 @@ function Documents({ store, toast, go }: any) {
                           style={{
                             display: "block",
                             fontSize: 14,
-                            fontWeight: 600,
+                            fontWeight: 500,
                             color: T.white,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
@@ -4879,11 +4879,11 @@ function Documents({ store, toast, go }: any) {
                     <span className="lp-dc-meta">
                     <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                       <span
-                        style={{ width: 8, height: 8, borderRadius: 9, background: colorOf(d.memberId), flexShrink: 0 }}
+                        style={{ width: 8, height: 8, borderRadius: 12, background: colorOf(d.memberId), flexShrink: 0 }}
                       />
                       <span
                         style={{
-                          fontSize: 13,
+                          fontSize: 14,
                           color: T.text,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -4896,11 +4896,11 @@ function Documents({ store, toast, go }: any) {
                     <span>
                       <span style={pill(col)}>{d.category}</span>
                     </span>
-                    <span style={{ fontSize: 12.5, color: T.muted }}>{d.source}</span>
-                    <span style={{ fontSize: 12.5, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
+                    <span style={{ fontSize: 12, color: T.muted }}>{d.source}</span>
+                    <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
                       {fdate(d.addedAt)}
                     </span>
-                    <span style={{ fontSize: 12.5, fontVariantNumeric: "tabular-nums" }}>{expiryCell(d)}</span>
+                    <span style={{ fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{expiryCell(d)}</span>
                     </span>
                     <ChevronRight size={15} color={active ? T.gold : T.faint} />
                   </div>
@@ -4934,17 +4934,17 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
     textTransform: "uppercase",
     color: T.muted,
     fontVariantNumeric: "tabular-nums",
-    margin: "16px 0 7px",
+    margin: "16px 0 8px",
     display: "block",
   };
   const inp: CSSProperties = {
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 9,
-    padding: "8px 10px",
+    borderRadius: 12,
+    padding: "8px 12px",
     color: T.text,
-    fontSize: 13.5,
+    fontSize: 14,
     outline: "none",
   };
   const fact = (label: string, value: ReactNode) => (
@@ -4952,15 +4952,15 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
       style={{
         display: "flex",
         justifyContent: "space-between",
-        gap: 10,
-        padding: "7px 0",
+        gap: 12,
+        padding: "8px 0",
         borderTop: `1px solid ${T.border}`,
       }}
     >
-      <span style={{ fontSize: 12.5, color: T.muted }}>{label}</span>
+      <span style={{ fontSize: 12, color: T.muted }}>{label}</span>
       <span
         style={{
-          fontSize: 12.5,
+          fontSize: 12,
           color: T.text,
           fontVariantNumeric: "tabular-nums",
           textAlign: "right",
@@ -4996,7 +4996,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
             display: "flex",
             alignItems: "center",
             gap: 12,
-            padding: "18px 20px",
+            padding: "20px 20px",
             borderBottom: `1px solid ${T.border}`,
           }}
         >
@@ -5006,7 +5006,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
               placeItems: "center",
               width: 40,
               height: 40,
-              borderRadius: 10,
+              borderRadius: 12,
               background: col + "22",
               flexShrink: 0,
             }}
@@ -5014,7 +5014,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
             <Ic size={18} color={col} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16.5, fontWeight: 700, color: T.white }}>{d.docType}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.white }}>{d.docType}</div>
             <div
               style={{
                 fontSize: 12,
@@ -5041,14 +5041,14 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
                 borderRadius: 12,
                 border: `1px solid ${(days! < 0 ? T.coral : days! < 60 ? T.gold : T.mint) + "55"}`,
                 background: (days! < 0 ? T.coral : days! < 60 ? T.gold : T.mint) + "14",
-                padding: "11px 14px",
+                padding: "12px 16px",
                 display: "flex",
                 alignItems: "center",
-                gap: 10,
+                gap: 12,
               }}
             >
               <Clock size={15} color={days! < 0 ? T.coral : days! < 60 ? T.gold : T.mint} />
-              <span style={{ fontSize: 13, color: T.text }}>
+              <span style={{ fontSize: 14, color: T.text }}>
                 {days! < 0 ? `Expired ${-days!} days ago` : `Valid · expires in ${days} days`}
               </span>
             </div>
@@ -5102,7 +5102,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
 
           <span style={lbl}>Used in packages</span>
           {usedIn.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: T.faint, margin: 0 }}>No life-event package requires a {d.docType}.</p>
+            <p style={{ fontSize: 12, color: T.faint, margin: 0 }}>No life-event package requires a {d.docType}.</p>
           ) : (
             usedIn.map((e) => (
               <div
@@ -5110,13 +5110,13 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 10,
+                  gap: 12,
                   padding: "8px 0",
                   borderTop: `1px solid ${T.border}`,
                 }}
               >
                 <e.icon size={14} color={e.accent} />
-                <span style={{ flex: 1, fontSize: 13, color: T.text }}>{e.name}</span>
+                <span style={{ flex: 1, fontSize: 14, color: T.text }}>{e.name}</span>
                 <span style={pill(T.mint)}>required</span>
               </div>
             ))
@@ -5131,13 +5131,13 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
+                    gap: 12,
                     padding: "8px 0",
                     borderTop: `1px solid ${T.border}`,
                   }}
                 >
                   <Coins size={14} color={T.gold} />
-                  <span style={{ flex: 1, fontSize: 13, color: T.text }}>{h.name}</span>
+                  <span style={{ flex: 1, fontSize: 14, color: T.text }}>{h.name}</span>
                   <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
                     {money(h.value || 0)}
                   </span>
@@ -5149,13 +5149,13 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
+                    gap: 12,
                     padding: "8px 0",
                     borderTop: `1px solid ${T.border}`,
                   }}
                 >
                   <Receipt size={14} color={t.direction === "paid" ? T.coral : T.mint} />
-                  <span style={{ flex: 1, fontSize: 13, color: T.text }}>{t.purpose}</span>
+                  <span style={{ flex: 1, fontSize: 14, color: T.text }}>{t.purpose}</span>
                   <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
                     {money(t.amount)}
                   </span>
@@ -5179,7 +5179,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
           />
         </div>
 
-        <div style={{ display: "flex", gap: 10, padding: "14px 20px", borderTop: `1px solid ${T.border}` }}>
+        <div style={{ display: "flex", gap: 12, padding: "16px 20px", borderTop: `1px solid ${T.border}` }}>
           <button onClick={onPreview} style={{ ...btnGold, flex: 1, justifyContent: "center" }}>
             <FileText size={15} /> Preview
           </button>
@@ -5212,8 +5212,8 @@ function AddMember({ onClose, save }: any) {
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 9,
-    padding: "9px 11px",
+    borderRadius: 12,
+    padding: "12px 12px",
     color: T.text,
     fontSize: 14,
     outline: "none",
@@ -5225,7 +5225,7 @@ function AddMember({ onClose, save }: any) {
     textTransform: "uppercase",
     color: T.muted,
     fontVariantNumeric: "tabular-nums",
-    marginBottom: 5,
+    marginBottom: 8,
     display: "block",
   };
   return (
@@ -5239,7 +5239,7 @@ function AddMember({ onClose, save }: any) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
       }}
     >
       <div
@@ -5247,15 +5247,15 @@ function AddMember({ onClose, save }: any) {
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 16,
+          borderRadius: 12,
           width: "min(440px,100%)",
           maxHeight: "88vh",
           overflowY: "auto",
-          padding: 22,
+          padding: 24,
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <b style={{ color: T.white, fontSize: 18 }}>Add a family member</b>
+          <b style={{ color: T.white, fontSize: 20 }}>Add a family member</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
@@ -5267,7 +5267,7 @@ function AddMember({ onClose, save }: any) {
           onChange={(e) => setF({ ...f, name: e.target.value })}
           placeholder="e.g. Lakshmi Iyer"
         />
-        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
           <div style={{ flex: 1 }}>
             <label style={lbl}>Relation</label>
             <select style={inp} value={f.relation} onChange={(e) => setF({ ...f, relation: e.target.value })}>
@@ -5289,7 +5289,7 @@ function AddMember({ onClose, save }: any) {
             </select>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
           <div style={{ flex: 1 }}>
             <label style={lbl}>Date of birth</label>
             <input type="date" style={inp} value={f.dob} onChange={(e) => setF({ ...f, dob: e.target.value })} />
@@ -5325,7 +5325,7 @@ function AddMember({ onClose, save }: any) {
               { conditions: [], medications: [], allergies: "None recorded", doctor: "", emergency: "" },
             )
           }
-          style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 18, opacity: f.name ? 1 : 0.4 }}
+          style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 20, opacity: f.name ? 1 : 0.4 }}
         >
           Create profile
         </button>
@@ -5338,8 +5338,8 @@ function AddMember({ onClose, save }: any) {
 function ConfirmSheet({ title, body, action, onYes, onClose }: any) {
   return (
     <MSheet title={title} onClose={onClose}>
-      <p style={{ color: T.text, fontSize: 14, lineHeight: 1.55, margin: "8px 0 18px" }}>{body}</p>
-      <div style={{ display: "flex", gap: 10 }}>
+      <p style={{ color: T.text, fontSize: 14, lineHeight: 1.55, margin: "8px 0 20px" }}>{body}</p>
+      <div style={{ display: "flex", gap: 12 }}>
         <button onClick={onClose} style={{ ...btnGhost, flex: 1, justifyContent: "center", minHeight: 44 }}>
           Keep
         </button>
@@ -5557,8 +5557,8 @@ function Wealth({ store, go, toast }: any) {
 
   const stat = (label: string, val: string, color: string) => (
     <Card>
-      <div style={{ fontSize: 13, color: T.muted }}>{label}</div>
-      <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 24, fontWeight: 800, color, marginTop: 8 }}>
+      <div style={{ fontSize: 14, color: T.muted }}>{label}</div>
+      <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 28, fontWeight: 700, color, marginTop: 8 }}>
         {val}
       </div>
     </Card>
@@ -5588,7 +5588,7 @@ function Wealth({ store, go, toast }: any) {
           display: "flex",
           alignItems: "center",
           gap: 12,
-          padding: "13px 16px",
+          padding: "16px 16px",
           borderTop: `1px solid ${T.border}`,
           cursor: "pointer",
         }}
@@ -5599,15 +5599,15 @@ function Wealth({ store, go, toast }: any) {
             placeItems: "center",
             width: 36,
             height: 36,
-            borderRadius: 9,
+            borderRadius: 12,
             background: accent + "22",
           }}
         >
           <Ic size={16} color={accent} />
         </span>
         <div className="lp-wname" style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 14.5, fontWeight: 600, color: T.white }}>{h.name}</div>
-          <div style={{ fontSize: 12.5, color: T.muted }}>
+          <div style={{ fontSize: 16, fontWeight: 500, color: T.white }}>{h.name}</div>
+          <div style={{ fontSize: 12, color: T.muted }}>
             {h.type}
             {h.institution ? ` · ${h.institution}` : ""}
             {h.accountRef ? ` ${h.accountRef}` : ""}
@@ -5618,7 +5618,7 @@ function Wealth({ store, go, toast }: any) {
           className="lp-wamt"
           style={{
             fontVariantNumeric: "tabular-nums",
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: 700,
             color: h.kind === "liability" ? T.coral : T.text,
           }}
@@ -5626,7 +5626,7 @@ function Wealth({ store, go, toast }: any) {
           {h.kind === "liability" ? "\u2212" : ""}
           {money(h.value || 0)}
         </span>
-        <span className="lp-wchips" style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
+        <span className="lp-wchips" style={{ display: "inline-flex", gap: 8, flexShrink: 0 }}>
           <span
             className="lp-tap"
             onClick={(e) => {
@@ -5732,7 +5732,7 @@ function Wealth({ store, go, toast }: any) {
               </button>
             </MSheet>
           )}
-          <div hidden={isMobile} style={{ display: "flex", gap: 10, flexWrap: "wrap", margin: "0 0 28px" }}>
+          <div hidden={isMobile} style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "0 0 32px" }}>
             <button onClick={() => setAddH(true)} style={btnGhost}>
               <Plus size={15} /> Add holding
             </button>
@@ -5752,7 +5752,7 @@ function Wealth({ store, go, toast }: any) {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 11,
+                gap: 12,
                 background: T.coral + "1F",
                 border: `1px solid ${T.coral}66`,
                 borderRadius: 12,
@@ -5761,7 +5761,7 @@ function Wealth({ store, go, toast }: any) {
               }}
             >
               <Siren size={16} color={T.coral} />
-              <span style={{ flex: 1, fontSize: 13.5, color: T.text }}>
+              <span style={{ flex: 1, fontSize: 14, color: T.text }}>
                 <b style={{ color: T.coral }}>SOS handoff active</b> ({store.handoff.reason}) since{" "}
                 {new Date(store.handoff.releasedAt).toLocaleString(undefined, {
                   month: "short",
@@ -5784,8 +5784,8 @@ function Wealth({ store, go, toast }: any) {
                   ...btnGhost,
                   color: T.coral,
                   borderColor: T.coral + "55",
-                  padding: "7px 12px",
-                  fontSize: 12.5,
+                  padding: "8px 12px",
+                  fontSize: 12,
                 }}
               >
                 Cancel handoff
@@ -5801,16 +5801,16 @@ function Wealth({ store, go, toast }: any) {
               flexWrap: "wrap",
               border: `1px solid ${T.border}`,
               background: T.panel,
-              borderRadius: 14,
+              borderRadius: 12,
               padding: "12px 16px",
               marginBottom: 12,
             }}
           >
             <span className="lp-es-label" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
               <KeyRound size={15} color={T.muted} />
-              <b style={{ color: T.white, fontSize: 13.5 }}>Family access readiness</b>
+              <b style={{ color: T.white, fontSize: 14 }}>Family access readiness</b>
             </span>
-            <span className="lp-es-pct" style={{ fontVariantNumeric: "tabular-nums", fontSize: 24, fontWeight: 800, color: readyColor }}>
+            <span className="lp-es-pct" style={{ fontVariantNumeric: "tabular-nums", fontSize: 28, fontWeight: 700, color: readyColor }}>
               {readiness}%
             </span>
             <span
@@ -5819,7 +5819,7 @@ function Wealth({ store, go, toast }: any) {
                 flex: "1 1 140px",
                 minWidth: 120,
                 height: 7,
-                borderRadius: 9,
+                borderRadius: 12,
                 background: T.raised,
                 overflow: "hidden",
               }}
@@ -5830,7 +5830,7 @@ function Wealth({ store, go, toast }: any) {
                   display: "block",
                   width: `${readiness}%`,
                   height: "100%",
-                  borderRadius: 9,
+                  borderRadius: 12,
                   background: readyColor,
                 }}
               />
@@ -5846,7 +5846,7 @@ function Wealth({ store, go, toast }: any) {
                     .filter(Boolean)
                     .join(" · ") + " missing"}
             </span>
-            <button className="lp-es-how" onClick={() => setShowMath((v) => !v)} style={{ ...btnGhost, padding: "6px 11px", fontSize: 12 }}>
+            <button className="lp-es-how" onClick={() => setShowMath((v) => !v)} style={{ ...btnGhost, padding: "8px 12px", fontSize: 12 }}>
               {showMath ? "Hide math" : "How?"}
             </button>
             {openTx.length > 0 && (
@@ -5857,12 +5857,12 @@ function Wealth({ store, go, toast }: any) {
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 7,
+                  gap: 8,
                   background: "transparent",
                   border: "none",
                   padding: 0,
                   cursor: "pointer",
-                  fontSize: 12.5,
+                  fontSize: 12,
                   color: T.muted,
                   whiteSpace: "nowrap",
                 }}
@@ -5888,7 +5888,7 @@ function Wealth({ store, go, toast }: any) {
                 width: "100%",
                 justifyContent: "center",
                 minHeight: 52,
-                fontSize: 15,
+                fontSize: 16,
                 marginBottom: 12,
                 background: T.coral,
                 color: "#2a0806",
@@ -5911,10 +5911,10 @@ function Wealth({ store, go, toast }: any) {
                 return (
                   <div
                     key={h.id}
-                    style={{ display: "flex", alignItems: "center", gap: 9, padding: "5px 0", fontSize: 12 }}
+                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", fontSize: 12 }}
                   >
                     <span
-                      style={{ width: 8, height: 8, borderRadius: 9, background: ok ? T.mint : T.coral, flexShrink: 0 }}
+                      style={{ width: 8, height: 8, borderRadius: 12, background: ok ? T.mint : T.coral, flexShrink: 0 }}
                     />
                     <span
                       style={{
@@ -5951,14 +5951,14 @@ function Wealth({ store, go, toast }: any) {
           <div className="lp-cols2">
             <div style={{ display: "grid", gap: 16 }}>
               {store.holdings.length === 0 && (
-                <Card style={{ textAlign: "center", padding: "26px 20px" }}>
+                <Card style={{ textAlign: "center", padding: "32px 20px" }}>
                   <span
-                    style={{ width: 52, height: 52, borderRadius: 16, background: A.gold + "1F", display: "inline-grid", placeItems: "center", marginBottom: 12 }}
+                    style={{ width: 52, height: 52, borderRadius: 12, background: A.gold + "1F", display: "inline-grid", placeItems: "center", marginBottom: 12 }}
                   >
                     <Wallet size={22} color={A.gold} />
                   </span>
-                  <div style={{ fontSize: 15.5, fontWeight: 700, color: T.white }}>Nothing recorded yet</div>
-                  <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 300 }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: T.white }}>Nothing recorded yet</div>
+                  <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 300 }}>
                     Add an account, a policy, or a loan. ReadiNes tracks whether your family could reach each one.
                   </p>
                   <button onClick={() => (isMobile ? setActSheet(true) : setDocPick(true))} style={{ ...btnGold, margin: "0 auto", minHeight: 44 }}>
@@ -5975,10 +5975,10 @@ function Wealth({ store, go, toast }: any) {
                         key={k}
                         onClick={() => setWg(k as any)}
                         style={{
-                          padding: "6px 12px",
-                          borderRadius: 99,
+                          padding: "8px 12px",
+                          borderRadius: 999,
                           fontSize: 12,
-                          fontWeight: 600,
+                          fontWeight: 500,
                           cursor: "pointer",
                           whiteSpace: "nowrap",
                           flexShrink: 0,
@@ -6001,11 +6001,11 @@ function Wealth({ store, go, toast }: any) {
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        padding: "13px 16px",
+                        padding: "16px 16px",
                       }}
                     >
-                      <b style={{ color: T.white, fontSize: 14.5 }}>{label}</b>
-                      <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 13, color: T.muted }}>
+                      <b style={{ color: T.white, fontSize: 14 }}>{label}</b>
+                      <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 14, color: T.muted }}>
                         {money(sum(arr))}
                       </span>
                     </div>
@@ -6028,7 +6028,7 @@ function Wealth({ store, go, toast }: any) {
                           border: "none",
                           borderTop: `1px solid ${T.border}`,
                           color: SEM.action,
-                          fontSize: 13,
+                          fontSize: 14,
                           fontWeight: 700,
                           fontFamily: "inherit",
                           cursor: "pointer",
@@ -6042,19 +6042,19 @@ function Wealth({ store, go, toast }: any) {
               )}
               {(wg === "all" || wg === "Lent and borrowed") && (
               <Card id="lp-lentborrowed" style={{ padding: 0, scrollMarginTop: 60 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 16px" }}>
                   <Coins size={16} color={T.muted} />
-                  <b style={{ color: T.white, fontSize: 14.5 }}>Lent and borrowed</b>
+                  <b style={{ color: T.white, fontSize: 14 }}>Lent and borrowed</b>
                   {openTx.length > 0 && <span style={pill(T.muted)}>{openTx.length} open</span>}
                   <button
                     onClick={() => setAddTx(true)}
-                    style={{ ...btnGhost, marginLeft: "auto", padding: "6px 12px", fontSize: 12.5 }}
+                    style={{ ...btnGhost, marginLeft: "auto", padding: "8px 12px", fontSize: 12 }}
                   >
                     <Plus size={13} /> Record
                   </button>
                 </div>
                 {txs.length === 0 ? (
-                  <p style={{ color: T.muted, fontSize: 13, padding: "0 16px 14px" }}>
+                  <p style={{ color: T.muted, fontSize: 14, padding: "0 16px 16px" }}>
                     Money lent to or borrowed from people, with the screenshot or chat that proves it. Nothing a bank
                     would ever tell your family.
                   </p>
@@ -6087,7 +6087,7 @@ function Wealth({ store, go, toast }: any) {
                             placeItems: "center",
                             width: 34,
                             height: 34,
-                            borderRadius: 9,
+                            borderRadius: 12,
                             background: (settled ? T.faint : lent ? T.mint : T.coral) + "22",
                             flexShrink: 0,
                           }}
@@ -6095,10 +6095,10 @@ function Wealth({ store, go, toast }: any) {
                           <Coins size={15} color={settled ? T.faint : lent ? T.mint : T.coral} />
                         </span>
                         <div className="lp-wname" style={{ flex: 1, minWidth: 0, opacity: settled ? 0.6 : 1 }}>
-                          <div style={{ fontSize: 14, fontWeight: 600, color: T.white }}>
+                          <div style={{ fontSize: 16, fontWeight: 500, color: T.white }}>
                             {t.counterparty || (lent ? "Lent" : "Borrowed")}
                           </div>
-                          <div style={{ fontSize: 12.5, color: T.muted }}>
+                          <div style={{ fontSize: 12, color: T.muted }}>
                             {t.purpose}
                             {" · "}
                             {fmtDate(t.date, { day: "numeric", month: "short" })}
@@ -6118,19 +6118,19 @@ function Wealth({ store, go, toast }: any) {
                           className="lp-wamt"
                           style={{
                             fontVariantNumeric: "tabular-nums",
-                            fontSize: 14.5,
+                            fontSize: 14,
                             fontWeight: 700,
                             color: settled ? T.faint : lent ? T.mint : T.coral,
                             textDecoration: settled ? "line-through" : "none",
                           }}
                         >
                           {money(t.amount)}
-                          <span style={{ fontSize: 12, fontWeight: 600, marginLeft: 6, color: T.muted, textDecoration: "none" }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, marginLeft: 8, color: T.muted, textDecoration: "none" }}>
                             {settled ? "" : lent ? "owed to you" : "you owe"}
                           </span>
                         </span>
                         {!settled && (
-                          <span className="lp-wchips" style={{ display: "inline-flex", gap: 6, flexShrink: 0 }}>
+                          <span className="lp-wchips" style={{ display: "inline-flex", gap: 8, flexShrink: 0 }}>
                             <span
                               className="lp-tap"
                               onClick={(e) => {
@@ -6160,7 +6160,7 @@ function Wealth({ store, go, toast }: any) {
                               store.updateTransaction(t.id, { followUpDone: false });
                               toast("Reopened");
                             }}
-                            style={{ ...btnGhost, padding: "6px 10px", fontSize: 12, minHeight: 44 }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44 }}
                           >
                             Reopen
                           </button>
@@ -6172,7 +6172,7 @@ function Wealth({ store, go, toast }: any) {
                               store.completeFollowUp(t.id);
                               toast("Marked as settled");
                             }}
-                            style={{ ...btnGhost, padding: "6px 10px", fontSize: 12, minHeight: 44 }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44 }}
                           >
                             <Check size={12} /> Settled
                           </button>
@@ -6197,7 +6197,7 @@ function Wealth({ store, go, toast }: any) {
                       border: "none",
                       borderTop: `1px solid ${T.border}`,
                       color: SEM.action,
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: 700,
                       fontFamily: "inherit",
                       cursor: "pointer",
@@ -6244,14 +6244,14 @@ function Wealth({ store, go, toast }: any) {
               <button className="lp-sheet-item" onClick={() => pickUpRef.current?.click()}>
                 <UploadCloud size={18} color={SEM.action} />
                 <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 14.5 }}>Scan or upload a new document</span>
+                  <span style={{ display: "block", fontSize: 14 }}>Scan or upload a new document</span>
                   <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 500 }}>
                     Statement, policy, or deed. It is filed in Documents and opened here.
                   </span>
                 </span>
               </button>
               {store.docs.filter((d: Doc) => ["Finance", "Insurance", "Property"].includes(d.category)).length === 0 && (
-                <p style={{ fontSize: 13, color: T.muted, padding: "6px 10px 12px" }}>
+                <p style={{ fontSize: 14, color: T.muted, padding: "8px 12px 12px" }}>
                   No financial documents in your vault yet.
                 </p>
               )}
@@ -6269,7 +6269,7 @@ function Wealth({ store, go, toast }: any) {
                   >
                     <FileText size={18} color={CAT_META[d.category as Category].color} />
                     <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: "block", fontSize: 14.5 }}>{d.docType}</span>
+                      <span style={{ display: "block", fontSize: 14 }}>{d.docType}</span>
                       <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 500 }}>
                         {store.members.find((m: Member) => m.id === d.memberId)?.name || "Unassigned"} · {d.category}
                       </span>
@@ -6403,7 +6403,7 @@ function Trust({ store, toast, go }: any) {
             <button
               onClick={() => go("home")}
               title="Back" aria-label="Back"
-              style={{ ...btnGhost, padding: 9, borderRadius: 99, minHeight: 40 }}
+              style={{ ...btnGhost, padding: 12, borderRadius: 999, minHeight: 40 }}
             >
               <ChevronLeft size={17} />
             </button>
@@ -6418,9 +6418,9 @@ function Trust({ store, toast, go }: any) {
         />
       )}
       <Card style={{ padding: 0, marginBottom: 16 }}>
-        <div style={{ padding: "13px 16px" }}>
-          <span style={{ fontWeight: 700, color: T.white, fontSize: 14.5 }}>Who steps in</span>
-          <p style={{ fontSize: 12.5, color: T.muted, margin: "4px 0 0", lineHeight: 1.5 }}>
+        <div style={{ padding: "16px 16px" }}>
+          <span style={{ fontWeight: 700, color: T.white, fontSize: 14 }}>Who steps in</span>
+          <p style={{ fontSize: 12, color: T.muted, margin: "4px 0 0", lineHeight: 1.5 }}>
             The people your holdings and documents go to if you use the SOS handoff.
           </p>
         </div>
@@ -6437,7 +6437,7 @@ function Trust({ store, toast, go }: any) {
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
-                  padding: "11px 16px",
+                  padding: "12px 16px",
                   borderTop: `1px solid ${T.border}`,
                 }}
               >
@@ -6447,10 +6447,10 @@ function Trust({ store, toast, go }: any) {
                     placeItems: "center",
                     width: 34,
                     height: 34,
-                    borderRadius: 9,
+                    borderRadius: 12,
                     background: m.color + "26",
                     color: inkOf(m.color),
-                    fontWeight: 800,
+                    fontWeight: 700,
                     flexShrink: 0,
                   }}
                 >
@@ -6473,7 +6473,7 @@ function Trust({ store, toast, go }: any) {
                       store.updateMember(m.id, { access: "Full member" as Access });
                       toast(`${m.name.split(" ")[0]} is now primary`);
                     }}
-                    style={{ ...btnGhost, padding: "7px 11px", fontSize: 12.5, minHeight: 40, whiteSpace: "nowrap" }}
+                    style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 40, whiteSpace: "nowrap" }}
                   >
                     Make primary
                   </button>
@@ -6495,7 +6495,7 @@ function Trust({ store, toast, go }: any) {
             );
           })}
         {store.members.filter((m: Member) => m.id !== "you").length === 0 && (
-          <div style={{ padding: "16px", fontSize: 13.5, color: T.faint }}>
+          <div style={{ padding: "16px", fontSize: 14, color: T.faint }}>
             Add people in Health, then choose who steps in here.
           </div>
         )}
@@ -6545,7 +6545,7 @@ function SearchResults({ store, query, go }: any) {
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "11px 14px",
+        padding: "12px 16px",
         background: "none",
         border: "none",
         borderTop: `1px solid ${T.border}`,
@@ -6557,7 +6557,7 @@ function SearchResults({ store, query, go }: any) {
           placeItems: "center",
           width: 32,
           height: 32,
-          borderRadius: 8,
+          borderRadius: 12,
           background: color + "22",
         }}
       >
@@ -6575,7 +6575,7 @@ function SearchResults({ store, query, go }: any) {
       <Card style={{ padding: 0, marginBottom: 12 }}>
         <div
           style={{
-            padding: "11px 14px",
+            padding: "12px 16px",
             fontSize: 12,
             fontWeight: 700,
             color: T.muted,
@@ -6591,12 +6591,12 @@ function SearchResults({ store, query, go }: any) {
     );
   return (
     <div>
-      <div style={{ fontSize: 13.5, color: T.muted, marginBottom: 14 }}>
+      <div style={{ fontSize: 14, color: T.muted, marginBottom: 16 }}>
         {total === 0 ? `No matches for "${query}"` : `${total} result${total > 1 ? "s" : ""} for "${query}"`}
       </div>
       {total === 0 && (
-        <Card style={{ padding: 18, marginBottom: 14 }}>
-          <p style={{ fontSize: 13.5, color: T.muted, lineHeight: 1.6, margin: "0 0 14px" }}>
+        <Card style={{ padding: 20, marginBottom: 16 }}>
+          <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.6, margin: "0 0 16px" }}>
             Nothing in your vault matches that yet. You can add it, or find the situation that needs it.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -6734,7 +6734,7 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
       }}
     >
       <div
@@ -6742,22 +6742,22 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
         style={{
           background: T.panel,
           border: `1px solid ${T.coral}55`,
-          borderRadius: 16,
+          borderRadius: 12,
           width: "min(480px,100%)",
           maxHeight: "92vh",
           overflowY: "auto",
-          padding: 22,
+          padding: 24,
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 18, display: "inline-flex", alignItems: "center", gap: 9 }}>
+          <b style={{ color: T.white, fontSize: 20, display: "inline-flex", alignItems: "center", gap: 12 }}>
             <Siren size={18} color={T.coral} /> SOS handoff
           </b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
-        <p style={{ fontSize: 13, color: T.muted, margin: "0 0 14px", lineHeight: 1.55 }}>
+        <p style={{ fontSize: 14, color: T.muted, margin: "0 0 16px", lineHeight: 1.55 }}>
           Sends your holdings register, wealth documents, and access instructions to the people below. Once sent, it
           cannot be taken back.
         </p>
@@ -6769,14 +6769,14 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
             textTransform: "uppercase",
             color: T.muted,
             fontVariantNumeric: "tabular-nums",
-            marginBottom: 6,
+            marginBottom: 8,
           }}
         >
           Who steps in
         </div>
         {recipients.length === 0 ? (
           <div>
-            <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.6, margin: "0 0 12px" }}>
+            <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.6, margin: "0 0 12px" }}>
               Nobody can step in yet. Give someone Emergency or Full access and they will appear here.
             </p>
             <button
@@ -6796,8 +6796,8 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 11,
-                padding: "9px 0",
+                gap: 12,
+                padding: "12px 0",
                 borderTop: `1px solid ${T.border}`,
                 cursor: "pointer",
               }}
@@ -6814,16 +6814,16 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
                   placeItems: "center",
                   width: 30,
                   height: 30,
-                  borderRadius: 8,
+                  borderRadius: 12,
                   background: m.color + "26",
                   color: inkOf(m.color),
-                  fontWeight: 800,
-                  fontSize: 13,
+                  fontWeight: 700,
+                  fontSize: 14,
                 }}
               >
                 {m.name[0]}
               </span>
-              <span style={{ flex: 1, fontSize: 13.5, color: T.text }}>
+              <span style={{ flex: 1, fontSize: 14, color: T.text }}>
                 {m.name}
                 <span style={{ color: T.muted }}> · {m.relation}</span>
               </span>
@@ -6833,12 +6833,12 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
         )}
         <div
           style={{
-            marginTop: 14,
-            borderRadius: 11,
+            marginTop: 16,
+            borderRadius: 12,
             border: `1px solid ${T.border}`,
             background: T.raised,
-            padding: "11px 13px",
-            fontSize: 12.5,
+            padding: "12px 16px",
+            fontSize: 12,
             lineHeight: 1.7,
           }}
         >
@@ -6854,9 +6854,9 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
           style={{
             display: "flex",
             alignItems: "flex-start",
-            gap: 9,
+            gap: 12,
             marginTop: 12,
-            fontSize: 12.5,
+            fontSize: 12,
             color: T.muted,
             cursor: "pointer",
             lineHeight: 1.5,
@@ -6866,7 +6866,7 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
             type="checkbox"
             checked={ack}
             onChange={(e) => setAck(e.target.checked)}
-            style={{ accentColor: T.coral, width: 20, height: 20, flexShrink: 0, marginTop: 1 }}
+            style={{ accentColor: T.coral, width: 20, height: 20, flexShrink: 0, marginTop: 4 }}
           />
           I understand this sends my financial documents to the people I chose, and that it cannot be undone.
         </label>
@@ -6874,16 +6874,16 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
           <div
             style={{
               marginTop: 16,
-              padding: "14px 15px",
+              padding: "16px 16px",
               borderRadius: 12,
               border: `1px solid ${T.coral}55`,
               background: T.coral + "1F",
             }}
           >
-            <b style={{ color: T.white, fontSize: 14.5, display: "block", marginBottom: 4 }}>
+            <b style={{ color: T.white, fontSize: 14, display: "block", marginBottom: 4 }}>
               Send to {chosen.size} {chosen.size === 1 ? "person" : "people"} now?
             </b>
-            <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>
+            <p style={{ fontSize: 12, color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>
               This cannot be undone.
             </p>
             <div style={{ display: "flex", gap: 8 }}>
@@ -6961,8 +6961,8 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 9,
-    padding: "9px 11px",
+    borderRadius: 12,
+    padding: "12px 12px",
     color: T.text,
     fontSize: 14,
     outline: "none",
@@ -6974,7 +6974,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
     textTransform: "uppercase",
     color: T.muted,
     fontVariantNumeric: "tabular-nums",
-    margin: "12px 0 5px",
+    margin: "12px 0 8px",
     display: "block",
   };
   return (
@@ -6988,7 +6988,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
       }}
     >
       <div
@@ -6996,20 +6996,20 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 16,
+          borderRadius: 12,
           width: "min(440px,100%)",
           maxHeight: "92vh",
           overflowY: "auto",
-          padding: 22,
+          padding: 24,
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 18 }}>{transaction ? "Edit money lent or borrowed" : "Record money lent or borrowed"}</b>
+          <b style={{ color: T.white, fontSize: 20 }}>{transaction ? "Edit money lent or borrowed" : "Record money lent or borrowed"}</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
-        <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 14px" }}>
+        <p style={{ fontSize: 12, color: T.muted, margin: "0 0 16px" }}>
           Attach the UPI screenshot, chat, or statement line, confirm who and how much, done. Cash with no record is fine too; say so.
         </p>
         <label
@@ -7029,7 +7029,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
           {evidence ? (
             <>
               <CheckCircle2 size={20} color={T.mint} />
-              <span style={{ fontSize: 13, color: T.text, fontWeight: 600, wordBreak: "break-all" }}>
+              <span style={{ fontSize: 14, color: T.text, fontWeight: 500, wordBreak: "break-all" }}>
                 {evidence.name}
               </span>
               <span style={{ fontSize: 12, color: T.muted }}>Tap to replace</span>
@@ -7037,7 +7037,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
           ) : (
             <>
               <Paperclip size={20} color={T.gold} />
-              <span style={{ fontSize: 13.5, color: T.text, fontWeight: 600 }}>Photo · screenshot · receipt · PDF</span>
+              <span style={{ fontSize: 14, color: T.text, fontWeight: 500 }}>Photo · screenshot · receipt · PDF</span>
               <span style={{ fontSize: 12, color: T.muted }}>
                 The proof is the record; it files into Documents too
               </span>
@@ -7057,7 +7057,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
           onChange={(e) => setF({ ...f, purpose: e.target.value })}
           placeholder="e.g. car down payment, hospital bill, wedding advance"
         />
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 12 }}>
           <div style={{ flex: 1.4 }}>
             <label style={lbl}>Amount</label>
             <input
@@ -7085,14 +7085,14 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
         </div>
         {foreign && (
           <div style={{ marginTop: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.muted }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: T.muted }}>
               <span>1 {f.origCurrency} =</span>
               <input
                 type="number"
                 step="0.01"
                 value={fx}
                 onChange={(e) => setFx(Math.max(0, parseFloat(e.target.value) || 0))}
-                style={{ ...inp, width: 88, padding: "6px 8px", fontSize: 13 }}
+                style={{ ...inp, width: 88, padding: "8px 8px", fontSize: 14 }}
               />
               <span>{homeCurrency}</span>
               <b style={{ marginLeft: "auto", color: T.text, fontVariantNumeric: "tabular-nums" }}>= {formatMoney(homeAmount, homeCurrency, false)}</b>
@@ -7100,7 +7100,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
             <div style={{ fontSize: 12, color: T.faint, marginTop: 4 }}>{RATES_NOTE}. Edit it to match your bank's rate.</div>
           </div>
         )}
-        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
           <div style={{ flex: 1 }}>
             <label style={lbl}>Which way</label>
             <select
@@ -7128,13 +7128,13 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
             border: "none",
             cursor: "pointer",
             color: T.muted,
-            fontSize: 12.5,
-            fontWeight: 600,
+            fontSize: 12,
+            fontWeight: 500,
             padding: 0,
             marginTop: 12,
             display: "inline-flex",
             alignItems: "center",
-            gap: 5,
+            gap: 8,
           }}
         >
           <ChevronDown size={13} style={{ transform: more ? "rotate(180deg)" : "none", transition: ".15s" }} />
@@ -7151,7 +7151,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
                 placeholder="e.g. Rohan K (friend), Meera (sister)"
               />
             </div>
-            <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ display: "flex", gap: 12 }}>
               <div style={{ flex: 1 }}>
                 <label style={lbl}>Follow up on</label>
                 <input
@@ -7211,7 +7211,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
         {onDelete && (
           <button
             onClick={onDelete}
-            style={{ ...btnGhost, width: "100%", justifyContent: "center", marginTop: 10, minHeight: 44, color: T.coral, borderColor: T.coral + "55" }}
+            style={{ ...btnGhost, width: "100%", justifyContent: "center", marginTop: 12, minHeight: 44, color: T.coral, borderColor: T.coral + "55" }}
           >
             <Trash2 size={14} /> Remove this entry
           </button>
@@ -7268,8 +7268,8 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 9,
-    padding: "9px 11px",
+    borderRadius: 12,
+    padding: "12px 12px",
     color: T.text,
     fontSize: 14,
     outline: "none",
@@ -7281,7 +7281,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
     textTransform: "uppercase",
     color: T.muted,
     fontVariantNumeric: "tabular-nums",
-    marginBottom: 5,
+    marginBottom: 8,
     display: "block",
   };
   const set = (k: string, v: any) => setF({ ...f, [k]: v });
@@ -7304,7 +7304,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
       }}
     >
       <div
@@ -7312,15 +7312,15 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 16,
+          borderRadius: 12,
           width: "min(500px,100%)",
-          padding: 22,
+          padding: 24,
           maxHeight: "90vh",
           overflow: "auto",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <b style={{ color: T.white, fontSize: 18 }}>{holding ? "Edit holding" : "Add holding"}</b>
+          <b style={{ color: T.white, fontSize: 20 }}>{holding ? "Edit holding" : "Add holding"}</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
@@ -7331,22 +7331,22 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
               display: "flex",
               flexWrap: "wrap",
               alignItems: "center",
-              gap: 10,
-              padding: "10px 12px",
-              marginBottom: 14,
-              borderRadius: 10,
+              gap: 12,
+              padding: "12px 12px",
+              marginBottom: 16,
+              borderRadius: 12,
               border: `1px solid ${T.border}`,
               background: T.raised,
             }}
           >
             <FileText size={16} color={T.muted} />
-            <span style={{ flex: "1 1 180px", fontSize: 12.5, color: fill.note ? T.text : T.muted }}>
+            <span style={{ flex: "1 1 180px", fontSize: 12, color: fill.note ? T.text : T.muted }}>
               {fill.note || "Linked to a document. Read it once to fill what it states."}
             </span>
             <button
               onClick={fillFromDoc}
               disabled={fill.busy}
-              style={{ ...btnGhost, padding: "6px 10px", fontSize: 12, color: SEM.action, whiteSpace: "nowrap", opacity: fill.busy ? 0.6 : 1 }}
+              style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, color: SEM.action, whiteSpace: "nowrap", opacity: fill.busy ? 0.6 : 1 }}
             >
               {fill.busy ? "Reading…" : fill.note ? "Read again" : "Fill from this document"}
             </button>
@@ -7359,7 +7359,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
           onChange={(e) => set("name", e.target.value)}
           placeholder="e.g. Investment portfolio"
         />
-        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
           <div style={{ flex: 1 }}>
             <label style={lbl}>Kind</label>
             <select style={inp} value={f.kind} onChange={(e) => set("kind", e.target.value)}>
@@ -7380,7 +7380,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
             />
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
           <div style={{ flex: 2 }}>
             <label style={lbl}>Institution</label>
             <input
@@ -7400,7 +7400,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
             />
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
           <div style={{ flex: 1 }}>
             <label style={lbl}>{f.kind === "liability" ? "Outstanding" : f.kind === "cover" ? "Cover" : "Value"}</label>
             <input
@@ -7428,14 +7428,14 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
         </div>
         {hForeign && (
           <div style={{ marginTop: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.muted }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: T.muted }}>
               <span>1 {hCur} =</span>
               <input
                 type="number"
                 step="0.01"
                 value={hfx}
                 onChange={(e) => setHfx(Math.max(0, parseFloat(e.target.value) || 0))}
-                style={{ ...inp, width: 88, padding: "6px 8px", fontSize: 13 }}
+                style={{ ...inp, width: 88, padding: "8px 8px", fontSize: 14 }}
               />
               <span>{getCurrency()}</span>
               <b style={{ marginLeft: "auto", color: T.text, fontVariantNumeric: "tabular-nums" }}>= {formatMoney(hHome, getCurrency(), false)}</b>
@@ -7497,9 +7497,9 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
           </div>
         )}
         {canNominee && (
-          <div style={{ marginTop: 14, display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ marginTop: 16, display: "flex", gap: 12, alignItems: "center" }}>
             <label
-              style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13, color: T.text }}
+              style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 14, color: T.text }}
             >
               <input type="checkbox" checked={!!f.nominee} onChange={(e) => set("nominee", e.target.checked)} /> Nominee
               named
@@ -7514,7 +7514,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
             )}
           </div>
         )}
-        <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
           <button
             disabled={!f.name}
             onClick={() => {
@@ -7535,7 +7535,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
             <button
               onClick={onDelete}
               title="Remove" aria-label="Remove"
-              style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55", padding: "10px 14px" }}
+              style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55", padding: "12px 16px" }}
             >
               <Trash2 size={15} />
             </button>
@@ -7552,8 +7552,8 @@ function NomineeModal({ holding, onClose, onSave }: any) {
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 9,
-    padding: "9px 11px",
+    borderRadius: 12,
+    padding: "12px 12px",
     color: T.text,
     fontSize: 14,
     outline: "none",
@@ -7569,7 +7569,7 @@ function NomineeModal({ holding, onClose, onSave }: any) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
       }}
     >
       <div
@@ -7577,20 +7577,20 @@ function NomineeModal({ holding, onClose, onSave }: any) {
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 16,
+          borderRadius: 12,
           width: "min(420px,100%)",
           maxHeight: "88vh",
           overflowY: "auto",
-          padding: 22,
+          padding: 24,
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <b style={{ color: T.white, fontSize: 17 }}>Name a nominee</b>
+          <b style={{ color: T.white, fontSize: 16 }}>Name a nominee</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
-        <p style={{ fontSize: 13, color: T.muted, marginBottom: 14 }}>
+        <p style={{ fontSize: 14, color: T.muted, marginBottom: 16 }}>
           Who should receive {holding.name} ({holding.institution || holding.type})?
         </p>
         <input
@@ -7644,7 +7644,7 @@ function EstateSheet({ store, onClose, toast }: any) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
       }}
     >
       <div
@@ -7652,7 +7652,7 @@ function EstateSheet({ store, onClose, toast }: any) {
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 16,
+          borderRadius: 12,
           width: "min(680px,100%)",
           maxHeight: "88vh",
           display: "flex",
@@ -7660,7 +7660,7 @@ function EstateSheet({ store, onClose, toast }: any) {
           padding: 20,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
             <div
               style={{
@@ -7674,17 +7674,17 @@ function EstateSheet({ store, onClose, toast }: any) {
             >
               What your family would need
             </div>
-            <b style={{ color: T.white, fontSize: 19 }}>Family summary</b>
+            <b style={{ color: T.white, fontSize: 20 }}>Family summary</b>
           </div>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
         <div
-          style={{ flex: 1, overflow: "auto", background: "#eef0f3", borderRadius: 10, padding: 12 }}
+          style={{ flex: 1, overflow: "auto", background: "#eef0f3", borderRadius: 12, padding: 12 }}
           dangerouslySetInnerHTML={{ __html: html }}
         />
-        <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
           <button onClick={printH} style={{ ...btnGold, flex: 1, justifyContent: "center" }}>
             <Printer size={16} /> Save as PDF
           </button>
@@ -7782,13 +7782,13 @@ const FAQS: [string, string][] = [
 function DesignSystem({ store }: any) {
   const isMobile = useIsMobile();
   const Sw = ({ c, l }: { c: string; l: string }) => (
-    <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+    <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
       <span style={{ width: 44, height: 44, borderRadius: 12, background: c, border: `1px solid ${T.border}` }} />
       <span style={{ fontSize: 12, color: T.muted }}>{l}</span>
     </span>
   );
   const Sec = ({ t, children }: any) => (
-    <Card style={{ marginBottom: 14 }}>
+    <Card style={{ marginBottom: 16 }}>
       <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 12 }}>{t}</div>
       {children}
     </Card>
@@ -7796,17 +7796,17 @@ function DesignSystem({ store }: any) {
   return (
     <div>
       {isMobile && <MNav title="Design system" aria-label="Design system" />}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0 14px" }}>
-        {!isMobile && <b style={{ fontSize: 18, fontWeight: 800, color: T.white }}>Design system</b>}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0 16px" }}>
+        {!isMobile && <b style={{ fontSize: 20, fontWeight: 700, color: T.white }}>Design system</b>}
         <span style={{ flex: 1 }} />
         {(["dark", "light"] as const).map((t) => (
           <button
             key={t}
             onClick={() => store.setTheme(t)}
             style={{
-              padding: "7px 14px",
-              borderRadius: 99,
-              fontSize: 12.5,
+              padding: "8px 16px",
+              borderRadius: 999,
+              fontSize: 12,
               fontWeight: 700,
               cursor: "pointer",
               border: `1px solid ${store.theme === t ? SEM.action : T.border}`,
@@ -7849,7 +7849,7 @@ function DesignSystem({ store }: any) {
             ["Caption", DS.type.caption, 400],
           ] as [string, number, number][]
         ).map(([l, sz, w]) => (
-          <div key={l} style={{ fontSize: sz, fontWeight: w, color: T.text, lineHeight: 1.3, marginBottom: 6 }}>
+          <div key={l} style={{ fontSize: sz, fontWeight: w, color: T.text, lineHeight: 1.3, marginBottom: 8 }}>
             {l} · {sz}px
           </div>
         ))}
@@ -7858,7 +7858,7 @@ function DesignSystem({ store }: any) {
         <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
           {DS.space.map((v) => (
             <span key={v} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-              <span style={{ width: 14, height: v, background: SEM.action + "55", borderRadius: 3 }} />
+              <span style={{ width: 14, height: v, background: SEM.action + "55", borderRadius: 12 }} />
               <span style={{ fontSize: 12, color: T.faint }}>{v}</span>
             </span>
           ))}
@@ -7867,7 +7867,7 @@ function DesignSystem({ store }: any) {
       <Sec t="Radius">
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           {Object.entries(DS.radius).map(([k, v]) => (
-            <span key={k} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+            <span key={k} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
               <span style={{ width: 52, height: 40, borderRadius: v, border: `1.5px solid ${SEM.action}`, background: SEM.action + "22" }} />
               <span style={{ fontSize: 12, color: T.muted }}>{k} · {v}</span>
             </span>
@@ -7875,8 +7875,8 @@ function DesignSystem({ store }: any) {
         </div>
       </Sec>
       <Sec t="Buttons">
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <button style={{ padding: "11px 18px", borderRadius: DS.radius.control, border: "none", background: SEM.action, color: "var(--lpv-actionink)", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+          <button style={{ padding: "12px 20px", borderRadius: DS.radius.control, border: "none", background: SEM.action, color: "var(--lpv-actionink)", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
             Primary action
           </button>
           <button style={{ ...btnGold, cursor: "pointer" }}>Readiness moment</button>
@@ -7893,22 +7893,22 @@ function DesignSystem({ store }: any) {
               ["On track", SEM.info],
             ] as [string, string][]
           ).map(([l, c]) => (
-            <span key={l} style={{ padding: "5px 11px", borderRadius: 99, fontSize: 12, fontWeight: 700, color: c, background: c + "1C" }}>
+            <span key={l} style={{ padding: "8px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: c, background: c + "1C" }}>
               {l}
             </span>
           ))}
         </div>
       </Sec>
       <Sec t="List item">
-        <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ width: 36, height: 36, borderRadius: 12, background: A.pink + "1F", display: "grid", placeItems: "center" }}>
             <HeartPulse size={16} color={A.pink} />
           </span>
           <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.white }}>Annual health checkup</span>
+            <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.white }}>Annual health checkup</span>
             <span style={{ display: "block", fontSize: 12, color: T.muted }}>Nov 21 · Dr. Reyes</span>
           </span>
-          <span style={{ padding: "4px 9px", borderRadius: 99, fontSize: 12, fontWeight: 700, color: SEM.success, background: SEM.success + "1C" }}>in 69d</span>
+          <span style={{ padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: SEM.success, background: SEM.success + "1C" }}>in 69d</span>
           <ChevronRight size={15} color={T.faint} />
         </div>
       </Sec>
@@ -7943,8 +7943,8 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
           gap: 8,
           background: T.panel,
           border: `1px solid ${open ? T.gold + "66" : T.border}`,
-          borderRadius: 99,
-          padding: "5px 10px 5px 6px",
+          borderRadius: 999,
+          padding: "8px 12px 8px 8px",
           cursor: "pointer",
         }}
       >
@@ -7954,10 +7954,10 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
             placeItems: "center",
             width: 30,
             height: 30,
-            borderRadius: 99,
+            borderRadius: 999,
             background: T.gold + "26",
             color: T.gold,
-            fontWeight: 800,
+            fontWeight: 700,
             fontSize: 14,
           }}
         >
@@ -7966,8 +7966,8 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
         <span
           className="lp-pm-name"
           style={{
-            fontSize: 13,
-            fontWeight: 600,
+            fontSize: 14,
+            fontWeight: 500,
             color: T.text,
             maxWidth: 120,
             overflow: "hidden",
@@ -7991,12 +7991,12 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
               width: 264,
               background: T.panel,
               border: `1px solid ${T.border}`,
-              borderRadius: 14,
+              borderRadius: 12,
               boxShadow: "0 24px 60px rgba(0,0,0,.55)",
               overflow: "hidden",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 11, padding: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 16 }}>
               <span
                 style={{
                   display: "grid",
@@ -8006,8 +8006,8 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                   borderRadius: 12,
                   background: T.gold + "26",
                   color: T.gold,
-                  fontWeight: 800,
-                  fontSize: 17,
+                  fontWeight: 700,
+                  fontSize: 16,
                 }}
               >
                 {initial}
@@ -8047,7 +8047,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                   textTransform: "uppercase",
                   color: T.faint,
                   fontVariantNumeric: "tabular-nums",
-                  marginBottom: 6,
+                  marginBottom: 8,
                 }}
               >
                 Instance
@@ -8067,14 +8067,14 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                       width: "100%",
                       display: "flex",
                       alignItems: "center",
-                      gap: 10,
-                      padding: "9px 10px",
-                      borderRadius: 9,
+                      gap: 12,
+                      padding: "12px 12px",
+                      borderRadius: 12,
                       cursor: "pointer",
                       border: "none",
                       background: on ? T.raised : "transparent",
                       textAlign: "left",
-                      marginBottom: 2,
+                      marginBottom: 4,
                     }}
                   >
                     <span
@@ -8083,7 +8083,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                         placeItems: "center",
                         width: 26,
                         height: 26,
-                        borderRadius: 8,
+                        borderRadius: 12,
                         background: (mode === "sample" ? A.purple : T.mint) + "22",
                       }}
                     >
@@ -8094,7 +8094,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                       )}
                     </span>
                     <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.text }}>{label}</span>
+                      <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.text }}>{label}</span>
                       <span style={{ display: "block", fontSize: 12, color: T.muted }}>{sub}</span>
                     </span>
                     {on && <Check size={15} color={T.gold} />}
@@ -8118,15 +8118,15 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                     width: "100%",
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
-                    padding: "9px 10px",
-                    borderRadius: 9,
+                    gap: 12,
+                    padding: "12px 12px",
+                    borderRadius: 12,
                     cursor: "pointer",
                     border: "none",
                     background: "transparent",
                     color: T.text,
-                    fontSize: 13,
-                    fontWeight: 600,
+                    fontSize: 14,
+                    fontWeight: 500,
                     textAlign: "left",
                   }}
                 >
@@ -8139,15 +8139,15 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                   width: "100%",
                   display: "flex",
                   alignItems: "center",
-                  gap: 10,
-                  padding: "9px 10px",
-                  borderRadius: 9,
+                  gap: 12,
+                  padding: "12px 12px",
+                  borderRadius: 12,
                   cursor: "pointer",
                   border: "none",
                   background: "transparent",
                   color: T.coral,
-                  fontSize: 13,
-                  fontWeight: 600,
+                  fontSize: 14,
+                  fontWeight: 500,
                   textAlign: "left",
                 }}
               >
@@ -8228,7 +8228,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         style={{
           width: 32,
           height: 32,
-          borderRadius: 10,
+          borderRadius: 12,
           display: "grid",
           placeItems: "center",
           flexShrink: 0,
@@ -8238,10 +8238,10 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         <Ic size={15} color={danger ? T.coral : SEM.action} />
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: danger ? T.coral : T.text }}>
+        <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: danger ? T.coral : T.text }}>
           {label}
         </span>
-        {sub && <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 1 }}>{sub}</span>}
+        {sub && <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 4 }}>{sub}</span>}
       </span>
       <ChevronRight size={14} color={T.faint} />
     </button>
@@ -8249,8 +8249,8 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
   const inp: CSSProperties = {
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 10,
-    padding: "9px 12px",
+    borderRadius: 12,
+    padding: "12px 12px",
     color: T.text,
     fontSize: 14,
     outline: "none",
@@ -8266,7 +8266,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
       }}
     >
       <div
@@ -8274,15 +8274,15 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 16,
+          borderRadius: 12,
           width: "min(480px,100%)",
           maxHeight: "86vh",
           overflowY: "auto",
-          padding: 22,
+          padding: 24,
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <b style={{ color: T.white, fontSize: 17 }}>{title}</b>
+          <b style={{ color: T.white, fontSize: 16 }}>{title}</b>
           <button onClick={() => setModal(null)} style={{ ...btnGhost, padding: 8 }}>
             <X size={15} />
           </button>
@@ -8303,7 +8303,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           textTransform: "uppercase",
           color: T.faint,
           fontVariantNumeric: "tabular-nums",
-          margin: "0 0 8px 2px",
+          margin: "0 0 8px 4px",
         }}
       >
         {label}
@@ -8319,7 +8319,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "13px 16px",
+        padding: "16px 16px",
         borderTop: first ? "none" : `1px solid ${T.border}`,
         background: "none",
         border: "none",
@@ -8331,7 +8331,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         style={{
           width: 32,
           height: 32,
-          borderRadius: 10,
+          borderRadius: 12,
           display: "grid",
           placeItems: "center",
           flexShrink: 0,
@@ -8341,12 +8341,12 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         <Ic size={15} color={danger ? T.coral : SEM.action} />
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: danger ? T.coral : T.text }}>
+        <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: danger ? T.coral : T.text }}>
           {label}
         </span>
-        {sub && <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 1 }}>{sub}</span>}
+        {sub && <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 4 }}>{sub}</span>}
       </span>
-      {value && <span style={{ fontSize: 12.5, color: T.muted, fontVariantNumeric: "tabular-nums" }}>{value}</span>}
+      {value && <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>{value}</span>}
       {onClick && <ChevronRight size={14} color={T.faint} />}
     </button>
   );
@@ -8356,18 +8356,18 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
       <div className="lp-cols2">
         <div>
           <Section label="Account">
-            <div style={{ display: "flex", alignItems: "center", gap: 13, padding: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, padding: 16 }}>
               <span
                 style={{
                   display: "grid",
                   placeItems: "center",
                   width: 44,
                   height: 44,
-                  borderRadius: 13,
+                  borderRadius: 12,
                   background: T.gold + "22",
                   color: T.gold,
-                  fontWeight: 800,
-                  fontSize: 18,
+                  fontWeight: 700,
+                  fontSize: 20,
                 }}
               >
                 {(name || "?")[0]}
@@ -8379,17 +8379,17 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                     background: "transparent",
                     border: "none",
                     borderBottom: `1px solid ${T.border}`,
-                    padding: "2px 0 5px",
+                    padding: "4px 0 8px",
                     color: T.white,
-                    fontSize: 15,
-                    fontWeight: 600,
+                    fontSize: 16,
+                    fontWeight: 500,
                     outline: "none",
                   }}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   onBlur={saveName}
                 />
-                <div style={{ fontSize: 12, color: T.muted, marginTop: 5 }}>
+                <div style={{ fontSize: 12, color: T.muted, marginTop: 8 }}>
                   {account?.email || "Not signed in · changes are saved on this device"}
                 </div>
               </div>
@@ -8404,10 +8404,10 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
             <Row icon={Lock} label="Change password" onClick={() => setModal("password")} />
           </Section>
           <Section label="Preferences">
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderTop: `1px solid ${T.border}` }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 16px", borderTop: `1px solid ${T.border}` }}>
               <Coins size={16} color={SEM.action} />
               <span style={{ flex: 1 }}>
-                <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.text }}>Home currency</span>
+                <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.text }}>Home currency</span>
                 <span style={{ display: "block", fontSize: 12, color: T.muted }}>{RATES_NOTE}</span>
               </span>
               <select
@@ -8417,26 +8417,26 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                   store.setCurrency(e.target.value);
                   toast(`Home currency changed to ${e.target.value}`);
                 }}
-                style={{ background: T.raised, color: T.text, border: `1px solid ${T.border}`, borderRadius: 9, minHeight: 44, padding: "0 10px", fontSize: 14 }}
+                style={{ background: T.raised, color: T.text, border: `1px solid ${T.border}`, borderRadius: 12, minHeight: 44, padding: "0 12px", fontSize: 14 }}
               >
                 {CURRENCIES.map((c) => <option key={c} value={c} style={{ color: "#000" }}>{c}</option>)}
               </select>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 16px" }}>
               <span
-                style={{ width: 32, height: 32, borderRadius: 10, display: "grid", placeItems: "center", flexShrink: 0, background: SEM.action + "1F" }}
+                style={{ width: 32, height: 32, borderRadius: 12, display: "grid", placeItems: "center", flexShrink: 0, background: SEM.action + "1F" }}
               >
                 {store.theme === "dark" ? <Moon size={15} color={SEM.action} /> : <Sun size={15} color={SEM.action} />}
               </span>
-              <span style={{ flex: 1, fontSize: 14, fontWeight: 600, color: T.text }}>Appearance</span>
-              <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 9, overflow: "hidden" }}>
+              <span style={{ flex: 1, fontSize: 16, fontWeight: 500, color: T.text }}>Appearance</span>
+              <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden" }}>
                 {(["dark", "light"] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => store.setTheme(t)}
                     style={{
-                      padding: "7px 13px",
-                      fontSize: 12.5,
+                      padding: "8px 16px",
+                      fontSize: 12,
                       fontWeight: 700,
                       border: "none",
                       cursor: "pointer",
@@ -8454,13 +8454,13 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                padding: "13px 16px",
+                padding: "16px 16px",
                 borderTop: `1px solid ${T.border}`,
               }}
             >
               <BellIcon size={16} color={store.notifications ? T.gold : T.muted} />
               <span style={{ flex: 1 }}>
-                <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: T.text }}>Notifications</span>
+                <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.text }}>Notifications</span>
                 <span style={{ display: "block", fontSize: 12, color: T.muted }}>Reminder alerts on this device</span>
               </span>
               <button
@@ -8468,7 +8468,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                 style={{
                   width: 42,
                   height: 24,
-                  borderRadius: 99,
+                  borderRadius: 999,
                   border: `1px solid ${store.notifications ? T.gold : T.border}`,
                   background: store.notifications ? T.gold + "55" : T.raised,
                   cursor: "pointer",
@@ -8482,7 +8482,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                     left: store.notifications ? 20 : 2,
                     width: 18,
                     height: 18,
-                    borderRadius: 99,
+                    borderRadius: 999,
                     background: store.notifications ? T.gold : T.muted,
                     transition: "left .15s",
                   }}
@@ -8523,7 +8523,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                 textTransform: "uppercase",
                 color: T.coral,
                 fontVariantNumeric: "tabular-nums",
-                margin: "0 0 8px 2px",
+                margin: "0 0 8px 4px",
               }}
             >
               Danger zone
@@ -8545,9 +8545,9 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
       {modal === "whatsnew" && (
         <Overlay title="What's new" aria-label="What's new">
           {CHANGELOG.map(([t, b], i) => (
-            <div key={i} style={{ padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{t}</div>
-              <div style={{ fontSize: 12.5, color: T.muted, marginTop: 3, lineHeight: 1.55 }}>{b}</div>
+            <div key={i} style={{ padding: "12px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{t}</div>
+              <div style={{ fontSize: 12, color: T.muted, marginTop: 4, lineHeight: 1.55 }}>{b}</div>
             </div>
           ))}
         </Overlay>
@@ -8555,9 +8555,9 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
       {modal === "faq" && (
         <Overlay title="Help and FAQs" aria-label="Help and FAQs">
           {FAQS.map(([q, a], i) => (
-            <div key={i} style={{ padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{q}</div>
-              <div style={{ fontSize: 12.5, color: T.muted, marginTop: 4, lineHeight: 1.6 }}>{a}</div>
+            <div key={i} style={{ padding: "12px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
+              <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{q}</div>
+              <div style={{ fontSize: 12, color: T.muted, marginTop: 4, lineHeight: 1.6 }}>{a}</div>
             </div>
           ))}
         </Overlay>
@@ -8592,12 +8592,12 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
       )}
       {modal === "about" && (
         <Overlay title="About ReadiNes" aria-label="About ReadiNes">
-          <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.7, margin: 0 }}>
+          <p style={{ fontSize: 14, color: T.text, lineHeight: 1.7, margin: 0 }}>
             ReadiNes keeps your family ready for life's important moments: it understands the documents you save, knows
             what a hundred real-world situations require, shows how ready you already are, and assembles the pack when
             the moment comes.
           </p>
-          <p style={{ fontSize: 12, color: T.muted, marginTop: 10 }}>
+          <p style={{ fontSize: 12, color: T.muted, marginTop: 12 }}>
             Version 0.9 ·{" "}
             <button
               onClick={() => {
@@ -8621,9 +8621,9 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
       {modal === "email" && (
         <Overlay title="Change email" aria-label="Change email">
           <input value={f1} onChange={(e) => setF1(e.target.value)} placeholder="New email" style={inp} />
-          <input value={f2} onChange={(e) => setF2(e.target.value)} placeholder="Current password" type="password" style={{ ...inp, marginTop: 10 }} />
-          {fErr && <div style={{ color: T.coral, fontSize: 12.5, marginTop: 8 }}>{fErr}</div>}
-          <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+          <input value={f2} onChange={(e) => setF2(e.target.value)} placeholder="Current password" type="password" style={{ ...inp, marginTop: 12 }} />
+          {fErr && <div style={{ color: T.coral, fontSize: 12, marginTop: 8 }}>{fErr}</div>}
+          <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
             <button
               onClick={() => {
                 const r = changeEmail(f1, f2);
@@ -8645,10 +8645,10 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
       {modal === "password" && (
         <Overlay title="Change password" aria-label="Change password">
           <input value={f1} onChange={(e) => setF1(e.target.value)} placeholder="Current password" type="password" style={inp} />
-          <input value={f2} onChange={(e) => setF2(e.target.value)} placeholder="New password" type="password" style={{ ...inp, marginTop: 10 }} />
-          <input value={f3} onChange={(e) => setF3(e.target.value)} placeholder="Repeat new password" type="password" style={{ ...inp, marginTop: 10 }} />
-          {fErr && <div style={{ color: T.coral, fontSize: 12.5, marginTop: 8 }}>{fErr}</div>}
-          <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+          <input value={f2} onChange={(e) => setF2(e.target.value)} placeholder="New password" type="password" style={{ ...inp, marginTop: 12 }} />
+          <input value={f3} onChange={(e) => setF3(e.target.value)} placeholder="Repeat new password" type="password" style={{ ...inp, marginTop: 12 }} />
+          {fErr && <div style={{ color: T.coral, fontSize: 12, marginTop: 8 }}>{fErr}</div>}
+          <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
             <button
               onClick={() => {
                 if (f2 !== f3) return setFErr("New passwords do not match.");
@@ -8669,22 +8669,22 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
       )}
       {modal === "privacy" && (
         <Overlay title="Privacy and terms" aria-label="Privacy and terms">
-          <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.7, margin: 0 }}>
+          <p style={{ fontSize: 14, color: T.text, lineHeight: 1.7, margin: 0 }}>
             Your documents are encrypted on your device with keys that never leave it. ReadiNes reads your documents to
             classify them and to check them against life moments, and it never sells, shares, or trains on your data.
             You can export your archive at any time, and deleting your account removes it from this device.
           </p>
-          <p style={{ fontSize: 12, color: T.muted, marginTop: 10 }}>
+          <p style={{ fontSize: 12, color: T.muted, marginTop: 12 }}>
             The full privacy policy and terms of service are published with the app in the store listing.
           </p>
         </Overlay>
       )}
       {modal === "delete" && (
         <Overlay title="Delete account?" aria-label="Delete account?">
-          <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.6, margin: 0 }}>
+          <p style={{ fontSize: 14, color: T.text, lineHeight: 1.6, margin: 0 }}>
             This erases everything on this device: documents, holdings, packs. There is no undo.
           </p>
-          <label style={{ display: "block", fontSize: 12.5, color: T.muted, margin: "14px 0 6px" }}>
+          <label style={{ display: "block", fontSize: 12, color: T.muted, margin: "16px 0 8px" }}>
             Type <b style={{ color: T.text }}>delete</b> to confirm
           </label>
           <input
@@ -8696,8 +8696,8 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
               width: "100%",
               background: T.raised,
               border: `1px solid ${T.border}`,
-              borderRadius: 10,
-              padding: "11px 12px",
+              borderRadius: 12,
+              padding: "12px 12px",
               color: T.text,
               fontSize: 16,
               minHeight: 44,
@@ -8712,7 +8712,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
               ...btnGold,
               width: "100%",
               justifyContent: "center",
-              marginTop: 14,
+              marginTop: 16,
               background: T.coral,
               opacity: delWord.trim().toLowerCase() === "delete" ? 1 : 0.4,
             }}
@@ -8743,12 +8743,12 @@ function AuthScreen({
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 10,
-    padding: "11px 13px",
+    borderRadius: 12,
+    padding: "12px 16px",
     color: T.white,
-    fontSize: 15,
+    fontSize: 16,
     outline: "none",
-    marginTop: 9,
+    marginTop: 12,
   };
   /* DEV ONLY — remove before release: one-tap test session */
   const DEV_MAIL = ["dev", "readines.app"].join("@");
@@ -8784,15 +8784,15 @@ function AuthScreen({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
         overflowY: "auto",
       }}
     >
       <div style={{ width: "min(400px,100%)" }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginBottom: 22 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 24 }}>
           <BrandMark size={48} carve={T.navy} />
           <BrandWordmark size={22} color={T.white} gold={T.gold} />
-          <div style={{ fontSize: 13.5, color: T.muted, textAlign: "center", marginTop: 2 }}>
+          <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>
             Be ready for life's important moments.
           </div>
         </div>
@@ -8800,7 +8800,7 @@ function AuthScreen({
           style={{
             display: "flex",
             border: `1px solid ${T.border}`,
-            borderRadius: 11,
+            borderRadius: 12,
             overflow: "hidden",
             marginBottom: 16,
           }}
@@ -8815,8 +8815,8 @@ function AuthScreen({
               }}
               style={{
                 flex: 1,
-                padding: "10px 0",
-                fontSize: 13.5,
+                padding: "12px 0",
+                fontSize: 14,
                 fontWeight: 700,
                 cursor: "pointer",
                 border: "none",
@@ -8850,8 +8850,8 @@ function AuthScreen({
             onKeyDown={(e) => e.key === "Enter" && submit()}
           />
         )}
-        {err && <div style={{ color: T.coral, fontSize: 12.5, marginTop: 10 }}>{err}</div>}
-        <button onClick={submit} style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 14, padding: "13px 16px" }}>
+        {err && <div style={{ color: T.coral, fontSize: 12, marginTop: 12 }}>{err}</div>}
+        <button onClick={submit} style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 16, padding: "16px 16px" }}>
           {mode === "signin" ? "Sign in" : "Create account"} <ArrowRight size={15} />
         </button>
         {/* DEV ONLY — remove before release: visible skip into the app for testing */}
@@ -8859,13 +8859,13 @@ function AuthScreen({
           onClick={devSkip}
           style={{
             width: "100%",
-            marginTop: 10,
+            marginTop: 12,
             padding: "12px 0",
             borderRadius: 12,
             border: `1.5px solid ${T.gold}`,
             background: T.gold + "1F",
             color: T.gold,
-            fontWeight: 800,
+            fontWeight: 700,
             fontSize: 14,
             cursor: "pointer",
             display: "flex",
@@ -8876,7 +8876,7 @@ function AuthScreen({
         >
           Skip sign-in (testing) <ArrowRight size={16} />
         </button>
-        <p style={{ fontSize: 12, color: T.faint, textAlign: "center", marginTop: 14, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 12, color: T.faint, textAlign: "center", marginTop: 16, lineHeight: 1.5 }}>
           Your documents stay encrypted on your device.
         </p>
       </div>
@@ -8923,10 +8923,10 @@ function OnboardingWizard({ store, onDone }: any) {
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 10,
-    padding: "11px 13px",
+    borderRadius: 12,
+    padding: "12px 16px",
     color: T.white,
-    fontSize: 14.5,
+    fontSize: 14,
     outline: "none",
     fontFamily: "inherit",
     textAlign: "center",
@@ -8941,46 +8941,46 @@ function OnboardingWizard({ store, onDone }: any) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 18,
+        padding: 20,
         overflowY: "auto",
       }}
     >
       <div style={{ width: "min(460px,100%)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22, justifyContent: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, justifyContent: "center" }}>
           <BrandMark size={34} carve={T.navy} />
           <BrandWordmark size={18} color={T.white} gold={T.gold} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <button
             onClick={() => setStep((v) => Math.max(0, v - 1))}
-            style={{ visibility: step === 1 ? "visible" : "hidden", background: "none", border: "none", color: T.muted, fontSize: 12.5, cursor: "pointer" }}
+            style={{ visibility: step === 1 ? "visible" : "hidden", background: "none", border: "none", color: T.muted, fontSize: 12, cursor: "pointer" }}
           >
             ← Back
           </button>
           <button
             onClick={finish}
-            style={{ visibility: step < 2 ? "visible" : "hidden", background: "none", border: "none", color: T.muted, fontSize: 12.5, cursor: "pointer" }}
+            style={{ visibility: step < 2 ? "visible" : "hidden", background: "none", border: "none", color: T.muted, fontSize: 12, cursor: "pointer" }}
           >
             Skip setup
           </button>
         </div>
-        <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 22 }}>
+        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24 }}>
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              style={{ width: 26, height: 4, borderRadius: 4, background: i <= step ? T.gold : T.raised }}
+              style={{ width: 26, height: 4, borderRadius: 12, background: i <= step ? T.gold : T.raised }}
             />
           ))}
         </div>
         {step === 1 && (
           <div style={{ textAlign: "center" }}>
-            <h2 style={{ color: T.white, fontSize: 22, margin: 0 }}>
+            <h2 style={{ color: T.white, fontSize: 20, margin: 0 }}>
               {name.trim() ? `Nice to meet you, ${name.trim().split(" ")[0]}. What's coming up?` : "What is coming up in your life?"}
             </h2>
-            <p style={{ color: T.muted, fontSize: 13.5, margin: "8px 0 18px" }}>
+            <p style={{ color: T.muted, fontSize: 14, margin: "8px 0 20px" }}>
               This chooses which curated packs we spotlight first. Nothing is locked out; every pack stays available.
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {INTERESTS.map(([id, label, Ic]) => {
                 const on = picks.has(id);
                 return (
@@ -8997,17 +8997,17 @@ function OnboardingWizard({ store, onDone }: any) {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 9,
+                      gap: 12,
                       background: on ? `${T.gold}18` : T.raised,
                       border: `1px solid ${on ? T.gold : T.border}`,
-                      borderRadius: 11,
+                      borderRadius: 12,
                       padding: "12px 12px",
                       cursor: "pointer",
                       textAlign: "left",
                     }}
                   >
                     <Ic size={16} color={on ? T.gold : T.muted} />
-                    <span style={{ fontSize: 13.5, fontWeight: 600, color: T.white }}>{label}</span>
+                    <span style={{ fontSize: 16, fontWeight: 500, color: T.white }}>{label}</span>
                   </button>
                 );
               })}
@@ -9023,8 +9023,8 @@ function OnboardingWizard({ store, onDone }: any) {
         )}
         {step === 0 && (
           <div style={{ textAlign: "center" }}>
-            <h2 style={{ color: T.white, fontSize: 22, margin: 0 }}>Welcome. What should we call you?</h2>
-            <p style={{ color: T.muted, fontSize: 13.5, margin: "8px 0 18px" }}>
+            <h2 style={{ color: T.white, fontSize: 20, margin: 0 }}>Welcome. What should we call you?</h2>
+            <p style={{ color: T.muted, fontSize: 14, margin: "8px 0 20px" }}>
               This names your vault. It stays on this device, and everything in it starts empty and private.
             </p>
             <input
@@ -9037,39 +9037,39 @@ function OnboardingWizard({ store, onDone }: any) {
             />
             <button
               onClick={() => setStep(1)}
-              style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 14 }}
+              style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 16 }}
             >
               Continue <ArrowRight size={15} />
             </button>
           </div>
         )}
         {step === 2 && (
-          <div style={{ textAlign: "center", padding: "18px 0" }}>
-            <div style={{ display: "inline-block", marginBottom: 18 }}>
+          <div style={{ textAlign: "center", padding: "20px 0" }}>
+            <div style={{ display: "inline-block", marginBottom: 20 }}>
               <BrandMark size={56} carve={T.navy} />
             </div>
-            <h2 style={{ color: T.white, fontSize: 22, margin: "0 0 16px" }}>
+            <h2 style={{ color: T.white, fontSize: 20, margin: "0 0 16px" }}>
               {name.trim() ? `Sealing ${name.trim().split(" ")[0]}'s family vault` : "Sealing your vault"}
             </h2>
-            <div style={{ display: "grid", gap: 9, maxWidth: 360, margin: "0 auto", textAlign: "left" }}>
+            <div style={{ display: "grid", gap: 12, maxWidth: 360, margin: "0 auto", textAlign: "left" }}>
               {SEAL_LINES.map((l, i) => (
                 <div
                   key={i}
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: 9,
+                    gap: 12,
                     opacity: sealPhase >= i ? 1 : 0.25,
                     transition: "opacity .4s",
                     color: sealPhase >= i ? T.text : T.muted,
-                    fontSize: 13.5,
+                    fontSize: 14,
                   }}
                 >
                   <span
                     style={{
                       width: 18,
                       height: 18,
-                      borderRadius: 99,
+                      borderRadius: 999,
                       background: sealPhase >= i ? T.gold : T.raised,
                       display: "grid",
                       placeItems: "center",
@@ -9162,12 +9162,12 @@ export default function App() {
 
   if (!authChecked)
     return (
-      <div style={{ minHeight: "100vh", background: T.navy, display: "flex", alignItems: "center", justifyContent: "center", padding: 18 }}>
+      <div style={{ minHeight: "100vh", background: T.navy, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <style>{APPCSS}</style>
-        <div style={{ width: "min(400px,100%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 10, animation: "lp-pulse 1.6s ease-in-out infinite" }}>
+        <div style={{ width: "min(400px,100%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, animation: "lp-pulse 1.6s ease-in-out infinite" }}>
           <BrandMark size={48} carve={T.navy} />
           <BrandWordmark size={22} color={T.white} gold={T.gold} />
-          <div style={{ fontSize: 13.5, color: T.muted, textAlign: "center", marginTop: 2 }}>Be ready for life's important moments.</div>
+          <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>Be ready for life's important moments.</div>
         </div>
       </div>
     );
@@ -9230,7 +9230,7 @@ export default function App() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 11,
+            gap: 12,
             padding: navOpen ? "6px 8px 18px" : "6px 0 18px",
             justifyContent: navOpen ? "flex-start" : "center",
           }}
@@ -9241,7 +9241,7 @@ export default function App() {
               placeItems: "center",
               width: 40,
               height: 40,
-              borderRadius: 11,
+              borderRadius: 12,
               background: `linear-gradient(135deg, ${T.gold}, ${T.goldBright})`,
               flexShrink: 0,
             }}
@@ -9250,7 +9250,7 @@ export default function App() {
           </span>
           {navOpen && (
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: T.white, whiteSpace: "nowrap" }}>
+              <div style={{ fontWeight: 700, fontSize: 16, color: T.white, whiteSpace: "nowrap" }}>
                 Readi<span style={{ color: T.gold }}>N</span>es
               </div>
               <div
@@ -9267,7 +9267,7 @@ export default function App() {
             </div>
           )}
         </div>
-        <nav style={{ display: "grid", gap: 3 }}>
+        <nav style={{ display: "grid", gap: 4 }}>
           {NAV.map(([key, label, Ic]) => {
             const on = route === key;
             return (
@@ -9281,9 +9281,9 @@ export default function App() {
                   justifyContent: navOpen ? "flex-start" : "center",
                   gap: navOpen ? 12 : 0,
                   padding: navOpen ? "10px 12px" : "10px 0",
-                  borderRadius: 10,
+                  borderRadius: 12,
                   fontSize: 14,
-                  fontWeight: 600,
+                  fontWeight: 500,
                   textAlign: "left",
                   cursor: "pointer",
                   border: on ? `1px solid ${T.border}` : "1px solid transparent",
@@ -9306,14 +9306,14 @@ export default function App() {
             alignItems: "center",
             justifyContent: "center",
             gap: 8,
-            padding: "9px 0",
-            borderRadius: 10,
+            padding: "12px 0",
+            borderRadius: 12,
             border: `1px solid ${T.border}`,
             background: T.panel,
             color: T.muted,
             cursor: "pointer",
-            fontSize: 12.5,
-            fontWeight: 600,
+            fontSize: 12,
+            fontWeight: 500,
           }}
         >
           {navOpen ? (
@@ -9341,7 +9341,7 @@ export default function App() {
                 gap: 8,
                 background: T.panel,
                 border: `1px solid ${query ? T.gold + "66" : T.border}`,
-                borderRadius: 10,
+                borderRadius: 12,
                 padding: "8px 12px",
               }}
             >
@@ -9350,7 +9350,7 @@ export default function App() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search…"
-                style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: 13.5 }}
+                style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: 14 }}
               />
               {query && (
                 <button
@@ -9374,7 +9374,7 @@ export default function App() {
                   overflowY: "auto",
                   background: T.navy,
                   border: `1px solid ${T.border}`,
-                  borderRadius: 14,
+                  borderRadius: 12,
                   padding: 12,
                   boxShadow: "0 24px 70px rgba(0,0,0,.55)",
                 }}
@@ -9397,11 +9397,11 @@ export default function App() {
                 style={{
                   width: 38,
                   height: 38,
-                  borderRadius: 99,
+                  borderRadius: 999,
                   border: `1px solid ${route === "settings" ? T.gold + "88" : T.border}`,
                   background: T.gold + "1F",
                   color: T.gold,
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontSize: 14,
                   cursor: "pointer",
                   flexShrink: 0,
@@ -9421,11 +9421,11 @@ export default function App() {
                 style={{
                   width: 38,
                   height: 38,
-                  borderRadius: 99,
+                  borderRadius: 999,
                   border: `1px solid ${route === "settings" ? T.gold + "88" : T.border}`,
                   background: T.gold + "1F",
                   color: T.gold,
-                  fontWeight: 800,
+                  fontWeight: 700,
                   fontSize: 14,
                   cursor: "pointer",
                   flexShrink: 0,
@@ -9476,7 +9476,7 @@ export default function App() {
 
       {isMobile && mSearch && (
         <div style={{ position: "fixed", inset: 0, zIndex: 85, background: T.navy, display: "flex", flexDirection: "column", padding: "calc(10px + env(safe-area-inset-top)) 14px 14px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
             <button
               onClick={() => {
                 setMSearch(false);
@@ -9491,7 +9491,7 @@ export default function App() {
                 flex: 1,
                 display: "flex",
                 alignItems: "center",
-                gap: 9,
+                gap: 12,
                 background: T.panel,
                 border: `1px solid ${T.gold}55`,
                 borderRadius: 12,
@@ -9525,33 +9525,33 @@ export default function App() {
                 }}
               />
             ) : (
-              <div style={{ padding: "18px 4px 0" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, marginBottom: 10 }}>Try</div>
+              <div style={{ padding: "20px 4px 0" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, marginBottom: 12 }}>Try</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {["Passport", "Insurance", "Bank statement", "Home loan", "Nominee", "Prescription"].map((q) => (
                     <button
                       key={q}
                       onClick={() => setQuery(q)}
                       className="lp-chip"
-                      style={{ background: T.raised, color: T.text, border: `1px solid ${T.border}`, minHeight: 36, padding: "0 12px", fontWeight: 600, cursor: "pointer" }}
+                      style={{ background: T.raised, color: T.text, border: `1px solid ${T.border}`, minHeight: 36, padding: "0 12px", fontWeight: 500, cursor: "pointer" }}
                     >
                       {q}
                     </button>
                   ))}
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, margin: "22px 0 10px" }}>Recently added</div>
+                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, margin: "24px 0 12px" }}>Recently added</div>
                 {store.docs.slice(0, 5).map((d: Doc) => (
                   <button
                     key={d.id}
                     onClick={() => setQuery(d.docType)}
-                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", background: "none", border: "none", borderTop: `1px solid ${T.border}`, padding: "12px 4px", color: T.text, fontSize: 14, cursor: "pointer", minHeight: 44 }}
+                    style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", background: "none", border: "none", borderTop: `1px solid ${T.border}`, padding: "12px 4px", color: T.text, fontSize: 14, cursor: "pointer", minHeight: 44 }}
                   >
                     <FileText size={15} color={T.muted} />
                     <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.docType}</span>
                     <span style={{ fontSize: 12, color: T.muted }}>{d.category}</span>
                   </button>
                 ))}
-                {store.docs.length === 0 && <div style={{ fontSize: 13, color: T.muted, padding: "8px 4px" }}>Nothing in the vault yet.</div>}
+                {store.docs.length === 0 && <div style={{ fontSize: 14, color: T.muted, padding: "8px 4px" }}>Nothing in the vault yet.</div>}
               </div>
             )}
           </div>
@@ -9600,7 +9600,7 @@ export default function App() {
             fontWeight: 500,
             display: "flex",
             alignItems: "center",
-            gap: 10,
+            gap: 12,
             boxShadow: "0 16px 50px rgba(0,0,0,.5)",
           }}
         >
