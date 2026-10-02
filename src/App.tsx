@@ -6389,8 +6389,8 @@ function Trust({ store, toast, go }: any) {
     <div>
       {isMobile && (
         <MNav
-          title="Who steps in"
-          aria-label="Who steps in"
+          title="Emergency access"
+          aria-label="Emergency access"
           left={
             <button
               onClick={() => go("home")}
@@ -6404,14 +6404,14 @@ function Trust({ store, toast, go }: any) {
       )}
       {!isMobile && (
         <SectionHead
-          title="Who steps in"
-          aria-label="Who steps in"
+          title="Emergency access"
+          aria-label="Emergency access"
           sub="Who your holdings and documents go to if you use the SOS handoff."
         />
       )}
       <Card style={{ padding: 0, marginBottom: 16 }}>
         <div style={{ padding: "16px 16px" }}>
-          <span style={{ fontWeight: 700, color: T.white, fontSize: 14 }}>Who steps in</span>
+          <span style={{ fontWeight: 700, color: T.white, fontSize: 14 }}>Emergency access</span>
           <p style={{ fontSize: 12, color: T.muted, margin: "4px 0 0", lineHeight: 1.5 }}>
             The people your holdings and documents go to if you use the SOS handoff.
           </p>
@@ -8097,7 +8097,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
             <div style={{ padding: 8, borderTop: `1px solid ${T.border}` }}>
               {[
                 ["Profile and settings", SettingsIcon, () => go("settings")],
-                ["Who steps in", Users, () => go("trust")],
+                ["Emergency access", Users, () => go("trust")],
                 ["Design system", Sparkles, () => go("design")],
               ].map(([label, Ic, fn]: any, i) => (
                 <button
