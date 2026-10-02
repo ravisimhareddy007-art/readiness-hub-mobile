@@ -3283,7 +3283,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
     return { ...ev, reqs: base.filter((r: string) => !skipped.includes(r)) };
   }, [ev, live.reqs, live.origin, seeded, skipped.join("|")]);
   const { rows, got, total, score } = evalEvent(evLive, have, store.country);
-  const included: Doc[] = [
+  const matched: Doc[] = [
     ...new Set(
       rows
         .filter((r: any) => r.have)
@@ -3291,7 +3291,16 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
         .filter(Boolean) as Doc[],
     ),
   ];
+  /* What actually goes in the download: the matched documents, minus anything the user unticked,
+     plus anything they added by hand. A counter often wants something the matcher never looked for. */
+  const [dropped, setDropped] = useState<Set<string>>(new Set());
+  const [added, setAdded] = useState<Set<string>>(new Set());
+  const included: Doc[] = [
+    ...matched.filter((d) => !dropped.has(d.id)),
+    ...store.docs.filter((d: Doc) => added.has(d.id)),
+  ];
   const [packing, setPacking] = useState(false);
+  const [pickExtra, setPickExtra] = useState(false);
   /* A list of filenames is not a pack. What goes to a counter is the documents themselves, named
      so they can be handed over in order, with a cover sheet saying what is still missing. */
   const exportPack = async () => {
@@ -3406,14 +3415,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 {checking
                   ? "Checking published sources…"
                   : ev.custom
-                    ? `${ev.builtBy === "lookup" ? "Looked up" : "Written by you"}${packCountry ? ` for ${countryName(packCountry)}` : ""}${ev.checked ? ` · checked ${fmtDate(ev.checked)}` : ""}`
-                  : live.origin === "curated" && seeded
-                    ? `${countryFlag(store.country)} ${seeded.source} · checked ${fmtDate(seeded.checked)}`
-                    : researched
-                      ? isHome && live.origin === "curated"
-                        ? ev.blurb
-                        : `From published sources${live.lastChecked ? `, checked ${fmtDate(live.lastChecked)}` : ""}`
-                      : "Not checked against published sources yet"}
+                    ? `${ev.builtBy === "lookup" ? "Looked up" : "Written by you"}${packCountry ? ` for ${countryName(packCountry)}` : ""}`
+                    : ev.blurb}
               </span>
             )}
           </div>
@@ -3470,23 +3473,28 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                   ))}
                 </>
               ) : (
-                <span style={{ flex: "1 1 auto", lineHeight: 1.5 }}>
+                <span style={{ flex: "1 1 auto", lineHeight: 1.55 }}>
                   {checking ? (
                     "Checking published sources…"
                   ) : (
                     <>
-                      <span style={{ color: T.faint }}>Source </span>
-                      <b style={{ color: SEM.action, fontWeight: 700 }}>{seeded?.source || ev.source}</b>
-                      <span style={{ color: T.faint }}> · last checked </span>
-                      <b style={{ color: T.text, fontWeight: 600 }}>
-                        {fmtDate(seeded?.checked || ev.lastChecked)}
-                      </b>
+                      <span style={{ display: "block" }}>
+                        <span style={{ color: T.faint }}>Source</span>{" "}
+                        <b style={{ color: SEM.action, fontWeight: 700 }}>
+                          {live.lastChecked ? live.sources[0]?.title || "Published sources" : seeded?.source || ev.source}
+                        </b>
+                      </span>
+                      <span style={{ display: "block", marginTop: 2 }}>
+                        <span style={{ color: T.faint }}>Last checked</span>{" "}
+                        <b style={{ color: T.text, fontWeight: 600 }}>
+                          {fmtDate(live.lastChecked || seeded?.checked || ev.lastChecked)}
+                        </b>
+                      </span>
                     </>
                   )}
                 </span>
               )}
               <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
-                {live.lastChecked && <span style={{ color: T.faint }}>Checked {fmtDate(live.lastChecked)}</span>}
                 <button
                   onClick={() => refresh(true)}
                   disabled={checking}
@@ -3798,6 +3806,121 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               setAddFor(null);
             }}
           />
+          {matched.length > 0 && (
+            <Card style={{ padding: 0, marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 15px" }}>
+                <Download size={15} color={T.muted} />
+                <b style={{ color: T.white, fontSize: 14 }}>In this download</b>
+                <span style={{ marginLeft: "auto", fontSize: 12.5, color: T.muted }}>{included.length}</span>
+              </div>
+              {matched.map((d) => (
+                <label
+                  key={d.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "10px 15px",
+                    borderTop: `1px solid ${T.border}`,
+                    minHeight: 48,
+                    cursor: "pointer",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={!dropped.has(d.id)}
+                    onChange={() =>
+                      setDropped((p2) => {
+                        const n = new Set(p2);
+                        n.has(d.id) ? n.delete(d.id) : n.add(d.id);
+                        return n;
+                      })
+                    }
+                    style={{ accentColor: SEM.action, width: 18, height: 18, flexShrink: 0 }}
+                  />
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 13.5, color: T.text }}>{d.docType}</span>
+                    <span style={{ display: "block", fontSize: 12, color: T.faint }}>{memberName(d.memberId)}</span>
+                  </span>
+                </label>
+              ))}
+              {store.docs.filter((d: Doc) => !matched.some((m2) => m2.id === d.id)).length > 0 && (
+                <>
+                  {!pickExtra ? (
+                    <button
+                      onClick={() => setPickExtra(true)}
+                      style={{
+                        width: "100%",
+                        minHeight: 44,
+                        background: "none",
+                        border: "none",
+                        borderTop: `1px solid ${T.border}`,
+                        color: SEM.action,
+                        fontSize: 13,
+                        fontWeight: 700,
+                        fontFamily: "inherit",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Add another document
+                    </button>
+                  ) : (
+                    <>
+                      <div
+                        style={{
+                          padding: "10px 15px 4px",
+                          borderTop: `1px solid ${T.border}`,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          letterSpacing: 0.4,
+                          textTransform: "uppercase",
+                          color: T.faint,
+                        }}
+                      >
+                        Anything else in your vault
+                      </div>
+                      {store.docs
+                        .filter((d: Doc) => !matched.some((m2) => m2.id === d.id))
+                        .slice(0, 20)
+                        .map((d: Doc) => (
+                          <label
+                            key={d.id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              padding: "10px 15px",
+                              minHeight: 48,
+                              cursor: "pointer",
+                              opacity: added.has(d.id) ? 1 : 0.6,
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={added.has(d.id)}
+                              onChange={() =>
+                                setAdded((p2) => {
+                                  const n = new Set(p2);
+                                  n.has(d.id) ? n.delete(d.id) : n.add(d.id);
+                                  return n;
+                                })
+                              }
+                              style={{ accentColor: SEM.action, width: 18, height: 18, flexShrink: 0 }}
+                            />
+                            <span style={{ flex: 1, minWidth: 0 }}>
+                              <span style={{ display: "block", fontSize: 13.5, color: T.text }}>{d.docType}</span>
+                              <span style={{ display: "block", fontSize: 12, color: T.faint }}>
+                                {memberName(d.memberId)}
+                              </span>
+                            </span>
+                          </label>
+                        ))}
+                    </>
+                  )}
+                </>
+              )}
+            </Card>
+          )}
           <button
             onClick={exportPack}
             disabled={packing || included.length === 0 || !researched}
@@ -3809,11 +3932,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             }}
           >
             <Download size={16} />
-            {packing
-              ? "Packing…"
-              : included.length === 0
-                ? "Nothing to download yet"
-                : `Download ${included.length} document${included.length === 1 ? "" : "s"}`}
+            {packing ? "Preparing…" : included.length === 0 ? "Nothing selected" : "Download"}
           </button>
           <p
             style={{
