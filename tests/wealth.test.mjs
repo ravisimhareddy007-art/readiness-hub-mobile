@@ -68,7 +68,7 @@ for (const [name, text, exp] of cases) {
 const ok2 = (c, m) => { if (!c) throw new Error(m || "assertion failed"); };
 const appSrc = readFileSync(join(root, "src/App.tsx"), "utf8");
 t("it is not called a nominee", () => {
-  ok2(/Who steps in/.test(appSrc), "a bank nominee is a legal designation; this is not");
+  ok2(/Emergency access/.test(appSrc), "a bank nominee is a legal designation; this is not");
   ok2(!/label: "Family", sub:/.test(appSrc));
 });
 t("several people can step in, one of them primary", () => {
