@@ -61,13 +61,10 @@ export const countryFlag = (code?: string) => COUNTRIES.find((c) => c.code === c
 
 /** The device's region, when it is one we cover. */
 export function defaultCountry(): string {
-  try {
-    const loc = typeof navigator !== "undefined" ? navigator.language : "en-IN";
-    const region = new Intl.Locale(loc).maximize().region;
-    return CODES.includes(region as string) ? (region as string) : "IN";
-  } catch {
-    return "IN";
-  }
+  /* Fixed to India while that is the only market with packs, requirements and pricing. The device
+     locale is not a safe default: a phone set to en-US would silently switch the whole catalogue
+     to a country we do not support. Restore the locale read when the picker comes back. */
+  return "IN";
 }
 
 /** Match a typed query against a country's name or code. */
