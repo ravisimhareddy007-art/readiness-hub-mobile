@@ -76,7 +76,6 @@ import { buildZip } from "@/lib/zip";
 import { getSession, signup, login, logout, deleteAccount, updateAccountName, changePassword, changeEmail, type Account } from "@/lib/auth";
 import { ensureVaultReady } from "@/lib/session";
 import DocViewer from "@/components/DocViewer";
-import DocumentsScreen, { ADD_DOCS_EVENT } from "@/screens/Documents";
 import { getPackRequirements, cachedRequirements } from "@/lib/requirements";
 import { countryName, countryFlag } from "@/lib/countries";
 import { packInCountry, DESTINATION_PACKS } from "@/lib/pack-scope";
@@ -4059,6 +4058,864 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
 }
 
 /* ═══════════════ DOCUMENTS ═══════════════ */
+function Documents({ store, toast, go }: any) {
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState<string>("All");
+  const [person, setPerson] = useState<string>("All");
+  const [source, setSource] = useState<string>("All");
+  const [quick, setQuick] = useState<"all" | "expiring" | "expired" | "recent" | "proofs">("all");
+  const [sort, setSort] = useState<"newest" | "oldest" | "name" | "expiry">("newest");
+  const [sel, setSel] = useState<Set<string>>(new Set());
+  const [open, setOpen] = useState<Doc | null>(null);
+  const [preview, setPreview] = useState<Doc | null>(null);
+  const [upMenu, setUpMenu] = useState(false);
+  const [fSheet, setFSheet] = useState(false);
+  const [addSheet, setAddSheet] = useState(false);
+  const [selMode, setSelMode] = useState(false);
+  const isMobile = useIsMobile();
+
+  const nameOf = (mid?: string) => store.members.find((m: Member) => m.id === mid)?.name || "Unassigned";
+  const colorOf = (mid?: string) => store.members.find((m: Member) => m.id === mid)?.color || T.faint;
+  const fdate = (s?: string) =>
+    s ? new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" }) : "—";
+
+  const docs: Doc[] = store.docs;
+  const expiring = docs.filter((d) => d.expiry && daysTo(d.expiry) >= 0 && daysTo(d.expiry) < 60);
+  const expired = docs.filter((d) => d.expiry && daysTo(d.expiry) < 0);
+  const recent = docs.filter((d) => (Date.now() - +new Date(d.addedAt)) / 86400000 <= 7);
+
+  const filtered = useMemo(() => {
+    let list = docs;
+    if (quick === "expiring") list = list.filter((d) => d.expiry && daysTo(d.expiry) >= 0 && daysTo(d.expiry) < 60);
+    if (quick === "expired") list = list.filter((d) => d.expiry && daysTo(d.expiry) < 0);
+    if (quick === "recent") list = list.filter((d) => (Date.now() - +new Date(d.addedAt)) / 86400000 <= 7);
+    if (quick === "proofs") list = list.filter((d) => d.docType === "Transaction Evidence");
+    if (cat !== "All") list = list.filter((d) => d.category === cat);
+    if (person !== "All") list = list.filter((d) => (d.memberId || "") === person);
+    if (source !== "All") list = list.filter((d) => d.source === source);
+    const needle = q.trim().toLowerCase();
+    if (needle)
+      list = list.filter((d) =>
+        `${d.docType} ${d.name} ${d.category} ${nameOf(d.memberId)} ${d.source} ${d.notes || ""}`
+          .toLowerCase()
+          .includes(needle),
+      );
+    const by: Record<string, (a: Doc, b: Doc) => number> = {
+      newest: (a, b) => +new Date(b.addedAt) - +new Date(a.addedAt),
+      oldest: (a, b) => +new Date(a.addedAt) - +new Date(b.addedAt),
+      name: (a, b) => a.docType.localeCompare(b.docType),
+      expiry: (a, b) => (a.expiry ? +new Date(a.expiry) : Infinity) - (b.expiry ? +new Date(b.expiry) : Infinity),
+    };
+    return [...list].sort(by[sort]);
+  }, [docs, quick, cat, person, source, q, sort, store.members]);
+
+  const allSel = filtered.length > 0 && filtered.every((d) => sel.has(d.id));
+  const toggleAll = () => setSel(allSel ? new Set() : new Set(filtered.map((d) => d.id)));
+  const toggle = (id: string) =>
+    setSel((p) => {
+      const n = new Set(p);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  const clearSel = () => setSel(new Set());
+  const bulkDelete = async () => {
+    for (const id of sel) await store.removeDoc(id);
+    toast(`${sel.size} document(s) removed`);
+    clearSel();
+  };
+  const bulkAssign = (mid: string) => {
+    sel.forEach((id) => store.updateDoc(id, { memberId: mid }));
+    toast(`${sel.size} document(s) assigned to ${nameOf(mid)}`);
+    clearSel();
+  };
+
+  const expiryCell = (d: Doc) => {
+    if (!d.expiry) return <span style={{ color: T.faint }}>—</span>;
+    const n = daysTo(d.expiry);
+    const c = n < 0 ? T.coral : n < 60 ? SEM.warning : T.muted;
+    return <span style={{ color: c, fontWeight: n < 60 ? 700 : 400 }}>{n < 0 ? "expired" : `${n}d`}</span>;
+  };
+  const panels = (
+    <>
+      {open && (
+        <DocContextPanel
+          key={open.id}
+          d={store.docs.find((x: Doc) => x.id === open.id) || open}
+          store={store}
+          toast={toast}
+          onClose={() => setOpen(null)}
+          onPreview={() => setPreview(store.docs.find((x: Doc) => x.id === open.id) || open)}
+          onDeleted={() => setOpen(null)}
+        />
+      )}
+      {preview && (
+        <DocViewer
+          doc={preview}
+          store={store}
+          onClose={() => setPreview(null)}
+          onAddToWealth={
+            ["Finance", "Insurance", "Property"].includes(preview.category) &&
+            !store.holdings.some((h: Holding) => h.docId === preview.id)
+              ? () => {
+                  setPreview(null);
+                  store.setWealthIntent({ docId: preview.id });
+                  go?.("wealth");
+                }
+              : undefined
+          }
+        />
+      )}
+    </>
+  );
+
+  const catsAll = ["All", ...Array.from(new Set(docs.map((d) => d.category)))];
+  const addAndToast = (files: FileList | null, msg: string) => {
+    if (files?.length) {
+      store.addFiles(files);
+      toast(msg.replace("{n}", String(files.length)));
+    }
+  };
+  if (isMobile) {
+    const Opt = ({ on, onClick, children }: any) => (
+      <button
+        onClick={onClick}
+        style={{
+          padding: "8px 16px",
+          borderRadius: 999,
+          fontSize: 12,
+          fontWeight: 500,
+          cursor: "pointer",
+          border: `1px solid ${on ? SEM.action + "77" : T.border}`,
+          background: on ? T.raised : "transparent",
+          color: on ? T.white : T.muted,
+        }}
+      >
+        {children}
+      </button>
+    );
+    const Sec = ({ label, children }: any) => (
+      <div style={{ margin: "12px 0" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{children}</div>
+      </div>
+    );
+    const activeChips: { label: string; clear: () => void }[] = [];
+    if (quick !== "all") activeChips.push({ label: { expiring: "Expiring soon", expired: "Expired", recent: "Added this week", proofs: "Proofs" }[quick]!, clear: () => setQuick("all") });
+    if (cat !== "All") activeChips.push({ label: cat, clear: () => setCat("All") });
+    if (person !== "All") activeChips.push({ label: nameOf(person), clear: () => setPerson("All") });
+    if (sort !== "newest") activeChips.push({ label: { oldest: "Oldest first", name: "By name", expiry: "By expiry" }[sort]!, clear: () => setSort("newest") });
+    return (
+      <div>
+        <MNav title="Documents" aria-label="Documents" />
+        <button className="lp-fab" onClick={() => setAddSheet(true)} title="Add" aria-label="Add">
+          <Plus size={22} />
+        </button>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            background: T.panel,
+            border: `1px solid ${q ? SEM.action + "66" : T.border}`,
+            borderRadius: 12,
+            padding: "8px 12px",
+            marginBottom: 12,
+          }}
+        >
+          <Search size={15} color={T.muted} />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search documents…"
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text }}
+          />
+          {q && (
+            <button onClick={() => setQ("")} style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, display: "flex" }}>
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+          <span style={{ fontSize: 12, color: T.muted }}>
+            {filtered.length === docs.length ? `${docs.length} documents` : `${filtered.length} of ${docs.length}`}
+          </span>
+          {activeChips.map((c, i) => (
+            <button
+              key={i}
+              onClick={c.clear}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "4px 12px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 500,
+                border: `1px solid ${T.gold}55`,
+                background: T.raised,
+                color: T.white,
+                cursor: "pointer",
+              }}
+            >
+              {c.label} <X size={11} />
+            </button>
+          ))}
+          <span style={{ flex: 1 }} />
+          <button
+            onClick={() => {
+              if (selMode) clearSel();
+              setSelMode((v) => !v);
+            }}
+            style={{ background: "none", border: "none", color: SEM.action, fontSize: 16, fontWeight: 700, cursor: "pointer", padding: "8px 8px" }}
+          >
+            {selMode ? "Done" : "Select"}
+          </button>
+          <button
+            onClick={() => setFSheet(true)}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "none", border: "none", color: SEM.action, fontSize: 16, fontWeight: 700, cursor: "pointer", padding: "8px 4px" }}
+          >
+            <SlidersHorizontal size={14} /> Filter
+          </button>
+        </div>
+        <Card style={{ padding: 0, overflow: "hidden" }}>
+          {filtered.length === 0 ? (
+            docs.length === 0 ? (
+              <div style={{ padding: "32px 20px", textAlign: "center" }}>
+                <span
+                  style={{ width: 52, height: 52, borderRadius: 12, background: A.blue + "1F", display: "inline-grid", placeItems: "center", marginBottom: 12 }}
+                >
+                  <FolderOpen size={22} color={A.blue} />
+                </span>
+                <div style={{ fontSize: 16, fontWeight: 700, color: T.white }}>No documents yet</div>
+                <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 280 }}>
+                  Add a passport, a policy, or a payslip. ReadiNes files it and watches its expiry for you.
+                </p>
+                <button onClick={() => setAddSheet(true)} style={{ ...btnGold, margin: "0 auto" }}>
+                  <Plus size={15} /> Add your first document
+                </button>
+              </div>
+            ) : (
+              <div style={{ padding: 32, textAlign: "center" }}>
+                <div style={{ color: T.muted, fontSize: 14 }}>Nothing matches these filters.</div>
+                <button
+                  onClick={() => {
+                    setQuick("all");
+                    setCat("All");
+                    setPerson("All");
+                    setQ("");
+                  }}
+                  style={{ ...btnGhost, margin: "12px auto 0" }}
+                >
+                  Clear filters
+                </button>
+              </div>
+            )
+          ) : (
+            filtered.map((d, i) => {
+              const col = CAT_META[d.category as Category].color;
+              const Ic = CAT_META[d.category as Category].icon;
+              const checked = sel.has(d.id);
+              return (
+                <div
+                  key={d.id}
+                  onClick={() => (selMode ? toggle(d.id) : setOpen(d))}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "12px 16px",
+                    borderTop: i ? `1px solid ${T.border}` : "none",
+                    cursor: "pointer",
+                    background: checked ? T.raised : "transparent",
+                  }}
+                >
+                  {selMode && (
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => toggle(d.id)}
+                      style={{ accentColor: SEM.action, width: 18, height: 18, flexShrink: 0 }}
+                    />
+                  )}
+                  <span
+                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 12, background: col + "22", flexShrink: 0 }}
+                  >
+                    <Ic size={15} color={col} />
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {d.docType}
+                    </span>
+                    <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {nameOf(d.memberId).split(" ")[0]} · {d.expiry ? <>{expiryCell(d)}</> : fdate(d.addedAt)}
+                    </span>
+                  </span>
+                  <ChevronRight size={15} color={T.faint} style={{ flexShrink: 0 }} />
+                </div>
+              );
+            })
+          )}
+        </Card>
+        {sel.size > 0 && (
+          <div
+            style={{
+              position: "fixed",
+              left: 10,
+              right: 10,
+              bottom: "calc(74px + env(safe-area-inset-bottom))",
+              zIndex: 56,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              background: T.raised,
+              border: `1px solid ${T.gold}55`,
+              borderRadius: 12,
+              padding: "12px 12px",
+              boxShadow: "0 14px 40px var(--lpv-shadow)",
+            }}
+          >
+            <b style={{ fontSize: 14, color: T.white }}>{sel.size} selected</b>
+            <select
+              onChange={(e) => e.target.value && bulkAssign(e.target.value)}
+              defaultValue=""
+              style={{ flex: 1, background: T.panel, color: T.text, border: `1px solid ${T.border}`, borderRadius: 12, padding: "8px 8px", fontSize: 14 }}
+            >
+              <option value="" disabled>
+                Assign to…
+              </option>
+              {store.members.map((m: Member) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+            <button onClick={bulkDelete} title="Delete selected" aria-label="Delete selected" style={{ ...btnGhost, padding: 12, color: T.coral }}>
+              <Trash2 size={15} color={T.coral} />
+            </button>
+            <button onClick={clearSel} title="Clear selection" aria-label="Clear selection" style={{ ...btnGhost, padding: 12 }}>
+              <X size={15} />
+            </button>
+          </div>
+        )}
+        {addSheet && (
+          <MSheet title="Add documents" aria-label="Add documents" onClose={() => setAddSheet(false)}>
+            <label className="lp-sheet-item">
+              <FileText size={19} color={T.muted} /> Upload files
+              <input
+                type="file"
+                multiple
+                hidden
+                onChange={(e) => {
+                  addAndToast(e.target.files, "{n} document(s) added");
+                  e.currentTarget.value = "";
+                  setAddSheet(false);
+                }}
+              />
+            </label>
+            <label className="lp-sheet-item">
+              <ImageIcon size={19} color={T.muted} /> From gallery
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={(e) => {
+                  addAndToast(e.target.files, "{n} image(s) added");
+                  e.currentTarget.value = "";
+                  setAddSheet(false);
+                }}
+              />
+            </label>
+            <label className="lp-sheet-item">
+              <Camera size={19} color={T.muted} /> Scan with camera
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                hidden
+                onChange={(e) => {
+                  addAndToast(e.target.files, "Scan captured and classified");
+                  e.currentTarget.value = "";
+                  setAddSheet(false);
+                }}
+              />
+            </label>
+          </MSheet>
+        )}
+        {fSheet && (
+          <MSheet title="Filters" aria-label="Filters" onClose={() => setFSheet(false)}>
+            <Sec label="Status">
+              <Opt on={quick === "all"} onClick={() => setQuick("all")}>All</Opt>
+              <Opt on={quick === "expiring"} onClick={() => setQuick("expiring")}>Expiring soon · {expiring.length}</Opt>
+              <Opt on={quick === "expired"} onClick={() => setQuick("expired")}>Expired · {expired.length}</Opt>
+              <Opt on={quick === "recent"} onClick={() => setQuick("recent")}>Added this week · {recent.length}</Opt>
+              <Opt on={quick === "proofs"} onClick={() => setQuick("proofs")}>Proofs</Opt>
+            </Sec>
+            <Sec label="Category">
+              {catsAll.map((c) => (
+                <Opt key={c} on={cat === c} onClick={() => setCat(c)}>
+                  {c}
+                </Opt>
+              ))}
+            </Sec>
+            <Sec label="Person">
+              <Opt on={person === "All"} onClick={() => setPerson("All")}>Everyone</Opt>
+              {store.members.map((m: Member) => (
+                <Opt key={m.id} on={person === m.id} onClick={() => setPerson(m.id)}>
+                  {m.name.split(" ")[0]}
+                </Opt>
+              ))}
+            </Sec>
+            <Sec label="Sort">
+              <Opt on={sort === "newest"} onClick={() => setSort("newest")}>Newest first</Opt>
+              <Opt on={sort === "oldest"} onClick={() => setSort("oldest")}>Oldest first</Opt>
+              <Opt on={sort === "name"} onClick={() => setSort("name")}>By name</Opt>
+              <Opt on={sort === "expiry"} onClick={() => setSort("expiry")}>By expiry</Opt>
+            </Sec>
+          </MSheet>
+        )}
+        {panels}
+      </div>
+    );
+  }
+
+  const selStyle: CSSProperties = {
+    background: T.raised,
+    color: T.text,
+    border: `1px solid ${T.border}`,
+    borderRadius: 12,
+    padding: "8px 12px",
+    fontSize: 14,
+    outline: "none",
+  };
+  const quickChips: { k: typeof quick; label: string; n: number; tone?: string }[] = [
+    { k: "all", label: "All", n: docs.length },
+    { k: "expiring", label: "Expiring soon", n: expiring.length, tone: T.gold },
+    { k: "expired", label: "Expired", n: expired.length, tone: T.coral },
+    { k: "recent", label: "Added this week", n: recent.length, tone: T.mint },
+    {
+      k: "proofs",
+      label: "Proofs",
+      n: docs.filter((d: Doc) => d.docType === "Transaction Evidence").length,
+      tone: A.blue,
+    },
+  ];
+  const GRID = "26px 2.1fr 1.15fr 0.95fr 0.85fr 0.75fr 0.65fr 30px";
+
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          columnGap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <SectionHead
+          title="Documents" aria-label="Documents"
+          sub={`${docs.length} records in your archive. Search, filter, and open any row for full context.`}
+        />
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
+          <div style={{ position: "relative" }}>
+            <button onClick={() => setUpMenu((v) => !v)} style={btnGold}>
+              <UploadCloud size={15} /> Upload <ChevronDown size={14} />
+            </button>
+            {upMenu && (
+              <>
+                <div onClick={() => setUpMenu(false)} style={{ position: "fixed", inset: 0, zIndex: 72 }} />
+                <div
+                  className="lp-upmenu"
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 6px)",
+                    right: 0,
+                    zIndex: 73,
+                    width: 190,
+                    background: T.panel,
+                    border: `1px solid ${T.border}`,
+                    borderRadius: 12,
+                    padding: 8,
+                    boxShadow: "0 20px 60px var(--lpv-shadow)",
+                  }}
+                >
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "12px 12px",
+                      borderRadius: 12,
+                      cursor: "pointer",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: T.text,
+                    }}
+                  >
+                    <FileText size={15} color={T.muted} /> Upload files
+                    <input
+                      type="file"
+                      multiple
+                      hidden
+                      onChange={(e) => {
+                        if (e.target.files?.length) {
+                          store.addFiles(e.target.files);
+                          toast(`${e.target.files.length} document(s) classified`);
+                        }
+                        e.currentTarget.value = "";
+                        setUpMenu(false);
+                      }}
+                    />
+                  </label>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "12px 12px",
+                      borderRadius: 12,
+                      cursor: "pointer",
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: T.text,
+                    }}
+                  >
+                    <ImageIcon size={15} color={T.muted} /> From gallery
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      hidden
+                      onChange={(e) => {
+                        if (e.target.files?.length) {
+                          store.addFiles(e.target.files);
+                          toast(`${e.target.files.length} image(s) added`);
+                        }
+                        e.currentTarget.value = "";
+                        setUpMenu(false);
+                      }}
+                    />
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
+          <label style={{ ...btnGhost, cursor: "pointer" }}>
+            <Camera size={15} /> Scan
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              hidden
+              onChange={(e) => {
+                if (e.target.files?.length) {
+                  store.addFiles(e.target.files);
+                  toast("Scan captured and classified");
+                }
+                e.currentTarget.value = "";
+              }}
+            />
+          </label>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        {quickChips.map((c) => {
+          const on = quick === c.k;
+          return (
+            <button
+              key={c.k}
+              onClick={() => setQuick(c.k)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 16px",
+                borderRadius: 999,
+                fontSize: 14,
+                fontWeight: 500,
+                cursor: "pointer",
+                border: `1px solid ${on ? SEM.action + "77" : T.border}`,
+                background: on ? T.raised : "transparent",
+                color: on ? T.white : T.muted,
+              }}
+            >
+              {c.tone && <span style={{ width: 7, height: 7, borderRadius: 12, background: c.tone }} />}
+              {c.label}
+              <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 12, color: on ? T.gold : T.faint }}>
+                {c.n}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ display: "flex", gap: 12, marginBottom: 16, flexWrap: "wrap", alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            background: T.panel,
+            border: `1px solid ${q ? SEM.action + "66" : T.border}`,
+            borderRadius: 12,
+            padding: "8px 12px",
+            flex: "1 1 220px",
+            minWidth: 200,
+          }}
+        >
+          <Search size={15} color={T.muted} />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search type, file, person, notes…"
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: 14 }}
+          />
+          {q && (
+            <button
+              onClick={() => setQ("")}
+              style={{ background: "none", border: "none", cursor: "pointer", color: T.muted, display: "flex" }}
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <select style={selStyle} value={cat} onChange={(e) => setCat(e.target.value)}>
+          <option style={{ color: "#000" }}>All</option>
+          {(Object.keys(CAT_META) as Category[]).map((c) => (
+            <option key={c} style={{ color: "#000" }}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select style={selStyle} value={person} onChange={(e) => setPerson(e.target.value)}>
+          <option value="All" style={{ color: "#000" }}>
+            Everyone
+          </option>
+          {store.members.map((m: Member) => (
+            <option key={m.id} value={m.id} style={{ color: "#000" }}>
+              {m.name}
+            </option>
+          ))}
+        </select>
+        <select style={selStyle} value={source} onChange={(e) => setSource(e.target.value)}>
+          {["All", "Upload", "Email", "Drive", "DigiLocker"].map((sName) => (
+            <option key={sName} style={{ color: "#000" }}>
+              {sName}
+            </option>
+          ))}
+        </select>
+        <select style={selStyle} value={sort} onChange={(e) => setSort(e.target.value as any)}>
+          <option value="newest" style={{ color: "#000" }}>
+            Newest first
+          </option>
+          <option value="oldest" style={{ color: "#000" }}>
+            Oldest first
+          </option>
+          <option value="name" style={{ color: "#000" }}>
+            Type A–Z
+          </option>
+          <option value="expiry" style={{ color: "#000" }}>
+            Expiry soonest
+          </option>
+        </select>
+      </div>
+
+      {sel.size > 0 && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            background: T.raised,
+            border: `1px solid ${T.gold}55`,
+            borderRadius: 12,
+            padding: "12px 16px",
+            marginBottom: 12,
+          }}
+        >
+          <b style={{ color: T.white, fontSize: 14 }}>{sel.size} selected</b>
+          <select style={selStyle} defaultValue="" onChange={(e) => e.target.value && bulkAssign(e.target.value)}>
+            <option value="" disabled style={{ color: "#000" }}>
+              Assign to…
+            </option>
+            {store.members.map((m: Member) => (
+              <option key={m.id} value={m.id} style={{ color: "#000" }}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={bulkDelete}
+            style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55", padding: "8px 12px", fontSize: 12 }}
+          >
+            <Trash2 size={13} /> Delete
+          </button>
+          <button onClick={clearSel} style={{ ...btnGhost, marginLeft: "auto", padding: "8px 12px", fontSize: 12 }}>
+            Clear
+          </button>
+        </div>
+      )}
+
+      <Card style={{ padding: 0, overflow: "hidden" }}>
+        <div style={{ overflowX: "auto" }}>
+          <div className="lp-doc-min" style={{ minWidth: 780 }}>
+            <div
+              className="lp-doc-head"
+              style={{
+                display: "grid",
+                gridTemplateColumns: GRID,
+                gap: 12,
+                alignItems: "center",
+                padding: "12px 16px",
+                fontSize: 12,
+                fontWeight: 700,
+                color: T.muted,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={allSel}
+                onChange={toggleAll}
+                style={{ accentColor: T.gold, cursor: "pointer" }}
+              />
+              <span>Document</span>
+              <span>Person</span>
+              <span>Category</span>
+              <span>Source</span>
+              <span>Added</span>
+              <span>Expiry</span>
+              <span />
+            </div>
+            {filtered.length === 0 ? (
+              <div style={{ padding: "40px 16px", textAlign: "center" }}>
+                <FolderOpen size={30} color={T.faint} style={{ margin: "0 auto 10px", display: "block" }} />
+                <div style={{ color: T.text, fontWeight: 500, fontSize: 14 }}>
+                  {docs.length === 0 ? "Your vault is waiting for its first document" : "No documents match these filters"}
+                </div>
+                <div style={{ color: T.muted, fontSize: 14, marginTop: 4 }}>
+                  {docs.length === 0
+                    ? "Upload a file and it files itself."
+                    : "Try clearing the search or switching a filter."}
+                </div>
+              </div>
+            ) : (
+              filtered.map((d) => {
+                const Ic = CAT_META[d.category].icon;
+                const col = CAT_META[d.category].color;
+                const active = open?.id === d.id;
+                return (
+                  <div
+                    key={d.id}
+                    className="lp-doc-row"
+                    onClick={() => setOpen(d)}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: GRID,
+                      gap: 12,
+                      alignItems: "center",
+                      padding: "12px 16px",
+                      borderTop: `1px solid ${T.border}`,
+                      cursor: "pointer",
+                      background: active ? T.raised : sel.has(d.id) ? T.raised + "88" : "transparent",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={sel.has(d.id)}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={() => toggle(d.id)}
+                      style={{ accentColor: T.gold, cursor: "pointer" }}
+                    />
+                    <span style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
+                      <span
+                        style={{
+                          display: "grid",
+                          placeItems: "center",
+                          width: 30,
+                          height: 30,
+                          borderRadius: 12,
+                          background: col + "22",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Ic size={14} color={col} />
+                      </span>
+                      <span style={{ minWidth: 0 }}>
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: T.white,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {d.docType}
+                        </span>
+                        <span
+                          style={{
+                            display: "block",
+                            fontSize: 12,
+                            color: T.faint,
+                            fontVariantNumeric: "tabular-nums",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {d.name}
+                        </span>
+                      </span>
+                    </span>
+                    <span className="lp-dc-meta">
+                    <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                      <span
+                        style={{ width: 8, height: 8, borderRadius: 12, background: colorOf(d.memberId), flexShrink: 0 }}
+                      />
+                      <span
+                        style={{
+                          fontSize: 14,
+                          color: T.text,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {nameOf(d.memberId)}
+                      </span>
+                    </span>
+                    <span>
+                      <span style={pill(col)}>{d.category}</span>
+                    </span>
+                    <span style={{ fontSize: 12, color: T.muted }}>{d.source}</span>
+                    <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
+                      {fdate(d.addedAt)}
+                    </span>
+                    <span style={{ fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{expiryCell(d)}</span>
+                    </span>
+                    <ChevronRight size={15} color={active ? T.gold : T.faint} />
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </Card>
+
+      {panels}
+    </div>
+  );
+}
+
+/* ── document context drawer ── */
 function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any) {
   const [notes, setNotes] = useState(d.notes || "");
   const Ic = CAT_META[d.category as Category].icon;
@@ -8565,14 +9422,7 @@ export default function App() {
         <div key={route} className="lp-screen">
         {route === "home" && <Home store={store} go={go} toast={toast} />}
         {route === "packages" && <Packages store={store} toast={toast} />}
-        {route === "documents" && (
-          <>
-            <DocumentsScreen store={store} toast={toast} go={go} />
-            <button className="lp-fab" onClick={() => window.dispatchEvent(new Event(ADD_DOCS_EVENT))} title="Add" aria-label="Add">
-              <Plus size={22} />
-            </button>
-          </>
-        )}
+        {route === "documents" && <Documents store={store} toast={toast} go={go} />}
         {route === "health" && (
           <Suspense fallback={<div style={{ minHeight: 200 }} />}>
             <Healthcare toast={toast} />
