@@ -173,7 +173,7 @@ export function Input(p: InputProps) {
   } else if (p.variant === "textarea") {
     body = <textarea value={p.value} placeholder={p.placeholder} onChange={(e) => p.onChange(e.target.value)} rows={3} style={{ ...control, resize: "vertical" }} />;
   } else {
-    body = <input type={p.variant} value={p.value} placeholder={p.placeholder} onChange={(e) => p.onChange(e.target.value)}
+    body = <input type={p.variant as string} value={p.value as string} placeholder={"placeholder" in p ? p.placeholder : undefined} onChange={(e) => p.onChange(e.target.value)}
       style={{ ...control, fontVariantNumeric: p.variant === "number" ? "tabular-nums" : undefined }} />;
   }
   return (
