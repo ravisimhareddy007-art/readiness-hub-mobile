@@ -30,12 +30,12 @@ function paper(title: string, issuer: string, accent: string, fields: [string, s
   const rows = fields
     .map(
       ([k, v]) =>
-        `<tr><td style="padding:8px 0;color:#6b7280;font-size:12.5px;width:44%">${k}</td><td style="padding:8px 0;font-weight:600;font-size:13.5px;color:#111827">${v}</td></tr>`,
+        `<tr><td style="padding:8px 0;color:#6b7280;font-size:12.5px;width:44%">${k}</td><td style="padding:8px 0;font-weight:500;font-size:13.5px;color:#111827">${v}</td></tr>`,
     )
     .join("");
   return `<div style="font-family:Inter,Arial,sans-serif;background:#fff;color:#111827">
     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid ${accent};padding-bottom:12px;margin-bottom:14px">
-      <div style="font-weight:800;font-size:16px">${title}</div>
+      <div style="font-weight:700;font-size:16px">${title}</div>
       <div style="text-align:right;color:#6b7280;font-size:12px">${issuer}</div>
     </div>
     <table style="width:100%;border-collapse:collapse">${rows}</table>

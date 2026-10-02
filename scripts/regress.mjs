@@ -165,6 +165,8 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
       if (!RADIUS.includes(Number(m[1]))) hits.push(`${file}: borderRadius ${m[1]} is off the scale`);
     for (const m of src.matchAll(/fontWeight: ([0-9]+)/g))
       if (!WEIGHT.includes(Number(m[1]))) hits.push(`${file}: fontWeight ${m[1]} is off the scale`);
+    if (!p.endsWith("Landing.tsx")) for (const m of src.matchAll(/font-weight:\s*([0-9]+)/g))
+      if (!WEIGHT.includes(Number(m[1]))) hits.push(`${file}: font-weight ${m[1]} in CSS is off the scale`);
     for (const m of src.matchAll(/\b(?:padding|paddingTop|paddingBottom|paddingLeft|paddingRight|gap|rowGap|columnGap|marginTop|marginBottom|marginLeft|marginRight): (\d+)\b/g))
       if (!SPACE.includes(Number(m[1]))) hits.push(`${file}: spacing ${m[1]} is off the scale`);
   }
