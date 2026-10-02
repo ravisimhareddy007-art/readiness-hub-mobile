@@ -104,9 +104,9 @@ function Gallery() {
       </Section>
 
       <Section title="Button">
-        {(["primary", "secondary", "ghost", "danger"] as const).map((v) => (
+        {(["primary", "secondary", "danger"] as const).map((v) => (
           <div key={v} style={{ display: "flex", flexDirection: "column", gap: S.sm, marginBottom: S.lg }}>
-            <Button variant={v} size="lg">Save {v}</Button>
+            <Button variant={v} size="lg" block>Save {v}</Button>
             <div style={{ display: "flex", flexWrap: "wrap", gap: S.sm }}>
               <Button variant={v} size="md">Medium</Button>
               <Button variant={v} size="sm">Small</Button>
@@ -148,7 +148,7 @@ function Gallery() {
       </Section>
 
       <Section title="Progress">
-        <div style={{ display: "flex", flexDirection: "column", gap: S.lg }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: S.xl }}>
           <Progress value={0} max={10} caption="0 of 10 ready" />
           <Progress value={5} max={10} caption="5 of 10 ready" />
           <Progress value={10} max={10} caption="10 of 10 ready" />
