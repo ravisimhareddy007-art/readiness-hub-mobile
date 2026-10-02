@@ -9254,7 +9254,6 @@ export default function App() {
           {NAV.map(([key, label, Ic]) => {
             const on = route === key;
             return (
-              <ThemeProvider theme={store.theme}>
               <button
                 key={key}
                 onClick={() => setRoute(key)}
@@ -9278,7 +9277,6 @@ export default function App() {
               >
                 <Ic size={18} color={on ? T.gold : T.muted} style={{ flexShrink: 0 }} /> {navOpen ? label : ""}
               </button>
-              </ThemeProvider>
             );
           })}
         </nav>
@@ -9555,7 +9553,6 @@ export default function App() {
           ).map(([key, label, Ic]) => {
             const on = route === key;
             return (
-              <ThemeProvider theme={store.theme}>
               <button
                 key={key}
                 className="lp-tab"
@@ -9564,7 +9561,6 @@ export default function App() {
               >
                 <Ic size={20} color={on ? "var(--lpv-baractive)" : "var(--lpv-bartext)"} /> {label}
               </button>
-              </ThemeProvider>
             );
           })}
         </nav>

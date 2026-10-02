@@ -46,7 +46,7 @@ export const tokens = {
   radius: { box: 12, round: 999 },
   tap: 44,
   gutter: 18,
-  font: "'Inter', system-ui, -apple-system, sans-serif",
+  font: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
 };
 
 export type Theme = "dark" | "light";
@@ -61,14 +61,15 @@ export const typeStyle = (name: TypeName) => {
   return { fontSize: x.size, fontWeight: x.weight, lineHeight: x.leading, letterSpacing: x.tracking, fontFamily: tokens.font };
 };
 
-/* The app exports no theme state today, so the default is dark. */
-const Ctx = createContext<Theme>("dark");
+/* No default: a screen outside a ThemeProvider must fail loudly, never render in the wrong theme. */
+const Ctx = createContext<Theme | null>(null);
 
-export function ThemeProvider({ theme = "dark", children }: { theme?: Theme; children: ReactNode }) {
+export function ThemeProvider({ theme, children }: { theme: Theme; children: ReactNode }) {
   return createElement(Ctx.Provider, { value: theme }, children);
 }
 
 export function useTheme() {
   const theme = useContext(Ctx);
+  if (!theme) throw new Error("useTheme() called outside <ThemeProvider theme={...}>. Wrap the tree and pass the user's theme.");
   return { theme, t: (role: Role) => c(role, theme) };
 }
