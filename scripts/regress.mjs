@@ -189,6 +189,34 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
   else console.log("ok   status badges");
 }
 
+// CSS grid fails silently: a grid-template-areas whose rows have unequal name counts, or which
+// names an area no child claims, is discarded entirely and the layout collapses into overlap.
+{
+  const hits = [];
+  for (const p of all) {
+    const src = readFileSync(p, "utf8");
+    const file = p.split(sep).pop();
+    for (const m of src.matchAll(/\.([\w-]+)\{[^}]*grid-template-areas:((?:"[^"]*"\s*)+)/g)) {
+      const cls = m[1];
+      const rows = [...m[2].matchAll(/"([^"]*)"/g)].map((r) => r[1].trim().split(/\s+/));
+      const widths = new Set(rows.map((r) => r.length));
+      if (widths.size > 1) hits.push(`${file}: .${cls} grid rows have ${[...widths].join(" and ")} columns`);
+      const colDecl = src.slice(src.indexOf("." + cls + "{")).match(/grid-template-columns:([^;}]*)/);
+      if (colDecl) {
+        const n = colDecl[1].trim().split(/\s+(?![^(]*\))/).length;
+        if (!widths.has(n)) hits.push(`${file}: .${cls} declares ${n} columns but its areas use ${[...widths].join("/")}`);
+      }
+      const named = new Set(rows.flat().filter((a) => a !== "."));
+      for (const area of named)
+        if (!src.includes(`grid-area:${area}`) && !src.includes(`grid-area: ${area}`))
+          hits.push(`${file}: .${cls} names area "${area}" that no child claims`);
+    }
+  }
+  const uniq = [...new Set(hits)];
+  if (uniq.length) { status = 1; console.log(`FAIL grid layout (${uniq.length})`); uniq.slice(0, 10).forEach((h) => console.log("  " + h)); }
+  else console.log("ok   grid layout");
+}
+
 step("release blockers (listed, not failing yet)");
 let dev = 0;
 for (const p of all) readFileSync(p, "utf8").split("\n").forEach((l, i) => { if (/DEV ONLY/.test(l)) { dev++; console.log(`  ${p}:${i + 1}: ${l.trim().slice(0, 120)}`); } });
