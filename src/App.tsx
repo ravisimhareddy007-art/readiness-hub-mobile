@@ -2026,7 +2026,7 @@ function Home({ store, go, toast }: any) {
         >
           <Ring score={overall} size={38} />
           <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.muted }}>
-            {readyPacks} of {readyPacks + nearPacks + 1} situations ready
+            {readyPacks} of {readyPacks + nearPacks + 1} packs ready
           </span>
           <ChevronRight size={15} color={T.faint} />
         </button>
@@ -2061,12 +2061,12 @@ function Home({ store, go, toast }: any) {
             marginTop: 16,
             padding: "16px 0",
             borderRadius: 12,
-            background: "linear-gradient(135deg,var(--lpv-gold),var(--lpv-goldb))",
-            color: "var(--lpv-golddark)",
+            background: "var(--lpv-action)",
+            color: "var(--lpv-actionink)",
             fontSize: 16,
             fontWeight: 700,
             cursor: "pointer",
-            boxShadow: "0 10px 26px var(--lpv-fabshadow)",
+            boxShadow: "0 10px 26px var(--lpv-shadow-soft)",
           }}
         >
           <Plus size={19} /> Add a record or document
