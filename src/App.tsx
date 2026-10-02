@@ -1899,7 +1899,14 @@ function Home({ store, go, toast }: any) {
     const nearPacks = scored.filter((x: any) => x.score >= 70 && x.score < 100).length;
     return (
       <div>
-        <MNav left={<BrandWordmark size={17} color="var(--lpv-bandtext)" />} />
+        <MNav
+          left={
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <BrandMark size={20} color="var(--lpv-bandtext)" />
+              <BrandWordmark size={17} color="var(--lpv-bandtext)" />
+            </span>
+          }
+        />
         <div style={{ margin: "4px 0 16px" }}>
           <div style={{ fontSize: 20, fontWeight: 700, color: "var(--lpv-bandtext)", letterSpacing: -0.3 }}>
             {hello}, {firstName}
@@ -8775,7 +8782,7 @@ function AuthScreen({
     >
       <div style={{ width: "min(400px,100%)" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 24 }}>
-          <BrandMark size={48} carve={T.navy} />
+          <BrandMark size={48} color={T.white} />
           <BrandWordmark size={22} color={T.white} />
           <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>
             Be ready for life's important moments.
@@ -8932,7 +8939,7 @@ function OnboardingWizard({ store, onDone }: any) {
     >
       <div style={{ width: "min(460px,100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24, justifyContent: "center", color: T.white }}>
-          <BrandMark size={34} carve={T.navy} />
+          <BrandMark size={34} color={T.white} />
           <BrandWordmark size={18} color={T.white} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -9031,7 +9038,7 @@ function OnboardingWizard({ store, onDone }: any) {
         {step === 2 && (
           <div style={{ textAlign: "center", padding: "20px 0" }}>
             <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 20, color: T.white }}>
-              <BrandMark size={56} carve={T.navy} />
+              <BrandMark size={56} color={T.white} />
               <BrandWordmark size={24} color={T.white} />
             </div>
             <h2 style={{ color: T.white, fontSize: 20, margin: "0 0 16px" }}>
@@ -9157,7 +9164,7 @@ export default function App() {
       <div style={{ minHeight: "100vh", background: T.navy, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <style>{APPCSS}</style>
         <div style={{ width: "min(400px,100%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, color: T.white, animation: "lp-pulse 1.6s ease-in-out infinite" }}>
-          <BrandMark size={48} carve={T.navy} />
+          <BrandMark size={48} color={T.white} />
           <BrandWordmark size={22} color={T.white} />
           <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>Be ready for life's important moments.</div>
         </div>
@@ -9226,42 +9233,13 @@ export default function App() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 12,
+            gap: 8,
             padding: navOpen ? "6px 8px 18px" : "6px 0 18px",
             justifyContent: navOpen ? "flex-start" : "center",
           }}
         >
-          <span
-            style={{
-              display: "grid",
-              placeItems: "center",
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              background: `linear-gradient(135deg, ${T.gold}, ${T.goldBright})`,
-              flexShrink: 0,
-            }}
-          >
-            <FileText size={20} style={{ color: "var(--lpv-golddark)" }} />
-          </span>
-          {navOpen && (
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 16, color: T.white, whiteSpace: "nowrap" }}>
-                Readi<span style={{ color: T.gold }}>N</span>es
-              </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  letterSpacing: 2,
-                  color: T.muted,
-                  fontVariantNumeric: "tabular-nums",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                READY FOR LIFE
-              </div>
-            </div>
-          )}
+          <BrandMark size={26} color={T.white} />
+          {navOpen && <BrandWordmark size={18} color={T.white} />}
         </div>
         <nav style={{ display: "grid", gap: 4 }}>
           {NAV.map(([key, label, Ic]) => {
