@@ -6514,17 +6514,16 @@ function Trust({ store, toast, go }: any) {
           onSave={(v: { name: string; relation: string; phone: string }) => {
             if (sheet === "add") {
               const first = !store.members.some((o: Member) => o.access === "Full member");
-              store.addMember(
-                {
-                  id: v.name.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) + Math.random().toString(36).slice(2, 5),
-                  name: v.name,
-                  relation: v.relation,
-                  color: [A.blue, A.purple, A.green, A.pink, A.gold, A.teal][store.members.length % 6],
-                  phone: v.phone || undefined,
-                  access: (first ? "Full member" : "Emergency access") as Access,
-                },
-                { conditions: [], medications: [], allergies: "None recorded", doctor: "", emergency: "" },
-              );
+              const id = v.name.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) + Math.random().toString(36).slice(2, 5);
+              store.addMember({
+                id,
+                name: v.name,
+                relation: v.relation,
+                color: [A.blue, A.purple, A.green, A.pink, A.gold, A.teal][store.members.length % 6],
+                phone: v.phone || undefined,
+                access: (first ? "Full member" : "Emergency access") as Access,
+              });
+              store.updateCare(id, { conditions: [], medications: [], allergies: "None recorded" });
               toast(`${v.name.split(" ")[0]} added`);
             } else {
               store.updateMember(sheet.id, { name: v.name, relation: v.relation, phone: v.phone || undefined });
