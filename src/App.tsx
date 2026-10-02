@@ -267,7 +267,10 @@ const origLine = (r: { origAmount?: number; origCurrency?: string; fxRate?: numb
   r.origCurrency && r.origAmount !== undefined && r.origCurrency !== getCurrency()
     ? `${formatMoney(r.origAmount, r.origCurrency, false)}${r.fxRate ? ` at ${r.fxRate.toFixed(2)}` : ""}`
     : "";
-const toneFor = (n: number) => (n >= 80 ? T.mint : n >= 40 ? T.gold : T.coral);
+/* The only place a readiness score becomes a colour. Green means done, not nearly
+   done: 94% ready for a visa appointment still means being turned away. Amber
+   means the gap is small and closable. Red means materially unprepared. */
+export const toneFor = (n: number) => (n >= 100 ? T.mint : n >= 60 ? T.gold : T.coral);
 
 const CAT_META: Record<Category, { icon: any; color: string }> = {
   Identity: { icon: Fingerprint, color: A.blue },
@@ -1787,7 +1790,7 @@ function Home({ store, go, toast }: any) {
           icons: [HeartPulse, Plane],
           text: `${who}'s ${appt.title.toLowerCase()} is in ${daysTo(appt.due)}d. The Hospital admission pack is ${hv.score}% ready${missing.length ? `; only ${missing[0]} is missing` : ""}.`,
           to: "packages",
-          tone: hv.score >= 80 ? T.mint : T.gold,
+          tone: toneFor(hv.score),
         });
       }
     }
@@ -5418,7 +5421,7 @@ function Wealth({ store, go, toast }: any) {
   const missNom = guarded.filter((h) => !h.nominee).length;
   const missDoc = guarded.filter((h) => !h.docId).length;
   const missAcc = guarded.filter((h) => !h.accessNote).length;
-  const readyColor = readiness >= 80 ? T.mint : readiness >= 40 ? T.gold : T.coral;
+  const readyColor = toneFor(readiness);
   const linkedDoc = (h: Holding) => store.docs.find((d: Doc) => d.id === h.docId) || null;
 
   type Sev = "critical" | "important" | "info";

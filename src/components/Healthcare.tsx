@@ -1,3 +1,4 @@
+import { toneFor } from "../App";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav } from "./MobileNav";
@@ -962,7 +963,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 ];
                 const done = items.filter(([, ok]) => ok).length;
                 const pct = Math.round((done / items.length) * 100);
-                const pc = pct >= 80 ? C.emerald : pct >= 50 ? C.warning : C.red;
+                const pc = toneFor(pct);
                 return (
                   <>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
