@@ -2536,7 +2536,7 @@ function Packages({ store, toast }: any) {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Visa, loan, admission…"
+              placeholder="Visas, loans, admissions…"
               style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text }}
             />
             {q && (
