@@ -72,7 +72,7 @@ export function BrandWordmark({
 }) {
   const base: React.CSSProperties = {
     fontFamily: "'Nunito Sans','Space Grotesk',system-ui,sans-serif",
-    fontWeight: 800,
+    fontWeight: 700,
     fontSize: size,
     letterSpacing: "-0.02em",
     color,

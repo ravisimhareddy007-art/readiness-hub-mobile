@@ -95,7 +95,7 @@ function docHTML(doc: Doc, store: any): string {
         ["Deductions", money(2110)],
         ["Net pay", money(6340)],
       ],
-      `<div style="margin-top:12px;background:#f3f4f6;border-radius:8px;padding:10px 12px;font-size:12px;color:#374151">Direct deposit to account ••${seededId("", doc.id, 2)}</div>`,
+      `<div style="margin-top:12px;background:#f3f4f6;border-radius:12px;padding:10px 12px;font-size:12px;color:#374151">Direct deposit to account ••${seededId("", doc.id, 2)}</div>`,
     );
   if (dt === "Employment Offer")
     return paper("EMPLOYMENT OFFER", "Morgan Corp · People Ops", "#4f46e5", [
@@ -309,7 +309,7 @@ export default function DocViewer({ doc, store, onClose, onAddToWealth, onCorrec
           flexDirection: "column",
           background: "var(--lpv-panel)",
           border: "1px solid var(--lpv-border)",
-          borderRadius: 16,
+          borderRadius: 12,
           overflow: "hidden",
         }}
       >
@@ -328,14 +328,14 @@ export default function DocViewer({ doc, store, onClose, onAddToWealth, onCorrec
               placeItems: "center",
               width: 34,
               height: 34,
-              borderRadius: 9,
+              borderRadius: 12,
               background: "color-mix(in srgb, var(--lpv-gold) 16%, transparent)",
             }}
           >
             <FileText size={17} style={{ color: "var(--lpv-gold)" }} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 14.5, fontWeight: 600, color: "var(--lpv-text)" }}>{doc.docType}</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: "var(--lpv-text)" }}>{doc.docType}</div>
             <div style={{ fontSize: 12, color: "var(--lpv-muted)" }}>
               {doc.source} · {doc.category}
               {doc.expiry ? ` · valid to ${fmt(doc.expiry)}` : ""}
@@ -350,7 +350,7 @@ export default function DocViewer({ doc, store, onClose, onAddToWealth, onCorrec
                 placeItems: "center",
                 width: 32,
                 height: 32,
-                borderRadius: 8,
+                borderRadius: 12,
                 border: "1px solid var(--lpv-border)",
                 background: "transparent",
                 color: "var(--lpv-text)",
@@ -367,7 +367,7 @@ export default function DocViewer({ doc, store, onClose, onAddToWealth, onCorrec
               placeItems: "center",
               width: 32,
               height: 32,
-              borderRadius: 8,
+              borderRadius: 12,
               border: "1px solid var(--lpv-border)",
               background: "transparent",
               color: "var(--lpv-text)",
@@ -379,7 +379,7 @@ export default function DocViewer({ doc, store, onClose, onAddToWealth, onCorrec
         </div>
         <div style={{ flex: 1, overflow: "auto", background: "var(--lpv-bg)", padding: 16 }}>
           {mode === "loading" && (
-            <div style={{ color: "var(--lpv-muted)", fontSize: 13, padding: 20, textAlign: "center" }}>
+            <div style={{ color: "var(--lpv-muted)", fontSize: 14, padding: 20, textAlign: "center" }}>
               Opening…
             </div>
           )}
@@ -387,19 +387,19 @@ export default function DocViewer({ doc, store, onClose, onAddToWealth, onCorrec
             <img
               src={blobUrl}
               alt={doc.name}
-              style={{ maxWidth: "100%", borderRadius: 8, display: "block", margin: "0 auto" }}
+              style={{ maxWidth: "100%", borderRadius: 12, display: "block", margin: "0 auto" }}
             />
           )}
           {mode === "pdf" && blobUrl && (
             <iframe
               title={doc.name}
               src={blobUrl}
-              style={{ width: "100%", height: "62vh", border: "none", borderRadius: 8, background: "#fff" }}
+              style={{ width: "100%", height: "62vh", border: "none", borderRadius: 12, background: "#fff" }}
             />
           )}
           {mode === "template" && (
             <div
-              style={{ background: "#fff", borderRadius: 10, padding: 20, boxShadow: "0 10px 40px rgba(0,0,0,0.4)" }}
+              style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 10px 40px rgba(0,0,0,0.4)" }}
               dangerouslySetInnerHTML={{ __html: html }}
             />
           )}
@@ -408,7 +408,7 @@ export default function DocViewer({ doc, store, onClose, onAddToWealth, onCorrec
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 7,
+            gap: 8,
             padding: "10px 16px",
             borderTop: "1px solid var(--lpv-border)",
             color: "var(--lpv-muted)",
@@ -420,7 +420,7 @@ export default function DocViewer({ doc, store, onClose, onAddToWealth, onCorrec
           {onCorrect && (
             <button
               onClick={onCorrect}
-              style={{ marginLeft: "auto", background: "transparent", border: "1px solid var(--lpv-border)", borderRadius: 8, padding: "6px 10px", color: "var(--lpv-action)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", minHeight: 44 }}
+              style={{ marginLeft: "auto", background: "transparent", border: "1px solid var(--lpv-border)", borderRadius: 12, padding: "6px 10px", color: "var(--lpv-action)", fontSize: 12, fontWeight: 500, cursor: "pointer", minHeight: 44 }}
             >
               Correct details
             </button>
@@ -432,11 +432,11 @@ export default function DocViewer({ doc, store, onClose, onAddToWealth, onCorrec
                 marginLeft: "auto",
                 background: "transparent",
                 border: "1px solid var(--lpv-border)",
-                borderRadius: 8,
+                borderRadius: 12,
                 padding: "6px 10px",
                 color: "var(--lpv-action)",
-                fontSize: 12.5,
-                fontWeight: 600,
+                fontSize: 12,
+                fontWeight: 500,
                 cursor: "pointer",
                 whiteSpace: "nowrap",
               }}
