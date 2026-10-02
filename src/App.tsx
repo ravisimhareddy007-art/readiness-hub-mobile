@@ -9156,7 +9156,7 @@ export default function App() {
       <ThemeProvider theme={store.theme}>
       <div style={{ minHeight: "100vh", background: T.navy, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <style>{APPCSS}</style>
-        <div style={{ width: "min(400px,100%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, animation: "lp-pulse 1.6s ease-in-out infinite" }}>
+        <div style={{ width: "min(400px,100%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, color: T.white, animation: "lp-pulse 1.6s ease-in-out infinite" }}>
           <BrandMark size={48} carve={T.navy} />
           <BrandWordmark size={22} color={T.white} />
           <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>Be ready for life's important moments.</div>
