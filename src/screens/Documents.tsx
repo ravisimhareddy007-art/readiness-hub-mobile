@@ -8,8 +8,11 @@ import type { Doc, Holding, Member } from "@/lib/types";
 export const ADD_DOCS_EVENT = "readines:add-docs";
 
 const daysTo = (s: string) => Math.ceil((+new Date(s) - Date.now()) / 86400000);
-const fdate = (s?: string) =>
-  s ? new Date(s).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "—";
+const fdate = (s?: string) => {
+  if (!s) return "—";
+  const d = new Date(s);
+  return `${d.getDate()} ${d.toLocaleDateString(undefined, { month: "short" })} ${d.getFullYear()}`;
+};
 
 const FILTERS = { All: "all", Expiring: "expiring", Expired: "expired", "This week": "recent", Proofs: "proofs" } as const;
 const SORTS = { Newest: "newest", Oldest: "oldest", Name: "name", Expiry: "expiry" } as const;
