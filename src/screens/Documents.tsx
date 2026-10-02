@@ -2,15 +2,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import { Screen, ScreenTitle, Section, Row, RowGroup, Input, Button, Sheet } from "@/ui";
 import DocViewer from "@/components/DocViewer";
-import { DocContextPanel } from "@/App";
 import type { Doc, Holding, Member } from "@/lib/types";
 
 /* The floating add button lives in App and asks this screen to open its add sheet. */
 export const ADD_DOCS_EVENT = "readines:add-docs";
 
 const daysTo = (s: string) => Math.ceil((+new Date(s) - Date.now()) / 86400000);
-const fdate = (s?: string) =>
-  s ? new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "2-digit" }) : "—";
+const fdate = (s?: string) => {
+  if (!s) return "—";
+  const d = new Date(s);
+  return `${d.getDate()} ${d.toLocaleDateString(undefined, { month: "short" })} ${d.getFullYear()}`;
+};
 
 const FILTERS = { All: "all", Expiring: "expiring", Expired: "expired", "This week": "recent", Proofs: "proofs" } as const;
 const SORTS = { Newest: "newest", Oldest: "oldest", Name: "name", Expiry: "expiry" } as const;
@@ -24,7 +26,6 @@ export default function Documents({ store, toast, go }: any) {
   const [sort, setSort] = useState<Sort>("newest");
   const [sel, setSel] = useState<Set<string>>(new Set());
   const [selMode, setSelMode] = useState(false);
-  const [open, setOpen] = useState<Doc | null>(null);
   const [preview, setPreview] = useState<Doc | null>(null);
   const [addSheet, setAddSheet] = useState(false);
   const upRef = useRef<HTMLInputElement>(null);
@@ -95,37 +96,41 @@ export default function Documents({ store, toast, go }: any) {
     if (n <= 60) return `Expires in ${n} day${n === 1 ? "" : "s"}`;
     return undefined;
   };
-  const current = (d: Doc) => store.docs.find((x: Doc) => x.id === d.id) || d;
 
   return (
-    <Screen>
-      <ScreenTitle sub={filtered.length === docs.length ? `${docs.length} documents` : `${filtered.length} of ${docs.length}`}>
+    <Screen fab>
+      <ScreenTitle
+        sub={filtered.length === docs.length ? `${docs.length} documents` : `${filtered.length} of ${docs.length}`}
+        action={
+          <Button variant="secondary" size="sm" onPress={() => { if (selMode) clearSel(); setSelMode((v) => !v); }}>
+            {selMode ? "Done" : "Select"}
+          </Button>
+        }
+      >
         Documents
       </ScreenTitle>
 
-      <Section title="Find">
-        <Input variant="text" label="Search" value={q} onChange={setQ} placeholder="Name, type, person or issuer" />
-        <Input variant="choice" label="Show" value={labelOf(FILTERS, quick)} onChange={(v) => setQuick(FILTERS[v as keyof typeof FILTERS])} options={Object.keys(FILTERS)} />
-        <Input variant="choice" label="Sort" value={labelOf(SORTS, sort)} onChange={(v) => setSort(SORTS[v as keyof typeof SORTS])} options={Object.keys(SORTS)} />
-        <Button
-          variant="secondary"
-          size="md"
-          full
-          onPress={() => {
-            if (selMode) clearSel();
-            setSelMode((v) => !v);
-          }}
-        >
-          {selMode ? "Done selecting" : "Select documents"}
-        </Button>
-      </Section>
-
-      {selMode && sel.size > 0 && (
+      {selMode && (
         <Section title={`${sel.size} selected`}>
-          <Button variant="danger" size="md" full onPress={bulkDelete}>Delete selected</Button>
-          <Button variant="secondary" size="md" full onPress={clearSel}>Clear selection</Button>
+          <Button variant="secondary" size="md" full onPress={clearSel}>Clear</Button>
+          <Button variant="danger" size="md" full disabled={sel.size === 0} onPress={bulkDelete}>Delete selected</Button>
         </Section>
       )}
+
+      <Section>
+        <Input variant="text" value={q} onChange={setQ} placeholder="Name, type, person or issuer" />
+        <Input
+          variant="choice"
+          value={labelOf(FILTERS, quick)}
+          onChange={(v) => setQuick(FILTERS[v as keyof typeof FILTERS])}
+          options={Object.keys(FILTERS)}
+          trailing={
+            <Button variant="secondary" size="sm" onPress={() => { const o = Object.values(SORTS); setSort(o[(o.indexOf(sort) + 1) % o.length]); }}>
+              {labelOf(SORTS, sort)}
+            </Button>
+          }
+        />
+      </Section>
 
       {docs.length === 0 ? (
         <Section title="Nothing here yet">
@@ -148,7 +153,6 @@ export default function Documents({ store, toast, go }: any) {
                   meta={[fdate(d.addedAt), d.source].filter(Boolean).join(" · ")}
                   alert={alertOf(d)}
                   chevron={!selMode}
-                  action={selMode ? undefined : { label: "Edit", onPress: () => setOpen(d) }}
                   onPress={() => (selMode ? toggle(d.id) : setPreview(d))}
                 />
               ))}
@@ -167,17 +171,6 @@ export default function Documents({ store, toast, go }: any) {
         </Sheet>
       )}
 
-      {open && (
-        <DocContextPanel
-          key={open.id}
-          d={current(open)}
-          store={store}
-          toast={toast}
-          onClose={() => setOpen(null)}
-          onPreview={() => setPreview(current(open))}
-          onDeleted={() => setOpen(null)}
-        />
-      )}
       {preview && (
         <DocViewer
           doc={preview}

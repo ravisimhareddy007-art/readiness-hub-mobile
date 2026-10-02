@@ -11,7 +11,7 @@ const LINE = 1;
 const clip: CSSProperties = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 };
 
 /* 1. Screen */
-export function Screen({ children, tabBar = true }: { children: ReactNode; tabBar?: boolean }) {
+export function Screen({ children, tabBar = true, fab = false }: { children: ReactNode; tabBar?: boolean; fab?: boolean }) {
   const { t } = useTheme();
   return (
     <div
@@ -25,7 +25,7 @@ export function Screen({ children, tabBar = true }: { children: ReactNode; tabBa
         paddingTop: `calc(${S.lg}px + env(safe-area-inset-top))`,
         paddingLeft: `calc(${tokens.gutter}px + env(safe-area-inset-left))`,
         paddingRight: `calc(${tokens.gutter}px + env(safe-area-inset-right))`,
-        paddingBottom: `calc(${tabBar ? TAP + S.xxxl + S.xxl : S.xxl}px + env(safe-area-inset-bottom))`,
+        paddingBottom: `calc(${(tabBar ? TAP + S.xxxl + S.xxl : S.xxl) + (fab ? TAP + S.xl + S.lg : 0)}px + env(safe-area-inset-bottom))`,
       }}
     >
       {children}
@@ -34,22 +34,29 @@ export function Screen({ children, tabBar = true }: { children: ReactNode; tabBa
 }
 
 /* 2. ScreenTitle */
-export function ScreenTitle({ children, sub }: { children: ReactNode; sub?: string }) {
+export function ScreenTitle({ children, sub, action }: { children: ReactNode; sub?: string; action?: ReactNode }) {
   const { t } = useTheme();
-  return (
-    <div style={{ minWidth: 0 }}>
+  const head = (
+    <div style={{ minWidth: 0, flex: 1 }}>
       <h1 style={{ ...typeStyle("display"), ...clip, color: t("textPrimary"), margin: 0 }}>{children}</h1>
       {sub && <div style={{ ...typeStyle("secondary"), ...clip, color: t("textSecondary"), marginTop: S.xs }}>{sub}</div>}
+    </div>
+  );
+  if (!action) return head;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: S.md, minWidth: 0 }}>
+      {head}
+      <div style={{ flexShrink: 0 }}>{action}</div>
     </div>
   );
 }
 
 /* 3. Section */
-export function Section({ title, children }: { title: string; children: ReactNode }) {
+export function Section({ title, children }: { title?: string; children: ReactNode }) {
   const { t } = useTheme();
   return (
     <section style={{ marginTop: S.xxl }}>
-      <div style={{ ...typeStyle("label"), ...clip, textTransform: "uppercase", color: t("textSecondary"), marginBottom: S.sm }}>{title}</div>
+      {title && <div style={{ ...typeStyle("label"), ...clip, textTransform: "uppercase", color: t("textSecondary"), marginBottom: S.sm }}>{title}</div>}
       {children}
     </section>
   );
@@ -126,9 +133,9 @@ export function Field({ label, value }: { label: string; value: ReactNode }) {
 
 /* 7. Input */
 type InputProps =
-  | { variant: "text" | "number" | "date" | "time" | "textarea"; label: string; value: string; onChange: (v: string) => void; placeholder?: string }
-  | { variant: "select" | "choice"; label: string; value: string; onChange: (v: string) => void; options: string[] }
-  | { variant: "toggle"; label: string; value: boolean; onChange: (v: boolean) => void };
+  | { variant: "text" | "number" | "date" | "time" | "textarea"; label?: string; value: string; onChange: (v: string) => void; placeholder?: string }
+  | { variant: "select" | "choice"; label?: string; value: string; onChange: (v: string) => void; options: string[]; trailing?: ReactNode }
+  | { variant: "toggle"; label?: string; value: boolean; onChange: (v: boolean) => void };
 
 export function Input(p: InputProps) {
   const { t } = useTheme();
@@ -152,16 +159,22 @@ export function Input(p: InputProps) {
     );
   } else if (p.variant === "choice") {
     body = (
-      <div role="radiogroup" style={{ display: "flex", gap: S.xs, padding: S.xs, borderRadius: R.box, background: t("surfaceSunken"), minWidth: 0 }}>
+      <div role="radiogroup" style={{ display: "flex", gap: S.xs, padding: S.xs, borderRadius: R.box, background: t("surfaceSunken"), minWidth: 0, flex: 1, overflowX: "auto", scrollbarWidth: "none" }}>
         {p.options.map((o) => {
           const on = o === p.value;
           return (
             <button key={o} type="button" role="radio" aria-checked={on} onClick={() => p.onChange(o)}
-              style={{ ...typeStyle("secondary"), ...clip, flex: 1, minHeight: TAP - S.sm, border: "none", borderRadius: R.box, cursor: "pointer", background: on ? t("surface") : "transparent", color: on ? t("textPrimary") : t("textSecondary") }}>
+              style={{ ...typeStyle("secondary"), whiteSpace: "nowrap", flex: "1 0 auto", paddingLeft: S.md, paddingRight: S.md, minHeight: TAP - S.sm, border: "none", borderRadius: R.box, cursor: "pointer", background: on ? t("surface") : "transparent", color: on ? t("textPrimary") : t("textSecondary") }}>
               {o}
             </button>
           );
         })}
+      </div>
+    );
+    if (p.trailing) body = (
+      <div style={{ display: "flex", alignItems: "center", gap: S.sm, minWidth: 0 }}>
+        {body}
+        <div style={{ flexShrink: 0 }}>{p.trailing}</div>
       </div>
     );
   } else if (p.variant === "select") {
@@ -178,7 +191,7 @@ export function Input(p: InputProps) {
   }
   return (
     <label style={{ display: "block", minWidth: 0, marginBottom: S.lg }}>
-      <div style={{ ...typeStyle("label"), ...clip, textTransform: "uppercase", color: t("textSecondary"), marginBottom: S.sm }}>{p.label}</div>
+      {p.label && <div style={{ ...typeStyle("label"), ...clip, textTransform: "uppercase", color: t("textSecondary"), marginBottom: S.sm }}>{p.label}</div>}
       {body}
     </label>
   );
