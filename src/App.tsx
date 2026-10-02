@@ -4059,7 +4059,7 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
 }
 
 /* ═══════════════ DOCUMENTS ═══════════════ */
-export function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any) {
+function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any) {
   const [notes, setNotes] = useState(d.notes || "");
   const Ic = CAT_META[d.category as Category].icon;
   const col = CAT_META[d.category as Category].color;

@@ -52,11 +52,11 @@ export function ScreenTitle({ children, sub, action }: { children: ReactNode; su
 }
 
 /* 3. Section */
-export function Section({ title, children }: { title: string; children: ReactNode }) {
+export function Section({ title, children }: { title?: string; children: ReactNode }) {
   const { t } = useTheme();
   return (
     <section style={{ marginTop: S.xxl }}>
-      <div style={{ ...typeStyle("label"), ...clip, textTransform: "uppercase", color: t("textSecondary"), marginBottom: S.sm }}>{title}</div>
+      {title && <div style={{ ...typeStyle("label"), ...clip, textTransform: "uppercase", color: t("textSecondary"), marginBottom: S.sm }}>{title}</div>}
       {children}
     </section>
   );
