@@ -48,7 +48,7 @@ export default function Documents({ store, toast, go }: any) {
     const needle = q.trim().toLowerCase();
     if (needle)
       list = list.filter((d) =>
-        `${d.docType} ${d.name} ${d.category} ${nameOf(d.memberId)} ${d.source} ${d.issuer || ""} ${d.notes || ""}`
+        `${d.docType} ${d.name} ${d.category} ${nameOf(d.memberId)} ${d.source} ${d.notes || ""}`
           .toLowerCase()
           .includes(needle),
       );
@@ -145,7 +145,7 @@ export default function Documents({ store, toast, go }: any) {
                   key={d.id}
                   leading={selMode && sel.has(d.id) ? <Check size={20} /> : undefined}
                   title={d.docType}
-                  meta={[fdate(d.addedAt), d.issuer].filter(Boolean).join(" · ")}
+                  meta={[fdate(d.addedAt), d.source].filter(Boolean).join(" · ")}
                   alert={alertOf(d)}
                   chevron={!selMode}
                   action={selMode ? undefined : { label: "Edit", onPress: () => setOpen(d) }}
