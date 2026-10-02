@@ -3404,16 +3404,16 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             ) : (
               <span>
                 {checking
-                  ? `Checking published sources for ${countryName(store.country)}…`
+                  ? "Checking published sources…"
                   : ev.custom
                     ? `${ev.builtBy === "lookup" ? "Looked up" : "Written by you"}${packCountry ? ` for ${countryName(packCountry)}` : ""}${ev.checked ? ` · checked ${fmtDate(ev.checked)}` : ""}`
                   : live.origin === "curated" && seeded
                     ? `${countryFlag(store.country)} ${seeded.source} · checked ${fmtDate(seeded.checked)}`
                     : researched
                       ? isHome && live.origin === "curated"
-                        ? `Curated list · ${ev.source} · last checked ${ev.lastChecked}`
-                        : `${countryFlag(store.country)} ${countryName(store.country)} · from published sources${live.lastChecked ? `, checked ${fmtDate(live.lastChecked)}` : ""}`
-                      : `Not yet researched for ${countryName(store.country)}`}
+                        ? ev.blurb
+                        : `From published sources${live.lastChecked ? `, checked ${fmtDate(live.lastChecked)}` : ""}`
+                      : "Not checked against published sources yet"}
               </span>
             )}
           </div>
@@ -3470,8 +3470,19 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                   ))}
                 </>
               ) : (
-                <span style={{ flex: "1 1 auto" }}>
-                  {checking ? "Checking published sources…" : `Curated for ${countryName(store.country)}.`}
+                <span style={{ flex: "1 1 auto", lineHeight: 1.5 }}>
+                  {checking ? (
+                    "Checking published sources…"
+                  ) : (
+                    <>
+                      <span style={{ color: T.faint }}>Source </span>
+                      <b style={{ color: SEM.action, fontWeight: 700 }}>{seeded?.source || ev.source}</b>
+                      <span style={{ color: T.faint }}> · last checked </span>
+                      <b style={{ color: T.text, fontWeight: 600 }}>
+                        {fmtDate(seeded?.checked || ev.lastChecked)}
+                      </b>
+                    </>
+                  )}
                 </span>
               )}
               <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -3546,11 +3557,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             <Card style={{ padding: 20, marginBottom: 12, textAlign: "center" }}>
               <Globe size={20} color={T.muted} />
               <h3 style={{ color: T.white, fontSize: 16, margin: "10px 0 6px", fontWeight: 700 }}>
-                Not researched for {countryName(store.country)} yet
+                Not checked yet
               </h3>
               <p style={{ color: T.muted, fontSize: 13.5, lineHeight: 1.6, margin: "0 0 16px" }}>
-                We have not checked what this needs in {countryName(store.country)}. Rather than show a list that could
-                be wrong at the counter, we will look up the official requirements.
+                Rather than show a list that could be wrong at the counter, we will look up the official requirements.
               </p>
               <button onClick={() => refresh(true)} disabled={checking} style={{ ...btnGold, margin: "0 auto", opacity: checking ? 0.6 : 1 }}>
                 <RefreshCw size={15} /> {checking ? "Looking it up…" : "Look up the requirements"}
