@@ -9180,7 +9180,7 @@ export default function App() {
         display: "flex",
         minHeight: "100vh",
         background: T.navy,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         color: T.text,
       }}
     >

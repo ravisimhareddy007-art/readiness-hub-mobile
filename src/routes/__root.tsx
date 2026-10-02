@@ -26,7 +26,7 @@ function NotFoundComponent() {
         alignItems: "center",
         justifyContent: "center",
         padding: 24,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif',
+        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         textAlign: "center",
       }}
     >
@@ -61,7 +61,7 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
         alignItems: "center",
         justifyContent: "center",
         padding: 24,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif',
+        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
         textAlign: "center",
       }}
     >
