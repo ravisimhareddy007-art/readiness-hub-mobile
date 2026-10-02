@@ -683,6 +683,10 @@ function load(): State {
       return {
         ...DEFAULT,
         ...p,
+        /* India only for this release. Anyone whose device locale previously set another country
+           is brought back, otherwise their whole catalogue reads as unresearched. */
+        country: "IN",
+        nationality: "IN",
         care: p.care ?? DEFAULT.care,
         labs: p.labs ?? DEFAULT.labs,
         meds: p.meds ?? DEFAULT.meds,
@@ -724,6 +728,7 @@ function recipientsFor(category: Category, members: Member[]): Record<string, Js
 
 /* ── transient cross-screen intent: "open Wealth with this document" (never persisted) ── */
 let wealthIntent: { docId: string } | null = null;
+let healthIntent: { memberId?: string; tab?: string } | null = null;
 
 export function getCurrency(): string {
   return state.currency || "INR";
@@ -1101,6 +1106,15 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     const text = await safeOcr(blob, d.mime, d.sizeKB);
     return extractHoldingFields(text);
   }, []);
+  /* Tapping a row on Home must land on that row's subject, not on the module's front door. */
+  const setHealthIntent = useCallback((i: { memberId?: string; tab?: string } | null) => {
+    healthIntent = i;
+  }, []);
+  const takeHealthIntent = useCallback(() => {
+    const i = healthIntent;
+    healthIntent = null;
+    return i;
+  }, []);
   const setWealthIntent = useCallback((i: { docId: string } | null) => {
     wealthIntent = i;
   }, []);
@@ -1108,10 +1122,6 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     const i = wealthIntent;
     wealthIntent = null;
     return i;
-  }, []);
-  const reset = useCallback(() => {
-    state = { ...DEFAULT };
-    persist();
   }, []);
 
   return {
@@ -1155,8 +1165,9 @@ const doc: Doc = { ...base, ...override, id: key, fileKey: key };
     cancelHandoff,
     setOnboarded,
     fillFromDocument,
+    setHealthIntent,
+    takeHealthIntent,
     setWealthIntent,
     takeWealthIntent,
-    reset,
   };
 }
