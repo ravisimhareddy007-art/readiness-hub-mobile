@@ -249,6 +249,19 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
   else console.log("ok   screens own appearance");
 }
 
+// Readiness gets its colour from toneFor alone. A second threshold ternary is how a 45 ends up amber
+// on one screen and red on another.
+{
+  const hits = [];
+  for (const p of all) {
+    const src = readFileSync(p, "utf8");
+    if (/const toneFor = /.test(src)) continue;
+    src.split("\n").forEach((l, i) => { if (/>=\s*\d+\s*\?\s*[A-Z]\w*\.(mint|gold|coral|emerald|warning|red|success|attention)/.test(l)) hits.push(`${p}:${i + 1}: ${l.trim().slice(0, 120)}`); });
+  }
+  if (hits.length) { status = 1; console.log(`FAIL readiness colour outside toneFor (${hits.length})`); hits.forEach((h) => console.log("  " + h)); }
+  else console.log("ok   readiness colour has one source");
+}
+
 step("release blockers (listed, not failing yet)");
 let dev = 0;
 for (const p of all) readFileSync(p, "utf8").split("\n").forEach((l, i) => { if (/DEV ONLY/.test(l)) { dev++; console.log(`  ${p}:${i + 1}: ${l.trim().slice(0, 120)}`); } });
