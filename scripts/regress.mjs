@@ -221,7 +221,7 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
 // checks are what make the earlier work permanent rather than a convention that
 // decays with the next edit.
 {
-  const MIGRATED = [];   // add screen paths here as each one is migrated
+  const MIGRATED = ["screens/Documents.tsx"];   // add screen paths here as each one is migrated
   const hits = [];
   for (const p of all) {
     const rel = p.split("src" + sep)[1] || p;

@@ -164,7 +164,6 @@ export default function Documents({ store, toast, go }: any) {
         <Sheet title="Add documents" onClose={() => setAddSheet(false)}>
           <Button variant="primary" size="lg" block onPress={() => upRef.current?.click()}>Upload files</Button>
           <Button variant="secondary" size="lg" block onPress={() => scanRef.current?.click()}>Scan with camera</Button>
-          <Button variant="secondary" size="lg" block onPress={() => { setAddSheet(false); go?.("settings"); toast("Connect DigiLocker in Settings"); }}>From DigiLocker</Button>
         </Sheet>
       )}
 
