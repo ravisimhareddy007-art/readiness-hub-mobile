@@ -3026,7 +3026,7 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
 
 /* ── styles ── */
 const CSS = () => `
-.lh-root{font-variant-numeric:tabular-nums;font-family:-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;color:${C.text}}
+.lh-root{font-variant-numeric:tabular-nums;color:${C.text}}
 .lh-root *{box-sizing:border-box}
 .lh-head{margin-bottom:18px}
 .lh-eyebrow{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:${C.gold};margin-bottom:8px}
