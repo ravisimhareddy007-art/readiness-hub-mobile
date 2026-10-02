@@ -6764,7 +6764,7 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
             marginBottom: 8,
           }}
         >
-          Who steps in
+          Emergency access
         </div>
         {recipients.length === 0 ? (
           <div>
