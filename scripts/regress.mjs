@@ -57,7 +57,7 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
 {
   const hits = [];
   const st = readFileSync("src/lib/store.ts", "utf8");
-  const ui = ["src/App.tsx", "src/components/Healthcare.tsx", "src/components/DocViewer.tsx"]
+  const ui = ["src/App.tsx", "src/components/Healthcare.tsx", "src/components/DocViewer.tsx", "src/screens/Documents.tsx"]
     .map((p) => readFileSync(p, "utf8")).join("\n");
   const block = (st.match(/\n  return \{([\s\S]*?)\n  \};/) || ["", ""])[1];
   /* Deliberately unused while the country choice is withheld for the India-only release. */
