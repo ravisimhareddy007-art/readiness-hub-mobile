@@ -104,7 +104,7 @@ export function RowGroup({ children, initial = 3 }: { children: ReactNode; initi
       {shown.map((child, i) => <div key={i} style={{ borderTop: i ? line : undefined }}>{child}</div>)}
       {items.length > initial && (
         <div style={{ borderTop: line }}>
-          <Button variant="ghost" size="md" full onPress={() => setOpen(!open)}>
+          <Button variant="secondary" size="md" full onPress={() => setOpen(!open)}>
             {open ? "Show less" : `Show all ${items.length}`}
           </Button>
         </div>
@@ -184,31 +184,36 @@ export function Input(p: InputProps) {
   );
 }
 
-/* 8. Button — label states the action, never a count */
-const HEIGHT = { lg: TAP + S.sm, md: TAP, sm: TAP - S.xs } as const;
+/* 8. Button — label states the action, never a count.
+   Disabled removes the fill entirely: surfaceSunken, textMuted at half opacity,
+   never a lighter tint of the enabled colour. */
+const HEIGHT = { lg: 48, md: TAP, sm: 40 } as const;
+const LABEL = { lg: 15, md: 14, sm: 13 } as const;
 
 export function Button({
-  children, variant = "primary", size = "md", onPress, disabled, full,
+  children, variant = "primary", size = "md", onPress, disabled, full, block,
 }: {
-  children: ReactNode; variant?: "primary" | "secondary" | "ghost" | "danger"; size?: "lg" | "md" | "sm";
-  onPress?: () => void; disabled?: boolean; full?: boolean;
+  children: ReactNode; variant?: "primary" | "secondary" | "danger"; size?: "lg" | "md" | "sm";
+  onPress?: () => void; disabled?: boolean; full?: boolean; block?: boolean;
 }) {
   const { t } = useTheme();
   const look: Record<string, CSSProperties> = {
     primary: { background: t("action"), color: t("actionInk"), border: `${LINE}px solid ${t("action")}` },
-    secondary: { background: t("surface"), color: t("textPrimary"), border: `${LINE}px solid ${t("border")}` },
-    ghost: { background: "transparent", color: t("action"), border: `${LINE}px solid transparent` },
+    secondary: { background: t("surfaceSunken"), color: t("textPrimary"), border: `${LINE}px solid ${t("border")}` },
     danger: { background: t("danger"), color: t("dangerInk"), border: `${LINE}px solid ${t("danger")}` },
   };
+  const idle = disabled
+    ? { background: t("surfaceSunken"), color: t("textMuted"), border: `${LINE}px solid ${t("surfaceSunken")}` }
+    : look[variant];
   return (
     <button type="button" onClick={onPress} disabled={disabled}
       style={{
-        ...typeStyle(size === "sm" ? "secondary" : "body"), ...look[variant], ...clip,
-        fontWeight: tokens.type.title.weight,
-        height: HEIGHT[size], minHeight: size === "sm" ? undefined : TAP,
-        width: size === "lg" || full ? "100%" : undefined, maxWidth: "100%",
+        ...typeStyle("secondary"), ...idle, ...clip,
+        fontSize: LABEL[size], fontWeight: 500, lineHeight: 1.1,
+        height: HEIGHT[size],
+        width: full || (size === "lg" && block) ? "100%" : undefined, maxWidth: "100%",
         paddingLeft: S.lg, paddingRight: S.lg, borderRadius: R.box,
-        cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.4 : 1,
+        cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1,
         position: "relative",
       }}>
       {children}
@@ -269,7 +274,7 @@ export function Progress({ value, max, caption }: { value: number; max: number; 
         style={{ height: S.sm, borderRadius: R.round, background: t("surfaceSunken"), overflow: "hidden" }}>
         <div style={{ width: `${pct * 100}%`, height: "100%", background: t("action"), borderRadius: R.round }} />
       </div>
-      {caption && <div style={{ ...typeStyle("secondary"), ...clip, color: t("textSecondary"), marginTop: S.sm }}>{caption}</div>}
+      {caption && <div style={{ ...typeStyle("secondary"), ...clip, color: t("textSecondary"), marginTop: S.xs }}>{caption}</div>}
     </div>
   );
 }

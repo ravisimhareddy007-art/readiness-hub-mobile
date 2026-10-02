@@ -151,7 +151,7 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
 // up with six font sizes half a pixel apart and ten corner radii.
 {
   const hits = [];
-  const TYPE = [12, 14, 16, 20, 28];
+  const TYPE = [12, 13, 14, 15, 16, 20, 28];
   const SPACE = [0, 4, 8, 12, 16, 20, 24, 32, 40, 48];
   const RADIUS = [12, 999];
   const WEIGHT = [400, 500, 700];
