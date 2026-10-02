@@ -2589,6 +2589,8 @@ function Packages({ store, toast }: any) {
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
+                  width: "100%",
+                  maxWidth: "100%",
                 }}
               >
                 <Ring score={score} size={40} />
@@ -2753,6 +2755,8 @@ function Packages({ store, toast }: any) {
                 display: "flex",
                 alignItems: "center",
                 gap: 16,
+                width: "100%",
+                maxWidth: "100%",
               }}
             >
               <Ring score={score} size={54} />
