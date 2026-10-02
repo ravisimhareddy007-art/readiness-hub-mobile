@@ -28,11 +28,11 @@ function NotFoundComponent() {
       }}
     >
       <div style={{ maxWidth: 360 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: "#FFFFFF" }}>That page isn't here</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#FFFFFF" }}>That page isn't here</div>
         <p style={{ fontSize: 14, color: "#8A97AE", lineHeight: 1.6, margin: "8px 0 20px" }}>Head back home and carry on.</p>
         <a
           href="/"
-          style={{ display: "inline-block", padding: "11px 18px", borderRadius: 12, border: "none", background: "#D9B86A", color: "#10182A", fontWeight: 800, fontSize: 14, textDecoration: "none" }}
+          style={{ display: "inline-block", padding: "11px 18px", borderRadius: 12, border: "none", background: "#D9B86A", color: "#10182A", fontWeight: 700, fontSize: 14, textDecoration: "none" }}
         >
           Go home
         </a>
@@ -63,17 +63,17 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       }}
     >
       <div style={{ maxWidth: 360 }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: "#FFFFFF" }}>Something didn't load</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#FFFFFF" }}>Something didn't load</div>
         <p style={{ fontSize: 14, color: "#8A97AE", lineHeight: 1.6, margin: "8px 0 20px" }}>
           Your documents are safe on this device. Try again, or head back home.
         </p>
-        <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            style={{ padding: "11px 18px", borderRadius: 12, border: "none", background: "#D9B86A", color: "#10182A", fontWeight: 800, fontSize: 14, cursor: "pointer" }}
+            style={{ padding: "11px 18px", borderRadius: 12, border: "none", background: "#D9B86A", color: "#10182A", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
           >
             Try again
           </button>
