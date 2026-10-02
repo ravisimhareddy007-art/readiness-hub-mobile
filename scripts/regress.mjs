@@ -217,6 +217,36 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
   else console.log("ok   grid layout");
 }
 
+// A design system is only a system if screens cannot opt out of it. These three
+// checks are what make the earlier work permanent rather than a convention that
+// decays with the next edit.
+{
+  const MIGRATED = [];   // add screen paths here as each one is migrated
+  const hits = [];
+  for (const p of all) {
+    const rel = p.split("src" + sep)[1] || p;
+    if (!MIGRATED.some((m) => rel.endsWith(m))) continue;
+    const src = readFileSync(p, "utf8");
+    const file = p.split(sep).pop();
+
+    // 1. no appearance in a screen file
+    if (/style=\{\{/.test(src)) hits.push(`${file}: contains a style object`);
+    for (const m of src.matchAll(/#[0-9A-Fa-f]{6}\b/g)) hits.push(`${file}: hex colour ${m[0]}`);
+    for (const m of src.matchAll(/\b(fontSize|borderRadius|padding|margin|gap):/g))
+      hits.push(`${file}: declares ${m[1]}`);
+
+    // 2. no raw layout containers outside src/ui
+    if (/display: "flex"|display: "grid"|className="[^"]*\bflex\b/.test(src))
+      hits.push(`${file}: builds its own layout container`);
+
+    // 3. no component outside src/ui that renders a button
+    if (/<button\b/.test(src)) hits.push(`${file}: renders a raw <button>, use Button`);
+  }
+  const uniq = [...new Set(hits)];
+  if (uniq.length) { status = 1; console.log(`FAIL screens own appearance (${uniq.length})`); uniq.slice(0, 12).forEach((h) => console.log("  " + h)); }
+  else console.log("ok   screens own appearance");
+}
+
 step("release blockers (listed, not failing yet)");
 let dev = 0;
 for (const p of all) readFileSync(p, "utf8").split("\n").forEach((l, i) => { if (/DEV ONLY/.test(l)) { dev++; console.log(`  ${p}:${i + 1}: ${l.trim().slice(0, 120)}`); } });
