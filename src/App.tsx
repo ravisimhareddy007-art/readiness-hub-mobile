@@ -8775,7 +8775,7 @@ function AuthScreen({
     >
       <div style={{ width: "min(400px,100%)" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 24 }}>
-          <BrandMark size={48} carve={T.navy} />
+          <BrandMark size={48} color={T.white} />
           <BrandWordmark size={22} color={T.white} />
           <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>
             Be ready for life's important moments.
@@ -8932,7 +8932,7 @@ function OnboardingWizard({ store, onDone }: any) {
     >
       <div style={{ width: "min(460px,100%)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24, justifyContent: "center", color: T.white }}>
-          <BrandMark size={34} carve={T.navy} />
+          <BrandMark size={34} color={T.white} />
           <BrandWordmark size={18} color={T.white} />
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -9031,7 +9031,7 @@ function OnboardingWizard({ store, onDone }: any) {
         {step === 2 && (
           <div style={{ textAlign: "center", padding: "20px 0" }}>
             <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 20, color: T.white }}>
-              <BrandMark size={56} carve={T.navy} />
+              <BrandMark size={56} color={T.white} />
               <BrandWordmark size={24} color={T.white} />
             </div>
             <h2 style={{ color: T.white, fontSize: 20, margin: "0 0 16px" }}>
@@ -9157,7 +9157,7 @@ export default function App() {
       <div style={{ minHeight: "100vh", background: T.navy, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <style>{APPCSS}</style>
         <div style={{ width: "min(400px,100%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, color: T.white, animation: "lp-pulse 1.6s ease-in-out infinite" }}>
-          <BrandMark size={48} carve={T.navy} />
+          <BrandMark size={48} color={T.white} />
           <BrandWordmark size={22} color={T.white} />
           <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>Be ready for life's important moments.</div>
         </div>
