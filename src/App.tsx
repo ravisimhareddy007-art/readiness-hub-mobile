@@ -6589,7 +6589,7 @@ function SearchResults({ store, query, go }: any) {
               <UploadCloud size={15} /> Add a document
             </button>
             <button onClick={() => go("packages")} style={{ ...btnGhost, minHeight: 44 }}>
-              <ListChecks size={15} /> Browse situations
+              <ListChecks size={15} /> Browse packs
             </button>
           </div>
         </Card>
