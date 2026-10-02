@@ -157,13 +157,13 @@ body{background:var(--lpv-bg)}
 @media(max-width:880px){.lp-hero2{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:760px){.lp-main{padding:16px 14px 30px}}
 .lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(5,1fr);gap:0;background:var(--lpv-barbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--lpv-border);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
-.lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:14px;font-size:12px;margin:0 3px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:14px;font-size:12px;margin:0 3px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lp-scrim{position:fixed;inset:0;z-index:65;background:var(--lpv-scrim)}
 .lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up 280ms cubic-bezier(.2,.9,.3,1.08)}
 .lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:var(--lpv-border);margin:4px auto 10px}
 .lp-grabonly{display:none}
 @keyframes lp-spin{to{transform:rotate(360deg)}}
-.lp-sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:50px;padding:0 10px;background:none;border:none;border-radius:12px;color:var(--lpv-text);font-size:15px;font-weight:600;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
+.lp-sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:50px;padding:0 10px;background:none;border:none;border-radius:12px;color:var(--lpv-text);font-size:15px;font-weight:500;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
 .lp-sheet-item:active{background:var(--lpv-raised)}
 @keyframes lp-sheet-up{from{transform:translateY(36px);opacity:.6}to{transform:translateY(0);opacity:1}}
 @keyframes lp-fade{from{opacity:0}to{opacity:1}}
@@ -180,7 +180,7 @@ body{background:var(--lpv-bg)}
 .lp-dc-meta{display:contents}
 .lp-mh-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;justify-items:center;padding:6px 0 12px}
 .lp-mh-mod{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}
-.lp-mh-modlbl{font-size:12px;font-weight:600;color:var(--lpv-muted)}
+.lp-mh-modlbl{font-size:12px;font-weight:500;color:var(--lpv-muted)}
 .lp-mh-insrail{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .lp-mh-insrail::-webkit-scrollbar{display:none}
 .lp-chip{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 9px;border-radius:7px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap}
@@ -2305,7 +2305,7 @@ function Home({ store, go, toast }: any) {
                         style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 66, flexShrink: 0 }}
                       >
                         <span style={{ width: 6, height: 6, borderRadius: 12, background: a.whoColor }} />
-                        <span style={{ fontSize: 12, color: T.muted, fontWeight: 500 }}>{a.who}</span>
+                        <span style={{ fontSize: 12, color: T.muted, fontWeight: 400 }}>{a.who}</span>
                       </span>
                     )}
                     <span
@@ -6223,7 +6223,7 @@ function Wealth({ store, go, toast }: any) {
                 <UploadCloud size={18} color={SEM.action} />
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: "block", fontSize: 14 }}>Scan or upload a new document</span>
-                  <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 500 }}>
+                  <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 400 }}>
                     Statement, policy, or deed. It is filed in Documents and opened here.
                   </span>
                 </span>
@@ -6248,7 +6248,7 @@ function Wealth({ store, go, toast }: any) {
                     <FileText size={18} color={CAT_META[d.category as Category].color} />
                     <span style={{ flex: 1, minWidth: 0 }}>
                       <span style={{ display: "block", fontSize: 14 }}>{d.docType}</span>
-                      <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 500 }}>
+                      <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 400 }}>
                         {store.members.find((m: Member) => m.id === d.memberId)?.name || "Unassigned"} · {d.category}
                       </span>
                     </span>
@@ -7107,7 +7107,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
             cursor: "pointer",
             color: T.muted,
             fontSize: 12,
-            fontWeight: 500,
+            fontWeight: 400,
             padding: 0,
             marginTop: 12,
             display: "inline-flex",
@@ -7687,11 +7687,11 @@ function buildEstate(store: any): string {
   const trusted = store.members.filter((mm: Member) => mm.access === "Full member" || mm.access === "Emergency access");
   const th = (t: string) => `<th style="text-align:left;padding:6px 10px;font-size:12px;color:#6b7280">${t}</th>`;
   const secTable = (title: string, arr: Holding[], showNom: boolean) =>
-    `<h3 style="margin:18px 0 6px;font-size:14px;color:#111827">${title}</h3><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Holding")}${th("Type")}${th("Where")}${th("Value")}${showNom ? th("Nominee") : ""}${th("Document")}${th("How to access")}</tr>${arr.map((h) => `<tr><td style="padding:6px 10px;font-weight:600">${h.name}</td><td style="padding:6px 10px">${h.type}</td><td style="padding:6px 10px;color:#6b7280">${h.institution || ""} ${h.accountRef || ""}</td><td style="padding:6px 10px">${m2(h.value)}</td>${showNom ? `<td style="padding:6px 10px;color:${h.nominee ? "#111827" : "#b91c1c"};font-weight:${h.nominee ? 400 : 700}">${h.nominee ? h.nomineeName || "named" : "NOT NAMED"}</td>` : ""}<td style="padding:6px 10px;color:#6b7280">${dn(h.docId)}</td><td style="padding:6px 10px;color:#374151">${h.accessNote || "\u2014"}</td></tr>`).join("") || `<tr><td colspan="6" style="padding:6px 10px;color:#6b7280">None</td></tr>`}</table>`;
+    `<h3 style="margin:18px 0 6px;font-size:14px;color:#111827">${title}</h3><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Holding")}${th("Type")}${th("Where")}${th("Value")}${showNom ? th("Nominee") : ""}${th("Document")}${th("How to access")}</tr>${arr.map((h) => `<tr><td style="padding:6px 10px;font-weight:500">${h.name}</td><td style="padding:6px 10px">${h.type}</td><td style="padding:6px 10px;color:#6b7280">${h.institution || ""} ${h.accountRef || ""}</td><td style="padding:6px 10px">${m2(h.value)}</td>${showNom ? `<td style="padding:6px 10px;color:${h.nominee ? "#111827" : "#b91c1c"};font-weight:${h.nominee ? 400 : 700}">${h.nominee ? h.nomineeName || "named" : "NOT NAMED"}</td>` : ""}<td style="padding:6px 10px;color:#6b7280">${dn(h.docId)}</td><td style="padding:6px 10px;color:#374151">${h.accessNote || "\u2014"}</td></tr>`).join("") || `<tr><td colspan="6" style="padding:6px 10px;color:#6b7280">None</td></tr>`}</table>`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>Family Summary</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111827;max-width:760px;margin:20px auto;padding:0 20px;background:#fff">
-  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #D8B25A;padding-bottom:12px"><div><div style="font-weight:800;font-size:20px">ReadiNes · Family Summary</div><div style="color:#6b7280;font-size:13px">What your family would need to find and claim everything</div></div><div style="text-align:right;color:#6b7280;font-size:12px">Prepared ${new Date().toLocaleString()}</div></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #D8B25A;padding-bottom:12px"><div><div style="font-weight:700;font-size:20px">ReadiNes · Family Summary</div><div style="color:#6b7280;font-size:13px">What your family would need to find and claim everything</div></div><div style="text-align:right;color:#6b7280;font-size:12px">Prepared ${new Date().toLocaleString()}</div></div>
   <div style="display:flex;gap:26px;margin-top:16px">
-    <div><div style="font-size:12px;color:#6b7280">Net worth (documented)</div><div style="font-size:22px;font-weight:800">${m2(net)}</div></div>
+    <div><div style="font-size:12px;color:#6b7280">Net worth (documented)</div><div style="font-size:22px;font-weight:700">${m2(net)}</div></div>
     <div><div style="font-size:12px;color:#6b7280">Assets</div><div style="font-size:18px;font-weight:700">${m2(s(A_))}</div></div>
     <div><div style="font-size:12px;color:#6b7280">Liabilities</div><div style="font-size:18px;font-weight:700">${m2(s(L_))}</div></div>
     <div><div style="font-size:12px;color:#6b7280">Protection</div><div style="font-size:18px;font-weight:700">${m2(s(C_))}</div></div>
@@ -7700,7 +7700,7 @@ function buildEstate(store: any): string {
   ${secTable("Loans", L_, false)}
   ${secTable("Insurance", C_, true)}
   <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">Money between people</h3>
-  <table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Who")}${th("What for")}${th("Amount")}${th("Direction")}${th("Evidence")}</tr>${(store.transactions || []).filter((t: Transaction) => !t.followUpDone).map((t: Transaction) => `<tr><td style="padding:6px 10px;font-weight:600">${t.counterparty || "\u2014"}</td><td style="padding:6px 10px">${t.purpose}</td><td style="padding:6px 10px">${m2(t.amount)}</td><td style="padding:6px 10px">${t.direction === "paid" ? "owed to the family" : "the family owes"}</td><td style="padding:6px 10px;color:${t.docId ? "#111827" : "#b91c1c"};font-weight:${t.docId ? 400 : 700}">${t.docId ? dn(t.docId) : "NONE"}</td></tr>`).join("") || `<tr><td colspan="5" style="padding:6px 10px;color:#6b7280">None recorded</td></tr>`}</table>
+  <table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Who")}${th("What for")}${th("Amount")}${th("Direction")}${th("Evidence")}</tr>${(store.transactions || []).filter((t: Transaction) => !t.followUpDone).map((t: Transaction) => `<tr><td style="padding:6px 10px;font-weight:500">${t.counterparty || "\u2014"}</td><td style="padding:6px 10px">${t.purpose}</td><td style="padding:6px 10px">${m2(t.amount)}</td><td style="padding:6px 10px">${t.direction === "paid" ? "owed to the family" : "the family owes"}</td><td style="padding:6px 10px;color:${t.docId ? "#111827" : "#b91c1c"};font-weight:${t.docId ? 400 : 700}">${t.docId ? dn(t.docId) : "NONE"}</td></tr>`).join("") || `<tr><td colspan="5" style="padding:6px 10px;color:#6b7280">None recorded</td></tr>`}</table>
   <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">If something happens: first steps for the family</h3>
   <ol style="margin:0;padding-left:18px;line-height:1.8;color:#374151;font-size:13px">
     ${C_.map((c) => `<li>File the ${c.type.toLowerCase()} claim with <b>${c.institution || "the insurer"}</b>${c.accessNote ? ` — ${c.accessNote}` : ""}${c.nominee ? ` (nominee: ${c.nomineeName || "named"})` : ` <span style="color:#b91c1c;font-weight:700">(no nominee — expect a legal-heir process)</span>`}</li>`).join("")}

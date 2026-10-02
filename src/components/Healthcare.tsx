@@ -502,7 +502,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 border: "none",
                 color: C.sub,
                 fontSize: 14,
-                fontWeight: 500,
+                fontWeight: 400,
                 cursor: "pointer",
                 padding: "8px 8px 8px 0",
                 fontFamily: "inherit",
@@ -889,8 +889,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     style={{ fontSize: 28, margin: "8px 0 4px", display: "flex", alignItems: "baseline", gap: 8 }}
                   >
                     {readingText(l)}
-                    <span style={{ fontSize: 14, color: C.sub, fontWeight: 500 }}>{seriesUnit(arr)}</span>
-                    <span style={{ display: "block", fontSize: 12, color: C.faint, fontWeight: 500, marginTop: 4 }}>
+                    <span style={{ fontSize: 14, color: C.sub, fontWeight: 400 }}>{seriesUnit(arr)}</span>
+                    <span style={{ display: "block", fontSize: 12, color: C.faint, fontWeight: 400, marginTop: 4 }}>
                       {rangeText(l)}
                     </span>
                     <Tr size={14} color={delta === 0 ? C.faint : delta > 0 ? C.red : C.emerald} />
@@ -2654,8 +2654,8 @@ function buildVisitCover(
     `<h3 style="margin:16px 0 6px;font-size:13.5px;color:#111827">${t}</h3>${body}`;
   return `<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111827;background:#fff;padding:24px;max-width:680px;margin:0 auto">
   <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #D8B25A;padding-bottom:10px">
-    <div><div style="font-weight:800;font-size:18px">ReadiNes · Visit Pack</div><div style="color:#6b7280;font-size:12.5px">${visitLabel}</div></div>
-    <div style="text-align:right"><div style="font-weight:800;font-size:15px">${m.name}</div><div style="color:#6b7280;font-size:12px">${m.relation}${a != null ? ` · ${a}y` : ""}${m.bloodGroup ? ` · ${m.bloodGroup}` : ""}</div></div>
+    <div><div style="font-weight:700;font-size:18px">ReadiNes · Visit Pack</div><div style="color:#6b7280;font-size:12.5px">${visitLabel}</div></div>
+    <div style="text-align:right"><div style="font-weight:700;font-size:15px">${m.name}</div><div style="color:#6b7280;font-size:12px">${m.relation}${a != null ? ` · ${a}y` : ""}${m.bloodGroup ? ` · ${m.bloodGroup}` : ""}</div></div>
   </div>
   ${sec("Critical", `<div style="font-size:13px;line-height:1.7"><b style="color:#b91c1c">Allergies:</b> ${care.allergies || "None recorded"}<br/><b>Conditions:</b> ${(care.conditions || []).join(", ") || "None recorded"}<br/><b>Primary physician:</b> ${care.doctor || "—"}${care.hospital ? `<br/><b>Preferred hospital:</b> ${care.hospital}` : ""}</div>`)}
   ${sec("Current medications", meds.length ? `<ul style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">${meds.map((x) => `<li>${[x.name, x.dose, x.freq].filter(Boolean).join(" · ")}${x.refillBy ? ` · refill by ${fmt(x.refillBy)}` : ""}</li>`).join("")}</ul>` : `<div style="color:#6b7280;font-size:13px">None recorded</div>`)}
@@ -3007,7 +3007,7 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
     `<tr><td style="padding:7px 12px;color:#6b7280;font-size:12px;width:140px">${a}</td><td style="padding:7px 12px;font-weight:700;font-size:14px;color:${warn ? "#b91c1c" : "#111827"}">${b}</td></tr>`;
   return `<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:460px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb">
   <div style="background:#b91c1c;color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
-    <div style="font-weight:800;font-size:15px;letter-spacing:1px">EMERGENCY INFO</div><div style="font-size:12px;opacity:.9">ReadiNes</div>
+    <div style="font-weight:700;font-size:15px;letter-spacing:1px">EMERGENCY INFO</div><div style="font-size:12px;opacity:.9">ReadiNes</div>
   </div>
   <div style="padding:6px 4px"><table style="width:100%;border-collapse:collapse">
     ${row("Name", m.name)}
@@ -3030,7 +3030,7 @@ const CSS = () => `
 .lh-root{font-variant-numeric:tabular-nums;color:${C.text}}
 .lh-root *{box-sizing:border-box}
 .lh-head{margin-bottom:18px}
-.lh-eyebrow{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:${C.gold};margin-bottom:8px}
+.lh-eyebrow{font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:${C.gold};margin-bottom:8px}
 .lh-h1{letter-spacing:-0.015em;font-weight:700;font-size:27px;letter-spacing:-.5px;margin:0;color:${C.text}}
 .lh-h2{letter-spacing:-0.015em;font-weight:700;margin:0;color:${C.text}}
 .lh-card{background:${C.panel};border:1px solid ${C.border};border-radius:16px}
@@ -3040,17 +3040,17 @@ const CSS = () => `
 .lh-mm.on .lh-av{transform:translateY(-1px)}
 .lh-av.lg{width:52px;height:52px;font-size:22px}
 .lh-dot{position:absolute;top:-2px;right:-2px;width:11px;height:11px;border-radius:9px;border:2px solid var(--lpv-panel)}
-.lh-nm{font-size:12.5px;font-weight:600;white-space:nowrap}
+.lh-nm{font-size:12.5px;font-weight:500;white-space:nowrap}
 .lh-addm .lh-av{background:${C.panel2}}
 .lh-famline{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 2px;margin-bottom:2px}
-.lh-famtitle{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:${C.text}}
+.lh-famtitle{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:${C.text}}
 .lh-famsum{font-size:12.5px;color:${C.sub};white-space:nowrap}
 .lh-hero{background:linear-gradient(180deg,rgba(216,178,90,.05),${C.panel});border:1px solid ${C.border};border-radius:16px;padding:18px;margin-bottom:20px}
 .lh-herotop{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .lh-heronext{display:flex;align-items:center;gap:9px;margin-top:16px;padding-top:14px;border-top:1px solid ${C.border}}
 .lh-herometa{font-size:13px;color:${C.sub};margin-top:8px;line-height:1.5}
 .lh-headrow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.lh-pillm{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:7px 14px;cursor:pointer;font-family:inherit;flex-shrink:0}
+.lh-pillm{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:7px 14px;cursor:pointer;font-family:inherit;flex-shrink:0}
 .lh-pillm.on{color:${C.text};border-color:${C.action}66;background:${C.action}14}
 .lh-cdot{width:8px;height:8px;border-radius:9px;flex-shrink:0}
 .lh-attndot{width:6px;height:6px;border-radius:9px;background:${C.warning}}
@@ -3060,45 +3060,45 @@ const CSS = () => `
 .lh-chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:6px 12px;cursor:pointer;font-family:inherit}
 .lh-chip:hover{background:var(--lpv-raised)}
 .lh-mhead{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
-.lh-btn{display:inline-flex;align-items:center;gap:7px;background:${C.action};color:var(--lpv-actionink);font-weight:600;font-size:14px;border:0;border-radius:11px;padding:10px 16px;min-height:44px;cursor:pointer;font-family:inherit;transition:.15s}
+.lh-btn{display:inline-flex;align-items:center;gap:7px;background:${C.action};color:var(--lpv-actionink);font-weight:500;font-size:14px;border:0;border-radius:11px;padding:10px 16px;min-height:44px;cursor:pointer;font-family:inherit;transition:.15s}
 .lh-btn:hover{filter:brightness(1.06)}.lh-btn:disabled{opacity:.4;cursor:not-allowed}
-.lh-btn-g{display:inline-flex;align-items:center;gap:7px;background:${C.panel2};color:${C.text};font-weight:600;font-size:14px;border:1px solid ${C.border};border-radius:11px;padding:10px 14px;min-height:44px;cursor:pointer;font-family:inherit}
+.lh-btn-g{display:inline-flex;align-items:center;gap:7px;background:${C.panel2};color:${C.text};font-weight:500;font-size:14px;border:1px solid ${C.border};border-radius:11px;padding:10px 14px;min-height:44px;cursor:pointer;font-family:inherit}
 .lh-btn-g:hover{background:var(--lpv-raised)}
 .lh-tabs{display:flex;gap:6px;border-bottom:1px solid ${C.border};margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
 .lh-tabs::-webkit-scrollbar{display:none}
-.lh-tab{display:inline-flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;color:${C.sub};font-size:14px;font-weight:600;padding:10px 12px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-bottom:-1px}
+.lh-tab{display:inline-flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;color:${C.sub};font-size:14px;font-weight:500;padding:10px 12px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-bottom:-1px}
 .lh-tab.on{color:${C.text};border-bottom-color:${C.action}}
 .lh-tc{font-size:12px;background:${C.panel2};border-radius:9px;padding:1px 6px;color:${C.sub}}
 .lh-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .lh-grid-2-1{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px}
 .lh-sechead{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:700;color:${C.text};margin-bottom:12px}
-.lh-mini{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:600;color:${C.gold};background:${C.gold}18;border:1px solid ${C.gold}33;border-radius:8px;padding:4px 9px;cursor:pointer;font-family:inherit}
+.lh-mini{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:500;color:${C.gold};background:${C.gold}18;border:1px solid ${C.gold}33;border-radius:8px;padding:4px 9px;cursor:pointer;font-family:inherit}
 .lh-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid ${C.border}}
 .lh-row:first-of-type{border-top:0}
 .lh-ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
 .lh-ib{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;border:1px solid ${C.border};background:transparent;cursor:pointer;flex-shrink:0}
 .lh-ib:hover{background:var(--lpv-raised)}
-.lh-tag{font-size:12px;font-weight:600;padding:2px 7px;border-radius:20px}
+.lh-tag{font-size:12px;font-weight:500;padding:2px 7px;border-radius:20px}
 .lh-info{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid ${C.border}}
 .lh-info:first-of-type{border-top:0}
 .lh-med{padding:12px 0;border-top:1px solid ${C.border}}
 .lh-med:first-of-type{border-top:0}
 .lh-adhere{display:flex;align-items:center;gap:12px;margin-top:9px;padding-left:43px;flex-wrap:wrap}
-.lh-take{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:${C.emerald};background:${C.emerald}18;border:1px solid ${C.emerald}33;border-radius:8px;padding:5px 10px;cursor:pointer;font-family:inherit}
-.lh-taken{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:${C.emerald}}
+.lh-take{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;color:${C.emerald};background:${C.emerald}18;border:1px solid ${C.emerald}33;border-radius:8px;padding:5px 10px;cursor:pointer;font-family:inherit}
+.lh-taken{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;color:${C.emerald}}
 .lh-lnk{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:${C.sub};background:none;border:0;cursor:pointer;font-family:inherit}
 .lh-lnk:hover{color:${C.text}}
 .lh-uprow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-.lh-up{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:11px;padding:11px 15px;cursor:pointer;font-family:inherit}
+.lh-up{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:11px;padding:11px 15px;cursor:pointer;font-family:inherit}
 .lh-up:hover{background:var(--lpv-raised);border-color:${C.action}55}
 .lh-rec{position:relative;display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid ${C.border}}
 .lh-rec:first-of-type{border-top:0}
 .lh-tl{position:relative;padding-left:20px}
 .lh-tl:before{content:"";position:absolute;left:5px;top:24px;bottom:8px;width:1px;background:${C.border}}
-.lh-tlmon{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:${C.gold};margin:14px 0 6px}
+.lh-tlmon{font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:${C.gold};margin:14px 0 6px}
 .lh-tlrow{position:relative;display:flex;align-items:center;gap:11px;padding:8px 0}
 .lh-tldot{position:absolute;left:-15px;top:18px;width:9px;height:9px;border-radius:9px}
-.lh-lbl{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};margin-bottom:5px}
+.lh-lbl{font-size:12px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};margin-bottom:5px}
 .lh-in{width:100%;background:${C.panel2};border:1px solid ${C.border};border-radius:10px;padding:11px;min-height:44px;color:${C.text};font-size:16px;outline:none;font-family:inherit}
 .lh-in:focus{border-color:${C.action}}
 .lh-overlay{position:fixed;inset:0;z-index:72;background:var(--lpv-scrim);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px}
@@ -3111,7 +3111,7 @@ const CSS = () => `
 .lh-preview{background:#f3f4f6;border-radius:10px;padding:10px}
 .lh-x{width:44px;height:44px;border-radius:9px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};cursor:pointer;display:grid;place-items:center}
 .lh-pick{display:flex;flex-wrap:wrap;gap:6px}
-.lh-pk{font-size:12.5px;font-weight:600;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit}
+.lh-pk{font-size:12.5px;font-weight:500;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit}
 .lh-pk.on{color:var(--lpv-actionink);background:${C.action};border-color:${C.action}}
 .lh-cond{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:4px 10px}
 .lh-cond button{background:0;border:0;color:${C.faint};cursor:pointer;display:inline-flex}
@@ -3127,11 +3127,11 @@ const CSS = () => `
 .lh-swrail{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 0 12px;margin:0 -2px}
 .lh-swrail::-webkit-scrollbar{display:none}
 .lh-sw{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px;min-height:66px;background:none;border:none;padding:2px;cursor:pointer;font-family:inherit}
-.lh-swav{width:40px;height:40px;border-radius:99px;display:grid;place-items:center;font-weight:800;font-size:15px;border:2px solid transparent}
-.lh-swnm{font-size:12px;font-weight:600;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lh-swav{width:40px;height:40px;border-radius:99px;display:grid;place-items:center;font-weight:700;font-size:15px;border:2px solid transparent}
+.lh-swnm{font-size:12px;font-weight:500;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lh-famav{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-weight:700;font-size:15px;letter-spacing:-0.015em;flex-shrink:0}
 .lh-famnm{display:block;font-size:13.5px;font-weight:700;color:${C.text};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lh-famst{display:block;font-size:12px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lh-famst{display:block;font-size:12px;font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #lh-print{display:none}
 @media(max-width:900px){.lh-grid3{grid-template-columns:minmax(0,1fr)}.lh-grid-2-1{grid-template-columns:minmax(0,1fr)}.lh-vgrid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:767px){
@@ -3144,7 +3144,7 @@ const CSS = () => `
 .lh-tab{font-size:13px;padding:9px 8px;gap:0}
 .lh-fab{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:40;width:56px;height:56px;border-radius:99px;display:grid;place-items:center;border:0;background:${C.action};color:#04221f;box-shadow:0 8px 24px rgba(0,0,0,.34);cursor:pointer}
 .lh-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0 4px}
-.lh-act{display:flex;align-items:center;gap:9px;min-height:52px;padding:10px 12px;border-radius:12px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};font-size:13.5px;font-weight:600;font-family:inherit;cursor:pointer;text-align:left}
+.lh-act{display:flex;align-items:center;gap:9px;min-height:52px;padding:10px 12px;border-radius:12px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};font-size:13.5px;font-weight:500;font-family:inherit;cursor:pointer;text-align:left}
 .lh-act span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 .lh-act-on{background:${C.action};border-color:${C.action};color:#04221f}
 .lh-act-wide{grid-column:1 / -1;min-height:56px;font-size:15px}
