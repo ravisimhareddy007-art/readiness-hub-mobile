@@ -9233,7 +9233,7 @@ export default function App() {
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 12,
+            gap: 8,
             padding: navOpen ? "6px 8px 18px" : "6px 0 18px",
             justifyContent: navOpen ? "flex-start" : "center",
           }}
