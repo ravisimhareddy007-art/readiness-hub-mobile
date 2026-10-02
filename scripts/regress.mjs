@@ -173,6 +173,22 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
   else console.log("ok   design system");
 }
 
+// A tick saying "nothing wrong here" spends the loudest element in the UI on the default state,
+// and repeats what the dashboard already lists as an action. Only exceptions get ink.
+{
+  const hits = [];
+  for (const p of all) {
+    const src = readFileSync(p, "utf8");
+    const file = p.split(sep).pop();
+    for (const m of src.matchAll(/["'`]\s*[\u2713\u2714\u2715\u2717\u2716\u00d7]\s*[A-Z][a-z]/g))
+      hits.push(`${file}: a tick or cross badge at "${m[0].trim()}"`);
+    if (/const Chip = \(\{ ok, label \}/.test(src)) hits.push(`${file}: a boolean status pill component`);
+  }
+  const uniq = [...new Set(hits)];
+  if (uniq.length) { status = 1; console.log(`FAIL status badges (${uniq.length})`); uniq.slice(0, 10).forEach((h) => console.log("  " + h)); }
+  else console.log("ok   status badges");
+}
+
 step("release blockers (listed, not failing yet)");
 let dev = 0;
 for (const p of all) readFileSync(p, "utf8").split("\n").forEach((l, i) => { if (/DEV ONLY/.test(l)) { dev++; console.log(`  ${p}:${i + 1}: ${l.trim().slice(0, 120)}`); } });
