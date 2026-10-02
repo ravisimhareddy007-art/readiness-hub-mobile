@@ -8931,7 +8931,7 @@ function OnboardingWizard({ store, onDone }: any) {
       }}
     >
       <div style={{ width: "min(460px,100%)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24, justifyContent: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24, justifyContent: "center", color: T.white }}>
           <BrandMark size={34} carve={T.navy} />
           <BrandWordmark size={18} color={T.white} />
         </div>
@@ -9030,7 +9030,7 @@ function OnboardingWizard({ store, onDone }: any) {
         )}
         {step === 2 && (
           <div style={{ textAlign: "center", padding: "20px 0" }}>
-            <div style={{ display: "inline-block", marginBottom: 20 }}>
+            <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 20, color: T.white }}>
               <BrandMark size={56} carve={T.navy} />
               <BrandWordmark size={24} color={T.white} />
             </div>
