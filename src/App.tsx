@@ -316,6 +316,31 @@ const PACK_CAT_META: Record<string, { color: string; icon: any }> = {
  */
 type PackBasis = "authority" | "convention" | "institution";
 type PackSource = { basis: PackBasis; name?: string; url?: string; checked?: string };
+
+/**
+ * What an unsourced pack says about its own list. One sentence for every pack read as if a
+ * passport application had a provider to confirm with, so the line follows who sets the list.
+ */
+const unsourcedLine = (p: { cat?: string; source?: PackSource }) => {
+  if (p.source?.basis === "institution") return "Your institution sets its own list. This is the common core.";
+  switch (p.cat) {
+    case "Money & Tax":
+      return "Typical across lenders. Your lender may ask for more.";
+    case "Health":
+      return "Typical across insurers. Check your policy wording.";
+    case "Jobs & Employment":
+      return "Typical for most employers. Yours may differ.";
+    case "Home & Property":
+      return "Varies by state and municipality. This is the common core.";
+    case "Education":
+      return "Each institution sets its own list. This is the common core.";
+    case "Identity & Civic":
+    case "Travel & Immigration":
+      return "Commonly required. Confirm against the issuing office before you go.";
+    default:
+      return "Commonly required. Confirm with whoever is asking.";
+  }
+};
 const P = (
   id: string,
   cat: string,
@@ -1318,6 +1343,15 @@ const EVENTS = [
     "Gates most routes abroad",
     ["Passport", "Address Proof", "Identity Proof", "Passport Photos"],
     undefined,
+    undefined,
+  ),
+  P(
+    "caste-cert",
+    "Identity & Civic",
+    "Caste certificate",
+    "For admissions and government posts",
+    ["Identity Proof", "Address Proof", "Passport Photos", "Income Proof"],
+    ["Parent Caste Certificate", "School Leaving Certificate"],
     undefined,
   ),
 ];
@@ -3412,14 +3446,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                             </b>
                           </span>
                         </>
-                      ) : ev.source?.basis === "institution" ? (
-                        <span style={{ display: "block" }}>
-                          Your institution publishes its own list. This is the common core.
-                        </span>
                       ) : (
-                        <span style={{ display: "block" }}>
-                          Typical across providers. Confirm with yours.
-                        </span>
+                        <span style={{ display: "block" }}>{unsourcedLine(ev)}</span>
                       )}
                     </>
                   )}
