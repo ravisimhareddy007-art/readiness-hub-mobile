@@ -51,20 +51,6 @@ const BASE: Record<string, { reqs: string[]; source: string }> = {
     source: "UAE ICP / airline visa-desk checklists",
     reqs: ["Passport", "Passport Photos", "Flight Reservation", "Hotel Booking", "Bank Statement"],
   },
-  "h1b-stamp": {
-    source: "US Dept. of State petition-based visa checklist",
-    reqs: [
-      "Passport", "DS-160 Confirmation", "Approval Notice", "Employment Offer",
-      "Payslip", "ITR Acknowledgement", "Degree Certificate",
-    ],
-  },
-  "f1-visa": {
-    source: "US Dept. of State student visa checklist",
-    reqs: [
-      "Passport", "DS-160 Confirmation", "I-20 Form", "Admission Letter",
-      "Proof of Funds", "Language Test Scorecard", "Degree Certificate",
-    ],
-  },
 };
 
 /** When the seeds were last checked against the published sources (same curation pass as the
@@ -117,7 +103,6 @@ const LOCAL: Record<string, Record<string, { reqs: string[]; source: string }>> 
       source: "Ejari tenancy registration requirements",
       reqs: ["Passport", "Residence Visa", "Emirates ID", "Tenancy Contract", "Salary Certificate"],
     },
-    "sim-kyc": { source: "UAE telecom subscriber registration rules", reqs: ["Emirates ID", "Passport"] },
     onboarding: {
       source: "MoHRE employment documentation",
       reqs: ["Passport", "Residence Visa", "Emirates ID", "Labour Contract", "Degree Certificate"],
