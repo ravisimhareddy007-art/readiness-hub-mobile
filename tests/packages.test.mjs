@@ -143,5 +143,33 @@ t("a set-aside requirement stops dragging the score down", () => {
 t("setting aside never deletes from the published list", () => {
   assert.ok(/packSkips/.test(store), "skips are per pack, separate from the requirements themselves");
 });
+t("packs that fail the customer filter are gone", () => {
+  for (const id of ["ration-card", "sim-kyc", "disaster-relief", "lpg", "trademark",
+                    "incorporation", "udyam", "freelance-kyc", "adoption", "senior-card"])
+    assert.ok(!new RegExp('"' + id + '"').test(app), `${id} should have been cut`);
+});
+t("over-split packs are collapsed into parameters", () => {
+  assert.ok(!/"carloan"/.test(app), "car and two-wheeler are one vehicle loan");
+  assert.ok(/"vehicle-loan"/.test(app));
+  assert.ok(!/"f1-visa"|"h1b-stamp"/.test(app), "student and work visas are parameterised");
+  assert.ok(!/"lost-pan"|"lost-aadhaar"|"lost-dl"/.test(app), "losing a document is a variant");
+});
+t("the situations a household actually meets are present", () => {
+  for (const id of ["pan-aadhaar-link", "aadhaar-address", "aadhaar-mobile", "voter-address",
+                    "motor-claim", "gratuity", "name-change-marriage", "police-clearance",
+                    "oci-card", "loan-lien-release", "first-30-days", "water-connection",
+                    "property-tax-name", "health-ins-port"])
+    assert.ok(new RegExp('"' + id + '"').test(app), `${id} is missing`);
+});
+t("no pack id is used twice", () => {
+  const ids = [...app.matchAll(/P\(\s*\n\s*"([^"]+)",/g)].map((m) => m[1]);
+  assert.equal(new Set(ids).size, ids.length);
+});
+t("nothing references a pack that no longer exists", () => {
+  const ids = new Set([...app.matchAll(/P\(\s*\n\s*"([^"]+)",/g)].map((m) => m[1]));
+  const scope = readFileSync(join(root, "src/lib/pack-scope.ts"), "utf8");
+  for (const m of scope.matchAll(/"([a-z0-9-]+)":\s*"[A-Z]{2}"/g))
+    assert.ok(ids.has(m[1]), `pack-scope names ${m[1]}, which is not in the catalogue`);
+});
 console.log(fails ? `\n${fails} FAILED` : "\nall passed");
 process.exit(fails ? 1 : 0);

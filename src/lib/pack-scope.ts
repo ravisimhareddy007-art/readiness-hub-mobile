@@ -8,17 +8,18 @@
 /** Situations that exist only under Indian law or Indian administrative practice. */
 export const INDIA_ONLY = new Set([
   // identity instruments that exist nowhere else
-  "lost-pan", "tax-id", "lost-aadhaar", "id-update", "voter-id", "ration-card", "domicile-cert",
-  "income-cert", "caste-cert",
+  "tax-id", "pan-aadhaar-link", "aadhaar-address", "aadhaar-mobile",
+  "voter-address", "name-change-marriage", "police-clearance",
+  "id-update", "voter-id", "domicile-cert", "income-cert", "caste-cert",
   // Indian tax, retirement and savings products
-  "tax", "demat", "ppf", "nps", "pf-transfer", "epf-withdraw", "mf-kyc",
-  // Indian business registration
-  "gst-reg", "udyam", "incorporation", "trademark", "prof-reg",
+  "tax", "demat", "nps", "pf-transfer", "epf-withdraw", "mf-kyc",
+  // Indian employment and business instruments
+  "gst-reg", "prof-reg", "gratuity", "loan-lien-release", "govt-job",
   // Indian property instruments
-  "khata", "society-noc",
-  // Indian welfare and certificates
-  "govt-health-card", "disability-cert", "senior-card", "disaster-relief", "govt-job",
-  "tenant-verify", "board-reg", "lpg",
+  "khata", "society-noc", "tenant-verify", "property-tax-name",
+  "water-connection",
+  // Indian education and welfare
+  "board-reg", "disability-cert",
   // Indian succession instruments
   "legal-heir", "succession",
 ]);
@@ -33,8 +34,6 @@ export const DESTINATION_PACKS: Record<string, string> = {
   japan: "JP",
   singapore: "SG",
   uae: "AE",
-  "h1b-stamp": "US",
-  "f1-visa": "US",
 };
 
 /**
