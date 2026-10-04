@@ -578,7 +578,11 @@ const EVENTS = [
     "First-time application",
     ["Identity Proof", "Address Proof", "Date of Birth Proof", "Passport Photos"],
     undefined,
-    undefined,
+    {
+      name: "Passport Seva Document Advisor",
+      url: "https://services1.passportindia.gov.in/psp/docAdvisor/attachmentAdvFreshInp",
+      checked: "2026-10-04",
+    },
   ),
   P(
     "passport-renew",
@@ -587,7 +591,11 @@ const EVENTS = [
     "Reissue of passport",
     ["Passport", "Address Proof", "Passport Photos"],
     ["Date of Birth Proof"],
-    undefined,
+    {
+      name: "Passport Seva Document Advisor",
+      url: "https://services1.passportindia.gov.in/psp/docAdvisor/attachmentAdvFreshInp",
+      checked: "2026-10-04",
+    },
   ),
   P(
     "minor-passport",
@@ -596,7 +604,11 @@ const EVENTS = [
     "Child's first passport",
     ["Birth Certificate", "Identity Proof", "Address Proof", "Passport Photos", "Annexure D Declaration"],
     undefined,
-    undefined,
+    {
+      name: "Passport Seva Document Advisor",
+      url: "https://services1.passportindia.gov.in/psp/docAdvisor/attachmentAdvFreshInp",
+      checked: "2026-10-04",
+    },
   ),
   P(
     "tax-id",
@@ -614,7 +626,11 @@ const EVENTS = [
     "Name or address change",
     ["Aadhaar Card", "Address Proof"],
     ["Marriage Certificate"],
-    undefined,
+    {
+      name: "UIDAI list of acceptable documents",
+      url: "https://uidai.gov.in/en/enrolment-and-updates",
+      checked: "2026-10-04",
+    },
   ),
   P(
     "voter-id",
