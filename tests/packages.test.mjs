@@ -58,9 +58,18 @@ t("one source and one date, not three", () => {
   assert.ok(shown <= 2, `a date is labelled "checked" ${shown} times`);
   assert.ok(/Last checked<\/span>/.test(app), "the date must still be shown once");
 });
-t("the date shown belongs to the list on screen", () => {
-  assert.ok(/fmtDate\(live\.lastChecked \|\| seeded\?\.checked \|\| ev\.lastChecked\)/.test(app),
-    "a curated date beside a looked-up list is two answers to one question");
+t("a source appears only where one was verified", () => {
+  assert.ok(/ev\.source\?\.basis === "authority" && ev\.source\.url/.test(app),
+    "a citation nobody has opened is worse than none");
+  assert.ok(/Typical across providers\. Confirm with yours\./.test(app));
+  assert.ok(/Your institution publishes its own list/.test(app));
+});
+t("refresh is offered only where there is something to recheck", () => {
+  assert.ok(/\(ev\.source\?\.basis === "authority" \|\| ev\.custom\) && \(/.test(app));
+});
+t("no pack inherits a source from its category", () => {
+  assert.ok(!/source: "Official published requirements"/.test(app));
+  assert.ok(!/lastChecked: "Jul 25, 2026"/.test(app), "a hardcoded date is not a checked date");
 });
 t("what goes in the download can be chosen", () => {
   assert.ok(/In this download/.test(app));
