@@ -61,8 +61,13 @@ t("one source and one date, not three", () => {
 t("a source appears only where one was verified", () => {
   assert.ok(/ev\.source\?\.basis === "authority" && ev\.source\.url/.test(app),
     "a citation nobody has opened is worse than none");
-  assert.ok(/Typical across providers\. Confirm with yours\./.test(app));
-  assert.ok(/Your institution publishes its own list/.test(app));
+  assert.ok(/const unsourcedLine = /.test(app), "the line must follow who sets the list");
+
+  assert.ok(/Typical across lenders/.test(app) && /Typical across insurers/.test(app),
+
+    "one sentence for every pack read as if a passport had a provider");
+
+  assert.ok(/Your institution sets its own list/.test(app));
 });
 t("refresh is offered only where there is something to recheck", () => {
   assert.ok(/\(ev\.source\?\.basis === "authority" \|\| ev\.custom\) && \(/.test(app));
