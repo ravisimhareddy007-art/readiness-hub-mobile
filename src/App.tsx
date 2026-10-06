@@ -79,7 +79,7 @@ import DocViewer from "@/components/DocViewer";
 import { getPackRequirements, cachedRequirements } from "@/lib/requirements";
 import { countryName, countryFlag } from "@/lib/countries";
 import { packInCountry, DESTINATION_PACKS } from "@/lib/pack-scope";
-import { resolveRequirement, satisfiedBy } from "@/lib/ontology";
+import { resolveRequirement } from "@/lib/ontology";
 import { seededFor } from "@/lib/country-requirements";
 import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -323,9 +323,12 @@ type PackSource = { basis: PackBasis; name?: string; url?: string; checked?: str
  * What an unsourced pack says about its own list. One sentence for every pack read as if a
  * passport application had a provider to confirm with, so the line follows who sets the list.
  */
-const unsourcedLine = (p: { cat?: string; source?: PackSource }) => {
+const SET_BY_LENDERS = new Set(["homeloan"]);
+const SET_BY_INSURERS = new Set(["home-ins", "travel-ins", "term-life", "add-family-ins", "life-claim", "nominee-update"]);
+const unsourcedLine = (p: { id?: string; cat?: string; source?: PackSource }) => {
   if (p.source?.basis === "institution") return "Your institution sets its own list. This is the common core.";
-  switch (p.cat) {
+  const cat = SET_BY_LENDERS.has(p.id || "") ? "Money & Tax" : SET_BY_INSURERS.has(p.id || "") ? "Health" : p.cat;
+  switch (cat) {
     case "Money & Tax":
       return "Typical across lenders. Your lender may ask for more.";
     case "Health":
@@ -343,1032 +346,3492 @@ const unsourcedLine = (p: { cat?: string; source?: PackSource }) => {
       return "Commonly required. Confirm with whoever is asking.";
   }
 };
-const P = (
-  id: string,
-  cat: string,
-  name: string,
-  blurb: string,
-  reqs: string[],
-  conditional?: string[],
-  icon?: any,
-  /* Supply only once the link has been fetched and its list compared item for item. */
-  sourced?: { name: string; url: string; checked: string },
-) => ({
-  id,
-  name,
-  blurb,
-  cat,
-  reqs,
-  conditional,
-  accent: PACK_CAT_META[cat].color,
-  icon: icon || PACK_CAT_META[cat].icon,
-  source: sourced
-    ? ({ basis: "authority", ...sourced } as PackSource)
-    : ({ basis: "convention" } as PackSource),
+/**
+ * What one requirement is for. A document is asked for because it proves something, and the same
+ * proof can usually come from more than one document, so each requirement names the capability.
+ * Age, date of birth and photographs count as identity. Funds, statements and tax returns count
+ * as income. Forms, bookings, bills and reports that evidence the reason for applying are purpose.
+ */
+type Capability = "identity" | "address" | "income" | "ownership" | "relationship" | "qualification" | "purpose";
+type Need = {
+  doc: string;
+  proves: Capability;
+  need: "mandatory" | "conditional";
+  /* Present on a conditional requirement: the situation in which it applies. */
+  when?: string;
+  /* Documents the published lists accept in place of this one. */
+  alt: string[];
+};
+const must = (doc: string, proves: Capability, alt: string[] = []): Need => ({ doc, proves, need: "mandatory", alt });
+const may = (doc: string, proves: Capability, when: string, alt: string[] = []): Need => ({
+  doc,
+  proves,
+  need: "conditional",
+  when,
+  alt,
 });
 
+/** A published list that was opened and compared. The link lands on the list, not the home page. */
+type PackLink = {
+  name: string;
+  kind: "government" | "regulator" | "public" | "private" | "embassy" | "institution";
+  page?: string;
+  section?: string;
+  url: string;
+};
+
+/* ── staleness ──
+   A list is only as good as the day it was last compared with its sources. Every pack carries
+   that day and can say how old it is, so the catalogue can show which lists are overdue. */
+const REVIEW_EVERY_DAYS = 365;
+type Staleness = { state: "fresh" | "stale" | "never"; days: number | null; reviewed?: string };
+const packStaleness = (reviewed?: string, now: number = Date.now()): Staleness => {
+  const at = reviewed ? Date.parse(reviewed) : NaN;
+  if (Number.isNaN(at)) return { state: "never", days: null };
+  const days = Math.max(0, Math.floor((now - at) / 86400000));
+  return { state: days > REVIEW_EVERY_DAYS ? "stale" : "fresh", days, reviewed };
+};
+
+type PackSpec = {
+  cat: string;
+  name: string;
+  blurb: string;
+  basis: PackBasis;
+  needs: Need[];
+  /* Only links that were opened and compared item for item. */
+  sources?: PackLink[];
+  /* The day the list was last compared with its sources. Absent means never. */
+  reviewed?: string;
+  icon?: any;
+};
+/* The id comes first and everything else is named, so no value can land in the wrong slot. */
+const P = (id: string, spec: PackSpec) => {
+  const sources = spec.sources || [];
+  const first = sources[0];
+  return {
+    id,
+    name: spec.name,
+    blurb: spec.blurb,
+    cat: spec.cat,
+    needs: spec.needs,
+    /* Derived, never written by hand: the checklist and its conditional subset. */
+    reqs: spec.needs.map((n) => n.doc),
+    conditional: spec.needs.filter((n) => n.need === "conditional").map((n) => n.doc),
+    accent: PACK_CAT_META[spec.cat].color,
+    icon: spec.icon || PACK_CAT_META[spec.cat].icon,
+    sources,
+    reviewed: spec.reviewed,
+    source: (spec.basis === "authority" && first
+      ? { basis: "authority", name: first.name, url: first.url, checked: spec.reviewed }
+      : { basis: spec.basis === "authority" ? "convention" : spec.basis }) as PackSource,
+    staleness: (now?: number) => packStaleness(spec.reviewed, now),
+  };
+};
+
 const EVENTS = [
-  /* Travel & Immigration (12) — flagship visas verified against published consular checklists */
+  /* Travel & Immigration (11): visas follow the destination government's own checklist */
   P(
     "schengen",
-    "Travel & Immigration",
-    "Schengen visa",
-    "Short-stay tourist, Europe",
-    [
-      "Passport",
-      "Visa Application Form",
-      "Passport Photos",
-      "Travel Insurance",
-      "Flight Reservation",
-      "Accommodation Proof",
-      "Proof of Funds",
-      "Employment Proof",
-      "ITR Acknowledgement",
-      "Payslip",
-    ],
-    ["ITR Acknowledgement"],
-    undefined,
+    {
+      cat: "Travel & Immigration",
+      name: "Schengen visa",
+      blurb: "Short-stay tourist, Europe",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        must("Visa Application Form", "purpose"),
+        must("Passport Photos", "identity"),
+        must("Travel Insurance", "purpose"),
+        must("Flight Reservation", "purpose"),
+        must("Accommodation Proof", "purpose", ["Hotel Booking", "Rental Agreement", "Invitation Letter"]),
+        must("Travel Itinerary", "purpose"),
+        must("Bank Statement", "income"),
+        may("Payslip", "income", "If employed"),
+        may("Employment Proof", "income", "If employed", ["Employment Contract", "No Objection Certificate"]),
+        may("ITR Acknowledgement", "income", "If employed or self-employed", ["Form 16"]),
+        may("Business Registration", "income", "If self-employed or a company owner"),
+        may("Marriage Certificate", "relationship", "If civil status needs to be shown", ["Birth Certificate"]),
+      ],
+      sources: [
+        {
+          name: "German Missions in India",
+          kind: "embassy",
+          page: "Checklist for a Schengen visa for Tourism (PDF)",
+          section: "B Required documents",
+          url: "https://india.diplo.de/resource/blob/2579864/cc2a277cff807cc08278250e2eb23e47/tourism-data.pdf#page=1",
+        },
+      ],
+    },
   ),
   P(
     "us",
-    "Travel & Immigration",
-    "US B1/B2 visa",
-    "Business or tourist",
-    [
-      "Passport",
-      "DS-160 Confirmation",
-      "Passport Photos",
-      "Interview Appointment Letter",
-      "Proof of Funds",
-      "Employment Proof",
-      "ITR Acknowledgement",
-    ],
-    ["ITR Acknowledgement"],
-    undefined,
+    {
+      cat: "Travel & Immigration",
+      name: "US B1/B2 visa",
+      blurb: "Business or tourist",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        must("DS-160 Confirmation", "purpose"),
+        must("Passport Photos", "identity"),
+        may("Visa Fee Receipt", "purpose", "If required to pay before the interview"),
+        may("Interview Appointment Letter", "purpose", "Not on the State Department list; issued on booking"),
+        may("Proof of Funds", "income", "If asked to show ability to pay all trip costs", ["Bank Statement", "ITR Acknowledgement"]),
+        may("Employment Proof", "income", "If asked to show intent to depart after the trip"),
+        may("Travel Itinerary", "purpose", "If asked to show the purpose of the trip"),
+      ],
+      sources: [
+        {
+          name: "US Department of State",
+          kind: "government",
+          page: "Visitor Visa",
+          section: "Gather Required Documentation",
+          url: "https://travel.state.gov/content/travel/en/us-visas/tourism-visit/visitor.html#:~:text=Gather%20Required%20Documentation",
+        },
+      ],
+    },
   ),
   P(
     "uk",
-    "Travel & Immigration",
-    "UK visa",
-    "Standard visitor",
-    [
-      "Passport",
-      "Visa Application Form",
-      "Bank Statement",
-      "Employment Proof",
-      "Payslip",
-      "Accommodation Proof",
-      "Travel Itinerary",
-    ],
-    ["Accommodation Proof"],
-    undefined,
+    {
+      cat: "Travel & Immigration",
+      name: "UK visa",
+      blurb: "Standard visitor",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        may("Proof of Funds", "income", "Recommended: shows you can pay for the visit", ["Bank Statement", "Payslip"]),
+        may("Employment Proof", "income", "Recommended: letter from employer or place of study"),
+        may("Previous Passports", "purpose", "If you have travelled to other countries before"),
+        may("Invitation Letter", "purpose", "If a sponsor is supporting or hosting the visit"),
+        may("Birth Certificate", "relationship", "If the applicant is under 18"),
+      ],
+      sources: [
+        {
+          name: "GOV.UK",
+          kind: "government",
+          page: "Guide to supporting documents: visiting the UK",
+          section: "1. Travel document (passport)",
+          url: "https://www.gov.uk/government/publications/visitor-visa-guide-to-supporting-documents/guide-to-supporting-documents-visiting-the-uk#:~:text=Travel%20document%20(passport)",
+        },
+      ],
+    },
   ),
   P(
     "canada",
-    "Travel & Immigration",
-    "Canada visa",
-    "Visitor visa",
-    [
-      "Passport",
-      "Proof of Funds",
-      "ITR Acknowledgement",
-      "Employment Proof",
-      "Invitation Letter",
-      "Biometrics Confirmation",
-    ],
-    ["Invitation Letter"],
-    undefined,
+    {
+      cat: "Travel & Immigration",
+      name: "Canada visa",
+      blurb: "Visitor visa",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        must("Visa Application Form", "purpose"),
+        must("Family Information Form", "relationship"),
+        must("Passport Photos", "identity"),
+        must("Proof of Funds", "income"),
+        must("Travel Itinerary", "purpose", ["Invitation Letter"]),
+        may("Marriage Certificate", "relationship", "If married"),
+        may("Biometrics Confirmation", "identity", "If biometrics were not given in the last 10 years"),
+        may("No Objection Certificate", "relationship", "If a minor travels without both parents"),
+      ],
+      sources: [
+        {
+          name: "IRCC",
+          kind: "government",
+          page: "Document Checklist for a Temporary Resident Visa (IMM 5484, 05-2026)",
+          section: "DOCUMENT LIST",
+          url: "https://www.canada.ca/content/dam/ircc/documents/pdf/english/kits/forms/imm5484/01-05-2026/imm5484e.pdf#page=1",
+        },
+      ],
+    },
   ),
   P(
     "australia",
-    "Travel & Immigration",
-    "Australia visitor visa",
-    "Subclass 600",
-    ["Passport", "Proof of Funds", "Payslip", "Employment Proof", "Travel Itinerary"],
-    ["Invitation Letter"],
-    undefined,
+    {
+      cat: "Travel & Immigration",
+      name: "Australia visitor visa",
+      blurb: "Subclass 600",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        must("Visa Application Form", "purpose"),
+        must("Passport Photos", "identity"),
+        must("Proof of Funds", "income", ["Bank Statement", "ITR Acknowledgement"]),
+        must("Employment Proof", "income", ["Business Registration"]),
+        must("Travel Itinerary", "purpose"),
+        may("Invitation Letter", "purpose", "If visiting family or friends in Australia"),
+        may("Health Insurance", "purpose", "If aged over 75 or staying 12 months"),
+        may("No Objection Certificate", "relationship", "If the applicant is under 18 (Form 1229 consent)"),
+      ],
+      sources: [
+        {
+          name: "Australian Department of Home Affairs",
+          kind: "government",
+          page: "Visitor visa (subclass 600), Tourist stream (apply outside Australia)",
+          section: "Step by step: Gather your documents",
+          url: "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/visitor-600/tourist-stream-overseas#HowTo",
+        },
+      ],
+    },
   ),
   P(
     "japan",
-    "Travel & Immigration",
-    "Japan tourist visa",
-    "Short stay",
-    [
-      "Passport",
-      "Visa Application Form",
-      "Passport Photos",
-      "Bank Statement",
-      "Flight Reservation",
-      "Travel Itinerary",
-    ],
-    undefined,
-    undefined,
+    {
+      cat: "Travel & Immigration",
+      name: "Japan tourist visa",
+      blurb: "Short stay",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        must("Visa Application Form", "purpose"),
+        must("Passport Photos", "identity"),
+        must("Flight Reservation", "purpose"),
+        must("Travel Itinerary", "purpose"),
+        must("ITR Acknowledgement", "income", ["Bank Statement"]),
+        may("Bank Statement", "income", "Asked with the ITR at some centres (e.g. Mumbai)"),
+        may("Hotel Booking", "purpose", "Asked by some application centres"),
+        may("No Objection Certificate", "income", "If employed: leave sanction letter (some centres)"),
+        may("Marriage Certificate", "relationship", "If travelling with a dependant", ["Birth Certificate"]),
+      ],
+      sources: [
+        {
+          name: "VFS Japan Visa Application Centre, Mumbai",
+          kind: "embassy",
+          page: "Documents Checklist CL-01, Temporary Visitor Visa for Sightseeing without Guarantor (November 2025)",
+          section: "DOCUMENTS CHECKLIST",
+          url: "https://www.vfsglobal.com/one-pager/japan/india/mumbai/pdf/CL-01-Visitor-Visa-Without-Guarantor.pdf#page=1",
+        },
+        {
+          name: "VFS Japan Visa Application Centre, New Delhi",
+          kind: "embassy",
+          page: "Documents Required, Temporary Visitor Visa for Tourism without Guarantor",
+          section: "TEMPORARY VISITOR VISA FOR TOURISM WITHOUT GUARANTOR",
+          url: "https://www.vfsglobal.com/one-pager/japan/india/delhi/pdf/Tourism-Visa.pdf#page=1",
+        },
+      ],
+    },
   ),
   P(
     "singapore",
-    "Travel & Immigration",
-    "Singapore visa",
-    "Tourist entry",
-    ["Passport", "Visa Application Form", "Passport Photos", "Proof of Funds"],
-    ["Invitation Letter"],
-    undefined,
+    {
+      cat: "Travel & Immigration",
+      name: "Singapore visa",
+      blurb: "Tourist entry",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Visa Application Form", "purpose"),
+        must("Passport Photos", "identity"),
+        must("Passport", "identity"),
+        may("Invitation Letter", "purpose", "If asked: Form V39A from a contact in Singapore"),
+      ],
+      sources: [
+        {
+          name: "ICA Singapore",
+          kind: "government",
+          page: "India Visa Requirements",
+          section: "Documents Required",
+          url: "https://www.ica.gov.sg/enter-transit-depart/entering-singapore/visa_requirements/visa-detail-page/india#:~:text=Documents%20Required",
+        },
+        {
+          name: "Consulate-General of Singapore in Mumbai",
+          kind: "embassy",
+          page: "Visa Information",
+          section: "Required documents",
+          url: "https://mumbai.mfa.gov.sg/consular-services/visa-information/#:~:text=Required%20documents",
+        },
+      ],
+    },
   ),
   P(
     "uae",
-    "Travel & Immigration",
-    "UAE visit visa",
-    "Tourist or family visit",
-    ["Passport", "Passport Photos", "Flight Reservation", "Hotel Booking", "Bank Statement"],
-    undefined,
-    undefined,
+    {
+      cat: "Travel & Immigration",
+      name: "UAE visit visa",
+      blurb: "Tourist or family visit",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        must("Passport Photos", "identity"),
+        may("Bank Statement", "income", "For the 5-year multi-entry tourist visa"),
+        may("Health Insurance", "purpose", "For the 5-year multi-entry tourist visa", ["Travel Insurance"]),
+        may("Flight Reservation", "purpose", "For the 5-year multi-entry tourist visa"),
+      ],
+      sources: [
+        {
+          name: "GDRFA Dubai",
+          kind: "government",
+          page: "Issuance of a single-entry tourist visa",
+          section: "Requirements",
+          url: "https://www.gdrfad.gov.ae/en/services/f9e586fe-0642-11ec-0320-0050569629e8#:~:text=One%20personal%20photo",
+        },
+        {
+          name: "GDRFA Dubai",
+          kind: "government",
+          page: "Issuing a multi-entry tourist visa (5 years)",
+          section: "Requirements",
+          url: "https://gdrfad.gov.ae/en/services/7fe37963-b7f8-11ed-5210-4cd98f768936#:~:text=6%20months%20bank%20statement",
+        },
+      ],
+    },
   ),
   P(
     "travel-ins",
-    "Travel & Immigration",
-    "Travel insurance purchase",
-    "Visa-compliant cover",
-    ["Passport", "Identity Proof"],
-    ["Flight Reservation"],
-    undefined,
+    {
+      cat: "Travel & Immigration",
+      name: "Travel insurance purchase",
+      blurb: "Visa-compliant cover",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        must("Identity Proof", "identity", ["Passport", "Aadhaar Card", "Voter ID", "Driving License", "PAN Card"]),
+        may("Address Proof", "address", "Asked by some insurers", ["Utility Bill", "Bank Statement", "Rental Agreement", "Aadhaar Card"]),
+        may("Medical Reports", "qualification", "Asked by some insurers for seniors or known illness"),
+      ],
+      sources: [
+        {
+          name: "New India Assurance",
+          kind: "public",
+          page: "Proposal Form, Overseas Travel Ease (Business and Holiday)",
+          section: "J. Proof of Identity",
+          url: "https://www.newindia.co.in/assets/docs/know-more/travel/overseas-travel-policy/Proposal%20Form%20-%20Overseas%20Travel%20Ease%20(Business%20&%20Holiday)New.pdf#page=3",
+        },
+        {
+          name: "ICICI Bank",
+          kind: "private",
+          page: "Travel Insurance FAQs",
+          section: "What documents do I need to buy travel insurance?",
+          url: "https://www.icici.bank.in/personal-banking/insurance/general-insurance/travel-insurance/travel-insurance-faqs#:~:text=What%20documents%20do%20I%20need",
+        },
+        {
+          name: "Tata AIG",
+          kind: "private",
+          page: "KYC for Travel Insurance",
+          section: "Travel Insurance KYC Requirements - List of KYC Documents Needed to Buy Travel Insurance i",
+          url: "https://www.tataaig.com/knowledge-center/travel-insurance/kyc-for-travel-insurance#:~:text=List%20of%20KYC%20Documents%20Needed",
+        },
+      ],
+    },
   ),
   P(
     "intl-dl",
-    "Travel & Immigration",
-    "International driving permit",
-    "Drive abroad",
-    ["Driving License", "Passport", "Passport Photos", "Address Proof"],
-    undefined,
-    Car,
+    {
+      cat: "Travel & Immigration",
+      name: "International driving permit",
+      blurb: "Drive abroad",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Form 4A Application", "purpose"),
+        must("Driving License", "qualification"),
+        must("Passport", "identity"),
+        must("Passport Photos", "identity"),
+        must("Medical Fitness Certificate", "qualification"),
+        may("Visa Copy", "purpose", "Wherever a visa applies for the destination"),
+        may("Flight Reservation", "purpose", "Air ticket is asked for verification by some RTOs"),
+      ],
+      sources: [
+        {
+          name: "Transport Department, Government of NCT of Delhi",
+          kind: "government",
+          page: "International Driving Permit",
+          section: "DOCUMENTS:- An application for an International Driving Permit (IDP) shall made in Form-4A",
+          url: "https://transport.delhi.gov.in/transport/international-driving-permit#:~:text=Copy%20of%20valid%20driving%20license",
+        },
+        {
+          name: "Parivahan",
+          kind: "government",
+          page: "International Driving Permit",
+          section: "Requirements",
+          url: "https://mparivahan.parivahan.gov.in/mstatic/english/dl-info-international.html#:~:text=Valid%20driving%20licence%20held",
+        },
+      ],
+    },
   ),
-  /* Identity & Civic (14) — phrased exactly as government checklists phrase them */
+  P(
+    "oci-card",
+    {
+      cat: "Travel & Immigration",
+      name: "OCI card or renewal",
+      blurb: "First issue, renewal, or reissue at 20",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        must("Passport Photos", "identity"),
+        must("Proof of Indian Origin", "relationship", ["Indian Passport", "Domicile Certificate", "Nativity Certificate", "OCI or PIO Card of Parents"]),
+        may("Birth Certificate", "relationship", "If claiming through a parent or grandparent"),
+        may("Marriage Certificate", "relationship", "If applying as spouse of an Indian citizen or OCI"),
+        may("Indian Visa or Residential Permit", "address", "If the application is submitted in India"),
+        may("Previous OCI Card", "identity", "For reissue on a new passport"),
+        may("Address Proof", "address", "If changing the address on the OCI card", ["Utility Bill", "Rental Agreement", "Affidavit"]),
+        may("Police Complaint", "purpose", "If the OCI card is lost or stolen"),
+      ],
+      sources: [
+        {
+          name: "Ministry of Home Affairs",
+          kind: "government",
+          page: "Brochure, Overseas Citizen of India (OCI) Cardholder",
+          section: "(A) Documents to be submitted with the application",
+          url: "https://www.mha.gov.in/PDF_Other/BROCHURE_OCI_25042017.pdf",
+        },
+        {
+          name: "OCI Services",
+          kind: "government",
+          page: "Miscellaneous FAQs",
+          section: "4. Which documents are required to be uploaded for the re-issuance of OCI card?",
+          url: "https://ociservices.gov.in/onlineOCI/miscFAQs#:~:text=A%20copy%20each%20of",
+        },
+      ],
+    },
+  ),
+  /* Identity & Civic (22): one issuing body sets each list */
   P(
     "lost-passport",
-    "Identity & Civic",
-    "Lost passport reissue",
-    "Report and reissue",
-    ["Police Complaint", "Identity Proof", "Address Proof", "Passport Photos", "Affidavit"],
-    ["Passport"],
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "Lost passport reissue",
+      blurb: "Report and reissue",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Police Complaint", "purpose", ["FIR Copy"]),
+        must("Affidavit", "purpose"),
+        must("Address Proof", "address", ["Aadhaar Card", "Utility Bill", "Voter ID", "Rental Agreement", "Bank Account Proof", "ITR Acknowledgement"]),
+        must("Date of Birth Proof", "identity", ["Birth Certificate", "School Leaving Certificate", "Transfer Certificate", "PAN Card", "Driving License", "Voter ID"]),
+        may("Passport", "identity", "If a photocopy of the lost passport is available"),
+        may("Passport Photos", "identity", "If not applying at a PSK or Post Office PSK"),
+      ],
+      sources: [
+        {
+          name: "Passport Seva",
+          kind: "government",
+          page: "Instructions for Filling of Passport Application Form and Supplementary Form",
+          section: "Table 2: List of Applicant Categories and Documents to be submitted",
+          url: "https://www.passportindia.gov.in/AppOnlineProject/pdf/ApplicationformInstructionBooklet-V3.0.pdf#page=11",
+        },
+      ],
+    },
   ),
   P(
     "passport-new",
-    "Identity & Civic",
-    "New passport",
-    "First-time application",
-    ["Identity Proof", "Address Proof", "Date of Birth Proof", "Passport Photos"],
-    undefined,
-    undefined,
     {
-      name: "Passport Seva Document Advisor",
-      url: "https://services1.passportindia.gov.in/psp/docAdvisor/attachmentAdvFreshInp",
-      checked: "2026-10-04",
+      cat: "Identity & Civic",
+      name: "New passport",
+      blurb: "First-time application",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Address Proof", "address", ["Aadhaar Card", "Utility Bill", "Voter ID", "Rental Agreement", "Bank Account Proof", "ITR Acknowledgement"]),
+        must("Date of Birth Proof", "identity", ["Birth Certificate", "School Leaving Certificate", "Transfer Certificate", "PAN Card", "Driving License", "Voter ID"]),
+        may("Non-ECR Proof", "qualification", "If claiming Non-ECR status", ["Marksheet", "Degree Certificate"]),
+        may("Passport Photos", "identity", "If not applying at a PSK or Post Office PSK"),
+      ],
+      sources: [
+        {
+          name: "Passport Seva",
+          kind: "government",
+          page: "Instructions for Filling of Passport Application Form and Supplementary Form",
+          section: "Table 2: List of Applicant Categories and Documents to be submitted",
+          url: "https://www.passportindia.gov.in/AppOnlineProject/pdf/ApplicationformInstructionBooklet-V3.0.pdf#page=8",
+        },
+      ],
     },
   ),
   P(
     "passport-renew",
-    "Identity & Civic",
-    "Passport renewal",
-    "Reissue of passport",
-    ["Passport", "Address Proof", "Passport Photos"],
-    ["Date of Birth Proof"],
-    undefined,
     {
-      name: "Passport Seva Document Advisor",
-      url: "https://services1.passportindia.gov.in/psp/docAdvisor/attachmentAdvFreshInp",
-      checked: "2026-10-04",
+      cat: "Identity & Civic",
+      name: "Passport renewal",
+      blurb: "Reissue of passport",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        may("Address Proof", "address", "If the address differs from the old passport", ["Aadhaar Card", "Utility Bill", "Voter ID", "Rental Agreement", "Bank Account Proof", "ITR Acknowledgement"]),
+        may("Passport Photos", "identity", "If not applying at a PSK or Post Office PSK"),
+      ],
+      sources: [
+        {
+          name: "Passport Seva",
+          kind: "government",
+          page: "Instructions for Filling of Passport Application Form and Supplementary Form",
+          section: "Table 2: List of Applicant Categories and Documents to be submitted",
+          url: "https://www.passportindia.gov.in/AppOnlineProject/pdf/ApplicationformInstructionBooklet-V3.0.pdf#page=10",
+        },
+      ],
     },
   ),
   P(
     "minor-passport",
-    "Identity & Civic",
-    "Passport for a minor",
-    "Child's first passport",
-    ["Birth Certificate", "Identity Proof", "Address Proof", "Passport Photos", "Annexure D Declaration"],
-    undefined,
-    undefined,
     {
-      name: "Passport Seva Document Advisor",
-      url: "https://services1.passportindia.gov.in/psp/docAdvisor/attachmentAdvFreshInp",
-      checked: "2026-10-04",
+      cat: "Identity & Civic",
+      name: "Passport for a minor",
+      blurb: "Child's first passport",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Birth Certificate", "identity", ["School Leaving Certificate", "Transfer Certificate", "PAN Card"]),
+        must("Address Proof", "address", ["Aadhaar Card", "Utility Bill", "Voter ID", "Rental Agreement", "Bank Account Proof", "ITR Acknowledgement"]),
+        must("Annexure D Declaration", "relationship", ["Annexure C Declaration"]),
+        may("Passport", "relationship", "If either parent holds a valid passport"),
+        may("Passport Photos", "identity", "If not applying at a PSK or Post Office PSK"),
+      ],
+      sources: [
+        {
+          name: "Passport Seva",
+          kind: "government",
+          page: "Instructions for Filling of Passport Application Form and Supplementary Form",
+          section: "Table 2: List of Applicant Categories and Documents to be submitted",
+          url: "https://www.passportindia.gov.in/AppOnlineProject/pdf/ApplicationformInstructionBooklet-V3.0.pdf#page=9",
+        },
+      ],
     },
   ),
   P(
     "tax-id",
-    "Identity & Civic",
-    "PAN card application",
-    "Form 49A",
-    ["Identity Proof", "Address Proof", "Date of Birth Proof", "Passport Photos"],
-    undefined,
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "PAN card application",
+      blurb: "Form 49A",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Driving License", "Passport", "Ration Card", "Photo ID"]),
+        must("Address Proof", "address", ["Aadhaar Card", "Voter ID", "Driving License", "Passport", "Utility Bill", "Domicile Certificate"]),
+        must("Date of Birth Proof", "identity", ["Aadhaar Card", "Birth Certificate", "Marksheet", "Passport", "Driving License", "Marriage Certificate"]),
+        must("Passport Photos", "identity"),
+      ],
+      sources: [
+        {
+          name: "Protean",
+          kind: "government",
+          page: "Instructions for Filling Form 49A",
+          section: "Document acceptable as proof of identity, address and date of birth as per Rule 114 (4)of",
+          url: "https://tin.tin.proteantech.in/pan/Instructions49A.html#:~:text=Document%20acceptable%20as%20proof",
+        },
+      ],
+    },
   ),
   P(
     "id-update",
-    "Identity & Civic",
-    "Aadhaar update",
-    "Name or address change",
-    ["Aadhaar Card", "Address Proof"],
-    ["Marriage Certificate"],
-    undefined,
     {
-      name: "UIDAI list of acceptable documents",
-      url: "https://uidai.gov.in/en/enrolment-and-updates",
-      checked: "2026-10-04",
+      cat: "Identity & Civic",
+      name: "Aadhaar update",
+      blurb: "Name or address change",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Aadhaar Card", "identity"),
+        may("Address Proof", "address", "If updating the address", ["Passport", "Voter ID", "Utility Bill", "Bank Statement", "Rental Agreement", "Property Tax Receipt"]),
+        may("Identity Proof", "identity", "If updating the name", ["Passport", "Voter ID", "Driving License", "Ration Card", "Marksheet", "Photo ID"]),
+        may("Marriage Certificate", "relationship", "If the name changed after marriage"),
+        may("Gazette Notification", "identity", "If changing the first name or the full name"),
+        may("Date of Birth Proof", "identity", "If updating the date of birth", ["Birth Certificate", "Passport", "Marksheet"]),
+      ],
+      sources: [
+        {
+          name: "UIDAI",
+          kind: "government",
+          page: "List of Acceptable Documents for Enrolment and Update",
+          section: "List IV -Documents that may be presented to evidence Proof of Identity, Address, Relations",
+          url: "https://uidai.gov.in/images/commdoc/List_of_Supporting_Document_for_Aadhaar_Enrolment_and_Update.pdf",
+        },
+      ],
     },
   ),
   P(
     "voter-id",
-    "Identity & Civic",
-    "Voter ID application",
-    "Form 6 registration",
-    ["Identity Proof", "Address Proof", "Date of Birth Proof", "Passport Photos"],
-    undefined,
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "Voter ID application",
+      blurb: "Form 6 registration",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Date of Birth Proof", "identity", ["Birth Certificate", "Aadhaar Card", "PAN Card", "Driving License", "Marksheet", "Passport"]),
+        must("Address Proof", "address", ["Utility Bill", "Aadhaar Card", "Bank Account Proof", "Passport", "Rental Agreement", "Sale Deed"]),
+        must("Passport Photos", "identity"),
+        may("Aadhaar Card", "identity", "If you have an Aadhaar number to quote"),
+      ],
+      sources: [
+        {
+          name: "Election Commission of India",
+          kind: "government",
+          page: "Form 6, Application Form for New Voters",
+          section: "(i) Document for Proof of Date of Birth",
+          url: "https://voters.eci.gov.in/formspdf/Form_6_English.pdf",
+        },
+      ],
+    },
   ),
   P(
     "dl-new",
-    "Identity & Civic",
-    "Driving license",
-    "New license (Sarathi)",
-    ["Identity Proof", "Address Proof", "Date of Birth Proof", "Passport Photos", "Medical Fitness Certificate"],
-    ["Medical Fitness Certificate"],
-    Car,
+    {
+      cat: "Identity & Civic",
+      name: "Driving license",
+      blurb: "New license (Sarathi)",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Address Proof", "address", ["Aadhaar Card", "Passport", "Voter ID", "Utility Bill", "Bank Account Proof", "Ration Card"]),
+        must("Date of Birth Proof", "identity", ["Birth Certificate", "Marksheet", "Passport", "School Leaving Certificate", "Life Insurance"]),
+        must("Passport Photos", "identity"),
+        must("Form 1 Self Declaration", "qualification"),
+        must("Learner's Licence", "qualification"),
+        may("Medical Fitness Certificate", "qualification", "If aged above 40 or for a transport licence"),
+        may("Driving School Certificate", "qualification", "If applying for a transport vehicle licence"),
+      ],
+      sources: [
+        {
+          name: "Transport Department, Government of Telangana",
+          kind: "government",
+          page: "Learner's Licence",
+          section: "Documents Required",
+          url: "https://www.transport.telangana.gov.in/html/driving-licencel-learners.html#:~:text=Documents%20Required",
+        },
+        {
+          name: "Transport Department, Government of Telangana",
+          kind: "government",
+          page: "Obtain a Permanent Licence",
+          section: "An application for a driving Licence shall be made in Form 4 and shall be accompained by",
+          url: "https://transport.telangana.gov.in/html/obtaining-a-permanent-licence.html#:~:text=recent%20passport%20size%20photographs",
+        },
+      ],
+    },
   ),
   P(
     "dl-renew",
-    "Identity & Civic",
-    "Driving license renewal",
-    "Expiring license",
-    ["Driving License", "Address Proof", "Passport Photos"],
-    ["Medical Fitness Certificate"],
-    Car,
+    {
+      cat: "Identity & Civic",
+      name: "Driving license renewal",
+      blurb: "Expiring license",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Driving License", "qualification"),
+        must("Passport Photos", "identity"),
+        must("Form 1 Self Declaration", "qualification"),
+        may("Medical Fitness Certificate", "qualification", "If aged above 40 or for a transport licence"),
+      ],
+      sources: [
+        {
+          name: "Transport Department, Government of Telangana",
+          kind: "government",
+          page: "Driving Licence Renewal",
+          section: "shall be accompanied by -",
+          url: "https://transport.telangana.gov.in/html/driving-licence-renewa-of-driving-licence.html#:~:text=recent%20passport%20size%20photographs",
+        },
+      ],
+    },
   ),
   P(
     "vehicle-reg",
-    "Identity & Civic",
-    "Vehicle registration",
-    "New vehicle (Form 20)",
-    ["Sale Invoice", "Vehicle Insurance", "Identity Proof", "Address Proof"],
-    ["PUC Certificate"],
-    Car,
+    {
+      cat: "Identity & Civic",
+      name: "Vehicle registration",
+      blurb: "New vehicle (Form 20)",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Sale Certificate Form 21", "ownership"),
+        must("Roadworthiness Certificate Form 22", "qualification"),
+        must("Vehicle Insurance", "ownership"),
+        must("Address Proof", "address", ["Ration Card", "Utility Bill", "Aadhaar Card", "Passport", "Bank Account Proof"]),
+        may("Customs Clearance Certificate", "ownership", "If the vehicle is imported"),
+      ],
+      sources: [
+        {
+          name: "Transport Department, Government of Telangana",
+          kind: "government",
+          page: "Permanent Registration",
+          section: "File an application online ... in Form 20 ... shall be accompanied by",
+          url: "https://www.transport.telangana.gov.in/html/registration-permanentregistration.html#:~:text=shall%20be%20accompanied%20by",
+        },
+      ],
+    },
   ),
   P(
     "vehicle-transfer",
-    "Identity & Civic",
-    "Vehicle ownership transfer",
-    "Form 29/30",
-    ["Vehicle RC", "Vehicle Insurance", "Identity Proof", "Address Proof"],
-    ["NOC"],
-    Car,
-  ),
-  P(
-    "pcc",
-    "Identity & Civic",
-    "Police clearance certificate",
-    "For jobs or visas",
-    ["Passport", "Identity Proof", "Address Proof", "Passport Photos"],
-    undefined,
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "Vehicle ownership transfer",
+      blurb: "Form 29/30",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Vehicle RC", "ownership"),
+        must("Form 29 and Form 30", "purpose"),
+        must("Vehicle Insurance", "ownership"),
+        must("PUC Certificate", "qualification"),
+        must("Address Proof", "address"),
+        may("PAN Card", "identity", "Asked by some state transport departments", ["Form 60"]),
+        may("No Objection Certificate", "ownership", "If the vehicle is registered in another state"),
+      ],
+      sources: [
+        {
+          name: "Transport Department, Government of Telangana",
+          kind: "government",
+          page: "Transfer of Ownership (Normal Transfer)",
+          section: "An application for the transfer of ownership of a motor vehicle under sub-clause (ii)...",
+          url: "https://www.transport.telangana.gov.in/html/registration-ownershiptransfer-normal.html#:~:text=shall%20be%20accompanied%20by",
+        },
+        {
+          name: "Transport Department, Government of Madhya Pradesh",
+          kind: "government",
+          page: "RC Reissue (Transfer of Ownership)",
+          section: "Documents required to apply for Certificate of Registration for Transfer of Ownership",
+          url: "https://transport.mp.gov.in/how-to-getregistration-certificate/rc-reissue-transfer-of-ownership#:~:text=Documents%20required%20to%20apply",
+        },
+      ],
+    },
   ),
   P(
     "name-change",
-    "Identity & Civic",
-    "Legal name change",
-    "Gazette route",
-    ["Affidavit", "Identity Proof", "Passport Photos", "Newspaper Publication"],
-    undefined,
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "Legal name change",
+      blurb: "Gazette route",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Newspaper Publication", "purpose"),
+        must("Name Change Proforma", "purpose"),
+        must("Applicant Undertaking", "purpose"),
+        must("Identity Proof", "identity"),
+        must("Passport Photos", "identity"),
+        must("Soft Copy CD With Certificate", "purpose"),
+        must("Request Letter With Fee", "purpose"),
+      ],
+      sources: [
+        {
+          name: "Department of Publication",
+          kind: "government",
+          page: "Guidelines for Change of Name for Adult (Major)",
+          section: "The following documents are required for publication of advertisement in the Gazette of In",
+          url: "https://cdnbbsr.s3waas.gov.in/s3ea6b2efbdd4255a9f1b3bbc6399b58f4/uploads/2023/06/202312082035285613.pdf",
+        },
+      ],
+    },
   ),
   P(
     "income-cert",
-    "Identity & Civic",
-    "Income certificate",
-    "For schemes and fees",
-    ["Identity Proof", "Address Proof", "Salary Certificate"],
-    ["ITR Acknowledgement"],
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "Income certificate",
+      blurb: "For schemes and fees",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Income Proof", "income", ["Salary Certificate", "Payslip", "ITR Acknowledgement"]),
+        may("Identity Proof", "identity", "Asked by some states", ["Aadhaar Card", "PAN Card", "Passport", "Driving License", "Voter ID"]),
+        may("Address Proof", "address", "Asked by some states", ["Voter ID", "Utility Bill"]),
+        may("Self Declaration", "purpose", "Asked by some states"),
+        may("Land Record (RoR)", "ownership", "Asked by some states"),
+      ],
+      sources: [
+        {
+          name: "Revenue Department, Govt of NCT of Delhi",
+          kind: "government",
+          page: "Income Certificate",
+          section: "1. What documents are required ?",
+          url: "https://revenue.delhi.gov.in/revenue/income-certificate#:~:text=What%20documents%20are%20required",
+        },
+      ],
+    },
   ),
   P(
     "domicile-cert",
-    "Identity & Civic",
-    "Domicile certificate",
-    "State residency proof",
-    ["Identity Proof", "Address Proof", "Date of Birth Proof"],
-    ["Degree Certificate"],
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "Domicile certificate",
+      blurb: "State residency proof",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Address Proof", "address", ["Utility Bill", "Voter ID", "Aadhaar Card", "Ration Card", "Rental Agreement", "Property Tax Receipt"]),
+        may("Identity Proof", "identity", "Asked by some states", ["Aadhaar Card", "PAN Card", "Passport", "Driving License", "Voter ID"]),
+        may("Date of Birth Proof", "identity", "Asked by some states", ["Birth Certificate", "School Leaving Certificate", "Passport"]),
+        may("Proof of Continuous Residence", "address", "Asked by some states", ["Marksheet", "Utility Bill", "Property Tax Receipt"]),
+        may("Self Declaration", "purpose", "Asked by some states"),
+      ],
+      sources: [
+        {
+          name: "Revenue Department, Govt of NCT of Delhi",
+          kind: "government",
+          page: "Domicile Certificate",
+          section: "What documents are required ?",
+          url: "https://revenue.delhi.gov.in/revenue/domicile-certificate#:~:text=What%20documents%20are%20required",
+        },
+      ],
+    },
   ),
-  /* Money & Tax (14) — loans verified against SBI/HDFC published salaried checklists */
-  P(
-    "tax",
-    "Money & Tax",
-    "Income tax filing",
-    "Annual return",
-    ["PAN Card", "Form 16", "Bank Statement", "Investment Statement", "Payslip"],
-    ["Investment Statement"],
-    FileText,
-  ),
-  P(
-    "vehicle-loan",
-    "Money & Tax",
-    "Vehicle loan",
-    "Car or two-wheeler",
-    ["PAN Card", "Identity Proof", "Income Proof", "Bank Statement", "Vehicle Quotation"],
-    undefined,
-    Car,
-  ),
-  P(
-    "personal-loan",
-    "Money & Tax",
-    "Personal loan",
-    "Unsecured credit",
-    ["PAN Card", "Identity Proof", "Address Proof", "Payslip", "Bank Statement"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "education-loan",
-    "Money & Tax",
-    "Education loan",
-    "Study finance",
-    ["Admission Letter", "PAN Card", "Identity Proof", "Proof of Funds", "Income Proof", "Marksheet"],
-    ["Collateral Deed"],
-    undefined,
-  ),
-  P(
-    "credit-card",
-    "Money & Tax",
-    "Credit card application",
-    "New card",
-    ["PAN Card", "Identity Proof", "Address Proof", "Income Proof"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "bank-account",
-    "Money & Tax",
-    "Bank account opening",
-    "Savings or salary",
-    ["Identity Proof", "Address Proof", "PAN Card", "Passport Photos"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "demat",
-    "Money & Tax",
-    "Demat and trading account",
-    "Invest in markets",
-    ["PAN Card", "Identity Proof", "Bank Statement", "Cancelled Cheque", "Passport Photos"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "nps",
-    "Money & Tax",
-    "NPS account opening",
-    "Retirement savings",
-    ["PAN Card", "Identity Proof", "Address Proof", "Cancelled Cheque", "Nominee Form"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "pf-transfer",
-    "Money & Tax",
-    "PF transfer on job change",
-    "Form 13 online",
-    ["Aadhaar Card", "PAN Card", "Bank Statement"],
-    ["Relieving Letter"],
-    undefined,
-  ),
-  P(
-    "mf-kyc",
-    "Money & Tax",
-    "Mutual fund KYC",
-    "CKYC for investing",
-    ["PAN Card", "Identity Proof", "Address Proof", "Passport Photos", "Cancelled Cheque"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "epf-withdraw",
-    "Money & Tax",
-    "EPF withdrawal",
-    "Form 19 / 10C claim",
-    ["PAN Card", "Bank Statement", "Cancelled Cheque"],
-    ["Relieving Letter"],
-    undefined,
-  ),
-  P(
-    "loan-closure",
-    "Money & Tax",
-    "Loan closure and lien release",
-    "The NOC pack",
-    ["Loan Statement", "Identity Proof", "NOC"],
-    ["Property Deed"],
-    undefined,
-  ),
-  /* Jobs & Employment (12) */
-  P(
-    "bgv",
-    "Jobs & Employment",
-    "Background verification",
-    "New job onboarding",
-    ["Identity Proof", "Employment Offer", "Relieving Letter", "Payslip", "Degree Certificate"],
-    ["ITR Acknowledgement"],
-    ShieldCheck,
-  ),
-  P(
-    "onboarding",
-    "Jobs & Employment",
-    "New job onboarding",
-    "Day-one paperwork",
-    ["Identity Proof", "PAN Card", "Degree Certificate", "Relieving Letter", "Cancelled Cheque", "Passport Photos"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "govt-job",
-    "Jobs & Employment",
-    "Government job application",
-    "Recruitment paperwork",
-    ["Identity Proof", "Degree Certificate", "Marksheet", "Passport Photos"],
-    ["Domicile Certificate", "Income Certificate"],
-    undefined,
-  ),
-  P(
-    "gst-reg",
-    "Jobs & Employment",
-    "GST registration",
-    "Business tax ID",
-    ["PAN Card", "Identity Proof", "Business Registration", "Bank Statement", "Utility Bill"],
-    ["Rental Agreement"],
-    undefined,
-  ),
-  P(
-    "resignation",
-    "Jobs & Employment",
-    "Resignation and relieving",
-    "Clean exit pack",
-    ["Resignation Letter", "Employment Offer", "Payslip", "Experience Letter"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "prof-reg",
-    "Jobs & Employment",
-    "Professional council registration",
-    "Doctors, CAs, lawyers",
-    ["Degree Certificate", "Marksheet", "Identity Proof", "Passport Photos"],
-    ["Internship Certificate"],
-    undefined,
-  ),
-  /* Education (12) */
-  P(
-    "school-adm",
-    "Education",
-    "School admission",
-    "New school",
-    ["Birth Certificate", "Passport Photos", "Address Proof", "Identity Proof", "Immunization Record"],
-    ["Transfer Certificate"],
-    undefined,
-  ),
-  P(
-    "college-adm",
-    "Education",
-    "College admission",
-    "Undergraduate",
-    ["Marksheet", "Transfer Certificate", "Identity Proof", "Passport Photos"],
-    ["Migration Certificate"],
-    undefined,
-  ),
-  P(
-    "pg-adm",
-    "Education",
-    "Postgraduate admission",
-    "Masters programs",
-    ["Degree Certificate", "Marksheet", "Identity Proof", "Passport Photos", "Scorecard"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "study-abroad",
-    "Education",
-    "Study abroad application",
-    "University applications",
-    [
-      "Passport",
-      "Degree Certificate",
-      "Marksheet",
-      "Language Test Scorecard",
-      "Statement of Purpose",
-      "Recommendation Letters",
-      "Proof of Funds",
-    ],
-    undefined,
-    undefined,
-  ),
-  P(
-    "comp-exam",
-    "Education",
-    "Competitive exam application",
-    "UPSC, SSC, banking",
-    ["Identity Proof", "Passport Photos", "Degree Certificate", "Marksheet"],
-    ["Domicile Certificate"],
-    undefined,
-  ),
-  P(
-    "board-reg",
-    "Education",
-    "Board exam registration",
-    "Class 10 and 12",
-    ["Birth Certificate", "Passport Photos", "Identity Proof", "Marksheet"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "scholarship",
-    "Education",
-    "Scholarship application",
-    "Merit and means",
-    ["Marksheet", "Income Certificate", "Identity Proof", "Bank Statement", "Admission Letter"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "school-transfer",
-    "Education",
-    "School transfer",
-    "Moving cities",
-    ["Transfer Certificate", "Marksheet", "Address Proof", "Birth Certificate"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "attestation",
-    "Education",
-    "Degree attestation",
-    "ECA, WES, apostille",
-    ["Degree Certificate", "Marksheet", "Passport", "Transcripts"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "dup-marksheet",
-    "Education",
-    "Duplicate marksheet reissue",
-    "Lost certificates",
-    ["Identity Proof", "Affidavit", "Passport Photos"],
-    ["Police Complaint"],
-    undefined,
-  ),
-  /* Health (11) — claims verified against the IRDAI Master Circular document set */
-  P(
-    "hospital",
-    "Health",
-    "Hospital admission",
-    "Cashless pack",
-    ["Health Insurance", "Photo ID", "Prescription", "Lab Report"],
-    ["Discharge Summary"],
-    undefined,
-  ),
-  P(
-    "claim-reimb",
-    "Health",
-    "Health insurance reimbursement",
-    "Claim after paying",
-    [
-      "Claim Form",
-      "Health Insurance",
-      "Discharge Summary",
-      "Medical Bills",
-      "Prescription",
-      "Lab Report",
-      "Photo ID",
-      "Cancelled Cheque",
-    ],
-    undefined,
-    undefined,
-  ),
-  P(
-    "cashless-preauth",
-    "Health",
-    "Cashless pre-authorization",
-    "Planned procedure",
-    ["Health Insurance", "Photo ID", "Prescription", "Lab Report"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "new-health-ins",
-    "Health",
-    "New health insurance",
-    "Buying a policy",
-    ["Identity Proof", "Address Proof", "Passport Photos"],
-    ["Lab Report"],
-    undefined,
-  ),
-  P(
-    "maternity",
-    "Health",
-    "Maternity hospital pack",
-    "Delivery admission",
-    ["Health Insurance", "Photo ID", "Prescription", "Lab Report"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "vaccination",
-    "Health",
-    "Vaccination record pack",
-    "School and travel",
-    ["Immunization Record", "Birth Certificate", "Identity Proof"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "disability-cert",
-    "Health",
-    "Disability certificate",
-    "UDID assessment",
-    ["Identity Proof", "Lab Report", "Discharge Summary", "Passport Photos", "Address Proof"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "homeloan",
-    "Home & Property",
-    "Home loan",
-    "Salaried application pack",
-    [
-      "PAN Card",
-      "Identity Proof",
-      "Address Proof",
-      "Passport Photos",
-      "Payslip",
-      "Form 16",
-      "Bank Statement",
-      "Sale Agreement",
-      "Property Ownership Proof",
-    ],
-    ["Approved Building Plan", "Property Valuation"],
-    Landmark,
-  ),
-  P(
-    "property",
-    "Home & Property",
-    "Property sale",
-    "Seller's pack",
-    ["Property Deed", "Property Tax", "Identity Proof", "PAN Card", "Encumbrance Certificate"],
-    ["Encumbrance Certificate"],
-    undefined,
-  ),
-  P(
-    "property-buy",
-    "Home & Property",
-    "Property purchase",
-    "Buyer's diligence",
-    ["Sale Agreement", "Encumbrance Certificate", "Property Tax", "Identity Proof", "PAN Card", "Proof of Funds"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "rent-tenant",
-    "Home & Property",
-    "Renting a home",
-    "Tenant pack",
-    ["Identity Proof", "Passport Photos", "Employment Proof", "Payslip", "Rental Agreement"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "rent-landlord",
-    "Home & Property",
-    "Renting out property",
-    "Landlord pack",
-    ["Property Ownership Proof", "Property Tax", "Identity Proof", "Rental Agreement", "Utility Bill"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "tenant-verify",
-    "Home & Property",
-    "Tenant police verification",
-    "Mandatory in many cities",
-    ["Rental Agreement", "Identity Proof", "Passport Photos"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "khata",
-    "Home & Property",
-    "Khata or mutation transfer",
-    "Municipal records",
-    ["Property Deed", "Property Tax", "Sale Agreement", "Identity Proof", "Encumbrance Certificate"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "electricity",
-    "Home & Property",
-    "New electricity connection",
-    "Meter in your name",
-    ["Identity Proof", "Address Proof", "Passport Photos"],
-    ["Property Ownership Proof", "Rental Agreement"],
-    undefined,
-  ),
-  P(
-    "home-ins",
-    "Home & Property",
-    "Home insurance purchase",
-    "Structure and contents",
-    ["Property Ownership Proof", "Identity Proof"],
-    ["Property Valuation"],
-    undefined,
-  ),
-  P(
-    "society-noc",
-    "Home & Property",
-    "Society share transfer",
-    "Apartment societies",
-    ["Property Deed", "Sale Agreement", "Identity Proof", "NOC"],
-    undefined,
-    undefined,
-  ),
-  /* Family & Life (12) */
-  P(
-    "marriage-reg",
-    "Family & Life",
-    "Marriage registration",
-    "Certificate application",
-    ["Identity Proof", "Address Proof", "Passport Photos", "Date of Birth Proof"],
-    ["Marriage Invitation"],
-    undefined,
-  ),
-  P(
-    "death-cert",
-    "Family & Life",
-    "Death certificate application",
-    "Municipal registration",
-    ["Identity Proof", "Address Proof", "Hospital Death Report"],
-    ["Affidavit"],
-    undefined,
-  ),
-  P(
-    "newborn",
-    "Family & Life",
-    "Newborn documentation",
-    "First documents",
-    ["Birth Certificate", "Identity Proof", "Marriage Certificate", "Address Proof"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "add-family-ins",
-    "Family & Life",
-    "Add family member to insurance",
-    "Spouse or child",
-    ["Marriage Certificate", "Birth Certificate", "Identity Proof", "Health Insurance"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "will-prep",
-    "Family & Life",
-    "Will preparation",
-    "Document your wishes",
-    ["Identity Proof", "Property Ownership Proof", "Investment Statement", "Bank Statement", "Nominee Form"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "nominee-update",
-    "Family & Life",
-    "Nominee updates",
-    "After life changes",
-    ["Nominee Form", "Identity Proof"],
-    ["Marriage Certificate", "Birth Certificate"],
-    undefined,
-  ),
-  P(
-    "life-claim",
-    "Family & Life",
-    "Life insurance claim",
-    "Beneficiary claim",
-    ["Life Insurance", "Death Certificate", "Identity Proof", "Bank Statement", "Cancelled Cheque"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "death-settle",
-    "Family & Life",
-    "Settlements after a death",
-    "Accounts and assets",
-    ["Death Certificate", "Legal Heir Certificate", "Identity Proof", "Bank Statement", "Nominee Form"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "legal-heir",
-    "Family & Life",
-    "Legal heir certificate",
-    "Establish heirship",
-    ["Death Certificate", "Identity Proof", "Address Proof", "Affidavit"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "succession",
-    "Family & Life",
-    "Succession certificate",
-    "Court process pack",
-    ["Death Certificate", "Legal Heir Certificate"],
-    ["Property Deed", "Investment Statement"],
-    undefined,
-  ),
-  P(
-    "pension",
-    "Family & Life",
-    "Pension application",
-    "Retirement begins",
-    ["Identity Proof", "Bank Statement", "Passport Photos", "Relieving Letter", "Pension Order"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "family-pension",
-    "Family & Life",
-    "Family pension claim",
-    "Survivor benefits",
-    ["Death Certificate", "Pension Order", "Identity Proof", "Bank Statement", "Marriage Certificate"],
-    undefined,
-    undefined,
-  ),
-  /* ── Added: situations an urban Indian household meets regularly that the catalogue missed.
-     All conventional until each is sampled across provider types, so none carries a source. ── */
   P(
     "pan-aadhaar-link",
-    "Identity & Civic",
-    "PAN and Aadhaar linking",
-    "Mandatory, and it blocks tax filing",
-    ["PAN Card", "Aadhaar Card"],
-    undefined,
-    undefined,
     {
-      name: "Income Tax Department e-Filing portal",
-      url: "https://www.incometax.gov.in/iec/foportal/help/how-to-link-aadhaar",
-      checked: "2026-10-04",
+      cat: "Identity & Civic",
+      name: "PAN and Aadhaar linking",
+      blurb: "Mandatory, and it blocks tax filing",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("PAN Card", "identity"),
+        must("Aadhaar Card", "identity"),
+      ],
+      sources: [
+        {
+          name: "Income Tax Department e-Filing portal",
+          kind: "government",
+          page: "Link Aadhaar User Manual",
+          section: "Prerequisites for availing this service:",
+          url: "https://www.incometax.gov.in/iec/foportal/help/how-to-link-aadhaar#:~:text=Prerequisites%20for%20availing%20this%20service",
+        },
+      ],
     },
   ),
   P(
     "aadhaar-address",
-    "Identity & Civic",
-    "Aadhaar address update",
-    "After a move",
-    ["Aadhaar Card", "Address Proof"],
-    undefined,
-    undefined,
     {
-      name: "UIDAI list of acceptable documents",
-      url: "https://uidai.gov.in/en/enrolment-and-updates",
-      checked: "2026-10-04",
+      cat: "Identity & Civic",
+      name: "Aadhaar address update",
+      blurb: "After a move",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Aadhaar Card", "identity"),
+        must("Address Proof", "address", ["Utility Bill", "Bank Statement", "Rental Agreement", "Voter ID", "Ration Card", "Property Tax Receipt"]),
+        may("Head of Family Self Declaration", "relationship", "If using a family member's address"),
+      ],
+      sources: [
+        {
+          name: "UIDAI",
+          kind: "government",
+          page: "List of Acceptable Documents for Enrolment and Update",
+          section: "List IV -Documents that may be presented to evidence Proof of Identity, Address, Relations",
+          url: "https://uidai.gov.in/images/commdoc/List_of_Supporting_Document_for_Aadhaar_Enrolment_and_Update.pdf",
+        },
+      ],
     },
   ),
   P(
     "aadhaar-mobile",
-    "Identity & Civic",
-    "Aadhaar mobile update",
-    "A stale number breaks OTP everywhere",
-    ["Aadhaar Card", "Identity Proof"],
-    undefined,
-    undefined,
     {
-      name: "UIDAI list of acceptable documents",
-      url: "https://uidai.gov.in/en/enrolment-and-updates",
-      checked: "2026-10-04",
+      cat: "Identity & Civic",
+      name: "Aadhaar mobile update",
+      blurb: "A stale number breaks OTP everywhere",
+      basis: "convention",
+      needs: [
+        must("Aadhaar Card", "identity"),
+      ],
     },
   ),
   P(
     "voter-address",
-    "Identity & Civic",
-    "Voter address change",
-    "Form 8, after a move",
-    ["Voter ID", "Address Proof", "Passport Photos"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "oci-card",
-    "Travel & Immigration",
-    "OCI card or renewal",
-    "First issue, renewal, or reissue at 20",
-    ["Passport", "Passport Photos", "Proof of Indian Origin", "Address Proof"],
-    ["Marriage Certificate", "Previous OCI Card"],
-    undefined,
-  ),
-  P(
-    "motor-claim",
-    "Health",
-    "Motor insurance claim",
-    "Own damage or third party",
-    ["Insurance Policy", "Vehicle Registration", "Driving License", "FIR Copy", "Repair Estimate"],
-    ["Photographs of Damage"],
-    undefined,
-  ),
-  P(
-    "health-ins-port",
-    "Health",
-    "Health insurance renewal or port",
-    "Porting carries its own paperwork",
-    ["Insurance Policy", "Identity Proof", "Previous Policy Documents", "Claim History"],
-    ["Medical Reports"],
-    undefined,
-  ),
-  P(
-    "gratuity",
-    "Jobs & Employment",
-    "Gratuity claim",
-    "Statutory, and widely missed",
-    ["Form I", "Identity Proof", "Relieving Letter", "Bank Account Proof"],
-    ["Nomination Form F"],
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "Voter address change",
+      blurb: "Form 8, after a move",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Voter ID", "identity"),
+        must("Address Proof", "address", ["Utility Bill", "Aadhaar Card", "Bank Statement", "Passport", "Rental Agreement", "Sale Deed"]),
+        may("Passport Photos", "identity", "If the photo is also being changed"),
+      ],
+      sources: [
+        {
+          name: "Election Commission of India",
+          kind: "government",
+          page: "Form 8 (shifting of residence, correction of entries, replacement of EPIC, marking of PwD)",
+          section: "Self-attested copy of address proof either in the name of applicant or anyone of the paren",
+          url: "https://voters.eci.gov.in/formspdf/Form_8_English.pdf",
+        },
+      ],
+    },
   ),
   P(
     "name-change-marriage",
-    "Identity & Civic",
-    "Name change after marriage",
-    "Then it cascades through every other ID",
-    ["Marriage Certificate", "Identity Proof", "Affidavit", "Gazette Notification", "Passport Photos"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "loan-lien-release",
-    "Money & Tax",
-    "Loan closure and lien release",
-    "Often never completed",
-    ["Loan Account Statement", "No Objection Certificate", "Identity Proof"],
-    ["Property Documents", "Vehicle Registration"],
-    undefined,
-  ),
-  P(
-    "property-tax-name",
-    "Home & Property",
-    "Property tax name change",
-    "After a purchase or inheritance",
-    ["Sale Deed", "Property Tax Receipt", "Identity Proof", "Khata Certificate"],
-    ["Legal Heir Certificate"],
-    undefined,
-  ),
-  P(
-    "water-connection",
-    "Home & Property",
-    "Water and municipal connection",
-    "New or transferred",
-    ["Property Documents", "Identity Proof", "Address Proof", "Property Tax Receipt"],
-    undefined,
-    undefined,
-  ),
-  P(
-    "first-30-days",
-    "Family & Life",
-    "What the family needs in the first 30 days",
-    "After a death, before anything else",
-    [
-      "Death Certificate",
-      "Identity Proof",
-      "Insurance Policy",
-      "Bank Account Details",
-      "Nominee Details",
-      "Property Documents",
-    ],
-    ["Will", "Legal Heir Certificate"],
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "Name change after marriage",
+      blurb: "Then it cascades through every other ID",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Marriage Certificate", "relationship", ["Joint Photo Declaration (Annexure J)", "Marriage Invitation", "Gazette Notification"]),
+        must("Aadhaar Card", "identity"),
+        must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "Driving License", "Voter ID"]),
+        may("Passport", "identity", "For passport reissue in the new name"),
+        may("Address Proof", "address", "For passport reissue and PAN change", ["Utility Bill", "Aadhaar Card", "Voter ID", "Rental Agreement", "Bank Statement"]),
+        may("Date of Birth Proof", "identity", "For passport reissue and PAN change", ["Birth Certificate", "Aadhaar Card"]),
+        may("PAN Card", "identity", "For the PAN change request"),
+        may("Passport Photos", "identity", "For the PAN change request"),
+        may("Gazette Notification", "purpose", "If changing first name or full name"),
+      ],
+      sources: [
+        {
+          name: "UIDAI",
+          kind: "government",
+          page: "List of Acceptable Documents for Enrolment and Update",
+          section: "List IV -Documents that may be presented to evidence Proof of Identity, Address, Relations",
+          url: "https://uidai.gov.in/images/commdoc/List_of_Supporting_Document_for_Aadhaar_Enrolment_and_Update.pdf",
+        },
+        {
+          name: "Passport Seva",
+          kind: "government",
+          page: "Passport Application Form Instruction Booklet V3.0",
+          section: "Change/ Addition in surname due to marriage",
+          url: "https://www.passportindia.gov.in/AppOnlineProject/pdf/ApplicationformInstructionBooklet-V3.0.pdf#page=9",
+        },
+        {
+          name: "Income Tax Department",
+          kind: "government",
+          page: "Request For New PAN Card Or/ And Changes Or Correction in PAN Data",
+          section: "Supporting document required for changes in PAN data",
+          url: "https://www.incometaxindia.gov.in/documents/d/guest/form-for-changes-in-pan-pdf",
+        },
+      ],
+    },
   ),
   P(
     "police-clearance",
-    "Identity & Civic",
-    "Police clearance certificate",
-    "Gates most routes abroad",
-    ["Passport", "Address Proof", "Identity Proof", "Passport Photos"],
-    undefined,
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "Police clearance certificate",
+      blurb: "Gates most routes abroad",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport", "identity"),
+        must("Address Proof", "address", ["Utility Bill", "Aadhaar Card", "Voter ID", "Rental Agreement", "Bank Statement"]),
+      ],
+      sources: [
+        {
+          name: "Passport Seva",
+          kind: "government",
+          page: "List of Documents Required for PCC Issuance",
+          section: "List of Documents Required for PCC Issuance",
+          url: "https://portal2.passportindia.gov.in/AppOnlineProject/docAdvisor/pccPassport#:~:text=Old%20passport%20in%20original",
+        },
+        {
+          name: "Passport Seva",
+          kind: "government",
+          page: "Instructions for filling up the Police Clearance Certificate (PCC) Application Form V2.0",
+          section: "C. LIST OF SUPPORTING DOCUMENTS",
+          url: "https://passportindia.gov.in/AppOnlineProject/pdf/PCC_Application_Form_Instructions_V2.0.pdf#page=2",
+        },
+      ],
+    },
   ),
   P(
     "caste-cert",
-    "Identity & Civic",
-    "Caste certificate",
-    "For admissions and government posts",
-    ["Identity Proof", "Address Proof", "Passport Photos", "Income Proof"],
-    ["Parent Caste Certificate", "School Leaving Certificate"],
-    undefined,
+    {
+      cat: "Identity & Civic",
+      name: "Caste certificate",
+      blurb: "For admissions and government posts",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Passport", "Driving License", "Voter ID"]),
+        must("Address Proof", "address", ["Voter ID", "Utility Bill", "Ration Card", "Aadhaar Card", "Passport", "Property Tax Receipt"]),
+        must("Self Declaration", "purpose", ["Affidavit"]),
+        may("Parent Caste Certificate", "relationship", "If a father or paternal relative holds one"),
+        may("Land Record (RoR)", "ownership", "If the family holds recorded land"),
+        may("Income Proof", "income", "For OBC applicants", ["ITR Acknowledgement", "Payslip", "Form 16", "Salary Certificate"]),
+        may("School Leaving Certificate", "qualification", "Asked by some states"),
+        may("Passport Photos", "identity", "Asked by some states"),
+      ],
+      sources: [
+        {
+          name: "Revenue Department, Govt of NCT of Delhi",
+          kind: "government",
+          page: "OBC Certificate",
+          section: "What documents are required ?",
+          url: "https://revenue.delhi.gov.in/revenue/obc-certificate#:~:text=What%20documents%20are%20required",
+        },
+        {
+          name: "Aaple Sarkar",
+          kind: "government",
+          page: "Caste Certificate",
+          section: "Required Documents",
+          url: "https://aaplesarkar.mahaonline.gov.in/en/Login/Certificate_Documents?ServiceId=1284#:~:text=Required%20Documents",
+        },
+      ],
+    },
+  ),
+  P(
+    "child-aadhaar",
+    {
+      cat: "Identity & Civic",
+      name: "Child Aadhaar",
+      blurb: "Enrolment, and updates at 5 and 15",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Birth Certificate", "identity"),
+        must("Aadhaar Card", "relationship"),
+        may("Legal Guardianship Document", "relationship", "If enrolled by a legal guardian, not a parent"),
+        may("Passport", "identity", "If the child is an NRI"),
+        may("Child Aadhaar Letter", "identity", "For the biometric update at age 5 or 15"),
+        may("Domicile Certificate", "address", "If aged 5 to 18 and enrolling without a parent", ["Caste Certificate", "Passport"]),
+      ],
+      sources: [
+        {
+          name: "UIDAI",
+          kind: "government",
+          page: "List of Acceptable Documents for Enrolment and Update",
+          section: "List I - Documents that may be presented to evidence Proof of Identity, Address, Relations",
+          url: "https://uidai.gov.in/images/commdoc/List_of_Supporting_Document_for_Aadhaar_Enrolment_and_Update.pdf",
+        },
+        {
+          name: "PIB / UIDAI",
+          kind: "government",
+          page: "UIDAI Waives Charges for Aadhaar Biometric Updates for Children Aged 7-15",
+          section: "UIDAI Waives Charges for Aadhaar Biometric Updates for Children Aged 7-15, Benefiting Near",
+          url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2174841&reg=48&lang=2#:~:text=birth%20certificate",
+        },
+      ],
+    },
+  ),
+  /* Money & Tax (14): lender and regulator lists, public and private */
+  P(
+    "tax",
+    {
+      cat: "Money & Tax",
+      name: "Income tax filing",
+      blurb: "Annual return",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("PAN Card", "identity"),
+        must("Form 16", "income"),
+        must("Form 26AS", "income", ["Annual Information Statement (AIS)"]),
+        must("Bank Statement", "income"),
+        must("Payslip", "income"),
+        may("Form 16A", "income", "If TDS was deducted on non-salary income"),
+        may("Investment Statement", "purpose", "If claiming deductions (LIC, ULIP and similar)", ["Premium Payment Receipts"]),
+        may("Home Loan Interest Certificate", "purpose", "If claiming home loan interest"),
+        may("Rental Agreement", "purpose", "If claiming house rent", ["Rent Receipts"]),
+        may("Donation Receipts", "purpose", "If claiming a deduction for donations"),
+      ],
+      sources: [
+        {
+          name: "Income Tax Department e-Filing",
+          kind: "government",
+          page: "File ITR-1 (Sahaj) Online FAQs",
+          section: "6. What documents do I need to file ITR-1?",
+          url: "https://www.incometax.gov.in/iec/foportal/help/all-topics/e-filing-services/ITR1-FAQ#:~:text=What%20documents%20do%20I%20need",
+        },
+      ],
+    },
+  ),
+  P(
+    "vehicle-loan",
+    {
+      cat: "Money & Tax",
+      name: "Vehicle loan",
+      blurb: "Car or two-wheeler",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Passport", "PAN Card", "Aadhaar Card", "Voter ID", "Driving License"]),
+        must("Address Proof", "address", ["Driving License", "Voter ID", "Aadhaar Card", "Passport", "Utility Bill", "Life Insurance"]),
+        must("Date of Birth Proof", "identity"),
+        must("Income Proof", "income", ["Payslip", "Form 16", "ITR Acknowledgement"]),
+        must("Bank Statement", "income"),
+        must("Passport Photos", "identity"),
+        may("PAN Card", "identity", "Asked by some lenders"),
+        may("Vehicle Quotation", "purpose", "Asked by some lenders"),
+        may("Business Registration", "income", "If self-employed"),
+      ],
+      sources: [
+        {
+          name: "State Bank of India",
+          kind: "public",
+          page: "SBI New Car Loan Scheme",
+          section: "Documents required",
+          url: "https://sbi.bank.in/web/personal-banking/loans/auto-loans/sbi-new-car-loan-scheme#:~:text=Statement%20of%20bank%20account",
+        },
+        {
+          name: "Punjab National Bank",
+          kind: "public",
+          page: "Loan Application Checklist (Vehicle Loan)",
+          section: "Vehicle Loan",
+          url: "https://pnb.bank.in/checklist.html#vehicle_loan_tab",
+        },
+        {
+          name: "ICICI Bank",
+          kind: "private",
+          page: "List of Documents Required for Car Loan",
+          section: "Documents Required for Car Loan",
+          url: "https://www.icici.bank.in/personal-banking/loans/car-loan/documentation#:~:text=Documents%20Required%20for%20Car%20Loan",
+        },
+      ],
+    },
+  ),
+  P(
+    "personal-loan",
+    {
+      cat: "Money & Tax",
+      name: "Personal loan",
+      blurb: "Unsecured credit",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Passport", "Driving License", "Voter ID", "Aadhaar Card", "PAN Card"]),
+        must("Address Proof", "address", ["Passport", "Voter ID", "Driving License", "Aadhaar Card", "Utility Bill", "Rental Agreement"]),
+        must("Payslip", "income", ["Salary Certificate"]),
+        must("Bank Statement", "income"),
+        must("Passport Photos", "identity"),
+        may("PAN Card", "identity", "Asked by some lenders"),
+        may("Form 16", "income", "Asked by some lenders", ["ITR Acknowledgement"]),
+        may("Date of Birth Proof", "identity", "Asked by some lenders"),
+        may("ITR Acknowledgement", "income", "If self-employed"),
+      ],
+      sources: [
+        {
+          name: "Punjab National Bank",
+          kind: "public",
+          page: "Loan Application Checklist (Personal Loan)",
+          section: "Personal Loan",
+          url: "https://pnb.bank.in/checklist.html#personal_loan_tab",
+        },
+        {
+          name: "Bank of Baroda",
+          kind: "public",
+          page: "Baroda Personal Loan",
+          section: "Baroda Personal Loan : Documents Required",
+          url: "https://bankofbaroda.bank.in/loans/personal-loan/baroda-personal-loan#:~:text=Form%20135%20giving%20details%20of%20Assets",
+        },
+        {
+          name: "ICICI Bank",
+          kind: "private",
+          page: "Documents Required for Personal Loan",
+          section: "List of Documents for Salaried",
+          url: "https://www.icici.bank.in/personal-banking/loans/personal-loan/documentation#:~:text=List%20of%20Documents%20for%20Salaried",
+        },
+      ],
+    },
+  ),
+  P(
+    "education-loan",
+    {
+      cat: "Money & Tax",
+      name: "Education loan",
+      blurb: "Study finance",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Admission Letter", "purpose"),
+        must("Marksheet", "qualification", ["Degree Certificate", "Scorecard"]),
+        must("Identity Proof", "identity", ["PAN Card", "Passport", "Driving License", "Voter ID", "Aadhaar Card"]),
+        must("Address Proof", "address", ["Utility Bill", "Passport", "Driving License", "Aadhaar Card"]),
+        must("Passport Photos", "identity"),
+        must("Fee Structure", "purpose", ["Course Prospectus"]),
+        must("Income Proof", "income", ["Payslip", "Salary Certificate", "Form 16", "ITR Acknowledgement"]),
+        must("Bank Statement", "income"),
+        may("PAN Card", "identity", "Asked by some lenders"),
+        may("Passport", "identity", "If studying abroad"),
+      ],
+      sources: [
+        {
+          name: "State Bank of India",
+          kind: "public",
+          page: "SBI Student Loan Scheme",
+          section: "Checklist of Documents to be submitted along-with duly filled Loan Application Form",
+          url: "https://sbi.bank.in/web/student-platform/sbi-student-loan-scheme#:~:text=Checklist%20of%20Documents%20to%20be%20submitted",
+        },
+        {
+          name: "Punjab National Bank",
+          kind: "public",
+          page: "Loan Application Checklist (Education Loan)",
+          section: "Education Loan",
+          url: "https://pnb.bank.in/checklist.html#education_loan_tab",
+        },
+        {
+          name: "ICICI Bank",
+          kind: "private",
+          page: "Education Loan",
+          section: "Required Documents for Education Loan",
+          url: "https://www.icici.bank.in/personal-banking/loans/education-loan#:~:text=Acceptance%20Letter%2C%20Confirmation%20of%20Acceptance",
+        },
+      ],
+    },
+  ),
+  P(
+    "credit-card",
+    {
+      cat: "Money & Tax",
+      name: "Credit card application",
+      blurb: "New card",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("PAN Card", "identity", ["Form 60"]),
+        must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "Voter ID", "Driving License", "PAN Card"]),
+        must("Address Proof", "address", ["Utility Bill", "Passport", "Aadhaar Card", "Driving License"]),
+        must("Income Proof", "income", ["Payslip", "Bank Statement", "Form 16"]),
+        must("Passport Photos", "identity"),
+        may("Business Registration", "income", "If self-employed"),
+      ],
+      sources: [
+        {
+          name: "Bank of Baroda",
+          kind: "public",
+          page: "Credit Card, All You Need To Know",
+          section: "Documents Required for a Credit Card",
+          url: "https://bankofbaroda.bank.in/banking-mantra/digital/articles/complete-guide-on-credit-card#:~:text=Documents%20Required%20for%20a%20Credit%20Card",
+        },
+        {
+          name: "ICICI Bank",
+          kind: "private",
+          page: "Credit Card Eligibility Criteria and Documents",
+          section: "Documents Required to Apply for a Credit Card with ICICI Bank:",
+          url: "https://www.icici.bank.in/personal-banking/blogs/card/credit-card/credit-card-eligibility-criteria#:~:text=Documents%20Required%20to%20Apply%20for%20a%20Credit%20Card",
+        },
+        {
+          name: "HDFC Bank",
+          kind: "private",
+          page: "Credit Cards (FAQs)",
+          section: "What are the documents required while applying for a Credit Card?",
+          url: "https://www.hdfc.bank.in/credit-cards#:~:text=What%20are%20the%20documents%20required%20while%20applying",
+        },
+      ],
+    },
+  ),
+  P(
+    "bank-account",
+    {
+      cat: "Money & Tax",
+      name: "Bank account opening",
+      blurb: "Savings or salary",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Passport", "Driving License", "Aadhaar Card", "Voter ID", "NREGA Job Card", "National Population Register Letter"]),
+        must("Address Proof", "address", ["Passport", "Driving License", "Aadhaar Card", "Voter ID", "NREGA Job Card", "National Population Register Letter"]),
+        must("PAN Card", "identity", ["Form 60"]),
+        may("Passport Photos", "identity", "Asked by some banks"),
+      ],
+      sources: [
+        {
+          name: "Reserve Bank of India",
+          kind: "regulator",
+          page: "FAQs on Master Direction on KYC (June 9, 2025)",
+          section: "Q 5. What are the documents required for opening a bank account by an individual?",
+          url: "https://www.rbi.org.in/commonman/Upload/English/FAQs/PDFs/KYC09062025.pdf#page=2",
+        },
+        {
+          name: "State Bank of India",
+          kind: "public",
+          page: "Savings Bank Account, General Terms and Conditions of Service",
+          section: "The customer has to submit the prescribed application form along with:",
+          url: "https://sbi.bank.in/web/customer-care/general-terms-and-conditions-of-service/savings-bank-account#:~:text=The%20customer%20has%20to%20submit",
+        },
+        {
+          name: "ICICI Bank",
+          kind: "private",
+          page: "Documents Required for Opening Bank Account",
+          section: "Documents Required for Opening a Saving Account",
+          url: "https://www.icici.bank.in/personal-banking/accounts/savings-account/documentation#:~:text=Documents%20Required%20for%20Opening",
+        },
+      ],
+    },
+  ),
+  P(
+    "demat",
+    {
+      cat: "Money & Tax",
+      name: "Demat and trading account",
+      blurb: "Invest in markets",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("PAN Card", "identity"),
+        must("Address Proof", "address"),
+        must("Bank Account Details", "ownership"),
+        must("Passport Photos", "identity"),
+        may("Identity Proof", "identity", "If the depository participant asks for extra proof"),
+      ],
+      sources: [
+        {
+          name: "NSDL",
+          kind: "institution",
+          page: "Investor FAQs",
+          section: "Q4: What should I do if I want to open a demat account?",
+          url: "https://nsdl.com/investor/investor-faq#:~:text=What%20should%20I%20do%20if%20I%20want%20to%20open%20a%20demat%20account",
+        },
+        {
+          name: "SEBI",
+          kind: "regulator",
+          page: "Frequently Asked Questions on Depository System",
+          section: "19. How can one open an account?",
+          url: "https://www.sebi.gov.in/sebi_data/faqfiles/sep-2018/1537857391391.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "nps",
+    {
+      cat: "Money & Tax",
+      name: "NPS account opening",
+      blurb: "Retirement savings",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("PAN Card", "identity"),
+        must("Address Proof", "address", ["Aadhaar Card", "Utility Bill", "Driving License", "Bank Passbook"]),
+        must("Cancelled Cheque", "ownership", ["Bank Account Proof"]),
+        must("Passport Photos", "identity"),
+        must("Specimen Signature", "identity"),
+        may("Date of Birth Proof", "identity", "If not using Aadhaar e-KYC", ["Birth Certificate", "Voter ID", "Aadhaar Card", "Passport"]),
+      ],
+      sources: [
+        {
+          name: "Protean eGov Technologies",
+          kind: "institution",
+          page: "Guide to Opening and Managing NPS Account",
+          section: "Documents Required to Open NPS Account",
+          url: "https://www.proteantech.in/articles/open-nps-account-guide-em1822025/#:~:text=Documents%20Required%20to%20Open%20NPS%20Account",
+        },
+        {
+          name: "NPS Trust",
+          kind: "government",
+          page: "Frequently Asked Questions - All Citizen Model",
+          section: "12. What documents are required to open an NPS account?",
+          url: "https://npstrust.org.in/sites/default/files/inline-images/05-All-Citz-Mdl-Faq.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "pf-transfer",
+    {
+      cat: "Money & Tax",
+      name: "PF transfer on job change",
+      blurb: "Form 13 online",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("UAN Card", "identity"),
+        must("Aadhaar Card", "identity"),
+        must("Bank Account Details", "ownership"),
+      ],
+      sources: [
+        {
+          name: "EPFO",
+          kind: "government",
+          page: "Frequently Asked Questions",
+          section: "For online PF transfer please ensure following-",
+          url: "https://www.epfindia.gov.in/site_en/FAQ.php#:~:text=For%20online%20PF%20transfer%20please%20ensure%20following",
+        },
+      ],
+    },
+  ),
+  P(
+    "mf-kyc",
+    {
+      cat: "Money & Tax",
+      name: "Mutual fund KYC",
+      blurb: "CKYC for investing",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("PAN Card", "identity"),
+        must("Identity Proof", "identity", ["Passport", "Driving License", "Aadhaar Card", "Voter ID", "NREGA Job Card", "National Population Register Letter"]),
+        must("Address Proof", "address", ["Passport", "Voter ID", "Driving License", "Aadhaar Card", "Utility Bill", "Property Tax Receipt"]),
+        must("Passport Photos", "identity"),
+      ],
+      sources: [
+        {
+          name: "SEBI Investor",
+          kind: "regulator",
+          page: "Know Your Customer (KYC)",
+          section: "KYC Process made easier and simple",
+          url: "https://investor.sebi.gov.in/kyc.html#:~:text=Document%20Submission",
+        },
+        {
+          name: "CAMS KRA",
+          kind: "institution",
+          page: "Know Your Customer (KYC) Application Form, Individual",
+          section: "PROOF OF IDENTITY AND ADDRESS* (Please refer instruction B at the end)",
+          url: "https://www.camsonline.com/assets/PDF/CAMSKRA_Form_KYC.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "epf-withdraw",
+    {
+      cat: "Money & Tax",
+      name: "EPF withdrawal",
+      blurb: "Form 19 / 10C claim",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("UAN Card", "identity"),
+        must("Aadhaar Card", "identity"),
+        must("Claim Form", "purpose"),
+        must("Cancelled Cheque", "ownership", ["Bank Passbook"]),
+        may("PAN Card", "identity", "If service is under 5 years (lower TDS)"),
+        may("Form 15G", "purpose", "If seeking payment without TDS", ["Form 15H"]),
+      ],
+      sources: [
+        {
+          name: "EPFO",
+          kind: "government",
+          page: "Frequently Asked Questions",
+          section: "Currently the member can submit 3 types of claims without attestation of Employer namely,",
+          url: "https://www.epfindia.gov.in/site_en/FAQ.php#:~:text=A%20cancelled%20original%20cheque%20bearing%20name",
+        },
+      ],
+    },
+  ),
+  P(
+    "loan-lien-release",
+    {
+      cat: "Money & Tax",
+      name: "Loan closure and lien release",
+      blurb: "Often never completed",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("No Objection Certificate", "purpose", ["No Dues Certificate"]),
+        may("Property Deed", "ownership", "If the loan was secured on property", ["Title Deed", "Sale Deed"]),
+        may("Encumbrance Certificate", "ownership", "If the loan was secured on property"),
+        may("Vehicle RC", "ownership", "If the loan was on a vehicle"),
+        may("Form 35", "purpose", "If the loan was on a vehicle"),
+        may("Address Proof", "address", "If the loan was on a vehicle"),
+      ],
+      sources: [
+        {
+          name: "Reserve Bank of India",
+          kind: "regulator",
+          page: "Responsible Lending Conduct, Release of Movable / Immovable Property Documents on Repayment/ Settlement of Personal Loans (13 September 2023)",
+          section: "Release of Movable / Immovable Property Documents",
+          url: "https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=12535&Mode=0#:~:text=Release%20of%20Movable%20%2F%20Immovable%20Property%20Documents",
+        },
+        {
+          name: "ICICI Bank",
+          kind: "private",
+          page: "Home Loan Closure Process, Step-by-Step Guide",
+          section: "Request for all the original documents from the lender",
+          url: "https://www.icici.bank.in/personal-banking/blogs/loan/home-loan/home-loan-closure-checklist#:~:text=Request%20for%20all%20the%20original%20documents",
+        },
+        {
+          name: "Chhattisgarh Transport Department",
+          kind: "government",
+          page: "Procedure for Termination of Hypothecation on Registration Certificate",
+          section: "Procedure for Termination of Hypothecation on Registration Certificate",
+          url: "https://cgtransport.gov.in/HYPO_Termination.aspx#:~:text=Procedure%20for%20Termination%20of%20Hypothecation",
+        },
+      ],
+    },
+  ),
+  P(
+    "tax-proofs",
+    {
+      cat: "Money & Tax",
+      name: "Tax proofs for your employer",
+      blurb: "Form 124, formerly 12BB",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("PAN Card", "identity"),
+        may("Rent Receipts", "purpose", "If claiming house rent allowance", ["Rental Agreement"]),
+        may("Travel Tickets", "purpose", "If claiming leave travel concession"),
+        may("Home Loan Interest Certificate", "purpose", "If claiming interest on a home loan", ["Loan Account Statement"]),
+        may("Investment Statement", "purpose", "If claiming investment deductions", ["Life Insurance"]),
+        may("Health Insurance", "purpose", "If claiming a health premium deduction"),
+      ],
+      sources: [
+        {
+          name: "Income Tax Department",
+          kind: "government",
+          page: "Form No. 124 (earlier Form No. 12BB), statement of claims by an employee",
+          section: "Part B: Details of Claims and Evidence thereof",
+          url: "https://www.incometaxindia.gov.in/documents/d/guest/fn-124#page=1",
+        },
+      ],
+    },
+  ),
+  P(
+    "small-savings",
+    {
+      cat: "Money & Tax",
+      name: "PPF or Sukanya account",
+      blurb: "Long-term small savings",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Account Opening Form", "purpose"),
+        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card"]),
+        must("Address Proof", "address", ["Aadhaar Card"]),
+        must("PAN Card", "identity", ["Form 60"]),
+        must("Passport Photos", "identity"),
+        must("Nominee Form", "relationship"),
+        may("Birth Certificate", "identity", "If opening Sukanya Samriddhi for a girl child"),
+      ],
+      sources: [
+        {
+          name: "Press Information Bureau",
+          kind: "government",
+          page: "Sukanya Samriddhi Yojana",
+          section: "Opening the account",
+          url: "https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=2094807&reg=48&lang=2#:~:text=Opening%20the%20account",
+        },
+        {
+          name: "State Bank of India",
+          kind: "public",
+          page: "FAQ Public Provident Fund",
+          section: "What are the documents required for opening a Public Provident Fund (PPF) account with SBI",
+          url: "https://sbi.bank.in/web/faq-s/faq-public-provident-fund#:~:text=documents%20required%20for%20opening%20a%20Public",
+        },
+      ],
+    },
+  ),
+  /* Jobs & Employment (7): each employer sets its own list */
+  P(
+    "bgv",
+    {
+      cat: "Jobs & Employment",
+      name: "Background verification",
+      blurb: "New job onboarding",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Passport", "Voter ID", "Driving License"]),
+        must("Address Proof", "address", ["Aadhaar Card", "Passport", "Voter ID"]),
+        must("Date of Birth Proof", "identity", ["Marksheet", "Birth Certificate"]),
+        must("Degree Certificate", "qualification"),
+        must("Marksheet", "qualification"),
+        may("Relieving Letter", "qualification", "If previously employed", ["Experience Letter"]),
+        may("Salary Certificate", "income", "Asked by some employers", ["Payslip"]),
+        may("Employment Offer", "purpose", "Asked by some employers"),
+        may("Caste Certificate", "identity", "If appointed under a reserved category"),
+        may("Passport Photos", "identity", "Asked by some employers"),
+      ],
+      sources: [
+        {
+          name: "Punjab National Bank",
+          kind: "public",
+          page: "Annexure, Formalities Required to be Completed for Joining the Bank (officers)",
+          section: "ANNEXURE FORMALITIES REQUIRED TO BE COMPLETED FOR JOINING THE BANK:",
+          url: "https://www.pnbindia.in/document/Recruitments/Formalities_Required_for_officers.pdf#page=1",
+        },
+        {
+          name: "Indian Bank",
+          kind: "public",
+          page: "Joining formalities of Probationary Officers allotted by IBPS under PO/MT CRP-XII",
+          section: "List of Documents to be brought on the day of Document Verification",
+          url: "https://indianbank.bank.in/documents/20117/34414/Joining-formalities-of-Probationary-Officers-allotted-by-IBPS-under-POMT-CRP-XII2026_05_04_15_49_50.pdf/15042766-f972-f9fc-2cb5-6cd311079bf0",
+        },
+        {
+          name: "Tata Consultancy Services",
+          kind: "private",
+          page: "TCS All India NQT Hiring, FAQs",
+          section: "What documents are required for the TCS selection process?",
+          url: "https://www.tcs.com/careers/india/tcs-all-india-nqt-hiring#:~:text=What%20documents%20are%20required",
+        },
+      ],
+    },
+  ),
+  P(
+    "onboarding",
+    {
+      cat: "Jobs & Employment",
+      name: "New job onboarding",
+      blurb: "Day-one paperwork",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("PAN Card", "identity"),
+        must("Aadhaar Card", "identity"),
+        must("Degree Certificate", "qualification"),
+        must("Marksheet", "qualification"),
+        may("Relieving Letter", "qualification", "If previously employed", ["Experience Letter"]),
+        may("Salary Certificate", "income", "If previously employed", ["Payslip"]),
+        must("Medical Fitness Certificate", "qualification"),
+        must("Cancelled Cheque", "ownership", ["Bank Account Details"]),
+        must("Passport Photos", "identity"),
+        may("Employment Offer", "purpose", "Asked by some employers"),
+        may("Caste Certificate", "identity", "If appointed under a reserved category"),
+      ],
+      sources: [
+        {
+          name: "Rajiv Gandhi Institute of Petroleum Technology",
+          kind: "government",
+          page: "List of Documents Required at the Time of New Joining (faculty)",
+          section: "LIST OF DOCUMENTS REQUIRED AT THE TIME OF NEW JOINING",
+          url: "https://www.rgipt.ac.in/site/writereaddata/siteContent/202211171609596064RGIPT%20-%20FACULTY%20-%20DOCUMENTS%20REQUIRED%20AT%20THE%20TIME%20OF%20NEW%20JOINING.pdf#page=1",
+        },
+        {
+          name: "Punjab National Bank",
+          kind: "public",
+          page: "Annexure, Formalities Required to be Completed for Joining the Bank (officers)",
+          section: "ANNEXURE FORMALITIES REQUIRED TO BE COMPLETED FOR JOINING THE BANK:",
+          url: "https://www.pnbindia.in/document/Recruitments/Formalities_Required_for_officers.pdf#page=1",
+        },
+        {
+          name: "Tata Consultancy Services",
+          kind: "private",
+          page: "TCS All India NQT Hiring, FAQs",
+          section: "What documents are required for the TCS selection process?",
+          url: "https://www.tcs.com/careers/india/tcs-all-india-nqt-hiring#:~:text=What%20documents%20are%20required",
+        },
+      ],
+    },
+  ),
+  P(
+    "govt-job",
+    {
+      cat: "Jobs & Employment",
+      name: "Government job application",
+      blurb: "Recruitment paperwork",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Driving License", "PAN Card", "Passport"]),
+        must("Date of Birth Proof", "identity"),
+        must("Degree Certificate", "qualification"),
+        must("Passport Photos", "identity"),
+        may("Caste Certificate", "identity", "If claiming SC, ST or OBC reservation"),
+        may("Income Certificate", "income", "If claiming EWS reservation"),
+        may("Disability Certificate", "qualification", "If claiming PwBD reservation or relaxation"),
+        may("No Objection Certificate", "purpose", "If already employed in government or a PSU"),
+        may("Marriage Certificate", "relationship", "If name differs from the matriculation certificate", ["Gazette Notification"]),
+      ],
+      sources: [
+        {
+          name: "Staff Selection Commission",
+          kind: "government",
+          page: "Notice, Combined Graduate Level Examination 2026",
+          section: "15.11 Candidates will have to submit copies of following documents:",
+          url: "https://ssc.gov.in/api/attachment/uploads/masterData/NoticeBoards/Notice_of_adv_cgl_2025.pdf#page=40",
+        },
+        {
+          name: "Union Public Service Commission",
+          kind: "government",
+          page: "Examination Notice No. 05/2026-CSE (Civil Services Examination 2026)",
+          section: "2.2 The candidate should have details of one Photo ID Card viz. Aadhaar Card/Voter Card (E",
+          url: "https://www.upsc.gov.in/sites/default/files/Notif-CSP-2026-Engl-060226Rev.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "gst-reg",
+    {
+      cat: "Jobs & Employment",
+      name: "GST registration",
+      blurb: "Business tax ID",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("PAN Card", "identity"),
+        must("Identity Proof", "identity", ["Aadhaar Card"]),
+        must("Passport Photos", "identity"),
+        must("Utility Bill", "address", ["Property Tax Receipt", "Khata Certificate"]),
+        must("Bank Statement", "ownership", ["Bank Account Proof"]),
+        may("Business Registration", "ownership", "If not a sole proprietorship"),
+        may("Rental Agreement", "address", "If the business premises are rented"),
+        may("No Objection Certificate", "address", "If premises are neither owned nor rented"),
+        may("Letter of Authorisation", "purpose", "If an authorised signatory is appointed"),
+      ],
+      sources: [
+        {
+          name: "GST Portal",
+          kind: "government",
+          page: "Check-list of Documents Required For GST Registration",
+          section: "Check-list of Documents Required For GST Registration",
+          url: "https://tutorial.gst.gov.in/cbt/registration/gstregistration/course/story_content/external_files/GST_Registration_Document_Checklist.pdf#page=1",
+        },
+        {
+          name: "CBIC",
+          kind: "government",
+          page: "GST System Project, FAQs: Registration",
+          section: "2.7 Where are the prerequisites for registration on the GST Portal?",
+          url: "https://cbic-gst.gov.in/pdf/faq-manual/faqs-registration.pdf#page=10",
+        },
+      ],
+    },
+  ),
+  P(
+    "resignation",
+    {
+      cat: "Jobs & Employment",
+      name: "Resignation and relieving",
+      blurb: "Clean exit pack",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Resignation Letter", "purpose"),
+        must("Relieving Letter", "qualification"),
+        may("Experience Letter", "qualification", "Issued by some employers with the relieving letter"),
+        may("No Dues Certificate", "purpose", "Asked by some employers"),
+        may("Salary Certificate", "income", "Asked by some new employers", ["Payslip"]),
+        may("Cancelled Cheque", "ownership", "If withdrawing provident fund after exit"),
+      ],
+      sources: [
+        {
+          name: "University of Technology, Jaipur",
+          kind: "private",
+          page: "Employee Separation Policy and Guidelines",
+          section: "Step 6: No Dues Clearance & Final Relieving",
+          url: "https://www.universityoftechnology.edu.in/wp-content/uploads/2025/03/Booklet-Employee-Separation-Policy-and-Guidelines-Employee-Exit-Dossier-%E2%80%93-Staff-Copy-1.pdf#page=3",
+        },
+      ],
+    },
+  ),
+  P(
+    "prof-reg",
+    {
+      cat: "Jobs & Employment",
+      name: "Professional council registration",
+      blurb: "Doctors, CAs, lawyers",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Degree Certificate", "qualification"),
+        must("Marksheet", "qualification"),
+        must("Date of Birth Proof", "identity", ["Marksheet", "School Leaving Certificate", "Birth Certificate"]),
+        must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "Voter ID", "Driving License", "PAN Card"]),
+        must("Internship Certificate", "qualification"),
+        may("Passport Photos", "identity", "Asked by some institutions"),
+        may("Provisional Registration Certificate", "qualification", "For doctors moving to permanent registration"),
+        may("Affidavit", "purpose", "Asked by some institutions"),
+        may("Caste Certificate", "identity", "If SC or ST candidate (bar council enrolment)"),
+        may("Marriage Certificate", "relationship", "If name has changed", ["Gazette Notification", "Affidavit"]),
+      ],
+      sources: [
+        {
+          name: "Karnataka State Bar Council",
+          kind: "institution",
+          page: "Instructions for enrolment as an advocate",
+          section: "The following Original Documents shall be scanned and upload along with your application.",
+          url: "https://ksbc.org.in/registration/enroll_instn_eng.php#:~:text=The%20following%20Original%20Documents",
+        },
+        {
+          name: "Gujarat Medical Council",
+          kind: "institution",
+          page: "MBBS Permanent Registration",
+          section: "Candidate has to bring Printout of physically signed Application form along with below men",
+          url: "https://www.gmcgujarat.org/registration.aspx?id=3#:~:text=Candidate%20has%20to%20bring%20Printout",
+        },
+      ],
+    },
+  ),
+  P(
+    "gratuity",
+    {
+      cat: "Jobs & Employment",
+      name: "Gratuity claim",
+      blurb: "Statutory, and widely missed",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Form I", "purpose"),
+        may("Nomination Form F", "relationship", "If a nominee claims after the employee's death"),
+        may("Legal Heir Certificate", "relationship", "If a legal heir claims with no nomination"),
+        may("Bank Account Details", "ownership", "If payment into a bank account is wanted", ["Bank Account Proof", "Cancelled Cheque"]),
+        may("Relieving Letter", "purpose", "Asked by some employers"),
+        may("Identity Proof", "identity", "Asked by some employers", ["Aadhaar Card", "PAN Card"]),
+      ],
+      sources: [
+        {
+          name: "Ministry of Labour and Employment",
+          kind: "government",
+          page: "The Payment of Gratuity (Central) Rules, 1972, Form I",
+          section: "FORM 'I' Application for gratuity by an employee",
+          url: "https://www.labour.gov.in/static/uploads/2025/06/261fb00f35711ebaf15076c0a67c2be4.pdf",
+        },
+      ],
+    },
+  ),
+  /* Education (10): each institution sets its own list */
+  P(
+    "school-adm",
+    {
+      cat: "Education",
+      name: "School admission",
+      blurb: "New school",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Birth Certificate", "identity"),
+        must("Address Proof", "address", ["Aadhaar Card", "Voter ID", "Utility Bill", "Ration Card", "Passport", "Domicile Certificate"]),
+        may("Passport Photos", "identity", "Asked by some offices"),
+        may("Caste Certificate", "relationship", "If claiming a reserved category seat"),
+        may("Employment Proof", "purpose", "If claiming a parent service priority (KVS)"),
+        may("Immunization Record", "qualification", "Asked by some institutions"),
+        may("Transfer Certificate", "qualification", "If joining above the entry class"),
+      ],
+      sources: [
+        {
+          name: "Kendriya Vidyalaya Sangathan",
+          kind: "government",
+          page: "KVS Admission Guidelines 2026-27 and Onwards (hosted by KVS Regional Office Delhi)",
+          section: "3. DOCUMENTS",
+          url: "https://cdnbbsr.s3waas.gov.in/s3kv01884d38e5c9337e2e297bfc0fa169/uploads/2026/08/2026081715.pdf",
+        },
+        {
+          name: "Directorate of Education, Govt of NCT of Delhi",
+          kind: "government",
+          page: "Guidelines for Parents regarding Admission in Entry Classes in Government Sarvodaya Vidyalayas 2026-27",
+          section: "The following documents are required to be produced by the parent/guardian at the time of",
+          url: "https://www.edudel.nic.in/upload/upload_2025_26/schoolbranch2_guidelinesforhosregardingadmissioninentrylevelclassesingovtSV_dt_26022026_104.pdf",
+        },
+        {
+          name: "Delhi Public School R.K. Puram",
+          kind: "private",
+          page: "Nursery Admission 2026-2027",
+          section: "6 Essential Documents Required",
+          url: "https://dpsrkp.net/nursery-admission-2026-2027/#:~:text=Essential%20Documents%20Required",
+        },
+      ],
+    },
+  ),
+  P(
+    "college-adm",
+    {
+      cat: "Education",
+      name: "College admission",
+      blurb: "Undergraduate",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Marksheet", "qualification"),
+        must("Date of Birth Proof", "identity", ["Birth Certificate", "Marksheet"]),
+        may("Caste Certificate", "relationship", "If claiming a reserved category seat"),
+        may("Identity Proof", "identity", "Asked by some institutions", ["Aadhaar Card", "Passport", "PAN Card", "Driving License", "Voter ID"]),
+        may("Medical Fitness Certificate", "qualification", "For IIT and NIT admission through JoSAA"),
+        may("Domicile Certificate", "address", "If claiming a home state quota seat"),
+        may("Transfer Certificate", "qualification", "Asked by some colleges at joining"),
+        may("Migration Certificate", "qualification", "If moving from another board or university"),
+      ],
+      sources: [
+        {
+          name: "Lady Shri Ram College for Women",
+          kind: "institution",
+          page: "Admission Procedure and Documents 2026-27",
+          section: "List of Documents to be verified online at the time of Admission",
+          url: "https://lsr.edu.in/admissions/admission-procedure/#:~:text=List%20of%20Documents%20to%20be%20verified",
+        },
+        {
+          name: "Joint Seat Allocation Authority",
+          kind: "government",
+          page: "Frequently Asked Questions JoSAA 2026",
+          section: "What documents are required for online reporting/registration?",
+          url: "https://cdnbbsr.s3waas.gov.in/s313111c20aee51aeb480ecbd988cd8cc9/uploads/2026/06/202606061208276078.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "pg-adm",
+    {
+      cat: "Education",
+      name: "Postgraduate admission",
+      blurb: "Masters programs",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Marksheet", "qualification"),
+        must("Date of Birth Proof", "identity", ["Birth Certificate", "Marksheet"]),
+        must("Passport Photos", "identity"),
+        may("Degree Certificate", "qualification", "Asked by some institutions"),
+        may("Scorecard", "qualification", "If admission is through GATE or another test"),
+        may("Caste Certificate", "relationship", "If claiming a reserved category seat"),
+        may("Identity Proof", "identity", "Asked by some institutions", ["Aadhaar Card"]),
+      ],
+      sources: [
+        {
+          name: "University of Delhi",
+          kind: "government",
+          page: "Common Seat Allocation System (Postgraduate) CSAS(PG)-2026",
+          section: "ANNEXURE - II LIST OF DOCUMENTS REQUIRED AT THE TIME OF APPLYING",
+          url: "https://admission.uod.ac.in/userfiles/downloads/2026/15052026_PG-CSAS.pdf#page=48",
+        },
+        {
+          name: "IIT Roorkee",
+          kind: "government",
+          page: "Admission-cum-Registration to M.Tech./M.Arch./MURP Programme (2024-25)",
+          section: "List of documents to be verified during for Admission-cum-Registration",
+          url: "https://iitr.ac.in/Academics/static/Admission/PG/M.Tech/2024/M.Tech._M.Arch._MURP_2024.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "study-abroad",
+    {
+      cat: "Education",
+      name: "Study abroad application",
+      blurb: "University applications",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Transcripts", "qualification", ["Marksheet"]),
+        must("Language Test Scorecard", "qualification"),
+        must("Statement of Purpose", "purpose"),
+        must("Recommendation Letters", "qualification"),
+        may("Degree Certificate", "qualification", "If applying for a postgraduate course"),
+        may("Passport", "identity", "Asked by some institutions"),
+        may("Passport Photos", "identity", "Asked by some institutions"),
+        may("Scorecard", "qualification", "If the programme asks for GRE or similar"),
+      ],
+      sources: [
+        {
+          name: "DAAD",
+          kind: "government",
+          page: "Application process",
+          section: "Which documents will I need?",
+          url: "https://www.daad.de/en/studying-in-germany/requirements/application-process/#:~:text=Which%20documents%20will%20I%20need",
+        },
+        {
+          name: "Stanford University Graduate Admissions",
+          kind: "institution",
+          page: "Application Overview",
+          section: "Academic History / Test Scores / Recommendations / Statements",
+          url: "https://gradadmissions.stanford.edu/apply/application-overview#:~:text=three%20academic%20or%20professional%20references",
+        },
+        {
+          name: "UCAS",
+          kind: "institution",
+          page: "Filling in your UCAS undergraduate application",
+          section: "Education / Personal statement / References",
+          url: "https://www.ucas.com/undergraduate/applying-university/filling-your-ucas-undergraduate-application#:~:text=All%20applications%20require%20a%20reference",
+        },
+      ],
+    },
+  ),
+  P(
+    "comp-exam",
+    {
+      cat: "Education",
+      name: "Competitive exam application",
+      blurb: "UPSC, SSC, banking",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport Photos", "identity"),
+        must("Specimen Signature", "identity"),
+        must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "PAN Card", "Driving License", "Voter ID"]),
+        must("Marksheet", "qualification"),
+        may("Degree Certificate", "qualification", "If the exam requires graduation"),
+        may("Caste Certificate", "relationship", "If claiming a reserved category"),
+        may("Income Certificate", "income", "If applying under the EWS category"),
+        may("Left Thumb Impression", "identity", "For bank and some NTA exams"),
+      ],
+      sources: [
+        {
+          name: "National Testing Agency",
+          kind: "government",
+          page: "JEE (Main) 2026 Information Bulletin",
+          section: "Step 2: Application Form:",
+          url: "https://cdnbbsr.s3waas.gov.in/s3f8e59f4b2fe7c5705bf878bbd494ccdf/uploads/2025/11/202511021649722475.pdf",
+        },
+        {
+          name: "State Bank of India",
+          kind: "public",
+          page: "Recruitment of Junior Associates (Advertisement CRPD/CR/2026-27/17)",
+          section: "Guidelines for scanning and Upload of Photograph, Signature, Left Hand Thumb Impression an",
+          url: "https://sbi.bank.in/webfiles/uploads/files_2627/08/JA_2026_Detailed_Advt_Eng.pdf#page=9",
+        },
+      ],
+    },
+  ),
+  P(
+    "board-reg",
+    {
+      cat: "Education",
+      name: "Board exam registration",
+      blurb: "Class 10 and 12",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Date of Birth Proof", "identity", ["Birth Certificate"]),
+        must("Passport Photos", "identity"),
+        must("APAAR ID", "identity"),
+        must("Specimen Signature", "identity"),
+        may("Marksheet", "qualification", "If a private candidate or from another board"),
+        may("Identity Proof", "identity", "Asked by some institutions", ["Aadhaar Card"]),
+      ],
+      sources: [
+        {
+          name: "CBSE",
+          kind: "government",
+          page: "Registration of Students of Class IX and Class XI for Session 2025-2026 (circular dated 15/09/2025)",
+          section: "EFFORTS FOR CORRECT SUBMISSION OF DATA",
+          url: "https://www.cbse.gov.in/cbsenew/documents/Submission_Registration_Data_Class_IXXI2526_15092025.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "scholarship",
+    {
+      cat: "Education",
+      name: "Scholarship application",
+      blurb: "Merit and means",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Aadhaar Card", "identity"),
+        must("Income Certificate", "income"),
+        must("Bank Account Details", "ownership"),
+        may("Marksheet", "qualification", "Often asked, though not on the published list"),
+        may("Caste Certificate", "relationship", "If the scheme is for a reserved category"),
+      ],
+      sources: [
+        {
+          name: "National Scholarship Portal",
+          kind: "government",
+          page: "One Time Registration (OTR) FAQs v1.4",
+          section: "5. What documents/information do I need to have ready to create my OTR?",
+          url: "https://scholarships.gov.in/public/FAQ/OTR%20FAQ%20v1.4.pdf#page=2",
+        },
+        {
+          name: "National Scholarship Portal",
+          kind: "government",
+          page: "Guidelines of the Central Sector Scheme of Scholarship for College and University Students (PM-USP CSSS)",
+          section: "4. Eligibility for Scholarship / 6. Procedure for Application",
+          url: "https://scholarships.gov.in/public/schemeGuidelines/CSSS_GUIDLINES_07022024_updated.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "school-transfer",
+    {
+      cat: "Education",
+      name: "School transfer",
+      blurb: "Moving cities",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Transfer Certificate", "qualification", ["School Leaving Certificate"]),
+        must("Marksheet", "qualification"),
+        must("Date of Birth Proof", "identity", ["Birth Certificate", "School Leaving Certificate"]),
+        must("Address Proof", "address", ["Aadhaar Card", "Voter ID", "Utility Bill", "Ration Card", "Passport", "Domicile Certificate"]),
+        must("Passport Photos", "identity"),
+        may("Caste Certificate", "relationship", "If claiming a reserved category seat"),
+        may("Medical Fitness Certificate", "qualification", "Asked by some institutions"),
+        may("Character Certificate", "qualification", "Asked by some institutions"),
+      ],
+      sources: [
+        {
+          name: "CBSE",
+          kind: "government",
+          page: "Direct Admission Procedure (Examination Bye-laws, admission rules)",
+          section: "Admission: General Conditions",
+          url: "https://www.cbse.gov.in/cbsenew/admission.html#:~:text=Admission%3A%20General%20Conditions",
+        },
+        {
+          name: "Delhi Public School R.K. Puram",
+          kind: "private",
+          page: "Class 9 Admission 2026-2027",
+          section: "Documents and other essential items to be submitted",
+          url: "https://dpsrkp.net/class-9-admission-2025-2026/#:~:text=Documents%20and%20other%20essential%20items",
+        },
+        {
+          name: "Directorate of Education, Govt of NCT of Delhi",
+          kind: "government",
+          page: "Circular DE.23 (28)/Sch.Br./2024/346 dated 15.05.2024 (admission in government schools)",
+          section: "xvii). Following documents are to be submitted for verification at the time of admissionby",
+          url: "https://www.edudel.nic.in/upload/upload_2023_24/346_dt_15052024.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "attestation",
+    {
+      cat: "Education",
+      name: "Degree attestation",
+      blurb: "ECA, WES, apostille",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Degree Certificate", "qualification"),
+        may("Marksheet", "qualification", "If the marksheet also needs attestation"),
+        may("Passport", "identity", "Asked by some institutions"),
+        may("Transcripts", "qualification", "For WES or other credential evaluation"),
+      ],
+      sources: [
+        {
+          name: "Ministry of External Affairs",
+          kind: "government",
+          page: "e-Sanad (online attestation and apostille) FAQ",
+          section: "Which are the documents authenticated/apostilled?",
+          url: "https://esanad.nic.in/#:~:text=Which%20are%20the%20documents",
+        },
+      ],
+    },
+  ),
+  P(
+    "dup-marksheet",
+    {
+      cat: "Education",
+      name: "Duplicate marksheet reissue",
+      blurb: "Lost certificates",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Aadhaar Card", "Driving License", "PAN Card", "Passport"]),
+        must("FIR Copy", "purpose", ["Police Complaint"]),
+        must("Self Declaration", "purpose", ["Affidavit"]),
+        must("Passport Photos", "identity"),
+        must("Specimen Signature", "identity"),
+        must("Fee Payment Receipt", "purpose"),
+      ],
+      sources: [
+        {
+          name: "University of Delhi Examination Branch",
+          kind: "government",
+          page: "Duplicate Degree / Diploma / Certificate",
+          section: "Documents Required",
+          url: "https://exam.du.ac.in/exam/duplicate_degree/#:~:text=Scanned%20signature%20of%20candidate",
+        },
+      ],
+    },
+  ),
+  /* Health (9): insurer lists, public and private */
+  P(
+    "hospital",
+    {
+      cat: "Health",
+      name: "Hospital admission",
+      blurb: "Cashless pack",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Health Insurance", "ownership", ["Insurance Policy"]),
+        must("Photo ID", "identity"),
+        must("Pre-Authorisation Form", "purpose"),
+        may("Prescription", "purpose", "Asked by some insurers"),
+        must("Lab Report", "purpose", ["Medical Reports"]),
+        may("Medical Reports", "purpose", "Past medical history, asked by some insurers"),
+        may("Medico-Legal Certificate", "purpose", "If the admission follows an accident", ["FIR Copy"]),
+      ],
+      sources: [
+        {
+          name: "HDFC ERGO",
+          kind: "private",
+          page: "Cashless Claims (health claim registration)",
+          section: "We request you to kindly submit the below mentioned mandatory documents as applicable for",
+          url: "https://www.hdfcergo.com/claim/register-health-insurance-claim/cashless-claims#:~:text=mandatory%20documents%20as%20applicable",
+        },
+        {
+          name: "New India Assurance",
+          kind: "public",
+          page: "How to Register a Health Claim (cashless procedure)",
+          section: "CASHLESS CLAIMS:",
+          url: "https://www.newindia.co.in/assets/docs/surveyor_management_policy/RegisterACliam.pdf",
+        },
+        {
+          name: "Manipal Hospitals",
+          kind: "institution",
+          page: "Insurance and TPA Helpdesk",
+          section: "What is the pre-authorisation process for cashless treatment at Manipal Hospitals?",
+          url: "https://www.manipalhospitals.com/insurance-tpa-helpdesk/#:~:text=Provide%20a%20valid%20ID%20proof",
+        },
+      ],
+    },
+  ),
+  P(
+    "claim-reimb",
+    {
+      cat: "Health",
+      name: "Health insurance reimbursement",
+      blurb: "Claim after paying",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Claim Form", "purpose"),
+        must("Photo ID", "identity", ["Identity Proof"]),
+        must("Discharge Summary", "purpose"),
+        must("Medical Bills", "purpose"),
+        must("Prescription", "purpose"),
+        must("Lab Report", "purpose", ["Medical Reports"]),
+        must("Cancelled Cheque", "ownership", ["Bank Account Details"]),
+        may("Address Proof", "address", "KYC of the proposer, e.g. claims above Rs 1 lakh", ["Identity Proof"]),
+        may("Implant Invoice", "purpose", "If an implant was used in surgery"),
+        may("FIR Copy", "purpose", "If the hospitalisation follows an accident", ["Medico-Legal Certificate"]),
+        may("Health Insurance", "ownership", "Asked by some insurers", ["Insurance Policy"]),
+      ],
+      sources: [
+        {
+          name: "New India Assurance",
+          kind: "public",
+          page: "How to Register a Health Claim",
+          section: "REIMBURSEMENT CLAIMS",
+          url: "https://www.newindia.co.in/assets/docs/surveyor_management_policy/RegisterACliam.pdf",
+        },
+        {
+          name: "HDFC ERGO",
+          kind: "private",
+          page: "my:health Suraksha Claim Manual",
+          section: "List of Documents for Reimbursement Claims:",
+          url: "https://www.hdfcergo.com/docs/default-source/downloads/claim-forms/claim--2.pdf",
+        },
+        {
+          name: "ICICI Lombard",
+          kind: "private",
+          page: "How to Claim Health Insurance",
+          section: "What are the Documents Required for Health Insurance Claims?",
+          url: "https://www.icicilombard.com/health_insurance_info/how-to-claim-health-insurance.html#:~:text=Documents%20Required%20for%20Health%20Insurance%20Claims",
+        },
+      ],
+    },
+  ),
+  P(
+    "cashless-preauth",
+    {
+      cat: "Health",
+      name: "Cashless pre-authorization",
+      blurb: "Planned procedure",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Health Insurance", "ownership", ["Insurance Policy"]),
+        must("Pre-Authorisation Form", "purpose"),
+        may("Prescription", "purpose", "Asked by some insurers"),
+        may("Lab Report", "purpose", "Asked by some insurers", ["Medical Reports"]),
+        may("Photo ID", "identity", "Asked by some insurers"),
+        may("Medical Reports", "purpose", "Past medical history, asked by some insurers"),
+        may("Medico-Legal Certificate", "purpose", "If the admission follows an accident", ["FIR Copy"]),
+      ],
+      sources: [
+        {
+          name: "HDFC ERGO",
+          kind: "private",
+          page: "Cashless Claims (health claim registration)",
+          section: "We request you to kindly submit the below mentioned mandatory documents as applicable for",
+          url: "https://www.hdfcergo.com/claim/register-health-insurance-claim/cashless-claims#:~:text=mandatory%20documents%20as%20applicable",
+        },
+        {
+          name: "New India Assurance",
+          kind: "public",
+          page: "How to Register a Health Claim (cashless procedure)",
+          section: "CASHLESS CLAIMS:",
+          url: "https://www.newindia.co.in/assets/docs/surveyor_management_policy/RegisterACliam.pdf",
+        },
+        {
+          name: "ICICI Lombard",
+          kind: "private",
+          page: "Cashless Treatment",
+          section: "What documents are required for a cashless claim?",
+          url: "https://www.icicilombard.com/health-insurance/cashless#:~:text=What%20documents%20are%20required%20for%20a%20cashless%20claim",
+        },
+      ],
+    },
+  ),
+  P(
+    "new-health-ins",
+    {
+      cat: "Health",
+      name: "New health insurance",
+      blurb: "Buying a policy",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Proposal Form", "purpose"),
+        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Voter ID", "Passport", "Driving License"]),
+        must("Address Proof", "address", ["Aadhaar Card", "Passport", "Driving License", "Ration Card", "Utility Bill", "Rental Agreement"]),
+        must("Date of Birth Proof", "identity", ["Birth Certificate", "Aadhaar Card", "PAN Card", "Passport", "Driving License", "Marksheet"]),
+        must("Passport Photos", "identity"),
+        may("Medical Reports", "qualification", "If the insurer asks for a medical check-up", ["Lab Report"]),
+      ],
+      sources: [
+        {
+          name: "United India Insurance",
+          kind: "public",
+          page: "Do's and Dont's, Health Insurance, Proposal Form and Insured Person details",
+          section: "Every request for policy is to be based on a proposal form to be submitted by you. (openin",
+          url: "https://uiic.co.in/en/node/1291#:~:text=Stamp%20size%20photograph",
+        },
+        {
+          name: "Star Health",
+          kind: "private",
+          page: "Important Documents Required for Health Insurance in India",
+          section: "1. Identity Proof",
+          url: "https://www.starhealth.in/health-insurance/documents-required-for-health-insurance/#:~:text=Documents%20for%20Identity%20Proof%20include",
+        },
+        {
+          name: "Niva Bupa",
+          kind: "private",
+          page: "What documents do you require to buy health insurance?",
+          section: "What documents do you require to buy health insurance?",
+          url: "https://www.nivabupa.com/insurance-faq/health-insurance-faq/health-insurance-general-faq/what-documents-do-you-require-to-buy-health-insurance.html#:~:text=What%20documents%20do%20you%20require",
+        },
+      ],
+    },
+  ),
+  P(
+    "maternity",
+    {
+      cat: "Health",
+      name: "Maternity hospital pack",
+      blurb: "Delivery admission",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Photo ID", "identity", ["Aadhaar Card", "Driving License"]),
+        must("Medical Reports", "purpose", ["Lab Report", "Prescription"]),
+        may("Health Insurance", "ownership", "If paying through insurance (cashless)", ["Insurance Policy"]),
+        may("Pre-Authorisation Form", "purpose", "If paying through insurance (cashless)"),
+        may("MCP Card", "purpose", "Government facility delivery or PMMVY claim"),
+        may("Aadhaar Card", "identity", "If claiming the PMMVY maternity benefit"),
+        may("Bank Account Details", "ownership", "If claiming the PMMVY maternity benefit"),
+        may("Hospital Registration Papers", "purpose", "Asked by some institutions"),
+      ],
+      sources: [
+        {
+          name: "Cloudnine Hospitals",
+          kind: "institution",
+          page: "Packing your maternity bag, checklist",
+          section: "Important documents:",
+          url: "https://www.cloudninecare.com/blog/packing-your-maternity-bag-here-is-a-checklist-of-things-you-might-want-to-keep#:~:text=Important%20documents",
+        },
+        {
+          name: "Manipal Hospitals",
+          kind: "institution",
+          page: "Insurance and TPA Helpdesk",
+          section: "What is the pre-authorisation process for cashless treatment at Manipal Hospitals?",
+          url: "https://www.manipalhospitals.com/insurance-tpa-helpdesk/#:~:text=Provide%20a%20valid%20ID%20proof",
+        },
+        {
+          name: "Ministry of Women and Child Development",
+          kind: "government",
+          page: "PMMVY FAQs",
+          section: "What documents do beneficiaries need to apply for PMMVY?",
+          url: "https://www.spniwcd.wcd.gov.in/pradhan-mantri-matru-vandana-yojna/faqs#:~:text=What%20documents%20do%20beneficiaries%20need",
+        },
+      ],
+    },
+  ),
+  P(
+    "vaccination",
+    {
+      cat: "Health",
+      name: "Vaccination record pack",
+      blurb: "School and travel",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Immunization Record", "qualification"),
+        may("Passport", "identity", "For yellow fever vaccination before travel"),
+        may("Medical Reports", "purpose", "Yellow fever dose: if under any treatment"),
+      ],
+      sources: [
+        {
+          name: "MoHFW and MWCD",
+          kind: "government",
+          page: "Mother and Child Protection (MCP) Card Guide Book",
+          section: "Who keeps the card?",
+          url: "https://nhm.gov.in/New_Updates_2018/NHM_Components/Immunization/Guildelines_for_immunization/MCP_Guide_Book.pdf#page=6",
+        },
+        {
+          name: "MoHFW IHR Points of Entry",
+          kind: "government",
+          page: "Yellow Fever Vaccination",
+          section: "Necessary Information for Vaccine Beneficiaries",
+          url: "https://ihpoe.mohfw.gov.in/vaccination.php#:~:text=Mandatory%20Documents%20Required",
+        },
+      ],
+    },
+  ),
+  P(
+    "disability-cert",
+    {
+      cat: "Health",
+      name: "Disability certificate",
+      blurb: "UDID assessment",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Passport Photos", "identity"),
+        must("Specimen Signature", "identity"),
+        must("Identity Proof", "identity"),
+        must("Medical Reports", "qualification", ["Lab Report", "Discharge Summary"]),
+        may("Address Proof", "address", "Asked on the UDID portal application form"),
+        may("Disability Certificate", "qualification", "If converting an existing paper certificate"),
+      ],
+      sources: [
+        {
+          name: "Department of Empowerment of Persons with Disabilities",
+          kind: "government",
+          page: "UDID Scheme",
+          section: "How to apply and where to apply?",
+          url: "https://depwd.gov.in/en/udid-scheme/#:~:text=Required%20Documents",
+        },
+      ],
+    },
+  ),
+  P(
+    "motor-claim",
+    {
+      cat: "Health",
+      name: "Motor insurance claim",
+      blurb: "Own damage or third party",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Claim Form", "purpose"),
+        must("Insurance Policy", "ownership", ["Vehicle Insurance"]),
+        must("Vehicle RC", "ownership"),
+        must("Driving License", "qualification"),
+        must("Repair Estimate", "purpose"),
+        must("Repair Invoice", "purpose"),
+        may("FIR Copy", "purpose", "If theft, third-party injury or police case", ["Police Complaint"]),
+        may("Non-Traceable Certificate", "purpose", "If the vehicle was stolen"),
+        may("Photographs of Damage", "purpose", "Asked by some insurers"),
+      ],
+      sources: [
+        {
+          name: "New India Assurance",
+          kind: "public",
+          page: "Standalone Own Damage Car Insurance",
+          section: "Documents Required for Claim",
+          url: "https://www.newindia.co.in/motor-insurance/standalone-own-damage-car-insurance#:~:text=Documents%20Required%20for%20Claim",
+        },
+        {
+          name: "ICICI Lombard",
+          kind: "private",
+          page: "Documents required for car insurance",
+          section: "Documentation & process for filing a car insurance claim:",
+          url: "https://www.icicilombard.com/motor-insurance/car-insurance/documents-required-for-car-insurance#:~:text=filing%20a%20car%20insurance%20claim",
+        },
+        {
+          name: "IRDAI Policyholder",
+          kind: "regulator",
+          page: "Motor Insurance",
+          section: "What are the documents that are required to be submitted for a Motor Insurance claim?",
+          url: "https://policyholder.gov.in/motor-insurance#:~:text=submitted%20for%20a%20Motor%20Insurance%20claim",
+        },
+      ],
+    },
+  ),
+  P(
+    "health-ins-port",
+    {
+      cat: "Health",
+      name: "Health insurance renewal or port",
+      blurb: "Porting carries its own paperwork",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Portability Form", "purpose"),
+        must("Proposal Form", "purpose"),
+        must("Previous Policy Documents", "ownership", ["Insurance Policy"]),
+        must("Claim History", "purpose"),
+        may("Identity Proof", "identity", "Asked by some insurers (KYC)", ["Aadhaar Card", "PAN Card"]),
+        may("Address Proof", "address", "Asked by some insurers (KYC)", ["Aadhaar Card"]),
+        may("Date of Birth Proof", "identity", "Asked by some insurers", ["PAN Card"]),
+        may("Medical Reports", "qualification", "If the new insurer asks for a medical check-up"),
+      ],
+      sources: [
+        {
+          name: "Star Health",
+          kind: "private",
+          page: "Guide for Porting Health Insurance",
+          section: "Documents Required for Porting Health Insurance:",
+          url: "https://www.starhealth.in/health-insurance/health-insurance-portability/#:~:text=Documents%20Required%20for%20Porting%20Health%20Insurance",
+        },
+        {
+          name: "HDFC ERGO",
+          kind: "private",
+          page: "Portability Form",
+          section: "PART I",
+          url: "https://www.hdfcergo.com/docs/default-source/default-document-library/portability-form.pdf",
+        },
+      ],
+    },
+  ),
+  /* Home & Property (12): lists vary by state, municipality and lender */
+  P(
+    "homeloan",
+    {
+      cat: "Home & Property",
+      name: "Home loan",
+      blurb: "Salaried application pack",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["PAN Card", "Passport", "Driving License", "Voter ID", "Aadhaar Card"]),
+        must("Address Proof", "address", ["Aadhaar Card", "Passport", "Driving License", "Utility Bill", "Ration Card", "Voter ID"]),
+        must("Date of Birth Proof", "identity", ["PAN Card", "Passport", "Driving License", "Voter ID"]),
+        must("Payslip", "income", ["Salary Certificate"]),
+        must("Form 16", "income", ["ITR Acknowledgement"]),
+        must("Bank Statement", "income"),
+        must("Sale Agreement", "ownership", ["Sale Deed", "Title Deed"]),
+        must("Property Ownership Proof", "ownership", ["Title Deed", "Sale Deed", "Property Tax Receipt"]),
+        may("Approved Building Plan", "ownership", "For a new or under-construction property"),
+        may("Passport Photos", "identity", "Asked by some lenders"),
+        may("Loan Account Statement", "income", "If you have a loan with another lender"),
+      ],
+      sources: [
+        {
+          name: "State Bank of India",
+          kind: "public",
+          page: "Regular Home Loan (documents required)",
+          section: "List of papers/ documents applicable to all applicants:",
+          url: "https://homeloans.sbi/products/view/regular-home-loan#:~:text=List%20of%20papers",
+        },
+        {
+          name: "PNB Housing Finance",
+          kind: "public",
+          page: "Home Loan documents required",
+          section: "Required Documents for Housing Loan",
+          url: "https://www.pnbhousing.com/home-loan/documents-required#:~:text=Required%20Documents%20for%20Housing%20Loan",
+        },
+        {
+          name: "ICICI Bank",
+          kind: "private",
+          page: "Documents required for Home Loan",
+          section: "List of Documents required for Home Loan Based on profile",
+          url: "https://www.icici.bank.in/personal-banking/loans/home-loan/documents-required#:~:text=List%20of%20Documents%20required%20for%20Home%20Loan",
+        },
+      ],
+    },
+  ),
+  P(
+    "property",
+    {
+      cat: "Home & Property",
+      name: "Property sale",
+      blurb: "Seller's pack",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Sale Deed", "purpose"),
+        must("Identity Proof", "identity", ["Voter ID", "Passport", "Aadhaar Card", "Driving License", "PAN Card"]),
+        must("Passport Photos", "identity"),
+        may("PAN Card", "identity", "If the sale value is above Rs 10 lakh", ["Form 60"]),
+        may("Title Deed", "ownership", "Asked by some institutions", ["Property Deed"]),
+        may("Encumbrance Certificate", "ownership", "Asked by some institutions"),
+        may("No Objection Certificate", "purpose", "If the land needs a transfer permission"),
+      ],
+      sources: [
+        {
+          name: "Revenue Department, Govt of NCT of Delhi",
+          kind: "government",
+          page: "FAQs (registration of documents)",
+          section: "Document required to be registered (in duplicate) (first item of the list; no separate hea",
+          url: "https://revenue.delhi.gov.in/faqs#:~:text=Document%20required%20to%20be%20registered",
+        },
+        {
+          name: "IGR Odisha",
+          kind: "government",
+          page: "List of requisite documents for registration",
+          section: "List of requisite documents for registration",
+          url: "https://www.igrodisha.gov.in/pdf/ListOfDocuments.pdf#page=1",
+        },
+      ],
+    },
+  ),
+  P(
+    "property-buy",
+    {
+      cat: "Home & Property",
+      name: "Property purchase",
+      blurb: "Buyer's diligence",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Sale Deed", "purpose"),
+        must("Identity Proof", "identity", ["Voter ID", "Passport", "Aadhaar Card", "Driving License", "PAN Card"]),
+        must("Passport Photos", "identity"),
+        may("PAN Card", "identity", "If the sale value is above Rs 10 lakh", ["Form 60"]),
+        may("Property Ownership Proof", "ownership", "Asked by some institutions", ["Title Deed", "Property Deed"]),
+        may("Encumbrance Certificate", "ownership", "Asked by some institutions"),
+        may("No Objection Certificate", "purpose", "If the land needs a transfer permission"),
+      ],
+      sources: [
+        {
+          name: "Revenue Department, Govt of NCT of Delhi",
+          kind: "government",
+          page: "FAQs (registration of documents)",
+          section: "Document required to be registered (in duplicate) (first item of the list; no separate hea",
+          url: "https://revenue.delhi.gov.in/faqs#:~:text=Document%20required%20to%20be%20registered",
+        },
+        {
+          name: "IGR Odisha",
+          kind: "government",
+          page: "List of requisite documents for registration",
+          section: "List of requisite documents for registration",
+          url: "https://www.igrodisha.gov.in/pdf/ListOfDocuments.pdf#page=1",
+        },
+      ],
+    },
+  ),
+  P(
+    "rent-tenant",
+    {
+      cat: "Home & Property",
+      name: "Renting a home",
+      blurb: "Tenant pack",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Rental Agreement", "purpose"),
+        must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Passport"]),
+        may("Passport Photos", "identity", "Asked by some institutions"),
+      ],
+      sources: [
+        {
+          name: "Revenue Department, Govt of NCT of Delhi",
+          kind: "government",
+          page: "FAQs (registration of documents)",
+          section: "Document required to be registered ( in duplicate)",
+          url: "https://revenue.delhi.gov.in/faqs#:~:text=Document%20required%20to%20be%20registered",
+        },
+      ],
+    },
+  ),
+  P(
+    "rent-landlord",
+    {
+      cat: "Home & Property",
+      name: "Renting out property",
+      blurb: "Landlord pack",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Rental Agreement", "purpose"),
+        must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Passport"]),
+        may("Passport Photos", "identity", "Asked by some institutions"),
+        may("No Objection Certificate", "purpose", "If the property is leasehold"),
+      ],
+      sources: [
+        {
+          name: "Revenue Department, Govt of NCT of Delhi",
+          kind: "government",
+          page: "FAQs (registration of documents)",
+          section: "Document required to be registered ( in duplicate)",
+          url: "https://revenue.delhi.gov.in/faqs#:~:text=Document%20required%20to%20be%20registered",
+        },
+      ],
+    },
+  ),
+  P(
+    "tenant-verify",
+    {
+      cat: "Home & Property",
+      name: "Tenant police verification",
+      blurb: "Mandatory in many cities",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        may("Identity Proof", "identity", "Asked by some offices", ["Aadhaar Card", "PAN Card", "Voter ID", "Ration Card", "Driving License"]),
+        must("Passport Photos", "identity"),
+        may("Rental Agreement", "purpose", "Only the agreement dates are asked on the form"),
+      ],
+      sources: [
+        {
+          name: "Mumbai Police",
+          kind: "government",
+          page: "Tenant Information online form",
+          section: "Tenant Information",
+          url: "https://mumbaipolice.gov.in/TenantForm?ps_id=0#:~:text=Identity%20Proof%20of%20Tenant",
+        },
+        {
+          name: "Thane City Police",
+          kind: "government",
+          page: "Tenant Information online form",
+          section: "भाडेकरु माहिती",
+          url: "https://thanepolice.gov.in/tenant-info#:~:text=%E0%A4%AE%E0%A4%BE%E0%A4%B2%E0%A4%AE%E0%A4%A4%E0%A5%8D%E0%A4%A4%E0%A4%BE%20%E0%A4%AE%E0%A4%BE%E0%A4%B2%E0%A4%95%E0%A4%BE%E0%A4%9A%E0%A4%BE%20%E0%A4%AB%E0%A5%8B%E0%A4%9F%E0%A5%8B",
+        },
+      ],
+    },
+  ),
+  P(
+    "khata",
+    {
+      cat: "Home & Property",
+      name: "Khata or mutation transfer",
+      blurb: "Municipal records",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Sale Deed", "ownership", ["Property Deed"]),
+        may("Property Tax Receipt", "ownership", "Asked by some institutions"),
+        may("Indemnity Bond", "purpose", "Asked by some institutions"),
+        may("No Objection Certificate", "purpose", "If the property is in a housing society"),
+        may("Share Certificate", "ownership", "If the property is in a housing society"),
+        may("Legal Heir Certificate", "relationship", "If the property is inherited", ["Will"]),
+      ],
+      sources: [
+        {
+          name: "New Delhi Municipal Council",
+          kind: "government",
+          page: "Property Tax Department (mutation)",
+          section: "2. Recording of change in name of the person primarily liable for payment of Property Tax",
+          url: "https://www.ndmc.gov.in/departments/property_tax.aspx#:~:text=Recording%20of%20change%20in%20name",
+        },
+        {
+          name: "Surat Municipal Corporation",
+          kind: "government",
+          page: "Property Tax FAQs",
+          section: "What is the procedure to change the name for a property?",
+          url: "https://www.suratmunicipal.gov.in/Departments/PropertyTaxFAQs#:~:text=What%20is%20the%20procedure%20to%20change",
+        },
+      ],
+    },
+  ),
+  P(
+    "electricity",
+    {
+      cat: "Home & Property",
+      name: "New electricity connection",
+      blurb: "Meter in your name",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Passport", "PAN Card", "Driving License", "Ration Card"]),
+        must("Property Ownership Proof", "ownership", ["Title Deed", "Sale Deed", "Allotment Letter", "Occupancy Certificate", "Rental Agreement"]),
+        may("Rental Agreement", "ownership", "If you are a tenant"),
+        may("No Objection Certificate", "purpose", "If you are a tenant"),
+        may("Passport Photos", "identity", "Asked by some institutions"),
+      ],
+      sources: [
+        {
+          name: "BSES Yamuna Power",
+          kind: "private",
+          page: "New Connection",
+          section: "List of Documents to be presented for New connection:",
+          url: "https://www.bsesdelhi.com/web/bypl/new-connection#:~:text=List%20of%20Documents%20to%20be%20presented",
+        },
+        {
+          name: "MSEDCL",
+          kind: "public",
+          page: "Documents required for new connection, change of load or demand",
+          section: "A-1 Form for Power Supply for Residential / Commercial /Industrial",
+          url: "https://wss.mahadiscom.in/wss/images/DocumentsRequiredForNewConnectionChangeLoadDemand.pdf#page=1",
+        },
+        {
+          name: "New Delhi Municipal Council",
+          kind: "government",
+          page: "Electricity connection, how to apply",
+          section: "Required documents for Conncetion :",
+          url: "https://online.ndmc.gov.in/electricity/Howtoapply.aspx#:~:text=Required%20documents%20for",
+        },
+      ],
+    },
+  ),
+  P(
+    "home-ins",
+    {
+      cat: "Home & Property",
+      name: "Home insurance purchase",
+      blurb: "Structure and contents",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Passport", "Voter ID", "Driving License"]),
+        must("Address Proof", "address", ["Aadhaar Card", "Passport", "Utility Bill", "Rental Agreement"]),
+        must("Property Ownership Proof", "ownership", ["Sale Deed", "Title Deed", "Property Tax Receipt"]),
+        may("PAN Card", "identity", "Asked by some insurers"),
+        may("Passport Photos", "identity", "Asked by some insurers"),
+        may("Bank Account Details", "ownership", "Asked by some insurers"),
+      ],
+      sources: [
+        {
+          name: "Digit General Insurance",
+          kind: "private",
+          page: "Home Insurance",
+          section: "Documents Required to Buy Home Insurance",
+          url: "https://www.godigit.com/home-insurance#:~:text=Documents%20Required%20to%20Buy%20Home%20Insurance",
+        },
+      ],
+    },
+  ),
+  P(
+    "society-noc",
+    {
+      cat: "Home & Property",
+      name: "Society share transfer",
+      blurb: "Apartment societies",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Share Certificate", "ownership"),
+        must("Transfer Application Form", "purpose"),
+        must("Membership Application Form", "purpose"),
+        must("Member Resignation Form", "purpose"),
+        must("Sale Agreement", "ownership", ["Sale Deed"]),
+        must("Transfer Fee Receipt", "purpose"),
+        must("Undertaking and Declaration", "purpose"),
+        may("No Objection Certificate", "purpose", "If required under any law or by a lender"),
+      ],
+      sources: [
+        {
+          name: "Commissioner for Cooperation, Maharashtra",
+          kind: "government",
+          page: "Model Bye-Laws of Cooperative Housing Society (Flat Owner type, 2014)",
+          section: "(H) Transfer of Shares and interest in the Capital/Property of the Society",
+          url: "https://sahakarayukta.maharashtra.gov.in/site/upload/documents/Model%20Bye%20Laws%20of%20Coop%20Housing%20Society%20New%20Flatowner%20Type%20(2-9-14).pdf#page=17",
+        },
+        {
+          name: "Commissioner for Cooperation, Maharashtra",
+          kind: "government",
+          page: "Draft revised Model Bye-Laws, Tenant Co-partnership Housing Societies (2026)",
+          section: "Conditions and Documents for Transfer",
+          url: "https://sahakarayukta.maharashtra.gov.in/site/upload/documents/Draft_Housing%20_TC_Byelaws_.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "property-tax-name",
+    {
+      cat: "Home & Property",
+      name: "Property tax name change",
+      blurb: "After a purchase or inheritance",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Sale Deed", "ownership", ["Property Deed"]),
+        may("Property Tax Receipt", "ownership", "Asked by some institutions"),
+        may("Indemnity Bond", "purpose", "Asked by some institutions"),
+        may("No Objection Certificate", "purpose", "If the property is in a housing society"),
+        may("Share Certificate", "ownership", "If the property is in a housing society"),
+        may("Legal Heir Certificate", "relationship", "If the property is inherited", ["Will"]),
+      ],
+      sources: [
+        {
+          name: "Surat Municipal Corporation",
+          kind: "government",
+          page: "Property Tax FAQs",
+          section: "What is the procedure to change the name for a property?",
+          url: "https://www.suratmunicipal.gov.in/Departments/PropertyTaxFAQs#:~:text=What%20is%20the%20procedure%20to%20change",
+        },
+        {
+          name: "New Delhi Municipal Council",
+          kind: "government",
+          page: "Property Tax Department (mutation)",
+          section: "2. Recording of change in name of the person primarily liable for payment of Property Tax",
+          url: "https://www.ndmc.gov.in/departments/property_tax.aspx#:~:text=Recording%20of%20change%20in%20name",
+        },
+      ],
+    },
+  ),
+  P(
+    "water-connection",
+    {
+      cat: "Home & Property",
+      name: "Water and municipal connection",
+      blurb: "New or transferred",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Voter ID", "Passport", "Aadhaar Card", "Ration Card"]),
+        must("Property Ownership Proof", "ownership", ["Title Deed", "Sale Deed", "Allotment Letter", "Rental Agreement"]),
+        must("Passport Photos", "identity"),
+        must("Affidavit", "purpose"),
+        must("Undertaking and Declaration", "purpose"),
+        may("No Objection Certificate", "purpose", "If you are a tenant"),
+      ],
+      sources: [
+        {
+          name: "New Delhi Municipal Council",
+          kind: "government",
+          page: "Water Connection Registration",
+          section: "List of Document Attached",
+          url: "https://online.ndmc.gov.in/water/#:~:text=List%20of%20Document%20Attached",
+        },
+      ],
+    },
+  ),
+  /* Family & Life (15): registrars, insurers and pension authorities */
+  P(
+    "marriage-reg",
+    {
+      cat: "Family & Life",
+      name: "Marriage registration",
+      blurb: "Certificate application",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Marriage Registration Application Form", "purpose"),
+        must("Date of Birth Proof", "identity", ["Birth Certificate", "School Leaving Certificate", "Marksheet", "Passport"]),
+        must("Address Proof", "address", ["Utility Bill", "Rental Agreement", "Passport"]),
+        must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Driving License", "Passport", "PAN Card"]),
+        must("Passport Photos", "identity"),
+        may("Marriage Invitation", "purpose", "If available"),
+        may("Affidavit", "purpose", "Asked by some institutions"),
+        may("Witness Identity Proof", "identity", "Asked by some institutions"),
+        may("Divorce Decree", "relationship", "If either spouse was married before", ["Death Certificate"]),
+      ],
+      sources: [
+        {
+          name: "Revenue Department, Govt of NCT of Delhi",
+          kind: "government",
+          page: "Registration Of Marriage",
+          section: "2. What documents are required for Registration ?",
+          url: "https://revenue.delhi.gov.in/revenue/registration-marriage#:~:text=What%20documents%20are%20required",
+        },
+        {
+          name: "Registration and Stamps Department, Telangana",
+          kind: "government",
+          page: "FAQs-Marriage",
+          section: "Registration under Hindu Marriage:",
+          url: "https://registration.telangana.gov.in/faqsMarriage.htm#:~:text=Registration%20under%20Hindu%20Marriage",
+        },
+        {
+          name: "Department of Registration and Stamps, Maharashtra",
+          kind: "government",
+          page: "Citizen's Charter",
+          section: "4. Registration of marriage celebrated in other forms, under the Special Marriage Act, 195",
+          url: "https://grievanceigr.maharashtra.gov.in/pdf/Citizen_Charter_English.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "death-cert",
+    {
+      cat: "Family & Life",
+      name: "Death certificate application",
+      blurb: "Municipal registration",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Voter ID", "Passport", "Ration Card", "Driving License"]),
+        must("Hospital Death Report", "purpose", ["Medical Certificate of Cause of Death (Form 4A)", "Cremation or Burial Slip", "Police Report", "Court Order"]),
+        may("Address Proof", "address", "Asked by some institutions", ["Aadhaar Card", "Passport", "Voter ID", "Ration Card", "Utility Bill", "Rental Agreement"]),
+        may("Deceased Identity Proof", "identity", "Asked by some institutions", ["Aadhaar Card", "PAN Card", "Voter ID", "Passport", "Ration Card", "Driving License"]),
+        may("Deceased Address Proof", "address", "Asked by some institutions"),
+        may("Affidavit", "purpose", "Asked by some institutions"),
+      ],
+      sources: [
+        {
+          name: "District North West, Govt of NCT of Delhi",
+          kind: "government",
+          page: "Death Certificate",
+          section: "Documents to be attached with the Application Form",
+          url: "https://dmnorthwest.delhi.gov.in/service/apply-for-death-certificate/#:~:text=Documents%20to%20be%20attached",
+        },
+        {
+          name: "Sewa Setu, Government of Assam",
+          kind: "government",
+          page: "Death Registration",
+          section: "Supporting Documents:",
+          url: "https://sewasetu.assam.gov.in/site/service-apply/death-registration#:~:text=Supporting%20Documents",
+        },
+      ],
+    },
+  ),
+  P(
+    "newborn",
+    {
+      cat: "Family & Life",
+      name: "Newborn documentation",
+      blurb: "First documents",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Birth Certificate", "relationship", ["Document proving legal guardianship"]),
+        must("Aadhaar Card", "identity"),
+        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Voter ID", "Passport"]),
+        may("Local Authority Birth Certificate", "purpose", "If the birth was not in a hospital"),
+      ],
+      sources: [
+        {
+          name: "UIDAI",
+          kind: "government",
+          page: "List of Acceptable Documents for Enrolment and Update",
+          section: "List I - Documents that may be presented to evidence Proof of Identity, Address, Relations",
+          url: "https://uidai.gov.in/images/commdoc/List_of_Supporting_Document_for_Aadhaar_Enrolment_and_Update.pdf",
+        },
+        {
+          name: "Sewa Setu, Government of Assam",
+          kind: "government",
+          page: "Birth Registration",
+          section: "Supporting Documents:",
+          url: "https://sewasetu.assam.gov.in/site/service-apply/birth-registration#:~:text=Supporting%20Documents",
+        },
+      ],
+    },
+  ),
+  P(
+    "add-family-ins",
+    {
+      cat: "Family & Life",
+      name: "Add family member to insurance",
+      blurb: "Spouse or child",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Passport", "Driving License", "Voter ID"]),
+        must("Address Proof", "address", ["Aadhaar Card", "Utility Bill", "Passport", "Driving License", "Ration Card"]),
+        must("Date of Birth Proof", "identity", ["Birth Certificate", "Aadhaar Card", "PAN Card", "Passport", "Voter ID", "School Leaving Certificate"]),
+        must("Passport Photos", "identity"),
+        may("Medical Reports", "qualification", "If asked by the insurer"),
+        may("Birth Certificate", "relationship", "If adding a newborn"),
+        may("Discharge Summary", "purpose", "If adding a newborn"),
+      ],
+      sources: [
+        {
+          name: "HDFC ERGO",
+          kind: "private",
+          page: "Family Health Insurance",
+          section: "What Are the Documents Required to Buy Family Health Insurance?",
+          url: "https://www.hdfcergo.com/health-insurance/family-health-insurance#:~:text=What%20Are%20the%20Documents%20Required",
+        },
+        {
+          name: "ICICI Lombard",
+          kind: "private",
+          page: "Family Health Insurance",
+          section: "Documents Required to Buy Family Health Insurance",
+          url: "https://www.icicilombard.com/health-insurance/family-health-insurance#:~:text=Documents%20Required%20to%20Buy",
+        },
+        {
+          name: "Star Health",
+          kind: "private",
+          page: "Health Insurance for Newborn Baby",
+          section: "How to Add a Newborn to Your Family Health Insurance?",
+          url: "https://www.starhealth.in/health-insurance/health-insurance-for-newborn/#:~:text=How%20to%20Add%20a%20Newborn",
+        },
+      ],
+    },
+  ),
+  P(
+    "will-prep",
+    {
+      cat: "Family & Life",
+      name: "Will preparation",
+      blurb: "Document your wishes",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Will", "purpose"),
+        may("Identity Proof", "identity", "If registering or depositing the will", ["Photo ID"]),
+      ],
+      sources: [
+        {
+          name: "Registration and Stamps Department, Telangana",
+          kind: "government",
+          page: "FAQs-Registration (Will)",
+          section: "Will (FAQ answers; no single heading, the answers sit in the registration FAQ list)",
+          url: "https://registration.telangana.gov.in/faqsRegistration.htm#:~:text=Attestation%20by%20two%20witnesses",
+        },
+        {
+          name: "Department of Registration and Stamps, Maharashtra",
+          kind: "government",
+          page: "Citizen's Charter",
+          section: "8. Deposit, Withdrawal and Opening of sealed cover of Will",
+          url: "https://grievanceigr.maharashtra.gov.in/pdf/Citizen_Charter_English.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "nominee-update",
+    {
+      cat: "Family & Life",
+      name: "Nominee updates",
+      blurb: "After life changes",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Nominee Form", "relationship"),
+        may("Insurance Policy", "ownership", "Asked by some insurers"),
+        may("Identity Proof", "identity", "Asked by some insurers"),
+        may("Marriage Certificate", "relationship", "If the change follows a marriage"),
+        may("Birth Certificate", "relationship", "If the new nominee is a child"),
+      ],
+      sources: [
+        {
+          name: "LIC of India",
+          kind: "public",
+          page: "Policy Conditions (Nomination)",
+          section: "Nomination:",
+          url: "https://licindia.in/policy-conditions#:~:text=Any%20change%20or%20cancellation%20of%20nomination",
+        },
+        {
+          name: "NSDL",
+          kind: "institution",
+          page: "Investor FAQ (Nomination)",
+          section: "Nomination: What is the procedure for appointing a nominee? / Can the nominee be changed?",
+          url: "https://nsdl.com/investor/investor-faq#:~:text=Nomination%20form%20needs%20to%20be%20filled%20up",
+        },
+      ],
+    },
+  ),
+  P(
+    "life-claim",
+    {
+      cat: "Family & Life",
+      name: "Life insurance claim",
+      blurb: "Beneficiary claim",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Claim Form", "purpose"),
+        must("Death Certificate", "relationship"),
+        must("Life Insurance", "ownership"),
+        must("Identity Proof", "identity"),
+        must("Address Proof", "address"),
+        may("Cancelled Cheque", "ownership", "Asked by some insurers", ["Bank Account Proof"]),
+        may("Passport Photos", "identity", "Asked by some insurers"),
+        may("Date of Birth Proof", "identity", "If age was not admitted in the policy"),
+        may("Legal Heir Certificate", "relationship", "If the policy has no nominee", ["Succession Certificate"]),
+        may("FIR Copy", "purpose", "If death was accidental or unnatural"),
+      ],
+      sources: [
+        {
+          name: "LIC of India",
+          kind: "public",
+          page: "Claims Settlement Requirements",
+          section: "Death Claims:",
+          url: "https://www.licindia.in/claims-settlement-requirements#:~:text=Death%20Claims",
+        },
+        {
+          name: "HDFC Life",
+          kind: "private",
+          page: "Claims",
+          section: "Documents Required",
+          url: "https://www.hdfclife.com/claims#:~:text=Documents%20Required",
+        },
+        {
+          name: "SBI Life",
+          kind: "private",
+          page: "How to file Life Insurance Claim Process and Required Documents",
+          section: "Submit the Required Documents",
+          url: "https://www.sbilife.co.in/blogs/life-insurance/life-insurance-claim-process#:~:text=Submit%20the%20Required%20Documents",
+        },
+      ],
+    },
+  ),
+  P(
+    "death-settle",
+    {
+      cat: "Family & Life",
+      name: "Settlements after a death",
+      blurb: "Accounts and assets",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Claim Form", "purpose"),
+        must("Death Certificate", "relationship"),
+        must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "Driving License", "Voter ID"]),
+        must("Address Proof", "address", ["Aadhaar Card", "Passport", "Driving License", "Voter ID"]),
+        may("Legal Heir Certificate", "relationship", "If there is no nominee or survivor", ["Declaration by Independent Person", "Succession Certificate"]),
+        may("Indemnity Bond", "purpose", "If there is no nominee or survivor"),
+        may("No Objection Certificate", "relationship", "If other legal heirs are not claiming"),
+        may("Bank Account Details", "ownership", "Asked by some banks"),
+      ],
+      sources: [
+        {
+          name: "Reserve Bank of India",
+          kind: "regulator",
+          page: "(Settlement of Claims in respect of Deceased Customers of Banks) Directions, 2025",
+          section: "G. Accounts with nominee(s)/ survivorship clause",
+          url: "https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=12901&Mode=0#:~:text=Accounts%20with%20nominee",
+        },
+        {
+          name: "State Bank of India",
+          kind: "public",
+          page: "Deceased Settlement",
+          section: "Documents required for settlement of deceased accounts - Bank Deposits:",
+          url: "https://sbi.bank.in/web/personal-banking/information-services/deceased-settlement#:~:text=Documents%20required%20for%20settlement",
+        },
+        {
+          name: "HDFC Bank",
+          kind: "private",
+          page: "Deceased Claim Process for Accounts and Deposits",
+          section: "Nomination based Claims",
+          url: "https://www.hdfc.bank.in/content/dam/hdfcbankpws/in/en/personal-banking/discover-products/our-corporate-commitment/Deceased_Claim_Process_CASA_and_Deposits.pdf#page=10",
+        },
+      ],
+    },
+  ),
+  P(
+    "legal-heir",
+    {
+      cat: "Family & Life",
+      name: "Legal heir certificate",
+      blurb: "Establish heirship",
+      basis: "institution",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Death Certificate", "relationship"),
+        must("Self Declaration of Legal Heirs", "relationship", ["Affidavit"]),
+        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Ration Card", "Voter ID", "Passport", "Driving License"]),
+        may("Address Proof", "address", "Asked by some offices", ["Aadhaar Card", "Passport", "Voter ID", "Ration Card", "Utility Bill", "Rental Agreement"]),
+        may("Marriage Certificate", "relationship", "Asked by some institutions", ["Passport", "Aadhaar Card"]),
+        may("Birth Certificate", "relationship", "Asked by some institutions", ["Transfer Certificate"]),
+        may("Passport Photos", "identity", "Asked by some institutions"),
+      ],
+      sources: [
+        {
+          name: "Chennai District, Government of Tamil Nadu",
+          kind: "government",
+          page: "eGovernance (e-Sevai services)",
+          section: "Required Documents for Applying:",
+          url: "https://chennai.nic.in/about-district/egovernance/#:~:text=Legal%20Heir%20Certificate",
+        },
+        {
+          name: "District North West, Govt of NCT of Delhi",
+          kind: "government",
+          page: "Surviving Member Certificate",
+          section: "Documents to be attached with the Application Form",
+          url: "https://dmnorthwest.delhi.gov.in/service/legal-heir-certificate/#:~:text=Documents%20to%20be%20attached",
+        },
+      ],
+    },
+  ),
+  P(
+    "succession",
+    {
+      cat: "Family & Life",
+      name: "Succession certificate",
+      blurb: "Court process pack",
+      basis: "convention",
+      needs: [
+        must("Death Certificate", "relationship"),
+        must("Legal Heir Certificate", "relationship"),
+        may("Property Deed", "ownership", "If listing property-linked debts or securities"),
+        may("Investment Statement", "ownership", "If claiming securities or deposits"),
+      ],
+    },
+  ),
+  P(
+    "pension",
+    {
+      cat: "Family & Life",
+      name: "Pension application",
+      blurb: "Retirement begins",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Pension Application Form", "purpose"),
+        must("Passport Photos", "identity"),
+        must("Specimen Signature", "identity"),
+        must("PAN Card", "identity"),
+        must("Bank Account Details", "ownership"),
+        may("Identity Proof", "identity", "For family members named for family pension"),
+        may("Date of Birth Proof", "identity", "For family members named for family pension"),
+        may("Descriptive Roll", "identity", "If claiming EPS pension from EPFO"),
+      ],
+      sources: [
+        {
+          name: "Department of Pension and Pensioners' Welfare",
+          kind: "government",
+          page: "Form 6-A, CCS (Pension) Rules 2021",
+          section: "List of additional Documents to be attached with Form 6-A",
+          url: "https://bhavishya.nic.in/Forms/pension_new_forms/Form_6A.pdf#page=7",
+        },
+        {
+          name: "EPFO",
+          kind: "government",
+          page: "Form 10-D (EPS) Instructions",
+          section: "17. List of documents to be enclosed and specified under Column No.17:",
+          url: "https://www.epfindia.gov.in/site_docs/PDFs/Downloads_PDFs/Form10D_Instructions_Eng.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "family-pension",
+    {
+      cat: "Family & Life",
+      name: "Family pension claim",
+      blurb: "Survivor benefits",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Claim Form", "purpose"),
+        must("Death Certificate", "relationship"),
+        must("Identity Proof", "identity"),
+        must("Relationship Proof", "relationship"),
+        must("Passport Photos", "identity"),
+        must("Specimen Signature", "identity"),
+        must("Bank Account Proof", "ownership", ["Cancelled Cheque"]),
+        may("Pension Order", "ownership", "If the deceased was already a pensioner"),
+        may("Date of Birth Proof", "identity", "If children are claimants", ["Birth Certificate", "School Leaving Certificate"]),
+        may("Income Proof", "income", "If the claimant is not the spouse", ["ITR Acknowledgement", "Income Certificate"]),
+      ],
+      sources: [
+        {
+          name: "Department of Telecommunications pension portal",
+          kind: "government",
+          page: "CCS (Pension) Rules 2021 Forms 4, 8, 10 and 12",
+          section: "List of Documents to be submitted with Form 10",
+          url: "https://dotpension.gov.in/WriteReadData/Home/PensionForms_Form4_Form8_Form10_Form12.pdf",
+        },
+        {
+          name: "EPFO",
+          kind: "government",
+          page: "Form 10-D (EPS) Instructions",
+          section: "17. List of documents to be enclosed and specified under Column No.17:",
+          url: "https://www.epfindia.gov.in/site_docs/PDFs/Downloads_PDFs/Form10D_Instructions_Eng.pdf",
+        },
+      ],
+    },
+  ),
+  P(
+    "first-30-days",
+    {
+      cat: "Family & Life",
+      name: "What the family needs in the first 30 days",
+      blurb: "After a death, before anything else",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Death Certificate", "relationship"),
+        must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "Driving License", "Voter ID"]),
+        must("Address Proof", "address"),
+        must("Claim Form", "purpose"),
+        must("Insurance Policy", "ownership"),
+        may("Cancelled Cheque", "ownership", "Asked by some insurers", ["Bank Account Proof"]),
+        may("Passport Photos", "identity", "Asked by some insurers"),
+        may("Legal Heir Certificate", "relationship", "If there is no nominee", ["Succession Certificate"]),
+        may("Will", "relationship", "If the deceased left a will"),
+      ],
+      sources: [
+        {
+          name: "Reserve Bank of India",
+          kind: "regulator",
+          page: "(Settlement of Claims in respect of Deceased Customers of Banks) Directions, 2025",
+          section: "G. Accounts with nominee(s)/ survivorship clause",
+          url: "https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=12901&Mode=0#:~:text=Accounts%20with%20nominee",
+        },
+        {
+          name: "LIC of India",
+          kind: "public",
+          page: "Claims Settlement Requirements",
+          section: "Death Claims:",
+          url: "https://www.licindia.in/claims-settlement-requirements#:~:text=Death%20Claims",
+        },
+        {
+          name: "HDFC Life",
+          kind: "private",
+          page: "Claims",
+          section: "Documents Required",
+          url: "https://www.hdfclife.com/claims#:~:text=Documents%20Required",
+        },
+      ],
+    },
+  ),
+  P(
+    "term-life",
+    {
+      cat: "Family & Life",
+      name: "Term life insurance",
+      blurb: "Buying cover",
+      basis: "convention",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "Voter ID", "Driving License"]),
+        must("Address Proof", "address", ["Aadhaar Card", "Passport", "Voter ID", "Driving License", "Utility Bill", "Bank Statement"]),
+        must("PAN Card", "identity"),
+        must("Income Proof", "income", ["Form 16", "Payslip", "Bank Statement", "ITR Acknowledgement"]),
+        must("Passport Photos", "identity"),
+        may("Medical Reports", "qualification", "If the insurer asks for medical tests", ["Lab Report"]),
+        may("Date of Birth Proof", "identity", "Asked by some insurers", ["Birth Certificate", "Transfer Certificate", "Migration Certificate", "Marriage Certificate"]),
+        may("Employment Offer", "income", "If recently employed or changed jobs"),
+      ],
+      sources: [
+        {
+          name: "HDFC Life",
+          kind: "private",
+          page: "Documents Required For Term Insurance Plan",
+          section: "What are the documents required to buy term insurance?",
+          url: "https://www.hdfclife.com/term-insurance-plans/documents-required-for-term-insurance#:~:text=What%20are%20the%20documents%20required",
+        },
+        {
+          name: "Canara HSBC Life Insurance",
+          kind: "public",
+          page: "Documents Required For Term Life Insurance",
+          section: "Documents Required For Term Life Insurance",
+          url: "https://www.canarahsbclife.com/blog/term-insurance/documents-required-for-term-insurance#:~:text=Documents%20Required%20For%20Term%20Life%20Insurance",
+        },
+      ],
+    },
+  ),
+  P(
+    "life-certificate",
+    {
+      cat: "Family & Life",
+      name: "Pensioner life certificate",
+      blurb: "Yearly, to keep the pension running",
+      basis: "authority",
+      reviewed: "2026-10-06",
+      needs: [
+        must("Aadhaar Card", "identity"),
+        may("Pension Order", "purpose", "For the pension payment order number"),
+        must("Bank Account Details", "ownership", ["Bank Account Proof"]),
+      ],
+      sources: [
+        {
+          name: "State Bank of India",
+          kind: "public",
+          page: "Digital Life Certificate (Jeevan Pramaan)",
+          section: "Life Certificate/Digital Life Certificate (Jeevan Pramaan)",
+          url: "https://sbi.bank.in/web/personal-banking/information-services/government-business/digital-life-certificate#:~:text=Digital%20Life%20Certificate",
+        },
+      ],
+    },
   ),
 ];
+
+/** Every pack with its review age, the longest unreviewed first. */
+const catalogueReview = (now: number = Date.now()) => {
+  const rows = EVENTS.map((e) => ({ id: e.id, name: e.name, cat: e.cat, ...e.staleness(now) }));
+  const age = (r: { days: number | null }) => (r.days === null ? Infinity : r.days);
+  rows.sort((a, b) => age(b) - age(a) || a.name.localeCompare(b.name));
+  return {
+    rows,
+    total: rows.length,
+    fresh: rows.filter((r) => r.state === "fresh").length,
+    overdue: rows.filter((r) => r.state !== "fresh"),
+  };
+};
 const DOC_VOCAB = [...new Set(EVENTS.flatMap((e) => e.reqs))].sort();
-const evalEvent = (ev: { reqs: string[] }, have: Set<string>, country = "IN") => {
+const evalEvent = (ev: { reqs: string[]; needs?: Need[] }, have: Set<string>, country = "IN") => {
   const rows = ev.reqs.map((r) => {
-    const via = resolveRequirement(r, have, country);
+    let via = resolveRequirement(r, have, country);
+    /* A published list often names what it accepts instead. Holding one of those is holding it. */
+    if (!via)
+      for (const a of ev.needs?.find((n) => n.doc === r)?.alt || []) {
+        via = resolveRequirement(a, have, country);
+        if (via) break;
+      }
     return { label: r, have: !!via, via };
   });
   const got = rows.filter((r) => r.have).length;
   return { rows, got, total: rows.length, score: Math.round((got / rows.length) * 100) };
+};
+
+/**
+ * Every pack in which this document meets a requirement: under its own name, through what it
+ * proves, or as an accepted alternative. It runs the same scoring the packs use, so a document can
+ * never be listed for a pack it does not move.
+ */
+const packsUsing = <T extends { reqs: string[]; needs?: Need[] }>(docType: string, packs: T[], country = "IN"): T[] => {
+  const only = new Set([docType]);
+  return packs.filter((p) => evalEvent(p, only, country).got > 0);
+};
+/** What one newly filed document changed: the packs it counts in, and those it completed. */
+const packGain = (docType: string, heldBefore: Set<string>, country = "IN") => {
+  const after = new Set(heldBefore).add(docType);
+  const used = packsUsing(docType, EVENTS, country);
+  const moved = used.filter((p) => evalEvent(p, after, country).got > evalEvent(p, heldBefore, country).got);
+  const ready = moved.filter((p) => evalEvent(p, after, country).score === 100);
+  return { used, moved, ready };
 };
 
 /* ── primitives ── */
@@ -1748,9 +4211,7 @@ function Home({ store, go, toast }: any) {
       [...expiring].sort((a: Doc, b: Doc) => +new Date(a.expiry!) - +new Date(b.expiry!))[0] ||
       store.docs.filter((d: Doc) => d.expiry).sort((a: Doc, b: Doc) => +new Date(a.expiry!) - +new Date(b.expiry!))[0];
     if (expDoc) {
-      const powered = EVENTS.filter((e) =>
-        e.reqs.some((r) => r === expDoc.docType || satisfiedBy(r, store.country || "IN").includes(expDoc.docType)),
-      );
+      const powered = packsUsing(expDoc.docType, EVENTS, store.country || "IN");
       if (powered.length > 1) {
         insights.push({
           icons: [FolderOpen, Plane],
@@ -2401,6 +4862,10 @@ type AnyPack = {
   reqs: string[];
   cat: string;
   source?: PackSource;
+  sources?: PackLink[];
+  needs?: Need[];
+  reviewed?: string;
+  staleness?: (now?: number) => Staleness;
   lastChecked?: string;
   conditional?: string[];
   custom?: boolean;
@@ -3152,8 +5617,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
   const upRef = useRef<HTMLInputElement>(null);
   const upReq = useRef<string>("");
   const otherPacks = (docType: string) =>
-    [...(EVENTS as any[]), ...(store.customPacks || [])]
-      .filter((p: any) => (p.reqs || []).includes(docType) && p.id !== ev.id)
+    packsUsing(docType, [...(EVENTS as any[]), ...(store.customPacks || [])], store.country || "IN")
+      .filter((p: any) => p.id !== ev.id)
       .map((p: any) => p.name);
   const memberName = (mid?: string) => store.members.find((m: Member) => m.id === mid)?.name || "Unassigned";
   /* A requirements list goes stale: consulates and registrars change what they ask for.
@@ -3195,6 +5660,9 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
       setChecking(true);
       try {
         const { data, source } = await getPackRequirements(query, store.country, force);
+        /* A catalogue pack always has its own list. A draft guessed from the pack's name is for a
+           pack being written from scratch, and is never shown in place of one. */
+        if (source === "fallback" && !ev.custom) return;
         setLive({
           reqs: data.requirements.map((r: any) => (r.ontology && r.ontology !== "Other" ? r.ontology : r.item)),
           sources: data.sources || [],
@@ -3218,6 +5686,9 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
     if (!ev.custom && (!held || held.stale)) refresh();
   }, []);
   const skipped: string[] = store.packSkips?.[ev.id] || [];
+  /* Links are shown only where each was opened and its list compared: one for a pack an authority
+     sets, up to three across public and private providers where no single body does. */
+  const curatedLinks: PackLink[] = (ev.sources || []).slice(0, 3);
   const isHome = (store.country || "IN") === "IN";
   /* A list written for this country, with a published source behind it. Shown immediately so a
      pack opens with a real answer, and superseded by the live lookup when that returns. */
@@ -3432,25 +5903,41 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                       {/* A source appears only where one has been fetched and checked. Elsewhere
                           the pack says plainly that the list is conventional, which is truer than
                           a citation that collapses when tapped. */}
-                      {ev.source?.basis === "authority" && ev.source.url ? (
+                      {curatedLinks.length > 0 ? (
                         <>
                           <span style={{ display: "block" }}>
-                            <span style={{ color: T.faint }}>Source</span>{" "}
-                            <a
-                              href={ev.source.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              style={{ color: SEM.action, fontWeight: 700, textDecoration: "none" }}
-                            >
-                              {ev.source.name}
-                            </a>
+                            <span style={{ color: T.faint }}>
+                              {ev.source?.basis === "authority" && ev.source.url ? "Source" : "Published lists"}
+                            </span>
+                            {curatedLinks.map((l: PackLink) => (
+                              <a
+                                key={l.url}
+                                href={l.url}
+                                target="_blank"
+                                rel="noreferrer noopener"
+                                title={[l.page, l.section].filter(Boolean).join(": ") || l.name}
+                                style={{
+                                  display: "block",
+                                  marginTop: 4,
+                                  color: SEM.action,
+                                  fontWeight: 700,
+                                  textDecoration: "none",
+                                }}
+                              >
+                                {l.name}
+                              </a>
+                            ))}
                           </span>
-                          <span style={{ display: "block", marginTop: 4 }}>
+                          <span style={{ display: "block", marginTop: 8 }}>
                             <span style={{ color: T.faint }}>Last checked</span>{" "}
                             <b style={{ color: T.text, fontWeight: 500 }}>
-                              {fmtDate(live.lastChecked || ev.source.checked || "")}
+                              {fmtDate(live.lastChecked || ev.reviewed || ev.source?.checked || "")}
                             </b>
+                            {ev.staleness?.().state === "stale" && <span style={{ color: SEM.warning }}> · review due</span>}
                           </span>
+                          {ev.source?.basis !== "authority" && (
+                            <span style={{ display: "block", marginTop: 8 }}>{unsourcedLine(ev)}</span>
+                          )}
                         </>
                       ) : (
                         <span style={{ display: "block" }}>{unsourcedLine(ev)}</span>
@@ -3562,7 +6049,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               .map((r) => {
                 const d = satisfyingDoc(r.label, store.docs, store.country);
                 const isOpen = expanded === r.label;
-                const reuse = otherPacks(r.label);
+                const reuse = otherPacks(d?.docType || r.label);
                 return (
                   <div key={r.label} style={{ borderTop: `1px solid ${T.border}` }}>
                     <button
@@ -3683,7 +6170,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 .filter((r) => !r.have)
                 .map((r) => {
                   const menuOpen = addFor === r.label;
-                  const cond = (ev.conditional || []).includes(r.label);
+                  const need: Need | undefined = (ev.needs || []).find((n: Need) => n.doc === r.label);
+                  const cond = need ? need.need === "conditional" : (ev.conditional || []).includes(r.label);
                   return (
                     <div key={r.label} style={{ borderTop: `1px solid ${T.border}` }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" }}>
@@ -3704,7 +6192,12 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                           {r.label}
                           {cond && (
                             <span style={{ display: "block", fontSize: 12, color: T.faint }}>
-                              May be required depending on your situation
+                              {need?.when || "May be required depending on your situation"}
+                            </span>
+                          )}
+                          {!!need?.alt.length && (
+                            <span style={{ display: "block", fontSize: 12, color: T.faint }}>
+                              Or {need.alt.slice(0, 4).join(", ")}
                             </span>
                           )}
                         </span>
@@ -3766,8 +6259,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               const input = e.currentTarget;
               const files = e.target.files;
               if (files?.length && upReq.current) {
-                await store.addFiles(files, "you", { docType: upReq.current });
-                toast(`${upReq.current} added to your archive`);
+                store.addFiles(files, "you", { docType: upReq.current });
               }
               input.value = "";
               setAddFor(null);
@@ -4889,7 +7381,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
   const Ic = CAT_META[d.category as Category].icon;
   const col = CAT_META[d.category as Category].color;
   const nameOf = (mid?: string) => store.members.find((m: Member) => m.id === mid)?.name || "Unassigned";
-  const usedIn = EVENTS.filter((e) => e.reqs.includes(d.docType));
+  const usedIn = packsUsing(d.docType, EVENTS, store.country || "IN");
   const holdings = store.holdings.filter((h: Holding) => h.docId === d.id);
   const txs = store.transactions.filter((t: Transaction) => t.docId === d.id);
   const days = d.expiry ? daysTo(d.expiry) : null;
@@ -8216,9 +10708,36 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
   );
 }
 
+/* Which packs have gone longest without being compared with their sources. */
+function CatalogueReview({ Overlay }: any) {
+  const review = useMemo(() => catalogueReview(), []);
+  return (
+    <Overlay title="Catalogue review" aria-label="Catalogue review">
+      <div style={{ fontSize: 14, color: T.text }}>
+        {review.fresh} of {review.total} packs checked in the last year
+      </div>
+      {review.overdue.length > 0 && (
+        <div style={{ marginTop: 12, borderTop: `1px solid ${T.border}` }}>
+          {review.overdue.map((r) => (
+            <div
+              key={r.id}
+              style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: `1px solid ${T.border}`, fontSize: 14 }}
+            >
+              <span style={{ flex: 1, color: T.text, minWidth: 0 }}>{r.name}</span>
+              <span style={{ color: r.state === "stale" ? SEM.warning : T.muted, fontSize: 12, whiteSpace: "nowrap" }}>
+                {r.state === "never" ? "Never checked" : `${r.days} days ago`}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Overlay>
+  );
+}
+
 function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, onAccountUpdated }: any) {
   const [delWord, setDelWord] = useState("");
-  const [modal, setModal] = useState<null | "whatsnew" | "faq" | "feedback" | "about" | "delete" | "privacy" | "email" | "password">(null);
+  const [modal, setModal] = useState<null | "whatsnew" | "faq" | "feedback" | "about" | "catalogue" | "delete" | "privacy" | "email" | "password">(null);
   const [f1, setF1] = useState("");
   const [f2, setF2] = useState("");
   const [f3, setF3] = useState("");
@@ -8670,9 +11189,16 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
             >
               Design system
             </button>
+            <button
+              onClick={() => setModal("catalogue")}
+              style={{ background: "none", border: "none", color: T.faint, fontSize: 12, cursor: "pointer", padding: 0, textDecoration: "underline", marginLeft: 8 }}
+            >
+              Catalogue review
+            </button>
           </p>
         </Overlay>
       )}
+      {modal === "catalogue" && <CatalogueReview Overlay={Overlay} />}
       {modal === "email" && (
         <Overlay title="Change email" aria-label="Change email">
           <input value={f1} onChange={(e) => setF1(e.target.value)} placeholder="New email" style={inp} />
@@ -9217,6 +11743,38 @@ export default function App() {
     (toast as any)._t = window.setTimeout(() => setToastMsg(null), 2400);
   };
   const go = (r: string) => setRoute(r);
+  /* The moment a document is filed, or its type becomes known, say where it counts. One watcher
+     for every way a document arrives, so no upload path can forget to. */
+  const filed = useRef<{ scope: string; types: Map<string, string> } | null>(null);
+  useEffect(() => {
+    const scope = `${store.dataMode}`;
+    const types = new Map<string, string>(store.docs.map((d: Doc) => [d.id, d.docType]));
+    const before = filed.current;
+    filed.current = { scope, types };
+    if (!before || before.scope !== scope) return;
+    const fresh = store.docs.filter((d: Doc) => before.types.get(d.id) !== d.docType);
+    if (!fresh.length) return;
+    const heldBefore = new Set<string>(
+      store.docs.filter((d: Doc) => !fresh.includes(d)).map((d: Doc) => d.docType),
+    );
+    const used = new Set<string>();
+    const ready = new Set<string>();
+    let moved = 0;
+    for (const d of fresh) {
+      const g = packGain(d.docType, heldBefore, store.country || "IN");
+      g.used.forEach((p) => used.add(p.id));
+      g.ready.forEach((p) => ready.add(p.id));
+      moved += g.moved.length;
+      heldBefore.add(d.docType);
+    }
+    if (!used.size) return;
+    const what = fresh.length === 1 ? fresh[0].docType : `${fresh.length} documents`;
+    const packs = (n: number) => `${n} ${n === 1 ? "pack" : "packs"}`;
+    toast(
+      `${what}: used in ${packs(used.size)}` +
+        (ready.size ? `, ${ready.size} now ready` : moved ? `, ${packs(moved)} closer to ready` : ""),
+    );
+  }, [store.docs]);
   // Server HTML and the first client render must agree (both dark); the saved theme is applied one frame later,
   // which makes React repaint every themed element instead of keeping stale server attributes after hydration.
   applyTheme(themeReady ? store.theme : "dark");
