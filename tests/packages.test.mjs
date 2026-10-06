@@ -176,5 +176,96 @@ t("nothing references a pack that no longer exists", () => {
   for (const m of scope.matchAll(/"([a-z0-9-]+)":\s*"[A-Z]{2}"/g))
     assert.ok(ids.has(m[1]), `pack-scope names ${m[1]}, which is not in the catalogue`);
 });
+
+/* ── the hundred-pack baseline: structured requirements, verified links, staleness ── */
+const catalogue = app.slice(app.indexOf("const EVENTS = ["), app.indexOf("const catalogueReview"));
+const CAPS = ["identity", "address", "income", "ownership", "relationship", "qualification", "purpose"];
+const packBlocks = catalogue.split(/\n  P\(\n/).slice(1);
+t("the catalogue holds exactly one hundred packs", () => {
+  const ids = [...catalogue.matchAll(/P\(\s*\n\s*"([^"]+)",/g)].map((m) => m[1]);
+  assert.equal(ids.length, 100);
+});
+t("the duplicate packs stay merged", () => {
+  assert.ok(!/"pcc"/.test(catalogue), "police-clearance is the one police clearance pack");
+  assert.ok(!/"loan-closure"/.test(catalogue), "loan-lien-release is the one loan closure pack");
+});
+t("a pack is built by name, never by position", () => {
+  assert.ok(/const P = \(id: string, spec: PackSpec\) =>/.test(app), "a positional constructor put a source in the icon slot once");
+  assert.ok(/reqs: spec\.needs\.map\(\(n\) => n\.doc\)/.test(app), "the checklist is derived from the requirements, not written twice");
+});
+t("every requirement states what it proves", () => {
+  const made = [...catalogue.matchAll(/\b(?:must|may)\("[^"]+", "([a-z]+)"/g)].map((m) => m[1]);
+  assert.ok(made.length > 400, "requirements must be structured, not bare strings");
+  for (const c of made) assert.ok(CAPS.includes(c), `${c} is not a capability`);
+  assert.equal([...catalogue.matchAll(/\b(?:must|may)\(/g)].length, made.length, "a requirement is missing its capability");
+});
+t("a conditional requirement says when it applies", () => {
+  const mays = [...catalogue.matchAll(/\bmay\("[^"]+", "[a-z]+", "([^"]*)"/g)];
+  assert.equal(mays.length, [...catalogue.matchAll(/\bmay\(/g)].length);
+  for (const m of mays) assert.ok(m[1].trim().length > 3, "a condition is empty");
+});
+t("every pack has at least one mandatory requirement", () => {
+  for (const block of packBlocks) assert.ok(/\bmust\(/.test(block), block.slice(0, 40));
+});
+t("a link lands on the list, never on a home page", () => {
+  const urls = [...catalogue.matchAll(/url: "([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(urls.length > 150);
+  for (const u of urls) {
+    const x = new URL(u);
+    assert.equal(x.protocol, "https:", u);
+    assert.ok(x.pathname.length > 1 || x.hash.startsWith("#:~:text="), `${u} is a home page`);
+  }
+});
+t("no pack shows more than three links", () => {
+  assert.ok(/\(ev\.sources \|\| \[\]\)\.slice\(0, 3\)/.test(app));
+  for (const block of packBlocks) assert.ok((block.match(/url: "/g) || []).length <= 3);
+});
+t("a pack reports its own staleness", () => {
+  assert.ok(/REVIEW_EVERY_DAYS = 365/.test(app));
+  assert.ok(/staleness: \(now\?: number\) => packStaleness\(spec\.reviewed, now\)/.test(app));
+  assert.ok(/state: "never", days: null/.test(app), "a pack never reviewed must say so, not pass as fresh");
+});
+t("the catalogue can list which packs are overdue", () => {
+  assert.ok(/const catalogueReview = /.test(app));
+  assert.ok(/Catalogue review/.test(app), "the list must be reachable in the app");
+});
+t("a reviewed date is never written without a link behind it", () => {
+  for (const block of packBlocks) assert.equal(/reviewed: "/.test(block), /sources: \[/.test(block), block.slice(0, 40));
+});
+t("a draft guessed from a pack's name never replaces a catalogue list", () => {
+  assert.ok(/source === "fallback" && !ev\.custom\) return;/.test(app));
+  assert.ok(!/curatedWins/.test(app), "every pack is looked up monthly and served from the cache, reviewed or not");
+});
+t("one function says where a document counts", () => {
+  assert.ok(/const packsUsing = /.test(app));
+  assert.ok(/packs\.filter\(\(p\) => evalEvent\(p, only, country\)\.got > 0\)/.test(app), "it must run the packs' own scoring");
+  assert.ok(!/e\.reqs\.includes\(d\.docType\)/.test(app), "an exact-name match misses every pack that asks for what the document proves");
+  assert.ok(/const usedIn = packsUsing\(/.test(app));
+});
+t("a new document says where it counts the moment it lands", () => {
+  assert.ok(/const packGain = /.test(app));
+  assert.ok(/used in \$\{packs\(used\.size\)\}/.test(app));
+  assert.ok(/\}, \[store\.docs\]\);/.test(app), "the watcher follows the vault, not any one upload button");
+});
+t("a document is in the vault before it is read or encrypted", () => {
+  const add = store.slice(store.indexOf("const addFiles = useCallback"), store.indexOf("const updateDoc = useCallback"));
+  assert.ok(add.indexOf("persist();") < add.indexOf("await ensureVaultReady()"), "nothing on screen waits for the slow steps");
+  assert.ok(add.indexOf("persist();") < add.indexOf("await safeOcr("));
+  assert.ok(/classifyContent\(file\.name, ""\)/.test(add), "filed from its name at once");
+});
+t("reading the page never overwrites what the user already set", () => {
+  assert.ok(/if \(!fixed && !edited\) next\[k\] = /.test(store));
+});
+t("a document counts under the name it was filed with", () => {
+  const onto = readFileSync(join(root, "src/lib/ontology.ts"), "utf8");
+  assert.ok(/"Driving License": \["Driver's License"\]/.test(onto));
+  assert.ok(/const own = heldAs\(requirement, held\)/.test(onto));
+});
+t("a document accepted in place of another counts as held", () => {
+  assert.ok(/ev\.needs\?\.find\(\(n\) => n\.doc === r\)\?\.alt/.test(app));
+});
+t("a conditional requirement shows its condition, not a stock phrase", () => {
+  assert.ok(/need\?\.when \|\| "May be required depending on your situation"/.test(app));
+});
 console.log(fails ? `\n${fails} FAILED` : "\nall passed");
 process.exit(fails ? 1 : 0);
