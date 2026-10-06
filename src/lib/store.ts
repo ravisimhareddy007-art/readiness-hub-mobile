@@ -744,50 +744,81 @@ export function useStore() {
     };
   }, []);
 
+  /* A document exists the moment it is chosen. It is filed from its name at once, so every pack
+     that can use it shows it and scores it without waiting; encryption and reading the page then
+     run behind it and sharpen the entry. Nothing on screen waits for the slow steps. */
   const addFiles = useCallback(async (files: FileList | File[], memberId?: string, override?: Partial<Doc>) => {
-    await ensureVaultReady();
-    const created: Doc[] = [];
-    const newLabs: LabLog[] = [];
-    const newMeds: Medication[] = [];
-    const newReminders: Reminder[] = [];
-    for (const file of Array.from(files)) {
+    const picked = Array.from(files).map((file) => {
       const key = "f_" + Math.random().toString(36).slice(2) + Date.now();
       const sizeKB = Math.max(1, Math.round(file.size / 1024));
-      const text = await safeOcr(file, file.type || "", sizeKB);          // on-device OCR
-      const c = classifyContent(file.name, text);                        // content, else filename
-      const recipients = recipientsFor(c.category, state.members);       // Health=family, else owner
-      let meta: DocCrypto | undefined;
-      try { meta = await putEncrypted(key, file, recipients); } catch {} // encrypt on write
+      const guess = classifyContent(file.name, "");                      // from the name alone: instant
       const base: Doc = {
         id: key,
         name: file.name,
-        category: c.category,
-        docType: c.docType,
-        medType: c.medType,
+        category: guess.category,
+        docType: guess.docType,
+        medType: guess.medType,
         source: "Upload",
         mime: file.type || "application/octet-stream",
         sizeKB,
         addedAt: new Date().toISOString(),
-        expiry: c.expiry,
-        memberId: memberId || (c.category === "Medical" ? undefined : "you"),
+        expiry: guess.expiry,
+        memberId: memberId || (guess.category === "Medical" ? undefined : "you"),
         fileKey: key,
-        iv: meta?.iv,
-        wrappedKeys: meta?.wrappedKeys,
-        enc: !!meta,
+        enc: false,
       };
-const doc: Doc = { ...base, ...override, id: key, fileKey: key };
-      created.push(doc);
-      state = { ...state, docs: [doc, ...state.docs] };
-    }
-    if (newLabs.length || newMeds.length || newReminders.length)
-      state = {
-        ...state,
-        labs: [...newLabs, ...state.labs],
-        meds: [...state.meds, ...newMeds],
-        reminders: [...state.reminders, ...newReminders],
-      };
+      const doc: Doc = { ...base, ...override, id: key, fileKey: key };
+      return { file, key, sizeKB, guess, first: doc };
+    });
+    /* Same order as before: the last file chosen sits first. */
+    state = { ...state, docs: [...picked.map((p) => p.first).reverse(), ...state.docs] };
     persist();
-    return created;
+
+    /* Sharpen one entry without overwriting anything the user, or the caller, has already set. */
+    const refine = (key: string, first: Doc, patch: Partial<Doc>) => {
+      const cur = state.docs.find((d) => d.id === key);
+      if (!cur) return;
+      const next: any = { ...cur };
+      for (const k of Object.keys(patch) as (keyof Doc)[]) {
+        const fixed = override && k in override;
+        const edited = (cur as any)[k] !== (first as any)[k];
+        if (!fixed && !edited) next[k] = (patch as any)[k];
+      }
+      state = { ...state, docs: state.docs.map((d) => (d.id === key ? next : d)) };
+      persist();
+    };
+    const seal = async (key: string, file: File, category: Category) => {
+      try {
+        const meta: DocCrypto = await putEncrypted(key, file, recipientsFor(category, state.members));
+        if (!state.docs.some((d) => d.id === key)) return;
+        state = {
+          ...state,
+          docs: state.docs.map((d) => (d.id === key ? { ...d, iv: meta.iv, wrappedKeys: meta.wrappedKeys, enc: true } : d)),
+        };
+        persist();
+      } catch {}
+    };
+
+    await ensureVaultReady();
+    for (const p of picked) {
+      if (!state.docs.some((d) => d.id === p.key)) continue;              // removed while it was being read
+      await seal(p.key, p.file, p.guess.category);                        // encrypt on write
+      const text = await safeOcr(p.file, p.file.type || "", p.sizeKB);    // on-device OCR
+      if (!text) continue;
+      const c = classifyContent(p.file.name, text);                       // content, else filename
+      /* Health records are shared with the family, everything else stays with the owner, so a page
+         that turns out to be medical is sealed again for the right people. */
+      if ((c.category === "Medical") !== (p.guess.category === "Medical")) await seal(p.key, p.file, c.category);
+      refine(p.key, p.first, {
+        category: c.category,
+        docType: c.docType,
+        medType: c.medType,
+        expiry: c.expiry,
+        ...(memberId ? {} : { memberId: c.category === "Medical" ? undefined : "you" }),
+      });
+    }
+    const ids = new Set(picked.map((p) => p.key));
+    return state.docs.filter((d) => ids.has(d.id));
   }, []);
   const updateDoc = useCallback((docId: string, patch: Partial<Doc>) => {
     state = { ...state, docs: state.docs.map((d) => (d.id === docId ? { ...d, ...patch } : d)) };
