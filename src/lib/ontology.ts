@@ -118,18 +118,40 @@ export function inferOntology(requirement: string): string | null {
   return null;
 }
 
+/* The same document under the name it is filed with. A page read as a "Driver's License" is the
+   "Driving License" a pack asks for; without this it would sit in the vault and count for nothing. */
+const SAME_AS: Record<string, string[]> = {
+  "Driving License": ["Driver's License"],
+  "Rental Agreement": ["Lease Agreement"],
+  "Vehicle Insurance": ["Auto Insurance"],
+  "Property Tax Receipt": ["Property Tax"],
+};
+/** The held document type that is this document, under either name. */
+function heldAs(type: string, held: Set<string>): string | null {
+  if (held.has(type)) return type;
+  return (SAME_AS[type] || []).find((a) => held.has(a)) || null;
+}
+
 /**
  * Which document the user holds that meets this requirement, if any.
  * Tries the exact type, then the country's ontology, then what the wording implies. The last step
  * is what stops a live-researched item from being permanently unsatisfiable.
  */
 export function resolveRequirement(requirement: string, held: Set<string>, country: string): string | null {
-  if (held.has(requirement)) return requirement;
-  for (const t of satisfiedBy(requirement, country)) if (held.has(t)) return t;
+  const own = heldAs(requirement, held);
+  if (own) return own;
+  for (const t of satisfiedBy(requirement, country)) {
+    const via = heldAs(t, held);
+    if (via) return via;
+  }
   const inferred = inferOntology(requirement);
   if (inferred && inferred !== requirement) {
-    if (held.has(inferred)) return inferred;
-    for (const t of satisfiedBy(inferred, country)) if (held.has(t)) return t;
+    const direct = heldAs(inferred, held);
+    if (direct) return direct;
+    for (const t of satisfiedBy(inferred, country)) {
+      const via = heldAs(t, held);
+      if (via) return via;
+    }
   }
   return null;
 }
