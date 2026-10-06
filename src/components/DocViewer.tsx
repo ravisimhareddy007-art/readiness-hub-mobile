@@ -377,7 +377,7 @@ export default function DocViewer({ doc, store, onClose, onAddToWealth, onCorrec
             <X size={16} />
           </button>
         </div>
-        <div style={{ flex: 1, overflow: "auto", background: "var(--lpv-bg)", padding: 16 }}>
+        <div style={{ flex: 1, minHeight: 0, overflow: "auto", background: "var(--lpv-bg)", padding: 16 }}>
           {mode === "loading" && (
             <div style={{ color: "var(--lpv-muted)", fontSize: 14, padding: 20, textAlign: "center" }}>
               Opening…

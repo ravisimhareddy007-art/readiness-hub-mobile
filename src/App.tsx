@@ -158,8 +158,10 @@ body{background:var(--lpv-bg)}
 @media(max-width:760px){.lp-main{padding:16px 14px 30px}}
 .lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(5,1fr);gap:0;background:var(--lpv-barbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--lpv-border);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
 .lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:14px;font-size:12px;margin:0 3px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.lp-scrim{position:fixed;inset:0;z-index:65;background:var(--lpv-scrim)}
-.lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up 280ms cubic-bezier(.2,.9,.3,1.08)}
+.lp-scrim{position:fixed;inset:0;z-index:65;background:var(--lpv-scrim);overscroll-behavior:contain;touch-action:none}
+/* While any sheet or overlay is open the page behind must not scroll. */
+body:has(.lp-scrim),body:has(.lp-overlay),body:has(.lh-overlay){overflow:hidden}
+.lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up 280ms cubic-bezier(.2,.9,.3,1.08);max-height:86vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:var(--lpv-border);margin:4px auto 10px}
 .lp-grabonly{display:none}
 @keyframes lp-spin{to{transform:rotate(360deg)}}
@@ -3992,7 +3994,7 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
             marginBottom: 8,
           }}
         />
-        <div style={{ flex: 1, overflowY: "auto", border: `1px solid ${T.border}`, borderRadius: 12 }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", border: `1px solid ${T.border}`, borderRadius: 12 }}>
           {list.length === 0 ? (
             <div style={{ padding: 16, fontSize: 14, color: T.faint }}>No documents match.</div>
           ) : (
@@ -4998,7 +5000,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
           </button>
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "4px 20px 20px" }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "4px 20px 20px" }}>
           {d.expiry && (
             <div
               style={{
@@ -7734,7 +7736,7 @@ function EstateSheet({ store, onClose, toast }: any) {
           </button>
         </div>
         <div
-          style={{ flex: 1, overflow: "auto", background: "#eef0f3", borderRadius: 12, padding: 12 }}
+          style={{ flex: 1, minHeight: 0, overflow: "auto", background: "#eef0f3", borderRadius: 12, padding: 12 }}
           dangerouslySetInnerHTML={{ __html: html }}
         />
         <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
@@ -9548,7 +9550,7 @@ export default function App() {
               )}
             </div>
           </div>
-          <div style={{ flex: 1, overflowY: "auto" }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
             {query.trim() ? (
               <SearchResults
                 store={store}

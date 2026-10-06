@@ -1907,7 +1907,7 @@ function SheetModal({ title, onClose, html, onExport, onPrint, primary }: any) {
             <X size={16} />
           </button>
         </div>
-        <div className="lh-preview" style={{ flex: 1, overflow: "auto" }} dangerouslySetInnerHTML={{ __html: html }} />
+        <div className="lh-preview" style={{ flex: 1, minHeight: 0, overflow: "auto" }} dangerouslySetInnerHTML={{ __html: html }} />
         <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
           <button
             className={primary ? "lh-btn" : "lh-btn-g"}
@@ -2784,7 +2784,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                 placeholder="Search doctors, specialisations, hospitals"
               />
             </div>
-            <div style={{ flex: 1, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
               {(["doctor", "specialisation", "hospital", "general"] as const).map((kind) => {
                 const group = targets
                   .map((t, i) => ({ t, i }))
@@ -2894,7 +2894,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
           </>
         )}
         {!picking && (
-        <div style={{ flex: 1, minHeight: 168, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
           {packDocs.length === 0 ? (
             <div style={{ padding: 20, fontSize: 14, color: C.faint }}>
               No records yet. The cover sheet still travels.
@@ -3102,11 +3102,11 @@ const CSS = () => `
 .lh-lbl{font-size:12px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};margin-bottom:5px}
 .lh-in{width:100%;background:${C.panel2};border:1px solid ${C.border};border-radius:10px;padding:11px;min-height:44px;color:${C.text};font-size:16px;outline:none;font-family:inherit}
 .lh-in:focus{border-color:${C.action}}
-.lh-overlay{position:fixed;inset:0;z-index:72;background:var(--lpv-scrim);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px}
-.lh-modal{background:var(--lpv-panel);border:1px solid ${C.border};border-radius:18px;width:min(460px,100%);padding:22px;max-height:90vh;overflow:auto}
+.lh-overlay{position:fixed;inset:0;z-index:72;background:var(--lpv-scrim);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px;overscroll-behavior:contain}
+.lh-modal{background:var(--lpv-panel);border:1px solid ${C.border};border-radius:18px;width:min(460px,100%);padding:22px;max-height:90vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 @media(max-width:767px){
 .lh-overlay{align-items:flex-end;padding:0}
-.lh-modal{width:100% !important;max-width:100% !important;max-height:88vh;border-radius:24px 24px 0 0;border-bottom:0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+.lh-modal{width:100% !important;max-width:100% !important;max-height:88vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:24px 24px 0 0;border-bottom:0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
 .lh-modal::before{content:"";display:block;width:38px;height:4px;border-radius:99px;background:${C.border};margin:0 auto 14px}
 }
 .lh-preview{background:#f3f4f6;border-radius:10px;padding:10px}
