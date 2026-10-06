@@ -327,6 +327,8 @@ const SET_BY_LENDERS = new Set(["homeloan"]);
 const SET_BY_INSURERS = new Set(["home-ins", "travel-ins", "term-life", "add-family-ins", "life-claim", "nominee-update"]);
 const unsourcedLine = (p: { id?: string; cat?: string; source?: PackSource }) => {
   if (p.source?.basis === "institution") return "Your institution sets its own list. This is the common core.";
+  /* A landlord, not a state office, decides what a tenant is asked for. */
+  if (p.id === "rent-tenant" || p.id === "rent-landlord") return "Commonly required. Confirm with whoever is asking.";
   const cat = SET_BY_LENDERS.has(p.id || "") ? "Money & Tax" : SET_BY_INSURERS.has(p.id || "") ? "Health" : p.cat;
   switch (cat) {
     case "Money & Tax":
@@ -2982,21 +2984,13 @@ const EVENTS = [
       cat: "Home & Property",
       name: "Renting a home",
       blurb: "Tenant pack",
-      basis: "institution",
-      reviewed: "2026-10-06",
+      basis: "convention",
       needs: [
+        must("Identity Proof", "identity"),
+        must("Passport Photos", "identity"),
+        must("Employment Proof", "income"),
+        must("Payslip", "income"),
         must("Rental Agreement", "purpose"),
-        must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Passport"]),
-        may("Passport Photos", "identity", "Asked by some institutions"),
-      ],
-      sources: [
-        {
-          name: "Revenue Department, Govt of NCT of Delhi",
-          kind: "government",
-          page: "FAQs (registration of documents)",
-          section: "Document required to be registered ( in duplicate)",
-          url: "https://revenue.delhi.gov.in/faqs#:~:text=Document%20required%20to%20be%20registered",
-        },
       ],
     },
   ),
@@ -3006,22 +3000,13 @@ const EVENTS = [
       cat: "Home & Property",
       name: "Renting out property",
       blurb: "Landlord pack",
-      basis: "institution",
-      reviewed: "2026-10-06",
+      basis: "convention",
       needs: [
+        must("Property Ownership Proof", "ownership"),
+        must("Property Tax Receipt", "ownership"),
+        must("Identity Proof", "identity"),
         must("Rental Agreement", "purpose"),
-        must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Passport"]),
-        may("Passport Photos", "identity", "Asked by some institutions"),
-        may("No Objection Certificate", "purpose", "If the property is leasehold"),
-      ],
-      sources: [
-        {
-          name: "Revenue Department, Govt of NCT of Delhi",
-          kind: "government",
-          page: "FAQs (registration of documents)",
-          section: "Document required to be registered ( in duplicate)",
-          url: "https://revenue.delhi.gov.in/faqs#:~:text=Document%20required%20to%20be%20registered",
-        },
+        must("Utility Bill", "address"),
       ],
     },
   ),
