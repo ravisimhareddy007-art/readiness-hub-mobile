@@ -5617,7 +5617,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               </>
             ) : (
               <span>
-                {checking
+                {checking && !curatedLinks.length
                   ? "Checking published sources…"
                   : ev.custom
                     ? `${ev.builtBy === "lookup" ? "Looked up" : "Written by you"}${packCountry ? ` for ${countryName(packCountry)}` : ""}`
@@ -5679,7 +5679,9 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 </>
               ) : (
                 <span style={{ flex: "1 1 auto", lineHeight: 1.55 }}>
-                  {checking ? (
+                  {/* The pack's own links are known the moment it opens, so they are shown at once. Only a
+                      pack with no links of its own has anything to wait for. */}
+                  {checking && !curatedLinks.length ? (
                     "Checking published sources…"
                   ) : (
                     <>
