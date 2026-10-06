@@ -13,6 +13,9 @@ export const INDIA_ONLY = new Set([
   "id-update", "voter-id", "domicile-cert", "income-cert", "caste-cert",
   // Indian tax, retirement and savings products
   "tax", "demat", "nps", "pf-transfer", "epf-withdraw", "mf-kyc",
+  "tax-proofs", "small-savings",
+  // Indian identity and pension instruments added with the hundred-pack baseline
+  "child-aadhaar", "life-certificate",
   // Indian employment and business instruments
   "gst-reg", "prof-reg", "gratuity", "loan-lien-release", "govt-job",
   // Indian property instruments
