@@ -262,6 +262,23 @@ ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
   else console.log("ok   readiness colour has one source");
 }
 
+// A flex child does not shrink below its content without min-height:0, so overflow:auto never
+// engages, the panel grows past the sheet and the touch scroll falls through to the page behind.
+{
+  const hits = [];
+  for (const p of all) {
+    const src = readFileSync(p, "utf8");
+    const file = p.split(sep).pop();
+    for (const m of src.matchAll(/\{ flex: 1,(?![^}]*minHeight: 0)[^}]*overflow(?:Y)?: "auto"/g))
+      hits.push(`${file}: a flex:1 scroll container without minHeight:0`);
+    if (/^\.lp-sheet\{(?![^}]*overscroll-behavior)/m.test(src))
+      hits.push(`${file}: .lp-sheet scrolls the page behind it`);
+  }
+  const uniq = [...new Set(hits)];
+  if (uniq.length) { status = 1; console.log(`FAIL scroll containers (${uniq.length})`); uniq.forEach((h) => console.log("  " + h)); }
+  else console.log("ok   scroll containers");
+}
+
 step("release blockers (listed, not failing yet)");
 let dev = 0;
 for (const p of all) readFileSync(p, "utf8").split("\n").forEach((l, i) => { if (/DEV ONLY/.test(l)) { dev++; console.log(`  ${p}:${i + 1}: ${l.trim().slice(0, 120)}`); } });
