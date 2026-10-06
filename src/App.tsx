@@ -439,7 +439,7 @@ const EVENTS = [
       name: "Schengen visa",
       blurb: "Short-stay tourist, Europe",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         must("Visa Application Form", "purpose"),
@@ -454,6 +454,8 @@ const EVENTS = [
         may("ITR Acknowledgement", "income", "If employed or self-employed", ["Form 16"]),
         may("Business Registration", "income", "If self-employed or a company owner"),
         may("Marriage Certificate", "relationship", "If civil status needs to be shown", ["Birth Certificate"]),
+        must("Cover Letter", "purpose"),
+        must("Signed Declarations", "purpose"),
       ],
       sources: [
         {
@@ -473,7 +475,7 @@ const EVENTS = [
       name: "US B1/B2 visa",
       blurb: "Business or tourist",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         must("DS-160 Confirmation", "purpose"),
@@ -502,7 +504,7 @@ const EVENTS = [
       name: "UK visa",
       blurb: "Standard visitor",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         may("Proof of Funds", "income", "Recommended: shows you can pay for the visit", ["Bank Statement", "Payslip"]),
@@ -517,7 +519,7 @@ const EVENTS = [
           kind: "government",
           page: "Guide to supporting documents: visiting the UK",
           section: "1. Travel document (passport)",
-          url: "https://www.gov.uk/government/publications/visitor-visa-guide-to-supporting-documents/guide-to-supporting-documents-visiting-the-uk#:~:text=Travel%20document%20(passport)",
+          url: "https://www.gov.uk/government/publications/visitor-visa-guide-to-supporting-documents/guide-to-supporting-documents-visiting-the-uk#:~:text=You%20must%20provide%20a%20valid%20passport",
         },
       ],
     },
@@ -529,7 +531,7 @@ const EVENTS = [
       name: "Canada visa",
       blurb: "Visitor visa",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         must("Visa Application Form", "purpose"),
@@ -540,6 +542,7 @@ const EVENTS = [
         may("Marriage Certificate", "relationship", "If married"),
         may("Biometrics Confirmation", "identity", "If biometrics were not given in the last 10 years"),
         may("No Objection Certificate", "relationship", "If a minor travels without both parents"),
+        must("Visa Fee Receipt", "purpose"),
       ],
       sources: [
         {
@@ -559,7 +562,7 @@ const EVENTS = [
       name: "Australia visitor visa",
       blurb: "Subclass 600",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         must("Visa Application Form", "purpose"),
@@ -589,7 +592,7 @@ const EVENTS = [
       name: "Japan tourist visa",
       blurb: "Short stay",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         must("Visa Application Form", "purpose"),
@@ -601,6 +604,7 @@ const EVENTS = [
         may("Hotel Booking", "purpose", "Asked by some application centres"),
         may("No Objection Certificate", "income", "If employed: leave sanction letter (some centres)"),
         may("Marriage Certificate", "relationship", "If travelling with a dependant", ["Birth Certificate"]),
+        must("Cover Letter", "purpose"),
       ],
       sources: [
         {
@@ -627,7 +631,7 @@ const EVENTS = [
       name: "Singapore visa",
       blurb: "Tourist entry",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Visa Application Form", "purpose"),
         must("Passport Photos", "identity"),
@@ -659,7 +663,7 @@ const EVENTS = [
       name: "UAE visit visa",
       blurb: "Tourist or family visit",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         must("Passport Photos", "identity"),
@@ -680,7 +684,7 @@ const EVENTS = [
           kind: "government",
           page: "Issuing a multi-entry tourist visa (5 years)",
           section: "Requirements",
-          url: "https://gdrfad.gov.ae/en/services/7fe37963-b7f8-11ed-5210-4cd98f768936#:~:text=6%20months%20bank%20statement",
+          url: "https://gdrfad.gov.ae/en/services/7fe37963-b7f8-11ed-5210-4cd98f768936#:~:text=Requirements",
         },
       ],
     },
@@ -692,7 +696,7 @@ const EVENTS = [
       name: "Travel insurance purchase",
       blurb: "Visa-compliant cover",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         must("Identity Proof", "identity", ["Passport", "Aadhaar Card", "Voter ID", "Driving License", "PAN Card"]),
@@ -731,7 +735,7 @@ const EVENTS = [
       name: "International driving permit",
       blurb: "Drive abroad",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Form 4A Application", "purpose"),
         must("Driving License", "qualification"),
@@ -766,7 +770,7 @@ const EVENTS = [
       name: "OCI card or renewal",
       blurb: "First issue, renewal, or reissue at 20",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         must("Passport Photos", "identity"),
@@ -804,7 +808,7 @@ const EVENTS = [
       name: "Lost passport reissue",
       blurb: "Report and reissue",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Police Complaint", "purpose", ["FIR Copy"]),
         must("Affidavit", "purpose"),
@@ -831,7 +835,7 @@ const EVENTS = [
       name: "New passport",
       blurb: "First-time application",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Address Proof", "address", ["Aadhaar Card", "Utility Bill", "Voter ID", "Rental Agreement", "Bank Account Proof", "ITR Acknowledgement"]),
         must("Date of Birth Proof", "identity", ["Birth Certificate", "School Leaving Certificate", "Transfer Certificate", "PAN Card", "Driving License", "Voter ID"]),
@@ -856,7 +860,7 @@ const EVENTS = [
       name: "Passport renewal",
       blurb: "Reissue of passport",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         may("Address Proof", "address", "If the address differs from the old passport", ["Aadhaar Card", "Utility Bill", "Voter ID", "Rental Agreement", "Bank Account Proof", "ITR Acknowledgement"]),
@@ -867,8 +871,8 @@ const EVENTS = [
           name: "Passport Seva",
           kind: "government",
           page: "Instructions for Filling of Passport Application Form and Supplementary Form",
-          section: "Table 2: List of Applicant Categories and Documents to be submitted",
-          url: "https://www.passportindia.gov.in/AppOnlineProject/pdf/ApplicationformInstructionBooklet-V3.0.pdf#page=10",
+          section: "(II) Re-issue of Passport",
+          url: "https://www.passportindia.gov.in/AppOnlineProject/pdf/ApplicationformInstructionBooklet-V3.0.pdf#page=11",
         },
       ],
     },
@@ -880,7 +884,7 @@ const EVENTS = [
       name: "Passport for a minor",
       blurb: "Child's first passport",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Birth Certificate", "identity", ["School Leaving Certificate", "Transfer Certificate", "PAN Card"]),
         must("Address Proof", "address", ["Aadhaar Card", "Utility Bill", "Voter ID", "Rental Agreement", "Bank Account Proof", "ITR Acknowledgement"]),
@@ -906,12 +910,12 @@ const EVENTS = [
       name: "PAN card application",
       blurb: "Form 49A",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Driving License", "Passport", "Ration Card", "Photo ID"]),
         must("Address Proof", "address", ["Aadhaar Card", "Voter ID", "Driving License", "Passport", "Utility Bill", "Domicile Certificate"]),
         must("Date of Birth Proof", "identity", ["Aadhaar Card", "Birth Certificate", "Marksheet", "Passport", "Driving License", "Marriage Certificate"]),
-        must("Passport Photos", "identity"),
+        may("Passport Photos", "identity", "Often asked, though not on the published list"),
       ],
       sources: [
         {
@@ -931,7 +935,7 @@ const EVENTS = [
       name: "Aadhaar update",
       blurb: "Name or address change",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Aadhaar Card", "identity"),
         may("Address Proof", "address", "If updating the address", ["Passport", "Voter ID", "Utility Bill", "Bank Statement", "Rental Agreement", "Property Tax Receipt"]),
@@ -958,7 +962,7 @@ const EVENTS = [
       name: "Voter ID application",
       blurb: "Form 6 registration",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Date of Birth Proof", "identity", ["Birth Certificate", "Aadhaar Card", "PAN Card", "Driving License", "Marksheet", "Passport"]),
         must("Address Proof", "address", ["Utility Bill", "Aadhaar Card", "Bank Account Proof", "Passport", "Rental Agreement", "Sale Deed"]),
@@ -983,24 +987,18 @@ const EVENTS = [
       name: "Driving license",
       blurb: "New license (Sarathi)",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
-        must("Address Proof", "address", ["Aadhaar Card", "Passport", "Voter ID", "Utility Bill", "Bank Account Proof", "Ration Card"]),
-        must("Date of Birth Proof", "identity", ["Birth Certificate", "Marksheet", "Passport", "School Leaving Certificate", "Life Insurance"]),
+        may("Address Proof", "address", "Given when applying for the learner's licence", ["Aadhaar Card", "Passport", "Voter ID", "Utility Bill", "Bank Account Proof", "Ration Card"]),
+        may("Date of Birth Proof", "identity", "Given when applying for the learner's licence", ["Birth Certificate", "Marksheet", "Passport", "School Leaving Certificate", "Life Insurance"]),
         must("Passport Photos", "identity"),
         must("Form 1 Self Declaration", "qualification"),
         must("Learner's Licence", "qualification"),
         may("Medical Fitness Certificate", "qualification", "If aged above 40 or for a transport licence"),
         may("Driving School Certificate", "qualification", "If applying for a transport vehicle licence"),
+        must("Form 4 Application", "purpose"),
       ],
       sources: [
-        {
-          name: "Transport Department, Government of Telangana",
-          kind: "government",
-          page: "Learner's Licence",
-          section: "Documents Required",
-          url: "https://www.transport.telangana.gov.in/html/driving-licencel-learners.html#:~:text=Documents%20Required",
-        },
         {
           name: "Transport Department, Government of Telangana",
           kind: "government",
@@ -1018,7 +1016,7 @@ const EVENTS = [
       name: "Driving license renewal",
       blurb: "Expiring license",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Driving License", "qualification"),
         must("Passport Photos", "identity"),
@@ -1043,13 +1041,14 @@ const EVENTS = [
       name: "Vehicle registration",
       blurb: "New vehicle (Form 20)",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Sale Certificate Form 21", "ownership"),
         must("Roadworthiness Certificate Form 22", "qualification"),
         must("Vehicle Insurance", "ownership"),
         must("Address Proof", "address", ["Ration Card", "Utility Bill", "Aadhaar Card", "Passport", "Bank Account Proof"]),
         may("Customs Clearance Certificate", "ownership", "If the vehicle is imported"),
+        must("Form 20 Application", "purpose"),
       ],
       sources: [
         {
@@ -1069,7 +1068,7 @@ const EVENTS = [
       name: "Vehicle ownership transfer",
       blurb: "Form 29/30",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Vehicle RC", "ownership"),
         must("Form 29 and Form 30", "purpose"),
@@ -1104,7 +1103,7 @@ const EVENTS = [
       name: "Legal name change",
       blurb: "Gazette route",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Newspaper Publication", "purpose"),
         must("Name Change Proforma", "purpose"),
@@ -1132,7 +1131,7 @@ const EVENTS = [
       name: "Income certificate",
       blurb: "For schemes and fees",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Income Proof", "income", ["Salary Certificate", "Payslip", "ITR Acknowledgement"]),
         may("Identity Proof", "identity", "Asked by some states", ["Aadhaar Card", "PAN Card", "Passport", "Driving License", "Voter ID"]),
@@ -1158,7 +1157,7 @@ const EVENTS = [
       name: "Domicile certificate",
       blurb: "State residency proof",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Address Proof", "address", ["Utility Bill", "Voter ID", "Aadhaar Card", "Ration Card", "Rental Agreement", "Property Tax Receipt"]),
         may("Identity Proof", "identity", "Asked by some states", ["Aadhaar Card", "PAN Card", "Passport", "Driving License", "Voter ID"]),
@@ -1184,7 +1183,7 @@ const EVENTS = [
       name: "PAN and Aadhaar linking",
       blurb: "Mandatory, and it blocks tax filing",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("PAN Card", "identity"),
         must("Aadhaar Card", "identity"),
@@ -1207,7 +1206,7 @@ const EVENTS = [
       name: "Aadhaar address update",
       blurb: "After a move",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Aadhaar Card", "identity"),
         must("Address Proof", "address", ["Utility Bill", "Bank Statement", "Rental Agreement", "Voter ID", "Ration Card", "Property Tax Receipt"]),
@@ -1243,7 +1242,7 @@ const EVENTS = [
       name: "Voter address change",
       blurb: "Form 8, after a move",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Voter ID", "identity"),
         must("Address Proof", "address", ["Utility Bill", "Aadhaar Card", "Bank Statement", "Passport", "Rental Agreement", "Sale Deed"]),
@@ -1267,7 +1266,7 @@ const EVENTS = [
       name: "Name change after marriage",
       blurb: "Then it cascades through every other ID",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Marriage Certificate", "relationship", ["Joint Photo Declaration (Annexure J)", "Marriage Invitation", "Gazette Notification"]),
         must("Aadhaar Card", "identity"),
@@ -1311,7 +1310,7 @@ const EVENTS = [
       name: "Police clearance certificate",
       blurb: "Gates most routes abroad",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport", "identity"),
         must("Address Proof", "address", ["Utility Bill", "Aadhaar Card", "Voter ID", "Rental Agreement", "Bank Statement"]),
@@ -1341,7 +1340,7 @@ const EVENTS = [
       name: "Caste certificate",
       blurb: "For admissions and government posts",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Passport", "Driving License", "Voter ID"]),
         must("Address Proof", "address", ["Voter ID", "Utility Bill", "Ration Card", "Aadhaar Card", "Passport", "Property Tax Receipt"]),
@@ -1377,7 +1376,7 @@ const EVENTS = [
       name: "Child Aadhaar",
       blurb: "Enrolment, and updates at 5 and 15",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Birth Certificate", "identity"),
         must("Aadhaar Card", "relationship"),
@@ -1394,13 +1393,6 @@ const EVENTS = [
           section: "List I - Documents that may be presented to evidence Proof of Identity, Address, Relations",
           url: "https://uidai.gov.in/images/commdoc/List_of_Supporting_Document_for_Aadhaar_Enrolment_and_Update.pdf",
         },
-        {
-          name: "PIB / UIDAI",
-          kind: "government",
-          page: "UIDAI Waives Charges for Aadhaar Biometric Updates for Children Aged 7-15",
-          section: "UIDAI Waives Charges for Aadhaar Biometric Updates for Children Aged 7-15, Benefiting Near",
-          url: "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2174841&reg=48&lang=2#:~:text=birth%20certificate",
-        },
       ],
     },
   ),
@@ -1412,7 +1404,7 @@ const EVENTS = [
       name: "Income tax filing",
       blurb: "Annual return",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("PAN Card", "identity"),
         must("Form 16", "income"),
@@ -1443,11 +1435,11 @@ const EVENTS = [
       name: "Vehicle loan",
       blurb: "Car or two-wheeler",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Passport", "PAN Card", "Aadhaar Card", "Voter ID", "Driving License"]),
         must("Address Proof", "address", ["Driving License", "Voter ID", "Aadhaar Card", "Passport", "Utility Bill", "Life Insurance"]),
-        must("Date of Birth Proof", "identity"),
+        may("Date of Birth Proof", "identity", "Asked by some lenders"),
         must("Income Proof", "income", ["Payslip", "Form 16", "ITR Acknowledgement"]),
         must("Bank Statement", "income"),
         must("Passport Photos", "identity"),
@@ -1461,14 +1453,7 @@ const EVENTS = [
           kind: "public",
           page: "SBI New Car Loan Scheme",
           section: "Documents required",
-          url: "https://sbi.bank.in/web/personal-banking/loans/auto-loans/sbi-new-car-loan-scheme#:~:text=Statement%20of%20bank%20account",
-        },
-        {
-          name: "Punjab National Bank",
-          kind: "public",
-          page: "Loan Application Checklist (Vehicle Loan)",
-          section: "Vehicle Loan",
-          url: "https://pnb.bank.in/checklist.html#vehicle_loan_tab",
+          url: "https://sbi.bank.in/web/personal-banking/loans/auto-loans/sbi-new-car-loan-scheme#:~:text=Documents%20Required",
         },
         {
           name: "ICICI Bank",
@@ -1487,7 +1472,7 @@ const EVENTS = [
       name: "Personal loan",
       blurb: "Unsecured credit",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Passport", "Driving License", "Voter ID", "Aadhaar Card", "PAN Card"]),
         must("Address Proof", "address", ["Passport", "Voter ID", "Driving License", "Aadhaar Card", "Utility Bill", "Rental Agreement"]),
@@ -1501,18 +1486,11 @@ const EVENTS = [
       ],
       sources: [
         {
-          name: "Punjab National Bank",
-          kind: "public",
-          page: "Loan Application Checklist (Personal Loan)",
-          section: "Personal Loan",
-          url: "https://pnb.bank.in/checklist.html#personal_loan_tab",
-        },
-        {
           name: "Bank of Baroda",
           kind: "public",
           page: "Baroda Personal Loan",
           section: "Baroda Personal Loan : Documents Required",
-          url: "https://bankofbaroda.bank.in/loans/personal-loan/baroda-personal-loan#:~:text=Form%20135%20giving%20details%20of%20Assets",
+          url: "https://bankofbaroda.bank.in/loans/personal-loan/baroda-personal-loan#:~:text=Personal%20Loan%20%3A%20Documents%20Required",
         },
         {
           name: "ICICI Bank",
@@ -1531,14 +1509,14 @@ const EVENTS = [
       name: "Education loan",
       blurb: "Study finance",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Admission Letter", "purpose"),
         must("Marksheet", "qualification", ["Degree Certificate", "Scorecard"]),
         must("Identity Proof", "identity", ["PAN Card", "Passport", "Driving License", "Voter ID", "Aadhaar Card"]),
         must("Address Proof", "address", ["Utility Bill", "Passport", "Driving License", "Aadhaar Card"]),
-        must("Passport Photos", "identity"),
-        must("Fee Structure", "purpose", ["Course Prospectus"]),
+        may("Passport Photos", "identity", "Asked by some lenders"),
+        may("Fee Structure", "purpose", "Asked by some lenders", ["Course Prospectus"]),
         must("Income Proof", "income", ["Payslip", "Salary Certificate", "Form 16", "ITR Acknowledgement"]),
         must("Bank Statement", "income"),
         may("PAN Card", "identity", "Asked by some lenders"),
@@ -1551,13 +1529,6 @@ const EVENTS = [
           page: "SBI Student Loan Scheme",
           section: "Checklist of Documents to be submitted along-with duly filled Loan Application Form",
           url: "https://sbi.bank.in/web/student-platform/sbi-student-loan-scheme#:~:text=Checklist%20of%20Documents%20to%20be%20submitted",
-        },
-        {
-          name: "Punjab National Bank",
-          kind: "public",
-          page: "Loan Application Checklist (Education Loan)",
-          section: "Education Loan",
-          url: "https://pnb.bank.in/checklist.html#education_loan_tab",
         },
         {
           name: "ICICI Bank",
@@ -1576,7 +1547,7 @@ const EVENTS = [
       name: "Credit card application",
       blurb: "New card",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("PAN Card", "identity", ["Form 60"]),
         must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "Voter ID", "Driving License", "PAN Card"]),
@@ -1617,7 +1588,7 @@ const EVENTS = [
       name: "Bank account opening",
       blurb: "Savings or salary",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Passport", "Driving License", "Aadhaar Card", "Voter ID", "NREGA Job Card", "National Population Register Letter"]),
         must("Address Proof", "address", ["Passport", "Driving License", "Aadhaar Card", "Voter ID", "NREGA Job Card", "National Population Register Letter"]),
@@ -1656,21 +1627,22 @@ const EVENTS = [
       name: "Demat and trading account",
       blurb: "Invest in markets",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("PAN Card", "identity"),
         must("Address Proof", "address"),
         must("Bank Account Details", "ownership"),
         must("Passport Photos", "identity"),
         may("Identity Proof", "identity", "If the depository participant asks for extra proof"),
+        must("Account Opening Form", "purpose"),
       ],
       sources: [
         {
           name: "NSDL",
           kind: "institution",
           page: "Investor FAQs",
-          section: "Q4: What should I do if I want to open a demat account?",
-          url: "https://nsdl.com/investor/investor-faq#:~:text=What%20should%20I%20do%20if%20I%20want%20to%20open%20a%20demat%20account",
+          section: "Q1: How to Open a NSDL demat account?",
+          url: "https://nsdl.com/investor/investor-faq#:~:text=How%20to%20Open%20a%20NSDL%20demat",
         },
         {
           name: "SEBI",
@@ -1689,7 +1661,7 @@ const EVENTS = [
       name: "NPS account opening",
       blurb: "Retirement savings",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("PAN Card", "identity"),
         must("Address Proof", "address", ["Aadhaar Card", "Utility Bill", "Driving License", "Bank Passbook"]),
@@ -1697,6 +1669,7 @@ const EVENTS = [
         must("Passport Photos", "identity"),
         must("Specimen Signature", "identity"),
         may("Date of Birth Proof", "identity", "If not using Aadhaar e-KYC", ["Birth Certificate", "Voter ID", "Aadhaar Card", "Passport"]),
+        must("Subscriber Registration Form", "purpose"),
       ],
       sources: [
         {
@@ -1723,7 +1696,7 @@ const EVENTS = [
       name: "PF transfer on job change",
       blurb: "Form 13 online",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("UAN Card", "identity"),
         must("Aadhaar Card", "identity"),
@@ -1747,7 +1720,7 @@ const EVENTS = [
       name: "Mutual fund KYC",
       blurb: "CKYC for investing",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("PAN Card", "identity"),
         must("Identity Proof", "identity", ["Passport", "Driving License", "Aadhaar Card", "Voter ID", "NREGA Job Card", "National Population Register Letter"]),
@@ -1778,24 +1751,11 @@ const EVENTS = [
       cat: "Money & Tax",
       name: "EPF withdrawal",
       blurb: "Form 19 / 10C claim",
-      basis: "authority",
-      reviewed: "2026-10-06",
+      basis: "convention",
       needs: [
-        must("UAN Card", "identity"),
-        must("Aadhaar Card", "identity"),
-        must("Claim Form", "purpose"),
-        must("Cancelled Cheque", "ownership", ["Bank Passbook"]),
-        may("PAN Card", "identity", "If service is under 5 years (lower TDS)"),
-        may("Form 15G", "purpose", "If seeking payment without TDS", ["Form 15H"]),
-      ],
-      sources: [
-        {
-          name: "EPFO",
-          kind: "government",
-          page: "Frequently Asked Questions",
-          section: "Currently the member can submit 3 types of claims without attestation of Employer namely,",
-          url: "https://www.epfindia.gov.in/site_en/FAQ.php#:~:text=A%20cancelled%20original%20cheque%20bearing%20name",
-        },
+        must("PAN Card", "identity"),
+        must("Bank Statement", "income"),
+        must("Cancelled Cheque", "ownership"),
       ],
     },
   ),
@@ -1806,7 +1766,7 @@ const EVENTS = [
       name: "Loan closure and lien release",
       blurb: "Often never completed",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("No Objection Certificate", "purpose", ["No Dues Certificate"]),
         may("Property Deed", "ownership", "If the loan was secured on property", ["Title Deed", "Sale Deed"]),
@@ -1816,13 +1776,6 @@ const EVENTS = [
         may("Address Proof", "address", "If the loan was on a vehicle"),
       ],
       sources: [
-        {
-          name: "Reserve Bank of India",
-          kind: "regulator",
-          page: "Responsible Lending Conduct, Release of Movable / Immovable Property Documents on Repayment/ Settlement of Personal Loans (13 September 2023)",
-          section: "Release of Movable / Immovable Property Documents",
-          url: "https://www.rbi.org.in/Scripts/NotificationUser.aspx?Id=12535&Mode=0#:~:text=Release%20of%20Movable%20%2F%20Immovable%20Property%20Documents",
-        },
         {
           name: "ICICI Bank",
           kind: "private",
@@ -1847,7 +1800,7 @@ const EVENTS = [
       name: "Tax proofs for your employer",
       blurb: "Form 124, formerly 12BB",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("PAN Card", "identity"),
         may("Rent Receipts", "purpose", "If claiming house rent allowance", ["Rental Agreement"]),
@@ -1874,7 +1827,7 @@ const EVENTS = [
       name: "PPF or Sukanya account",
       blurb: "Long-term small savings",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Account Opening Form", "purpose"),
         must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card"]),
@@ -1910,7 +1863,7 @@ const EVENTS = [
       name: "Background verification",
       blurb: "New job onboarding",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Passport", "Voter ID", "Driving License"]),
         must("Address Proof", "address", ["Aadhaar Card", "Passport", "Voter ID"]),
@@ -1938,13 +1891,6 @@ const EVENTS = [
           section: "List of Documents to be brought on the day of Document Verification",
           url: "https://indianbank.bank.in/documents/20117/34414/Joining-formalities-of-Probationary-Officers-allotted-by-IBPS-under-POMT-CRP-XII2026_05_04_15_49_50.pdf/15042766-f972-f9fc-2cb5-6cd311079bf0",
         },
-        {
-          name: "Tata Consultancy Services",
-          kind: "private",
-          page: "TCS All India NQT Hiring, FAQs",
-          section: "What documents are required for the TCS selection process?",
-          url: "https://www.tcs.com/careers/india/tcs-all-india-nqt-hiring#:~:text=What%20documents%20are%20required",
-        },
       ],
     },
   ),
@@ -1955,17 +1901,17 @@ const EVENTS = [
       name: "New job onboarding",
       blurb: "Day-one paperwork",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("PAN Card", "identity"),
         must("Aadhaar Card", "identity"),
         must("Degree Certificate", "qualification"),
-        must("Marksheet", "qualification"),
+        may("Marksheet", "qualification", "Asked by some employers"),
         may("Relieving Letter", "qualification", "If previously employed", ["Experience Letter"]),
         may("Salary Certificate", "income", "If previously employed", ["Payslip"]),
         must("Medical Fitness Certificate", "qualification"),
         must("Cancelled Cheque", "ownership", ["Bank Account Details"]),
-        must("Passport Photos", "identity"),
+        may("Passport Photos", "identity", "Asked by some employers"),
         may("Employment Offer", "purpose", "Asked by some employers"),
         may("Caste Certificate", "identity", "If appointed under a reserved category"),
       ],
@@ -1984,13 +1930,6 @@ const EVENTS = [
           section: "ANNEXURE FORMALITIES REQUIRED TO BE COMPLETED FOR JOINING THE BANK:",
           url: "https://www.pnbindia.in/document/Recruitments/Formalities_Required_for_officers.pdf#page=1",
         },
-        {
-          name: "Tata Consultancy Services",
-          kind: "private",
-          page: "TCS All India NQT Hiring, FAQs",
-          section: "What documents are required for the TCS selection process?",
-          url: "https://www.tcs.com/careers/india/tcs-all-india-nqt-hiring#:~:text=What%20documents%20are%20required",
-        },
       ],
     },
   ),
@@ -2001,7 +1940,7 @@ const EVENTS = [
       name: "Government job application",
       blurb: "Recruitment paperwork",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Driving License", "PAN Card", "Passport"]),
         must("Date of Birth Proof", "identity"),
@@ -2012,6 +1951,7 @@ const EVENTS = [
         may("Disability Certificate", "qualification", "If claiming PwBD reservation or relaxation"),
         may("No Objection Certificate", "purpose", "If already employed in government or a PSU"),
         may("Marriage Certificate", "relationship", "If name differs from the matriculation certificate", ["Gazette Notification"]),
+        must("Specimen Signature", "identity"),
       ],
       sources: [
         {
@@ -2038,7 +1978,7 @@ const EVENTS = [
       name: "GST registration",
       blurb: "Business tax ID",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("PAN Card", "identity"),
         must("Identity Proof", "identity", ["Aadhaar Card"]),
@@ -2075,7 +2015,7 @@ const EVENTS = [
       name: "Resignation and relieving",
       blurb: "Clean exit pack",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Resignation Letter", "purpose"),
         must("Relieving Letter", "qualification"),
@@ -2102,13 +2042,13 @@ const EVENTS = [
       name: "Professional council registration",
       blurb: "Doctors, CAs, lawyers",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Degree Certificate", "qualification"),
         must("Marksheet", "qualification"),
         must("Date of Birth Proof", "identity", ["Marksheet", "School Leaving Certificate", "Birth Certificate"]),
-        must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "Voter ID", "Driving License", "PAN Card"]),
-        must("Internship Certificate", "qualification"),
+        may("Identity Proof", "identity", "Asked by some employers", ["Aadhaar Card", "Passport", "Voter ID", "Driving License", "PAN Card"]),
+        may("Internship Certificate", "qualification", "Asked by some employers"),
         may("Passport Photos", "identity", "Asked by some institutions"),
         may("Provisional Registration Certificate", "qualification", "For doctors moving to permanent registration"),
         may("Affidavit", "purpose", "Asked by some institutions"),
@@ -2140,7 +2080,7 @@ const EVENTS = [
       name: "Gratuity claim",
       blurb: "Statutory, and widely missed",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Form I", "purpose"),
         may("Nomination Form F", "relationship", "If a nominee claims after the employee's death"),
@@ -2155,7 +2095,7 @@ const EVENTS = [
           kind: "government",
           page: "The Payment of Gratuity (Central) Rules, 1972, Form I",
           section: "FORM 'I' Application for gratuity by an employee",
-          url: "https://www.labour.gov.in/static/uploads/2025/06/261fb00f35711ebaf15076c0a67c2be4.pdf",
+          url: "https://www.labour.gov.in/static/uploads/2025/06/261fb00f35711ebaf15076c0a67c2be4.pdf#page=16",
         },
       ],
     },
@@ -2168,7 +2108,7 @@ const EVENTS = [
       name: "School admission",
       blurb: "New school",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Birth Certificate", "identity"),
         must("Address Proof", "address", ["Aadhaar Card", "Voter ID", "Utility Bill", "Ration Card", "Passport", "Domicile Certificate"]),
@@ -2184,7 +2124,7 @@ const EVENTS = [
           kind: "government",
           page: "KVS Admission Guidelines 2026-27 and Onwards (hosted by KVS Regional Office Delhi)",
           section: "3. DOCUMENTS",
-          url: "https://cdnbbsr.s3waas.gov.in/s3kv01884d38e5c9337e2e297bfc0fa169/uploads/2026/08/2026081715.pdf",
+          url: "https://cdnbbsr.s3waas.gov.in/s3kv01884d38e5c9337e2e297bfc0fa169/uploads/2026/08/2026081715.pdf#page=12",
         },
         {
           name: "Directorate of Education, Govt of NCT of Delhi",
@@ -2210,7 +2150,7 @@ const EVENTS = [
       name: "College admission",
       blurb: "Undergraduate",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Marksheet", "qualification"),
         must("Date of Birth Proof", "identity", ["Birth Certificate", "Marksheet"]),
@@ -2246,7 +2186,7 @@ const EVENTS = [
       name: "Postgraduate admission",
       blurb: "Masters programs",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Marksheet", "qualification"),
         must("Date of Birth Proof", "identity", ["Birth Certificate", "Marksheet"]),
@@ -2281,7 +2221,7 @@ const EVENTS = [
       name: "Study abroad application",
       blurb: "University applications",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Transcripts", "qualification", ["Marksheet"]),
         must("Language Test Scorecard", "qualification"),
@@ -2311,8 +2251,8 @@ const EVENTS = [
           name: "UCAS",
           kind: "institution",
           page: "Filling in your UCAS undergraduate application",
-          section: "Education / Personal statement / References",
-          url: "https://www.ucas.com/undergraduate/applying-university/filling-your-ucas-undergraduate-application#:~:text=All%20applications%20require%20a%20reference",
+          section: "How to fill in your UCAS application",
+          url: "https://www.ucas.com/undergraduate/applying-university/filling-your-ucas-undergraduate-application#:~:text=How%20to%20fill%20in%20your%20UCAS",
         },
       ],
     },
@@ -2324,7 +2264,7 @@ const EVENTS = [
       name: "Competitive exam application",
       blurb: "UPSC, SSC, banking",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport Photos", "identity"),
         must("Specimen Signature", "identity"),
@@ -2334,6 +2274,7 @@ const EVENTS = [
         may("Caste Certificate", "relationship", "If claiming a reserved category"),
         may("Income Certificate", "income", "If applying under the EWS category"),
         may("Left Thumb Impression", "identity", "For bank and some NTA exams"),
+        may("Hand-written Declaration", "purpose", "For bank recruitment exams"),
       ],
       sources: [
         {
@@ -2360,23 +2301,11 @@ const EVENTS = [
       name: "Board exam registration",
       blurb: "Class 10 and 12",
       basis: "institution",
-      reviewed: "2026-10-06",
       needs: [
-        must("Date of Birth Proof", "identity", ["Birth Certificate"]),
+        must("Birth Certificate", "relationship"),
         must("Passport Photos", "identity"),
-        must("APAAR ID", "identity"),
-        must("Specimen Signature", "identity"),
-        may("Marksheet", "qualification", "If a private candidate or from another board"),
-        may("Identity Proof", "identity", "Asked by some institutions", ["Aadhaar Card"]),
-      ],
-      sources: [
-        {
-          name: "CBSE",
-          kind: "government",
-          page: "Registration of Students of Class IX and Class XI for Session 2025-2026 (circular dated 15/09/2025)",
-          section: "EFFORTS FOR CORRECT SUBMISSION OF DATA",
-          url: "https://www.cbse.gov.in/cbsenew/documents/Submission_Registration_Data_Class_IXXI2526_15092025.pdf",
-        },
+        must("Identity Proof", "identity"),
+        must("Marksheet", "qualification"),
       ],
     },
   ),
@@ -2386,30 +2315,13 @@ const EVENTS = [
       cat: "Education",
       name: "Scholarship application",
       blurb: "Merit and means",
-      basis: "authority",
-      reviewed: "2026-10-06",
+      basis: "convention",
       needs: [
-        must("Aadhaar Card", "identity"),
+        must("Marksheet", "qualification"),
         must("Income Certificate", "income"),
-        must("Bank Account Details", "ownership"),
-        may("Marksheet", "qualification", "Often asked, though not on the published list"),
-        may("Caste Certificate", "relationship", "If the scheme is for a reserved category"),
-      ],
-      sources: [
-        {
-          name: "National Scholarship Portal",
-          kind: "government",
-          page: "One Time Registration (OTR) FAQs v1.4",
-          section: "5. What documents/information do I need to have ready to create my OTR?",
-          url: "https://scholarships.gov.in/public/FAQ/OTR%20FAQ%20v1.4.pdf#page=2",
-        },
-        {
-          name: "National Scholarship Portal",
-          kind: "government",
-          page: "Guidelines of the Central Sector Scheme of Scholarship for College and University Students (PM-USP CSSS)",
-          section: "4. Eligibility for Scholarship / 6. Procedure for Application",
-          url: "https://scholarships.gov.in/public/schemeGuidelines/CSSS_GUIDLINES_07022024_updated.pdf",
-        },
+        must("Identity Proof", "identity"),
+        must("Bank Statement", "income"),
+        must("Admission Letter", "purpose"),
       ],
     },
   ),
@@ -2420,13 +2332,13 @@ const EVENTS = [
       name: "School transfer",
       blurb: "Moving cities",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Transfer Certificate", "qualification", ["School Leaving Certificate"]),
         must("Marksheet", "qualification"),
         must("Date of Birth Proof", "identity", ["Birth Certificate", "School Leaving Certificate"]),
-        must("Address Proof", "address", ["Aadhaar Card", "Voter ID", "Utility Bill", "Ration Card", "Passport", "Domicile Certificate"]),
-        must("Passport Photos", "identity"),
+        may("Address Proof", "address", "Asked by some offices", ["Aadhaar Card", "Voter ID", "Utility Bill", "Ration Card", "Passport", "Domicile Certificate"]),
+        may("Passport Photos", "identity", "Asked by some offices"),
         may("Caste Certificate", "relationship", "If claiming a reserved category seat"),
         may("Medical Fitness Certificate", "qualification", "Asked by some institutions"),
         may("Character Certificate", "qualification", "Asked by some institutions"),
@@ -2446,13 +2358,6 @@ const EVENTS = [
           section: "Documents and other essential items to be submitted",
           url: "https://dpsrkp.net/class-9-admission-2025-2026/#:~:text=Documents%20and%20other%20essential%20items",
         },
-        {
-          name: "Directorate of Education, Govt of NCT of Delhi",
-          kind: "government",
-          page: "Circular DE.23 (28)/Sch.Br./2024/346 dated 15.05.2024 (admission in government schools)",
-          section: "xvii). Following documents are to be submitted for verification at the time of admissionby",
-          url: "https://www.edudel.nic.in/upload/upload_2023_24/346_dt_15052024.pdf",
-        },
       ],
     },
   ),
@@ -2462,22 +2367,12 @@ const EVENTS = [
       cat: "Education",
       name: "Degree attestation",
       blurb: "ECA, WES, apostille",
-      basis: "authority",
-      reviewed: "2026-10-06",
+      basis: "convention",
       needs: [
         must("Degree Certificate", "qualification"),
-        may("Marksheet", "qualification", "If the marksheet also needs attestation"),
-        may("Passport", "identity", "Asked by some institutions"),
-        may("Transcripts", "qualification", "For WES or other credential evaluation"),
-      ],
-      sources: [
-        {
-          name: "Ministry of External Affairs",
-          kind: "government",
-          page: "e-Sanad (online attestation and apostille) FAQ",
-          section: "Which are the documents authenticated/apostilled?",
-          url: "https://esanad.nic.in/#:~:text=Which%20are%20the%20documents",
-        },
+        must("Marksheet", "qualification"),
+        must("Passport", "identity"),
+        must("Transcripts", "qualification"),
       ],
     },
   ),
@@ -2488,23 +2383,10 @@ const EVENTS = [
       name: "Duplicate marksheet reissue",
       blurb: "Lost certificates",
       basis: "institution",
-      reviewed: "2026-10-06",
       needs: [
-        must("Identity Proof", "identity", ["Aadhaar Card", "Driving License", "PAN Card", "Passport"]),
-        must("FIR Copy", "purpose", ["Police Complaint"]),
-        must("Self Declaration", "purpose", ["Affidavit"]),
+        must("Identity Proof", "identity"),
+        must("Affidavit", "purpose"),
         must("Passport Photos", "identity"),
-        must("Specimen Signature", "identity"),
-        must("Fee Payment Receipt", "purpose"),
-      ],
-      sources: [
-        {
-          name: "University of Delhi Examination Branch",
-          kind: "government",
-          page: "Duplicate Degree / Diploma / Certificate",
-          section: "Documents Required",
-          url: "https://exam.du.ac.in/exam/duplicate_degree/#:~:text=Scanned%20signature%20of%20candidate",
-        },
       ],
     },
   ),
@@ -2516,13 +2398,13 @@ const EVENTS = [
       name: "Hospital admission",
       blurb: "Cashless pack",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Health Insurance", "ownership", ["Insurance Policy"]),
         must("Photo ID", "identity"),
         must("Pre-Authorisation Form", "purpose"),
         may("Prescription", "purpose", "Asked by some insurers"),
-        must("Lab Report", "purpose", ["Medical Reports"]),
+        may("Lab Report", "purpose", "Asked by some insurers", ["Medical Reports"]),
         may("Medical Reports", "purpose", "Past medical history, asked by some insurers"),
         may("Medico-Legal Certificate", "purpose", "If the admission follows an accident", ["FIR Copy"]),
       ],
@@ -2546,7 +2428,7 @@ const EVENTS = [
           kind: "institution",
           page: "Insurance and TPA Helpdesk",
           section: "What is the pre-authorisation process for cashless treatment at Manipal Hospitals?",
-          url: "https://www.manipalhospitals.com/insurance-tpa-helpdesk/#:~:text=Provide%20a%20valid%20ID%20proof",
+          url: "https://www.manipalhospitals.com/insurance-tpa-helpdesk/#:~:text=pre%2Dauthorisation%20process%20for%20cashless%20treatment",
         },
       ],
     },
@@ -2558,7 +2440,7 @@ const EVENTS = [
       name: "Health insurance reimbursement",
       blurb: "Claim after paying",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Claim Form", "purpose"),
         must("Photo ID", "identity", ["Identity Proof"]),
@@ -2584,15 +2466,15 @@ const EVENTS = [
           name: "HDFC ERGO",
           kind: "private",
           page: "my:health Suraksha Claim Manual",
-          section: "List of Documents for Reimbursement Claims:",
-          url: "https://www.hdfcergo.com/docs/default-source/downloads/claim-forms/claim--2.pdf",
+          section: "List of Documents for Reimbursement Claims",
+          url: "https://www.hdfcergo.com/docs/default-source/downloads/claim-forms/claim--2.pdf#page=2",
         },
         {
           name: "ICICI Lombard",
           kind: "private",
           page: "How to Claim Health Insurance",
           section: "What are the Documents Required for Health Insurance Claims?",
-          url: "https://www.icicilombard.com/health_insurance_info/how-to-claim-health-insurance.html#:~:text=Documents%20Required%20for%20Health%20Insurance%20Claims",
+          url: "https://www.icicilombard.com/health_insurance_info/how-to-claim-health-insurance.html#:~:text=The%20documents%20you%20need%20to%20submit",
         },
       ],
     },
@@ -2604,7 +2486,7 @@ const EVENTS = [
       name: "Cashless pre-authorization",
       blurb: "Planned procedure",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Health Insurance", "ownership", ["Insurance Policy"]),
         must("Pre-Authorisation Form", "purpose"),
@@ -2646,7 +2528,7 @@ const EVENTS = [
       name: "New health insurance",
       blurb: "Buying a policy",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Proposal Form", "purpose"),
         must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Voter ID", "Passport", "Driving License"]),
@@ -2687,7 +2569,7 @@ const EVENTS = [
       name: "Maternity hospital pack",
       blurb: "Delivery admission",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Photo ID", "identity", ["Aadhaar Card", "Driving License"]),
         must("Medical Reports", "purpose", ["Lab Report", "Prescription"]),
@@ -2706,20 +2588,6 @@ const EVENTS = [
           section: "Important documents:",
           url: "https://www.cloudninecare.com/blog/packing-your-maternity-bag-here-is-a-checklist-of-things-you-might-want-to-keep#:~:text=Important%20documents",
         },
-        {
-          name: "Manipal Hospitals",
-          kind: "institution",
-          page: "Insurance and TPA Helpdesk",
-          section: "What is the pre-authorisation process for cashless treatment at Manipal Hospitals?",
-          url: "https://www.manipalhospitals.com/insurance-tpa-helpdesk/#:~:text=Provide%20a%20valid%20ID%20proof",
-        },
-        {
-          name: "Ministry of Women and Child Development",
-          kind: "government",
-          page: "PMMVY FAQs",
-          section: "What documents do beneficiaries need to apply for PMMVY?",
-          url: "https://www.spniwcd.wcd.gov.in/pradhan-mantri-matru-vandana-yojna/faqs#:~:text=What%20documents%20do%20beneficiaries%20need",
-        },
       ],
     },
   ),
@@ -2730,20 +2598,13 @@ const EVENTS = [
       name: "Vaccination record pack",
       blurb: "School and travel",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Immunization Record", "qualification"),
         may("Passport", "identity", "For yellow fever vaccination before travel"),
         may("Medical Reports", "purpose", "Yellow fever dose: if under any treatment"),
       ],
       sources: [
-        {
-          name: "MoHFW and MWCD",
-          kind: "government",
-          page: "Mother and Child Protection (MCP) Card Guide Book",
-          section: "Who keeps the card?",
-          url: "https://nhm.gov.in/New_Updates_2018/NHM_Components/Immunization/Guildelines_for_immunization/MCP_Guide_Book.pdf#page=6",
-        },
         {
           name: "MoHFW IHR Points of Entry",
           kind: "government",
@@ -2761,7 +2622,7 @@ const EVENTS = [
       name: "Disability certificate",
       blurb: "UDID assessment",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Passport Photos", "identity"),
         must("Specimen Signature", "identity"),
@@ -2788,7 +2649,7 @@ const EVENTS = [
       name: "Motor insurance claim",
       blurb: "Own damage or third party",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Claim Form", "purpose"),
         must("Insurance Policy", "ownership", ["Vehicle Insurance"]),
@@ -2832,12 +2693,12 @@ const EVENTS = [
       name: "Health insurance renewal or port",
       blurb: "Porting carries its own paperwork",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Portability Form", "purpose"),
         must("Proposal Form", "purpose"),
         must("Previous Policy Documents", "ownership", ["Insurance Policy"]),
-        must("Claim History", "purpose"),
+        may("Claim History", "purpose", "Asked by some insurers"),
         may("Identity Proof", "identity", "Asked by some insurers (KYC)", ["Aadhaar Card", "PAN Card"]),
         may("Address Proof", "address", "Asked by some insurers (KYC)", ["Aadhaar Card"]),
         may("Date of Birth Proof", "identity", "Asked by some insurers", ["PAN Card"]),
@@ -2869,7 +2730,7 @@ const EVENTS = [
       name: "Home loan",
       blurb: "Salaried application pack",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["PAN Card", "Passport", "Driving License", "Voter ID", "Aadhaar Card"]),
         must("Address Proof", "address", ["Aadhaar Card", "Passport", "Driving License", "Utility Bill", "Ration Card", "Voter ID"]),
@@ -2889,7 +2750,7 @@ const EVENTS = [
           kind: "public",
           page: "Regular Home Loan (documents required)",
           section: "List of papers/ documents applicable to all applicants:",
-          url: "https://homeloans.sbi/products/view/regular-home-loan#:~:text=List%20of%20papers",
+          url: "https://homeloans.sbi/products/view/regular-home-loan#:~:text=Documents%20Required",
         },
         {
           name: "PNB Housing Finance",
@@ -2915,7 +2776,7 @@ const EVENTS = [
       name: "Property sale",
       blurb: "Seller's pack",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Sale Deed", "purpose"),
         must("Identity Proof", "identity", ["Voter ID", "Passport", "Aadhaar Card", "Driving License", "PAN Card"]),
@@ -2926,13 +2787,6 @@ const EVENTS = [
         may("No Objection Certificate", "purpose", "If the land needs a transfer permission"),
       ],
       sources: [
-        {
-          name: "Revenue Department, Govt of NCT of Delhi",
-          kind: "government",
-          page: "FAQs (registration of documents)",
-          section: "Document required to be registered (in duplicate) (first item of the list; no separate hea",
-          url: "https://revenue.delhi.gov.in/faqs#:~:text=Document%20required%20to%20be%20registered",
-        },
         {
           name: "IGR Odisha",
           kind: "government",
@@ -2950,7 +2804,7 @@ const EVENTS = [
       name: "Property purchase",
       blurb: "Buyer's diligence",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Sale Deed", "purpose"),
         must("Identity Proof", "identity", ["Voter ID", "Passport", "Aadhaar Card", "Driving License", "PAN Card"]),
@@ -2961,13 +2815,6 @@ const EVENTS = [
         may("No Objection Certificate", "purpose", "If the land needs a transfer permission"),
       ],
       sources: [
-        {
-          name: "Revenue Department, Govt of NCT of Delhi",
-          kind: "government",
-          page: "FAQs (registration of documents)",
-          section: "Document required to be registered (in duplicate) (first item of the list; no separate hea",
-          url: "https://revenue.delhi.gov.in/faqs#:~:text=Document%20required%20to%20be%20registered",
-        },
         {
           name: "IGR Odisha",
           kind: "government",
@@ -3017,7 +2864,7 @@ const EVENTS = [
       name: "Tenant police verification",
       blurb: "Mandatory in many cities",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         may("Identity Proof", "identity", "Asked by some offices", ["Aadhaar Card", "PAN Card", "Voter ID", "Ration Card", "Driving License"]),
         must("Passport Photos", "identity"),
@@ -3048,7 +2895,7 @@ const EVENTS = [
       name: "Khata or mutation transfer",
       blurb: "Municipal records",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Sale Deed", "ownership", ["Property Deed"]),
         may("Property Tax Receipt", "ownership", "Asked by some institutions"),
@@ -3082,7 +2929,7 @@ const EVENTS = [
       name: "New electricity connection",
       blurb: "Meter in your name",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Passport", "PAN Card", "Driving License", "Ration Card"]),
         must("Property Ownership Proof", "ownership", ["Title Deed", "Sale Deed", "Allotment Letter", "Occupancy Certificate", "Rental Agreement"]),
@@ -3122,7 +2969,7 @@ const EVENTS = [
       name: "Home insurance purchase",
       blurb: "Structure and contents",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Passport", "Voter ID", "Driving License"]),
         must("Address Proof", "address", ["Aadhaar Card", "Passport", "Utility Bill", "Rental Agreement"]),
@@ -3149,7 +2996,7 @@ const EVENTS = [
       name: "Society share transfer",
       blurb: "Apartment societies",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Share Certificate", "ownership"),
         must("Transfer Application Form", "purpose"),
@@ -3185,7 +3032,7 @@ const EVENTS = [
       name: "Property tax name change",
       blurb: "After a purchase or inheritance",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Sale Deed", "ownership", ["Property Deed"]),
         may("Property Tax Receipt", "ownership", "Asked by some institutions"),
@@ -3219,7 +3066,7 @@ const EVENTS = [
       name: "Water and municipal connection",
       blurb: "New or transferred",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Voter ID", "Passport", "Aadhaar Card", "Ration Card"]),
         must("Property Ownership Proof", "ownership", ["Title Deed", "Sale Deed", "Allotment Letter", "Rental Agreement"]),
@@ -3247,12 +3094,12 @@ const EVENTS = [
       name: "Marriage registration",
       blurb: "Certificate application",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Marriage Registration Application Form", "purpose"),
         must("Date of Birth Proof", "identity", ["Birth Certificate", "School Leaving Certificate", "Marksheet", "Passport"]),
         must("Address Proof", "address", ["Utility Bill", "Rental Agreement", "Passport"]),
-        must("Identity Proof", "identity", ["Aadhaar Card", "Voter ID", "Driving License", "Passport", "PAN Card"]),
+        may("Identity Proof", "identity", "Asked by some offices", ["Aadhaar Card", "Voter ID", "Driving License", "Passport", "PAN Card"]),
         must("Passport Photos", "identity"),
         may("Marriage Invitation", "purpose", "If available"),
         may("Affidavit", "purpose", "Asked by some institutions"),
@@ -3291,7 +3138,7 @@ const EVENTS = [
       name: "Death certificate application",
       blurb: "Municipal registration",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Voter ID", "Passport", "Ration Card", "Driving License"]),
         must("Hospital Death Report", "purpose", ["Medical Certificate of Cause of Death (Form 4A)", "Cremation or Burial Slip", "Police Report", "Court Order"]),
@@ -3301,13 +3148,6 @@ const EVENTS = [
         may("Affidavit", "purpose", "Asked by some institutions"),
       ],
       sources: [
-        {
-          name: "District North West, Govt of NCT of Delhi",
-          kind: "government",
-          page: "Death Certificate",
-          section: "Documents to be attached with the Application Form",
-          url: "https://dmnorthwest.delhi.gov.in/service/apply-for-death-certificate/#:~:text=Documents%20to%20be%20attached",
-        },
         {
           name: "Sewa Setu, Government of Assam",
           kind: "government",
@@ -3325,7 +3165,7 @@ const EVENTS = [
       name: "Newborn documentation",
       blurb: "First documents",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Birth Certificate", "relationship", ["Document proving legal guardianship"]),
         must("Aadhaar Card", "identity"),
@@ -3357,37 +3197,23 @@ const EVENTS = [
       name: "Add family member to insurance",
       blurb: "Spouse or child",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
-        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Passport", "Driving License", "Voter ID"]),
-        must("Address Proof", "address", ["Aadhaar Card", "Utility Bill", "Passport", "Driving License", "Ration Card"]),
+        may("Identity Proof", "identity", "Asked by some offices", ["Aadhaar Card", "PAN Card", "Passport", "Driving License", "Voter ID"]),
+        may("Address Proof", "address", "Asked by some offices", ["Aadhaar Card", "Utility Bill", "Passport", "Driving License", "Ration Card"]),
         must("Date of Birth Proof", "identity", ["Birth Certificate", "Aadhaar Card", "PAN Card", "Passport", "Voter ID", "School Leaving Certificate"]),
-        must("Passport Photos", "identity"),
+        may("Passport Photos", "identity", "Asked by some offices"),
         may("Medical Reports", "qualification", "If asked by the insurer"),
         may("Birth Certificate", "relationship", "If adding a newborn"),
         may("Discharge Summary", "purpose", "If adding a newborn"),
       ],
       sources: [
         {
-          name: "HDFC ERGO",
-          kind: "private",
-          page: "Family Health Insurance",
-          section: "What Are the Documents Required to Buy Family Health Insurance?",
-          url: "https://www.hdfcergo.com/health-insurance/family-health-insurance#:~:text=What%20Are%20the%20Documents%20Required",
-        },
-        {
-          name: "ICICI Lombard",
-          kind: "private",
-          page: "Family Health Insurance",
-          section: "Documents Required to Buy Family Health Insurance",
-          url: "https://www.icicilombard.com/health-insurance/family-health-insurance#:~:text=Documents%20Required%20to%20Buy",
-        },
-        {
           name: "Star Health",
           kind: "private",
           page: "Health Insurance for Newborn Baby",
-          section: "How to Add a Newborn to Your Family Health Insurance?",
-          url: "https://www.starhealth.in/health-insurance/health-insurance-for-newborn/#:~:text=How%20to%20Add%20a%20Newborn",
+          section: "To enrol your newborn in your health insurance plan, you must submit the following documen",
+          url: "https://www.starhealth.in/health-insurance/health-insurance-for-newborn/#:~:text=To%20enrol%20your%20newborn%20in%20your",
         },
       ],
     },
@@ -3399,26 +3225,12 @@ const EVENTS = [
       name: "Will preparation",
       blurb: "Document your wishes",
       basis: "institution",
-      reviewed: "2026-10-06",
       needs: [
-        must("Will", "purpose"),
-        may("Identity Proof", "identity", "If registering or depositing the will", ["Photo ID"]),
-      ],
-      sources: [
-        {
-          name: "Registration and Stamps Department, Telangana",
-          kind: "government",
-          page: "FAQs-Registration (Will)",
-          section: "Will (FAQ answers; no single heading, the answers sit in the registration FAQ list)",
-          url: "https://registration.telangana.gov.in/faqsRegistration.htm#:~:text=Attestation%20by%20two%20witnesses",
-        },
-        {
-          name: "Department of Registration and Stamps, Maharashtra",
-          kind: "government",
-          page: "Citizen's Charter",
-          section: "8. Deposit, Withdrawal and Opening of sealed cover of Will",
-          url: "https://grievanceigr.maharashtra.gov.in/pdf/Citizen_Charter_English.pdf",
-        },
+        must("Identity Proof", "identity"),
+        must("Property Ownership Proof", "ownership"),
+        must("Investment Statement", "purpose"),
+        must("Bank Statement", "income"),
+        must("Nominee Form", "relationship"),
       ],
     },
   ),
@@ -3429,7 +3241,7 @@ const EVENTS = [
       name: "Nominee updates",
       blurb: "After life changes",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Nominee Form", "relationship"),
         may("Insurance Policy", "ownership", "Asked by some insurers"),
@@ -3439,18 +3251,11 @@ const EVENTS = [
       ],
       sources: [
         {
-          name: "LIC of India",
-          kind: "public",
-          page: "Policy Conditions (Nomination)",
-          section: "Nomination:",
-          url: "https://licindia.in/policy-conditions#:~:text=Any%20change%20or%20cancellation%20of%20nomination",
-        },
-        {
           name: "NSDL",
           kind: "institution",
           page: "Investor FAQ (Nomination)",
-          section: "Nomination: What is the procedure for appointing a nominee? / Can the nominee be changed?",
-          url: "https://nsdl.com/investor/investor-faq#:~:text=Nomination%20form%20needs%20to%20be%20filled%20up",
+          section: "Q10: What is the procedure for appointing a nominee?",
+          url: "https://nsdl.com/investor/investor-faq#:~:text=procedure%20for%20appointing%20a%20nominee",
         },
       ],
     },
@@ -3462,7 +3267,7 @@ const EVENTS = [
       name: "Life insurance claim",
       blurb: "Beneficiary claim",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Claim Form", "purpose"),
         must("Death Certificate", "relationship"),
@@ -3507,7 +3312,7 @@ const EVENTS = [
       name: "Settlements after a death",
       blurb: "Accounts and assets",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Claim Form", "purpose"),
         must("Death Certificate", "relationship"),
@@ -3550,11 +3355,11 @@ const EVENTS = [
       name: "Legal heir certificate",
       blurb: "Establish heirship",
       basis: "institution",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Death Certificate", "relationship"),
         must("Self Declaration of Legal Heirs", "relationship", ["Affidavit"]),
-        must("Identity Proof", "identity", ["Aadhaar Card", "PAN Card", "Ration Card", "Voter ID", "Passport", "Driving License"]),
+        may("Identity Proof", "identity", "Asked by some offices", ["Aadhaar Card", "PAN Card", "Ration Card", "Voter ID", "Passport", "Driving License"]),
         may("Address Proof", "address", "Asked by some offices", ["Aadhaar Card", "Passport", "Voter ID", "Ration Card", "Utility Bill", "Rental Agreement"]),
         may("Marriage Certificate", "relationship", "Asked by some institutions", ["Passport", "Aadhaar Card"]),
         may("Birth Certificate", "relationship", "Asked by some institutions", ["Transfer Certificate"]),
@@ -3565,8 +3370,8 @@ const EVENTS = [
           name: "Chennai District, Government of Tamil Nadu",
           kind: "government",
           page: "eGovernance (e-Sevai services)",
-          section: "Required Documents for Applying:",
-          url: "https://chennai.nic.in/about-district/egovernance/#:~:text=Legal%20Heir%20Certificate",
+          section: "Required Documents for Applying",
+          url: "https://chennai.nic.in/about-district/egovernance/#:~:text=Required%20Documents%20for%20Applying",
         },
         {
           name: "District North West, Govt of NCT of Delhi",
@@ -3600,7 +3405,7 @@ const EVENTS = [
       name: "Pension application",
       blurb: "Retirement begins",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Pension Application Form", "purpose"),
         must("Passport Photos", "identity"),
@@ -3610,6 +3415,7 @@ const EVENTS = [
         may("Identity Proof", "identity", "For family members named for family pension"),
         may("Date of Birth Proof", "identity", "For family members named for family pension"),
         may("Descriptive Roll", "identity", "If claiming EPS pension from EPFO"),
+        may("Wage Particulars Certificate", "income", "If claiming EPS pension from EPFO"),
       ],
       sources: [
         {
@@ -3636,7 +3442,7 @@ const EVENTS = [
       name: "Family pension claim",
       blurb: "Survivor benefits",
       basis: "authority",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Claim Form", "purpose"),
         must("Death Certificate", "relationship"),
@@ -3648,6 +3454,8 @@ const EVENTS = [
         may("Pension Order", "ownership", "If the deceased was already a pensioner"),
         may("Date of Birth Proof", "identity", "If children are claimants", ["Birth Certificate", "School Leaving Certificate"]),
         may("Income Proof", "income", "If the claimant is not the spouse", ["ITR Acknowledgement", "Income Certificate"]),
+        may("Wage Particulars Certificate", "income", "If claiming EPS pension from EPFO"),
+        may("Family Details Form 4", "relationship", "For a central government family pension"),
       ],
       sources: [
         {
@@ -3674,7 +3482,7 @@ const EVENTS = [
       name: "What the family needs in the first 30 days",
       blurb: "After a death, before anything else",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Death Certificate", "relationship"),
         must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "Driving License", "Voter ID"]),
@@ -3718,7 +3526,7 @@ const EVENTS = [
       name: "Term life insurance",
       blurb: "Buying cover",
       basis: "convention",
-      reviewed: "2026-10-06",
+      reviewed: "2026-10-07",
       needs: [
         must("Identity Proof", "identity", ["Aadhaar Card", "Passport", "Voter ID", "Driving License"]),
         must("Address Proof", "address", ["Aadhaar Card", "Passport", "Voter ID", "Driving License", "Utility Bill", "Bank Statement"]),
@@ -3753,21 +3561,11 @@ const EVENTS = [
       cat: "Family & Life",
       name: "Pensioner life certificate",
       blurb: "Yearly, to keep the pension running",
-      basis: "authority",
-      reviewed: "2026-10-06",
+      basis: "convention",
       needs: [
         must("Aadhaar Card", "identity"),
         may("Pension Order", "purpose", "For the pension payment order number"),
         must("Bank Account Details", "ownership", ["Bank Account Proof"]),
-      ],
-      sources: [
-        {
-          name: "State Bank of India",
-          kind: "public",
-          page: "Digital Life Certificate (Jeevan Pramaan)",
-          section: "Life Certificate/Digital Life Certificate (Jeevan Pramaan)",
-          url: "https://sbi.bank.in/web/personal-banking/information-services/government-business/digital-life-certificate#:~:text=Digital%20Life%20Certificate",
-        },
       ],
     },
   ),
@@ -5772,7 +5570,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
         }}
       >
         <div style={{ background: T.panel, padding: 24, borderBottom: `1px solid ${T.border}`, position: "relative" }}>
-          <button onClick={onClose} style={{ position: "absolute", top: 16, right: 16, ...btnGhost, padding: 8 }}>
+          <button onClick={onClose} aria-label="Close" data-pack-close style={{ position: "absolute", top: 16, right: 16, ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -5897,6 +5695,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                             {curatedLinks.map((l: PackLink) => (
                               <a
                                 key={l.url}
+                                data-pack-link={ev.id}
                                 href={l.url}
                                 target="_blank"
                                 rel="noreferrer noopener"
@@ -6032,11 +5831,13 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             {rows
               .filter((r) => r.have)
               .map((r) => {
-                const d = satisfyingDoc(r.label, store.docs, store.country);
+                /* The document that met it, by whichever route: its own name, what it proves, or an
+                   accepted alternative. The row and the score must point at the same document. */
+                const d = store.docs.find((x: Doc) => x.docType === r.via) || satisfyingDoc(r.label, store.docs, store.country);
                 const isOpen = expanded === r.label;
                 const reuse = otherPacks(d?.docType || r.label);
                 return (
-                  <div key={r.label} style={{ borderTop: `1px solid ${T.border}` }}>
+                  <div key={r.label} data-req={r.label} data-held="yes" style={{ borderTop: `1px solid ${T.border}` }}>
                     <button
                       onClick={() => setExpanded(isOpen ? null : r.label)}
                       style={{
@@ -6158,7 +5959,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                   const need: Need | undefined = (ev.needs || []).find((n: Need) => n.doc === r.label);
                   const cond = need ? need.need === "conditional" : (ev.conditional || []).includes(r.label);
                   return (
-                    <div key={r.label} style={{ borderTop: `1px solid ${T.border}` }}>
+                    <div key={r.label} data-req={r.label} data-held="no" style={{ borderTop: `1px solid ${T.border}` }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px" }}>
                         <span
                           style={{
