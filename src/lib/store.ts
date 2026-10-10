@@ -65,11 +65,11 @@ interface State {
 
 /* ── members (enterprise-neutral) ── */
 const seedMembers: Member[] = [
-  { id: "you", name: "Arjun Iyer", relation: "Self", color: "#5B8DEF", dob: "1985-06-14", bloodGroup: "O+", access: "Owner" },
-  { id: "spouse", name: "Divya Iyer", relation: "Spouse", color: "#9B7BE8", dob: "1987-02-09", bloodGroup: "A+", access: "Full member" },
-  { id: "father", name: "Ramesh Iyer", relation: "Father", color: "#2FB68A", dob: "1954-11-03", bloodGroup: "B+", access: "Emergency access" },
-  { id: "mother", name: "Lakshmi Iyer", relation: "Mother", color: "#F472B6", dob: "1958-08-27", bloodGroup: "O-", access: "Emergency access" },
-  { id: "son", name: "Aditya Iyer", relation: "Son", color: "#D9B86A", dob: "2016-04-12", bloodGroup: "O+", access: "View only" },
+  { id: "you", name: "Arjun Iyer", relation: "Self", color: "var(--color-person-1)", dob: "1985-06-14", bloodGroup: "O+", access: "Owner" },
+  { id: "spouse", name: "Divya Iyer", relation: "Spouse", color: "var(--color-person-2)", dob: "1987-02-09", bloodGroup: "A+", access: "Full member" },
+  { id: "father", name: "Ramesh Iyer", relation: "Father", color: "var(--color-person-3)", dob: "1954-11-03", bloodGroup: "B+", access: "Emergency access" },
+  { id: "mother", name: "Lakshmi Iyer", relation: "Mother", color: "var(--color-person-4)", dob: "1958-08-27", bloodGroup: "O-", access: "Emergency access" },
+  { id: "son", name: "Aditya Iyer", relation: "Son", color: "var(--color-person-5)", dob: "2016-04-12", bloodGroup: "O+", access: "View only" },
 ];
 
 
@@ -589,7 +589,7 @@ const seedCare: Record<string, CareProfile> = {
 };
 
 
-const emptyOwner: Member = { id: "you", name: "You", relation: "Self", color: "#5B8DEF", access: "Owner" };
+const emptyOwner: Member = { id: "you", name: "You", relation: "Self", color: "var(--color-person-1)", access: "Owner" };
 const EMPTY: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" | "currency" | "country" | "packSkips" | "nationality"> = {
   members: [emptyOwner],
   docs: [],

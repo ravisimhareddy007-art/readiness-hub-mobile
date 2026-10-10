@@ -17,22 +17,21 @@ function NotFoundComponent() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0B1220",
-        color: "#E6EBF5",
+        background: "var(--color-surface-canvas)",
+        color: "var(--color-text-primary)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: 24,
-        fontFamily: "var(--font-family-ui)",
         textAlign: "center",
       }}
     >
       <div style={{ maxWidth: 360 }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#FFFFFF" }}>That page isn't here</div>
-        <p style={{ fontSize: 14, color: "#8A97AE", lineHeight: 1.6, margin: "8px 0 20px" }}>Head back home and carry on.</p>
+        <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: "var(--color-text-heading)" }}>That page isn't here</div>
+        <p style={{ fontSize: "var(--text-body-md-size)", color: "var(--color-text-secondary)", lineHeight: 1.6, margin: "8px 0 20px" }}>Head back home and carry on.</p>
         <a
           href="/"
-          style={{ display: "inline-block", padding: "11px 18px", borderRadius: 12, border: "none", background: "#D9B86A", color: "#10182A", fontWeight: 700, fontSize: 14, textDecoration: "none" }}
+          style={{ display: "inline-block", padding: "11px 18px", borderRadius: "var(--surface-radius)", border: "none", background: "var(--color-action-primary-default)", color: "var(--color-text-on-brand)", fontWeight: 700, fontSize: "var(--text-body-md-size)", textDecoration: "none" }}
         >
           Go home
         </a>
@@ -52,19 +51,18 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
     <div
       style={{
         minHeight: "100vh",
-        background: "#0B1220",
-        color: "#E6EBF5",
+        background: "var(--color-surface-canvas)",
+        color: "var(--color-text-primary)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: 24,
-        fontFamily: "var(--font-family-ui)",
         textAlign: "center",
       }}
     >
       <div style={{ maxWidth: 360 }}>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#FFFFFF" }}>Something didn't load</div>
-        <p style={{ fontSize: 14, color: "#8A97AE", lineHeight: 1.6, margin: "8px 0 20px" }}>
+        <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: "var(--color-text-heading)" }}>Something didn't load</div>
+        <p style={{ fontSize: "var(--text-body-md-size)", color: "var(--color-text-secondary)", lineHeight: 1.6, margin: "8px 0 20px" }}>
           Your documents are safe on this device. Try again, or head back home.
         </p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
@@ -73,13 +71,13 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
               router.invalidate();
               reset();
             }}
-            style={{ padding: "11px 18px", borderRadius: 12, border: "none", background: "#D9B86A", color: "#10182A", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+            style={{ padding: "11px 18px", borderRadius: "var(--surface-radius)", border: "none", background: "var(--color-action-primary-default)", color: "var(--color-text-on-brand)", fontWeight: 700, fontSize: "var(--text-body-md-size)", cursor: "pointer" }}
           >
             Try again
           </button>
           <a
             href="/"
-            style={{ padding: "11px 18px", borderRadius: 12, border: "1px solid #27324A", color: "#E6EBF5", fontWeight: 700, fontSize: 14, textDecoration: "none" }}
+            style={{ padding: "11px 18px", borderRadius: "var(--surface-radius)", border: "1px solid var(--color-border-default)", color: "var(--color-text-primary)", fontWeight: 700, fontSize: "var(--text-body-md-size)", textDecoration: "none" }}
           >
             Go home
           </a>
@@ -94,7 +92,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#0B1220" },
+      { name: "theme-color", content: "#131019" }, /* token-source */ // meta tags cannot read CSS; this is color/surface/canvas (dark),
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: "ReadiNes" },
       { name: "application-name", content: "ReadiNes" },

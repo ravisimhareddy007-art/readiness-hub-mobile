@@ -1,3 +1,5 @@
+// Server-rendered error page: it ships before any stylesheet, so it carries the light-theme values inline.
+const E = { canvas: "#F6F7FA", paper: "#FFFFFF", ink: "#1B1626", muted: "#5D5869", border: "#D8D9E3", brand: "#5E3A99", onBrand: "#FFFFFF", h1: "1.25rem", radius: "8px" }; /* token-source */
 export function renderErrorPage(): string {
   return `<!doctype html>
 <html lang="en">
@@ -6,14 +8,14 @@ export function renderErrorPage(): string {
     <title>This page didn't load</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-      body { font: 15px/1.5 system-ui, -apple-system, sans-serif; background: #fafafa; color: #111; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 4px; }
+      body { font: 15px/1.5 system-ui, -apple-system, sans-serif; background: ${E.canvas}; color: ${E.ink}; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 4px; }
       .card { max-width: 28rem; width: 100%; text-align: center; padding: 2rem; }
-      h1 { font-size: 1.25rem; margin: 0 0 0.5rem; }
-      p { color: #4b5563; margin: 0 0 1.5rem; }
+      h1 { font-size: ${E.h1}; margin: 0 0 0.5rem; }
+      p { color: ${E.muted}; margin: 0 0 1.5rem; }
       .actions { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
-      a, button { padding: 0.5rem 1rem; border-radius: 0.375rem; font: inherit; cursor: pointer; text-decoration: none; border: 1px solid transparent; }
-      .primary { background: #111; color: #fff; }
-      .secondary { background: #fff; color: #111; border-color: #d1d5db; }
+      a, button { padding: 0.5rem 1rem; border-radius: ${E.radius}; font: inherit; cursor: pointer; text-decoration: none; border: 1px solid transparent; }
+      .primary { background: ${E.brand}; color: ${E.onBrand}; }
+      .secondary { background: ${E.paper}; color: ${E.ink}; border-color: ${E.border}; }
     </style>
   </head>
   <body>

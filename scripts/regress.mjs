@@ -89,7 +89,7 @@ let dsFiles = 0, dsViolations = 0;
     ["literal colour", [/(?<!&)#[0-9a-f]{3}([0-9a-f]{3})?\b/gi, /\brgba?\(/gi, /\bhsla?\(/gi], true],
     ["literal font size", [/font-size\s*:\s*\d/gi, /fontSize\s*:\s*['"]?\d/gi, /text-\[\d/gi]],
     ["literal radius or shadow", [/border-radius\s*:\s*\d/gi, /borderRadius\s*:\s*['"]?\d/gi, /box-shadow\s*:\s*\d/gi, /rounded-\[/gi]],
-    ["literal font family", [/font-family\s*:/gi, /fontFamily\s*:/gi, /fonts\.googleapis/gi]],
+    ["literal font family", [/font-family\s*:(?!\s*(?:var\(--font-family-|inherit))/gi, /fontFamily\s*:(?!\s*(?:v\("font-family-|"var\(--font-family-|"inherit"))/gi, /fonts\.googleapis/gi]],
     ["font size below 12px", [/font-?size\s*:\s*['"]?\s*(?<![\d.])(1[01]|[1-9])(\.\d+)?px\b/gi]],
     ["tappable height below 44", [/(?<!line)(?<!line-)height\s*:\s*(2[0-9]|3[0-9]|4[0-3])px/gi], false, /button|onClick|role="button"/i],
   ];
