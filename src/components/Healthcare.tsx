@@ -1,4 +1,5 @@
 import { toneFor } from "../App";
+import { Fab } from "@/ui";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav } from "./MobileNav";
@@ -645,9 +646,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           <MNav title="Health" aria-label="Health" />
           {/* Reachable on a large phone: the top-right corner is not, and adding is the most
               frequent action in this module. */}
-          <button className="lh-fab" onClick={() => setAddSheet(true)} title="Add" aria-label="Add">
-            <Plus size={22} />
-          </button>
+          <Fab onPress={() => setAddSheet(true)} label="Add" />
           {/* Who you are looking at, always on screen. Tapping switches without leaving Health. */}
           <div className="lh-swrail">
             {s.members.map((mm) => {
@@ -3123,7 +3122,6 @@ const CSS = () => `
 .lh-root input,.lh-root select,.lh-root textarea{min-width:0}
 .lh-h2{font-size:var(--text-body-lg-size) !important;letter-spacing:-0.015em}
 .lh-tab{font-size:var(--text-body-sm-size);padding:9px 8px;gap:0}
-.lh-fab{position:fixed;right:16px;bottom:calc(var(--tabbar-height) + 16px + env(safe-area-inset-bottom,0px));z-index:55;width:56px;height:56px;border-radius:var(--pill-radius);display:grid;place-items:center;border:0;background:${C.action};color:var(--color-text-on-brand);box-shadow:var(--elevation-overlay);cursor:pointer}
 .lh-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0 4px}
 .lh-act{display:flex;align-items:center;gap:9px;min-height:52px;padding:10px 12px;border-radius:var(--surface-radius);border:1px solid ${C.border};background:${C.panel2};color:${C.text};font-size:var(--text-body-sm-size);font-weight:500;font:inherit;cursor:pointer;text-align:left}
 .lh-act span{min-width:0;overflow:hidden;text-overflow:ellipsis}

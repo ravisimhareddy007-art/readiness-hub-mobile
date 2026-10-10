@@ -84,6 +84,7 @@ import { seededFor } from "@/lib/country-requirements";
 import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav, MobileNavCtx } from "./components/MobileNav";
+import { Fab, IconWell, ListRow } from "@/ui";
 
 /* ── design system: every value resolves through src/styles/tokens.css (ReadiNes DS 1.0) ──
    T, A and SEM hold CSS variable references only. Light and dark are both authored in tokens.css;
@@ -197,9 +198,10 @@ button,input,select,textarea{font:inherit}
 .lp-mh-insrail::-webkit-scrollbar{display:none}
 .lp-chip{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 9px;border-radius:var(--control-radius);font-size:var(--text-caption-md-size);font-weight:700;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap}
 .lp-tap{position:relative;cursor:pointer}
+.lp-row-selected{background:var(--color-selection-surface)!important}
+.lp-packrow{background:var(--color-surface-default);border:1px solid var(--color-border-subtle);border-radius:var(--surface-radius)}
 .lp-tap::after{content:"";position:absolute;inset:-8px}
 .lp-iconbtn{min-width:44px;min-height:44px;display:inline-grid;place-items:center}
-.lp-fab{position:fixed;right:16px;bottom:calc(var(--tabbar-height) + 16px + env(safe-area-inset-bottom,0px));z-index:55;width:56px;height:56px;border-radius:var(--pill-radius);border:none;display:grid;place-items:center;background:var(--color-action-primary-default);color:var(--color-text-on-brand);box-shadow:var(--elevation-overlay);cursor:pointer}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
@@ -3774,7 +3776,6 @@ const btnGold: CSSProperties = {
   border: "none",
   borderRadius: "var(--surface-radius)",
   padding: "12px 16px",
-  minHeight: "var(--control-size-default)",
   fontSize: "var(--text-body-md-size)",
   fontWeight: 700,
   cursor: "pointer",
@@ -4119,74 +4120,26 @@ function Home({ store, go, toast }: any) {
             )}
           </div>
           {needs.length === 0 ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                padding: "16px",
-                borderTop: `1px solid ${T.border}`,
-              }}
-            >
-              <CheckCircle2 size={19} color={T.mint} />
-              <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white }}>
-                  You are up to date
-                </span>
-                <span style={{ display: "block", fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4 }}>
-                  Nothing is due, expiring, or missing.
-                </span>
-              </span>
-            </div>
+            <ListRow
+              leading={<IconWell color={SEM.success}><CheckCircle2 size={16} /></IconWell>}
+              title="You are up to date"
+              subtitle="Nothing is due, expiring, or missing."
+            />
           ) : (
             (showAll ? needs : needs.slice(0, 6)).map((n: any) => (
-              <div
+              <ListRow
                 key={n.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "12px 16px",
-                  borderTop: `1px solid ${T.border}`,
-                }}
-              >
-                <span
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: "var(--surface-radius)",
-                    background: al(n.color, 0.12),
-                    display: "grid",
-                    placeItems: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <n.icon size={15} color={n.color} />
-                </span>
-                <span
-                  style={{ flex: 1, minWidth: 0, cursor: n.open ? "pointer" : "default" }}
-                  onClick={() => n.open?.()}
-                >
-                  <span style={{ display: "block", fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white, lineHeight: 1.3 }}>
-                    {n.who && <b style={{ color: T.white, fontWeight: 600 }}>{n.who} · </b>}
-                    {n.label}
-                  </span>
-                  <span style={{ display: "block", fontSize: "var(--text-body-sm-size)", color: n.tone, marginTop: 4 }}>{n.when}</span>
-                </span>
-                <button
-                  onClick={n.run}
-                  style={{
-                    ...btnGhost,
-                    padding: "8px 12px",
-                    fontSize: "var(--text-caption-md-size)",
-                    minHeight: "var(--control-size-default)",
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                  }}
-                >
-                  {n.action}
-                </button>
-              </div>
+                leading={<IconWell color={n.color}><n.icon size={16} /></IconWell>}
+                wrap
+                title={<><span onClick={() => n.open?.()} style={{ cursor: n.open ? "pointer" : "default" }}>{n.who && <b style={{ fontWeight: 600 }}>{n.who} · </b>}{n.label}</span></>}
+                subtitle={n.when}
+                subtitleColor={n.tone}
+                trailing={
+                  <button onClick={n.run} style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: "var(--control-size-default)", whiteSpace: "nowrap", flexShrink: 0 }}>
+                    {n.action}
+                  </button>
+                }
+              />
             ))
           )}
           {needs.length > 6 && (
@@ -4719,9 +4672,7 @@ function Packages({ store, toast }: any) {
             </>
           }
         />
-        <button className="lp-fab" onClick={() => setCreating(true)} title="Create a custom pack" aria-label="Create a custom pack">
-          <Plus size={22} />
-        </button>
+        <Fab onPress={() => setCreating(true)} label="Create a custom pack" />
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
           <div
             style={{
@@ -4780,38 +4731,17 @@ function Packages({ store, toast }: any) {
           {list.map((e) => {
             const { score, got, total } = evalEvent(e, have, country);
             return (
-              <button
+              <ListRow
                 key={e.id}
-                onClick={() => setOpen(e)}
-                style={{
-                  textAlign: "left",
-                  cursor: "pointer",
-                  background: T.panel,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: "var(--surface-radius)",
-                  padding: 12,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  width: "100%",
-                  maxWidth: "100%",
-                }}
-              >
-                <Ring score={score} size={40} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                    <span style={{ width: 22, height: 22, borderRadius: "var(--surface-radius)", display: "grid", placeItems: "center", flexShrink: 0, background: al(e.accent, 0.12) }}>
-                      <e.icon size={12} color={e.accent} />
-                    </span>
-                    <b style={{ color: T.white, fontSize: "var(--text-label-lg-size)", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</b>
-                    {e.custom && <span style={pill(T.gold)}>custom</span>}
-                  </div>
-                  <div style={{ fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4 }}>
-                    {score === 100 ? "Everything in place" : `${got} of ${total} ready`}
-                  </div>
-                </div>
-                {score === 100 ? <Stamp /> : <ChevronRight size={16} color={T.faint} />}
-              </button>
+                onPress={() => setOpen(e)}
+                divider={false}
+                className="lp-packrow"
+                leading={<Ring score={score} size={40} />}
+                title={<span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0, maxWidth: "100%" }}><IconWell size="sm" color={e.accent}><e.icon size={12} /></IconWell><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</span>{e.custom && <span style={pill(T.gold)}>custom</span>}</span>}
+                subtitle={score === 100 ? "Everything in place" : `${got} of ${total} ready`}
+                trailing={score === 100 ? <Stamp /> : undefined}
+                chevron={score !== 100}
+              />
             );
           })}
         </div>
@@ -6465,9 +6395,7 @@ function Documents({ store, toast, go }: any) {
     return (
       <div>
         <MNav title="Documents" aria-label="Documents" />
-        <button className="lp-fab" onClick={() => setAddSheet(true)} title="Add" aria-label="Add">
-          <Plus size={22} />
-        </button>
+        <Fab onPress={() => setAddSheet(true)} label="Add" />
         <div
           style={{
             display: "flex",
@@ -6574,43 +6502,29 @@ function Documents({ store, toast, go }: any) {
               const Ic = CAT_META[d.category as Category].icon;
               const checked = sel.has(d.id);
               return (
-                <div
+                <ListRow
                   key={d.id}
-                  onClick={() => (selMode ? toggle(d.id) : setOpen(d))}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "12px 16px",
-                    borderTop: i ? `1px solid ${T.border}` : "none",
-                    cursor: "pointer",
-                    background: checked ? T.raised : "transparent",
-                  }}
-                >
-                  {selMode && (
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={() => toggle(d.id)}
-                      style={{ accentColor: SEM.action, width: 18, height: 18, flexShrink: 0 }}
-                    />
-                  )}
-                  <span
-                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: "var(--surface-radius)", background: al(col, 0.13), flexShrink: 0 }}
-                  >
-                    <Ic size={15} color={col} />
-                  </span>
-                  <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {d.docType}
-                    </span>
-                    <span style={{ display: "block", fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {nameOf(d.memberId).split(" ")[0]} · {d.expiry ? <>{expiryCell(d)}</> : fdate(d.addedAt)}
-                    </span>
-                  </span>
-                  <ChevronRight size={15} color={T.faint} style={{ flexShrink: 0 }} />
-                </div>
+                  onPress={() => (selMode ? toggle(d.id) : setOpen(d))}
+                  divider={!!i}
+                  leading={
+                    <>
+                      {selMode && (
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={() => toggle(d.id)}
+                          style={{ accentColor: SEM.action, width: 18, height: 18, flexShrink: 0 }}
+                        />
+                      )}
+                      <IconWell color={col}><Ic size={16} /></IconWell>
+                    </>
+                  }
+                  title={d.docType}
+                  subtitle={<>{nameOf(d.memberId).split(" ")[0]} · {d.expiry ? <>{expiryCell(d)}</> : fdate(d.addedAt)}</>}
+                  chevron
+                  className={checked ? "lp-row-selected" : undefined}
+                />
               );
             })
           )}
@@ -7826,82 +7740,42 @@ function Wealth({ store, go, toast }: any) {
     const Ic = h.kind === "liability" ? Landmark : h.kind === "cover" ? ShieldCheck : Coins;
     const guardedKind = h.kind === "asset" || h.kind === "cover";
     return (
-      <div
+      <ListRow
         className="lp-wrow lp-hrow"
-        onClick={() => setEdit(h)}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "16px 16px",
-          borderTop: `1px solid ${T.border}`,
-          cursor: "pointer",
-        }}
-      >
-        <span
-          style={{
-            display: "grid",
-            placeItems: "center",
-            width: 36,
-            height: 36,
-            borderRadius: "var(--surface-radius)",
-            background: al(accent, 0.13),
-          }}
-        >
-          <Ic size={16} color={accent} />
-        </span>
-        <div className="lp-wname" style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white }}>{h.name}</div>
-          <div style={{ fontSize: "var(--text-body-sm-size)", color: T.muted }}>
-            {h.type}
-            {h.institution ? ` · ${h.institution}` : ""}
-            {h.accountRef ? ` ${h.accountRef}` : ""}
-            {origLine(h) ? ` · ${origLine(h)}` : ""}
-          </div>
-          {/* Only the exception earns ink. A tick saying "nothing wrong here" spends the loudest
-              element in the UI on the default state, and repeats what Home already lists. */}
-          {(() => {
-            const missing: string[] = [];
-            if (guarded && !d) missing.push("no document");
-            if (guarded && !h.nominee) missing.push("no nominee");
-            if (!h.accessNote) missing.push(h.kind === "liability" ? "no closure instructions" : "no access note");
-            if (missing.length === 0) return null;
-            const joined = missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(", ")} and ${missing.slice(-1)}`;
+        onPress={() => setEdit(h)}
+        leading={<IconWell color={accent}><Ic size={16} /></IconWell>}
+        title={h.name}
+        subtitle={<>{h.type}{h.institution ? ` · ${h.institution}` : ""}{h.accountRef ? ` ${h.accountRef}` : ""}{origLine(h) ? ` · ${origLine(h)}` : ""}</>}
+        extra={(() => {
+          const missing: string[] = [];
+          if (guarded && !d) missing.push("no document");
+          if (guarded && !h.nominee) missing.push("no nominee");
+          if (!h.accessNote) missing.push(h.kind === "liability" ? "no closure instructions" : "no access note");
+          if (missing.length === 0) return null;
+          const joined = missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(", ")} and ${missing.slice(-1)}`;
           const text = joined.charAt(0).toUpperCase() + joined.slice(1);
-            return (
-              <span
-                className="lp-tap"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setFocusField(!d ? "doc" : !h.nominee ? "nominee" : "access");
-                  setEdit(h);
-                }}
-                style={{
-                  display: "block",
-                  fontSize: "var(--text-caption-md-size)",
-                  color: SEM.attention,
-                  marginTop: 4,
-                  }}
-              >
-                {text}
-              </span>
-            );
-          })()}
-        </div>
-        <span
-          className="lp-wamt"
-          style={{
-            fontVariantNumeric: "tabular-nums",
-            fontSize: "var(--text-body-lg-size)",
-            fontWeight: 700,
-            color: h.kind === "liability" ? T.coral : T.text,
-          }}
-        >
-          {h.kind === "liability" ? "\u2212" : ""}
-          {money(h.value || 0)}
-        </span>
-        <ChevronRight size={14} color={T.faint} />
-      </div>
+          return (
+            <span
+              className="lp-tap"
+              onClick={(e) => {
+                e.stopPropagation();
+                setFocusField(!d ? "doc" : !h.nominee ? "nominee" : "access");
+                setEdit(h);
+              }}
+              style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: SEM.attention, marginTop: 4 }}
+            >
+              {text}
+            </span>
+          );
+        })()}
+        trailing={
+          <span className="lp-wamt" style={{ fontVariantNumeric: "tabular-nums", fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: h.kind === "liability" ? T.coral : T.text, flexShrink: 0 }}>
+            {h.kind === "liability" ? "\u2212" : ""}
+            {money(h.value || 0)}
+          </span>
+        }
+        chevron
+      />
     );
   };
   const groups: [string, Holding[]][] = [
@@ -7929,9 +7803,7 @@ function Wealth({ store, go, toast }: any) {
           {isMobile ? (
             <>
               <MNav title="Wealth" aria-label="Wealth" />
-              <button className="lp-fab" onClick={() => setActSheet(true)} title="Add" aria-label="Add">
-                <Plus size={22} />
-              </button>
+              <Fab onPress={() => setActSheet(true)} label="Add" />
             </>
           ) : (
             <SectionHead
@@ -8307,37 +8179,13 @@ function Wealth({ store, go, toast }: any) {
                     const overdueFu = t.followUpOn && !settled;
                     const lent = t.direction === "paid";
                     return (
-                      <div
+                      <ListRow
                         key={t.id}
                         className="lp-wrow lp-txrow"
-                        onClick={() => setEditTx(t)}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
-                          padding: "12px 16px",
-                          borderTop: `1px solid ${T.border}`,
-                          cursor: "pointer",
-                        }}
-                      >
-                        <span
-                          style={{
-                            display: "grid",
-                            placeItems: "center",
-                            width: 34,
-                            height: 34,
-                            borderRadius: "var(--surface-radius)",
-                            background: al(settled ? T.faint : lent ? T.mint : T.coral, 0.13),
-                            flexShrink: 0,
-                          }}
-                        >
-                          <Coins size={15} color={settled ? T.faint : lent ? T.mint : T.coral} />
-                        </span>
-                        <div className="lp-wname" style={{ flex: 1, minWidth: 0, opacity: settled ? 0.6 : 1 }}>
-                          <div style={{ fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white }}>
-                            {t.counterparty || (lent ? "Lent" : "Borrowed")}
-                          </div>
-                          <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>
+                        onPress={() => setEditTx(t)}
+                        leading={<IconWell color={settled ? T.faint : lent ? T.mint : T.coral}><Coins size={16} /></IconWell>}
+                        title={<span style={{ opacity: settled ? 0.6 : 1 }}>{t.counterparty || (lent ? "Lent" : "Borrowed")}</span>}
+                        subtitle={<>
                             {t.purpose}
                             {" · "}
                             {fmtDate(t.date, { day: "numeric", month: "short" })}
@@ -8351,8 +8199,8 @@ function Wealth({ store, go, toast }: any) {
                                     ? " · follow up today"
                                     : ` · follow up in ${daysTo(t.followUpOn || "")}d`
                                 : ""}
-                          </div>
-                        </div>
+                        </>}
+                        trailing={<>
                         <span
                           className="lp-wamt"
                           style={{
@@ -8368,6 +8216,7 @@ function Wealth({ store, go, toast }: any) {
                             {settled ? "" : lent ? "owed to you" : "you owe"}
                           </span>
                         </span>
+
                         {!settled &&
                           (() => {
                             /* Same rule as the holdings list: only what is missing is said. */
@@ -8412,7 +8261,10 @@ function Wealth({ store, go, toast }: any) {
                             <Check size={12} /> Settled
                           </button>
                         )}
-                      </div>
+                      
+                        </>}
+                      />
+
                     );
                   })
                 )}
@@ -10245,17 +10097,14 @@ function DesignSystem({ store }: any) {
         </div>
       </Sec>
       <Sec t="List item">
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ width: 36, height: 36, borderRadius: "var(--surface-radius)", background: al(A.pink, 0.12), display: "grid", placeItems: "center" }}>
-            <HeartPulse size={16} color={A.pink} />
-          </span>
-          <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white }}>Annual health checkup</span>
-            <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted }}>Nov 21 · Dr. Reyes</span>
-          </span>
-          <span style={{ padding: "4px 12px", borderRadius: "var(--pill-radius)", fontSize: "var(--text-caption-md-size)", fontWeight: 700, color: SEM.success, background: al(SEM.success, 0.11) }}>in 69d</span>
-          <ChevronRight size={15} color={T.faint} />
-        </div>
+        <ListRow
+          leading={<IconWell color={A.pink}><HeartPulse size={16} /></IconWell>}
+          title="Annual health checkup"
+          subtitle="Nov 21 · Dr. Reyes"
+          trailing={<span style={pill(SEM.success)}>ready</span>}
+          chevron
+          divider={false}
+        />
       </Sec>
       <p style={{ fontSize: "var(--text-caption-md-size)", color: T.faint, lineHeight: 1.6 }}>
         Roles are locked; hex values tune against real UI. Gold appears only where readiness is the message. Changes land at the
@@ -11384,7 +11233,7 @@ function OnboardingWizard({ store, onDone }: any) {
                     }}
                   >
                     <Ic size={16} color={on ? T.gold : T.muted} />
-                    <span style={{ fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white }}>{label}</span>
+                    <span className="t-label-md" style={{ color: T.white }}>{label}</span>
                   </button>
                 );
               })}

@@ -66,6 +66,9 @@ const fontFiles = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((en
   return entry.isDirectory() ? fontFiles(path) : /\.(tsx?|jsx?|mjs|css|html|json|md|lock)$/.test(entry.name) ? [path] : [];
 });
 ban("external fonts (platform font only)", externalFontPattern, fontFiles("."));
+const notUi = (p) => !p.split(sep).join("/").startsWith("src/ui/");
+ban("floating button outside the shared Fab component (import { Fab } from \"@/ui\")", /className="l[ph]-fab"|position:\s*fixed;right:16px;bottom:calc\(var\(--tabbar-height\)/, all.filter(notUi));
+ban("hand-rolled list-row title (use ListRow from \"@/ui\")", /fontSize: "var\(--text-label-lg-size\)", fontWeight: 500, color: T\.white/, all.filter(notUi));
 
 // Design-system sweep: every colour, size, radius, shadow and font comes from src/styles/tokens.css.
 // The Inter ban above already covers the font name; it is not repeated here.
