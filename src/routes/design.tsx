@@ -1,16 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileText } from "lucide-react";
-import { ThemeProvider, tokens, typeStyle, useTheme, type Role, type Theme, type TypeName } from "@/lib/tokens";
+import { ThemeProvider, useTheme, type Theme } from "@/lib/theme";
 import { Button, Chart, Field, Input, Progress, Row, RowGroup, Screen, ScreenTitle, Section, Sheet, Stat } from "@/ui";
 
 export const Route = createFileRoute("/design")({
   head: () => ({
     meta: [
       { title: "Design system — ReadiNes" },
-      { name: "description", content: "Every ReadiNes interface primitive in every state, in dark and light." },
+      { name: "description", content: "Every ReadiNes interface primitive in every state, in the device theme, switchable to dark or light." },
       { property: "og:title", content: "Design system — ReadiNes" },
-      { property: "og:description", content: "Every ReadiNes interface primitive in every state, in dark and light." },
+      { property: "og:description", content: "Every ReadiNes interface primitive in every state, in the device theme, switchable to dark or light." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -18,33 +18,51 @@ export const Route = createFileRoute("/design")({
   component: DesignPage,
 });
 
-const S = tokens.space;
+const S = { sm: "var(--space-100)", lg: "var(--space-200)", xl: "var(--space-250)", xxl: "var(--space-300)" };
 const noop = () => {};
 
+const TYPE = ["t-display-lg", "t-display-md", "t-heading-xl", "t-heading-lg", "t-heading-md", "t-heading-sm", "t-heading-xs",
+  "t-body-lg", "t-body-md", "t-body-sm", "t-label-lg", "t-label-md", "t-label-sm", "t-caption-md", "t-numeric-lg", "t-numeric-md"];
+const COLOURS = ["color-surface-canvas", "color-surface-default", "color-surface-inset", "color-border-subtle",
+  "color-text-primary", "color-text-secondary", "color-text-tertiary", "color-action-primary-default", "color-text-on-brand",
+  "color-action-destructive-default", "color-status-success-icon", "color-status-warning-icon", "color-status-danger-icon",
+  "color-status-info-icon", "color-chart-line", "color-chart-line-alt", "color-chart-grid", "color-chart-axis", "color-chart-fill"];
+
 function DesignPage() {
+  const [theme, setTheme] = useState<Theme | undefined>(undefined);
   return (
-    <div style={{ display: "flex", flexWrap: "wrap" }}>
-      {(["dark", "light"] as Theme[]).map((th) => (
-        <div key={th} style={{ flex: "1 1 360px", minWidth: 0 }}>
-          <ThemeProvider theme={th}><Gallery /></ThemeProvider>
-        </div>
-      ))}
-    </div>
+    <ThemeProvider theme={theme}><Gallery onToggle={(cur) => setTheme(cur === "dark" ? "light" : "dark")} /></ThemeProvider>
   );
 }
 
-function Swatch({ role }: { role: Role }) {
-  const { t } = useTheme();
+/** Reads the live value from tokens.css so the label shows what the theme actually resolves to. */
+function useComputed(name: string, dep: unknown) {
+  const [val, setVal] = useState("");
+  useEffect(() => { setVal(getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim()); }, [name, dep]);
+  return val;
+}
+
+function Swatch({ name, theme }: { name: string; theme: Theme }) {
+  const val = useComputed(name, theme);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: S.sm, minWidth: 0 }}>
-      <span style={{ width: S.xxl, height: S.xxl, flexShrink: 0, borderRadius: tokens.radius.box, background: t(role), border: `1px solid ${t("border")}` }} />
-      <span style={{ ...typeStyle("secondary"), color: t("textBody"), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{role}</span>
+      <span style={{ width: S.xxl, height: S.xxl, flexShrink: 0, borderRadius: "var(--control-radius)", background: `var(--${name})`, boxShadow: "var(--elevation-raised)" }} />
+      <span className="t-body-sm" style={{ color: "var(--color-text-tertiary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name} · {val}</span>
     </div>
   );
 }
 
-function Gallery() {
-  const { theme, t } = useTheme();
+function TypeSample({ cls, theme }: { cls: string; theme: Theme }) {
+  const size = useComputed(`text-${cls.slice(2)}-size`, theme);
+  return (
+    <div className={cls} style={{ color: "var(--color-text-primary)", marginBottom: S.sm, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+      {cls} · {size}
+    </div>
+  );
+}
+
+function Gallery({ onToggle }: { onToggle: (cur: Theme) => void }) {
+  const { theme } = useTheme();
   const [text, setText] = useState("Passport");
   const [num, setNum] = useState("1200");
   const [date, setDate] = useState("2027-03-15");
@@ -53,7 +71,7 @@ function Gallery() {
   const [sel, setSel] = useState("INR");
   const [on, setOn] = useState(true);
   const [choice, setChoice] = useState("Monthly");
-  const icon = <FileText size={S.xl} />;
+  const icon = <FileText style={{ width: "var(--icon-size-md)", height: "var(--icon-size-md)" }} />;
   const series = [
     { label: "Jan", value: 5.4 }, { label: "Feb", value: 5.9 }, { label: "Mar", value: 6.1 },
     { label: "Apr", value: 5.7 }, { label: "May", value: 6.4 }, { label: "Jun", value: 6.0 },
@@ -62,17 +80,17 @@ function Gallery() {
     <Screen tabBar={false}>
       <ScreenTitle sub={`${theme} theme`}>Design system</ScreenTitle>
 
+      <div style={{ marginTop: S.lg }}>
+        <Button variant="secondary" onPress={() => onToggle(theme)}>Switch to {theme === "dark" ? "light" : "dark"}</Button>
+      </div>
+
       <Section title="Type">
-        {(Object.keys(tokens.type) as TypeName[]).map((n) => (
-          <div key={n} style={{ ...typeStyle(n), color: t("textPrimary"), marginBottom: S.sm, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {n} · {tokens.type[n].size}
-          </div>
-        ))}
+        {TYPE.map((n) => <TypeSample key={n} cls={n} theme={theme} />)}
       </Section>
 
       <Section title="Colour roles">
         <div style={{ display: "flex", flexDirection: "column", gap: S.sm }}>
-          {(Object.keys(tokens.color) as Role[]).map((r) => <Swatch key={r} role={r} />)}
+          {COLOURS.map((r) => <Swatch key={r} name={r} theme={theme} />)}
         </div>
       </Section>
 

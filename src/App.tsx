@@ -1,4 +1,4 @@
-import { ThemeProvider } from "@/lib/tokens";
+import { ThemeProvider } from "@/lib/theme";
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode, CSSProperties } from "react";
 import {
