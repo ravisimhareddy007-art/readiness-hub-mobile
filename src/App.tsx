@@ -85,68 +85,77 @@ import { BrandMark, BrandWordmark } from "./components/BrandLogo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MNav, MobileNavCtx } from "./components/MobileNav";
 
-/* ── design system: semantic tokens, two first-class themes ── */
-const T_DARK = {
-  navy: "#0B1220",
-  panel: "#131C2E",
-  raised: "#1B2740",
-  border: "#27324A",
-  gold: "#D9B86A",
-  goldBright: "#ECCB82",
-  mint: "#4FCB95",
-  coral: "#E8736A",
-  text: "#E6EBF5",
-  muted: "#8A97AE",
-  faint: "#7C8799",
-  white: "#FFFFFF",
+/* ── design system: every value resolves through src/styles/tokens.css (ReadiNes DS 1.0) ──
+   T, A and SEM hold CSS variable references only. Light and dark are both authored in tokens.css;
+   applyTheme switches data-theme on <html> and nothing else. */
+const T = {
+  navy: "var(--color-surface-canvas)",
+  panel: "var(--color-surface-default)",
+  raised: "var(--color-surface-secondary)",
+  border: "var(--color-border-subtle)",
+  gold: "var(--color-text-interactive)",
+  goldBright: "var(--color-action-primary-hover)",
+  mint: "var(--color-status-success-icon)",
+  coral: "var(--color-status-danger-icon)",
+  text: "var(--color-text-primary)",
+  muted: "var(--color-text-secondary)",
+  faint: "var(--color-text-tertiary)",
+  white: "var(--color-text-heading)",
+  onBrand: "var(--color-text-on-brand)",
+  brand: "var(--color-action-primary-default)",
+  brandTint: "var(--color-surface-brand-tint)",
 };
-const T_LIGHT = {
-  navy: "#F2F3F5",
-  panel: "#FFFFFF",
-  raised: "#EAECF0",
-  border: "#E3E6EA",
-  gold: "#866318",
-  goldBright: "#9C7420",
-  mint: "#147952",
-  coral: "#BA4238",
-  text: "#39424F",
-  muted: "#5E6674",
-  faint: "#666D7A",
-  white: "#1B2431",
+const A = {
+  blue: "var(--color-icon-interactive)",
+  purple: "var(--color-icon-interactive)",
+  teal: "var(--color-icon-interactive)",
+  pink: "var(--color-icon-interactive)",
+  green: "var(--color-status-success-icon)",
+  gold: "var(--color-icon-interactive)",
 };
-const A_DARK = { blue: "#5B8DEF", purple: "#9B7BE8", teal: "#3FB9C7", pink: "#E86A9B", green: "#4FCB95", gold: "#D9B86A" };
-const A_LIGHT = { blue: "#2C68C9", purple: "#7256C9", teal: "#12758B", pink: "#AF416E", green: "#277759", gold: "#866318" };
-/* role-locked: navy=foundation · teal=action · gold=readiness highlight · semantics stay calm */
-const SEM_DARK = { action: "#35A7A0", success: "#2FB68A", warning: "#D98A2B", attention: "#E8736A", info: "#5B8DEF" };
-const SEM_LIGHT = { action: "#077480", success: "#277759", warning: "#935D19", attention: "#A25146", info: "#366E94" };
+const SEM = {
+  action: "var(--color-action-primary-default)",
+  success: "var(--color-status-success-icon)",
+  warning: "var(--color-status-warning-icon)",
+  attention: "var(--color-status-danger-icon)",
+  info: "var(--color-status-info-icon)",
+};
 const DS = {
   space: [4, 8, 12, 16, 20, 24, 32, 40, 48, 64],
-  radius: { sm: 8, control: 10, card: 16, cardLg: 20, sheet: 24 },
-  type: { display: 32, h1: 28, h2: 22, h3: 18, body: 16, small: 14, caption: 12 },
-  motion: { fast: "120ms", standard: "200ms", slow: "320ms" },
+  radius: {
+    sm: "var(--control-radius)",
+    control: "var(--control-radius)",
+    card: "var(--tile-radius)",
+    cardLg: "var(--overlay-radius)",
+    sheet: "var(--overlay-radius)",
+  },
+  type: {
+    display: "var(--text-display-lg-size)",
+    h1: "var(--text-display-md-size)",
+    h2: "var(--text-heading-lg-size)",
+    h3: "var(--text-heading-sm-size)",
+    body: "var(--text-body-lg-size)",
+    small: "var(--text-body-md-size)",
+    caption: "var(--text-caption-md-size)",
+  },
+  motion: { fast: "var(--motion-duration-fast)", standard: "var(--motion-duration-default)", slow: "var(--motion-duration-slow)" },
 };
-const T: typeof T_DARK = { ...T_DARK };
-const A: typeof A_DARK = { ...A_DARK };
-const SEM: typeof SEM_DARK = { ...SEM_DARK };
+/* Tinted fill from a token: al(T.brand, 0.12) → 12% of the colour over transparent. */
+const al = (c: string, a: number) => `color-mix(in srgb, ${c} ${Math.round(a * 100)}%, transparent)`;
 let _appliedTheme = "";
-const inkOf = (c: string) => (_appliedTheme === "light" ? `color-mix(in srgb, ${c} 62%, #1B2431)` : c);
+const inkOf = (c: string) => c;
 function applyTheme(theme: string) {
   if (theme === _appliedTheme) return;
   _appliedTheme = theme;
-  Object.assign(T, theme === "light" ? T_LIGHT : T_DARK);
-  Object.assign(A, theme === "light" ? A_LIGHT : A_DARK);
-  Object.assign(SEM, theme === "light" ? SEM_LIGHT : SEM_DARK);
   if (typeof document !== "undefined") document.documentElement.dataset.theme = theme === "light" ? "light" : "dark";
 }
 
 const APPCSS = `
-:root{--lpv-action:#35A7A0;--lpv-actionink:#0B1220;--lpv-shadow:rgba(0,0,0,.5);--lpv-shadow-soft:rgba(0,0,0,.18);--lpv-bandtext:#FFFFFF;--lpv-bandsub:#8A97AE;--lpv-bandbtn:#131C2E;--lpv-bandbtnb:#27324A;--lpv-bandicon:#8A97AE;--lpv-bartext:#8A97AE;--lpv-baractive:#35A7A0;--lpv-barpill:#1B2740;--m-fast:120ms;--m-std:200ms;--m-slow:320ms;--r-sm:8px;--r-ctl:10px;--r-card:16px;--r-sheet:24px;--lpv-bg:#0B1220;--lpv-panel:#131C2E;--lpv-raised:#1B2740;--lpv-border:#27324A;--lpv-text:#E6EBF5;--lpv-muted:#8A97AE;--lpv-gold:#D9B86A;--lpv-goldb:#ECCB82;--lpv-golddark:#10182A;--lpv-barbg:rgba(11,18,32,.96);--lpv-scrim:rgba(4,8,16,.55);--lpv-fabshadow:rgba(217,184,106,.35)}
-[data-theme="light"]{--lpv-action:#077480;--lpv-actionink:#FFFFFF;--lpv-shadow:rgba(16,24,40,.18);--lpv-shadow-soft:rgba(16,24,40,.08);--lpv-bandtext:#1B2431;--lpv-bandsub:#5E6674;--lpv-bandbtn:#FFFFFF;--lpv-bandbtnb:#E3E6EA;--lpv-bandicon:#5E6674;--lpv-bartext:#5E6674;--lpv-baractive:#077480;--lpv-barpill:#EAECF0;--lpv-bg:#F2F3F5;--lpv-panel:#FFFFFF;--lpv-raised:#EAECF0;--lpv-border:#E3E6EA;--lpv-text:#1B2431;--lpv-muted:#5E6674;--lpv-gold:#866318;--lpv-goldb:#9C7420;--lpv-golddark:#FFFFFF;--lpv-barbg:rgba(247,248,250,.96);--lpv-scrim:rgba(18,22,30,.38);--lpv-fabshadow:rgba(173,127,31,.28)}
-[data-theme="light"] .lp-card{box-shadow:0 1px 2px rgba(16,24,40,.04),0 10px 28px rgba(16,24,40,.06)}
-[data-theme="light"] .lp-tabbar{box-shadow:0 -8px 26px rgba(16,24,40,.08);border-top-color:transparent}
-[data-theme="light"] .lp-sheet{box-shadow:0 -14px 44px rgba(16,24,40,.18)}
+:root{--lpv-action:var(--color-action-primary-default);--lpv-actionink:var(--color-text-on-brand);--lpv-shadow:var(--color-shadow-strong);--lpv-shadow-soft:var(--color-shadow-soft);--lpv-bandtext:var(--color-text-heading);--lpv-bandsub:var(--color-text-secondary);--lpv-bandbtn:var(--color-surface-default);--lpv-bandbtnb:var(--color-border-subtle);--lpv-bandicon:var(--color-icon-secondary);--lpv-bartext:var(--color-icon-secondary);--lpv-baractive:var(--color-text-interactive);--lpv-barpill:var(--color-surface-brand-tint);--m-fast:var(--motion-duration-fast);--m-std:var(--motion-duration-default);--m-slow:var(--motion-duration-slow);--r-sm:var(--control-radius);--r-ctl:var(--control-radius);--r-card:var(--tile-radius);--r-sheet:var(--overlay-radius);--lpv-bg:var(--color-surface-canvas);--lpv-panel:var(--color-surface-default);--lpv-raised:var(--color-surface-secondary);--lpv-border:var(--color-border-subtle);--lpv-text:var(--color-text-primary);--lpv-muted:var(--color-text-secondary);--lpv-gold:var(--color-text-interactive);--lpv-goldb:var(--color-action-primary-hover);--lpv-golddark:var(--color-text-on-brand);--lpv-barbg:color-mix(in srgb, var(--color-surface-default) 96%, transparent);--lpv-scrim:var(--color-overlay-backdrop);--lpv-fabshadow:var(--color-shadow-strong)}
+.lp-card{box-shadow:var(--elevation-raised)}
+.lp-tabbar{box-shadow:var(--elevation-overlay)}
 body{background:var(--lpv-bg)}
-:focus-visible{outline:2px solid var(--lpv-action);outline-offset:2px;border-radius:6px}
+:focus-visible{outline:2px solid var(--lpv-action);outline-offset:2px;border-radius:var(--control-radius)}
 .lp-tab:focus,.lp-tab:focus-visible,.lp-mh-mod:focus,.lp-mh-mod:focus-visible{outline:none}
 .lp-main{font-variant-numeric:tabular-nums}
 .lp-main b,.lp-main h1,.lp-main h2,.lp-main h3{letter-spacing:-0.015em}
@@ -157,15 +166,16 @@ body{background:var(--lpv-bg)}
 @media(max-width:880px){.lp-hero2{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:760px){.lp-main{padding:16px 14px 30px}}
 .lp-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:none;grid-template-columns:repeat(5,1fr);gap:0;background:var(--lpv-barbg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--lpv-border);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
-.lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:14px;font-size:12px;margin:0 3px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lp-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:48px;background:none;border:none;border-radius:var(--surface-radius);font-size:var(--text-caption-md-size);margin:0 3px;font-weight:500;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .lp-scrim{position:fixed;inset:0;z-index:65;background:var(--lpv-scrim);overscroll-behavior:contain;touch-action:none}
 /* While any sheet or overlay is open the page behind must not scroll. */
 body:has(.lp-scrim),body:has(.lp-overlay),body:has(.lh-overlay){overflow:hidden}
-.lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:18px 18px 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up 280ms cubic-bezier(.2,.9,.3,1.08);max-height:86vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
-.lp-sheet-grab{width:36px;height:4px;border-radius:2px;background:var(--lpv-border);margin:4px auto 10px}
+.lp-sheet{position:fixed;left:0;right:0;bottom:0;z-index:70;background:var(--lpv-panel);border-top:1px solid var(--lpv-border);border-radius:var(--overlay-radius) var(--overlay-radius) 0 0;padding:8px 14px calc(16px + env(safe-area-inset-bottom));animation:lp-sheet-up 280ms cubic-bezier(.2,.9,.3,1.08);max-height:86vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;box-shadow:var(--elevation-overlay)}
+button,input,select,textarea{font:inherit}
+.lp-sheet-grab{width:36px;height:4px;border-radius:var(--pill-radius);background:var(--lpv-border);margin:4px auto 10px}
 .lp-grabonly{display:none}
 @keyframes lp-spin{to{transform:rotate(360deg)}}
-.lp-sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:50px;padding:0 10px;background:none;border:none;border-radius:12px;color:var(--lpv-text);font-size:15px;font-weight:500;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
+.lp-sheet-item{display:flex;align-items:center;gap:13px;width:100%;min-height:50px;padding:0 10px;background:none;border:none;border-radius:var(--surface-radius);color:var(--lpv-text);font-size:var(--text-body-md-size);font-weight:500;cursor:pointer;text-align:left;-webkit-tap-highlight-color:transparent}
 .lp-sheet-item:active{background:var(--lpv-raised)}
 @keyframes lp-sheet-up{from{transform:translateY(36px);opacity:.6}to{transform:translateY(0);opacity:1}}
 @keyframes lp-fade{from{opacity:0}to{opacity:1}}
@@ -182,25 +192,25 @@ body:has(.lp-scrim),body:has(.lp-overlay),body:has(.lh-overlay){overflow:hidden}
 .lp-dc-meta{display:contents}
 .lp-mh-rail{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;justify-items:center;padding:6px 0 12px}
 .lp-mh-mod{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent}
-.lp-mh-modlbl{font-size:12px;font-weight:500;color:var(--lpv-muted)}
+.lp-mh-modlbl{font-size:var(--text-caption-md-size);font-weight:500;color:var(--lpv-muted)}
 .lp-mh-insrail{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .lp-mh-insrail::-webkit-scrollbar{display:none}
-.lp-chip{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 9px;border-radius:7px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap}
+.lp-chip{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 9px;border-radius:var(--control-radius);font-size:var(--text-caption-md-size);font-weight:700;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap}
 .lp-tap{position:relative;cursor:pointer}
 .lp-tap::after{content:"";position:absolute;inset:-8px}
 .lp-iconbtn{min-width:44px;min-height:44px;display:inline-grid;place-items:center}
-.lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:99px;border:none;display:grid;place-items:center;background:var(--lpv-action);box-shadow:0 12px 32px var(--lpv-shadow-soft);cursor:pointer}
+.lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:var(--pill-radius);border:none;display:grid;place-items:center;background:var(--lpv-action);box-shadow:var(--elevation-overlay);cursor:pointer}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
-input,select,textarea{font-size:16px !important;min-width:0}
-.lp-main h1{font-size:18px !important;letter-spacing:-0.02em}
+input,select,textarea{font-size:var(--text-body-lg-size) !important;min-width:0}
+.lp-main h1{font-size:var(--text-heading-sm-size) !important;letter-spacing:-0.02em}
 .lp-sh-sub{display:none !important}
 .lp-cardpad{padding:14px !important}
 .lp-chiprail{display:flex;gap:8px;overflow-x:auto;flex-wrap:nowrap !important;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-bottom:4px}
 .lp-chiprail::-webkit-scrollbar{display:none}
 .lp-modalwrap{align-items:flex-end !important;padding:0 !important}
-.lp-modalbox{width:100% !important;max-width:100% !important;max-height:88vh !important;border-radius:22px 22px 0 0 !important;border-bottom:0 !important;padding:14px 16px calc(20px + env(safe-area-inset-bottom)) !important}
+.lp-modalbox{width:100% !important;max-width:100% !important;max-height:88vh !important;border-radius:var(--overlay-radius) var(--overlay-radius) 0 0 !important;border-bottom:0 !important;padding:14px 16px calc(20px + env(safe-area-inset-bottom)) !important}
 .lp-grabonly{display:block}
 .lp-chipsticky{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px;padding:8px 14px 6px}
 .lp-hrow,.lp-txrow{display:grid !important;column-gap:12px;row-gap:6px;align-items:center}
@@ -228,18 +238,18 @@ input,select,textarea{font-size:16px !important;min-width:0}
 .lp-upmenu{left:0 !important;right:auto !important}
 .lp-searchdrop{left:0 !important;right:auto !important;width:calc(100vw - 28px) !important}
 .lp-vdiv{display:none}
-.lp-readystrip{display:grid !important;grid-template-columns:1fr auto;grid-template-areas:"label pct" "bar bar" "sum how" "lb lb" "cta cta";gap:10px 12px !important;padding:16px !important;border-radius:16px !important}
+.lp-readystrip{display:grid !important;grid-template-columns:1fr auto;grid-template-areas:"label pct" "bar bar" "sum how" "lb lb" "cta cta";gap:10px 12px !important;padding:16px !important;border-radius:var(--tile-radius) !important}
 .lp-es-lb{grid-area:lb;justify-content:flex-start}
 .lp-es-label{grid-area:label}
-.lp-es-pct{grid-area:pct;font-size:30px !important;line-height:1;letter-spacing:-0.02em}
+.lp-es-pct{grid-area:pct;font-size:var(--text-display-md-size) !important;line-height:1;letter-spacing:-0.02em}
 .lp-es-bar{grid-area:bar;min-width:0 !important;height:8px !important}
-.lp-es-sum{grid-area:sum;white-space:normal !important;font-size:12.5px !important;align-self:center}
+.lp-es-sum{grid-area:sum;white-space:normal !important;font-size:var(--text-body-sm-size) !important;align-self:center}
 .lp-es-how{grid-area:how;justify-self:end}
-.lp-es-cta{grid-area:cta;width:100%;justify-content:center;padding:12px 14px !important;font-size:14px !important}
-.lp-networth{display:grid !important;grid-template-columns:1fr 1fr;gap:14px 16px !important;font-family:inherit !important;padding:14px 16px !important}
-.lp-metric{display:flex;flex-direction:column;gap:3px;font-size:12px}
-.lp-metric b{font-size:20px;letter-spacing:-0.02em}
-.lp-ts-t{font-size:13px !important;margin-top:8px !important;line-height:1.25}
+.lp-es-cta{grid-area:cta;width:100%;justify-content:center;padding:12px 14px !important;font-size:var(--text-body-md-size) !important}
+.lp-networth{display:grid !important;grid-template-columns:1fr 1fr;gap:14px 16px !important;font:inherit !important;padding:14px 16px !important}
+.lp-metric{display:flex;flex-direction:column;gap:3px;font-size:var(--text-caption-md-size)}
+.lp-metric b{font-size:var(--text-heading-md-size);letter-spacing:-0.02em}
+.lp-ts-t{font-size:var(--text-body-sm-size) !important;margin-top:8px !important;line-height:1.25}
 .lp-ts-s{display:none}
 .lp-wrow > button{order:3}
 }
@@ -272,7 +282,7 @@ const origLine = (r: { origAmount?: number; origCurrency?: string; fxRate?: numb
 /* The only place a readiness score becomes a colour. Green means done, not nearly
    done: 94% ready for a visa appointment still means being turned away. Amber
    means the gap is small and closable. Red means materially unprepared. */
-export const toneFor = (n: number) => (n >= 100 ? T.mint : n >= 60 ? T.gold : T.coral);
+export const toneFor = (n: number) => (n >= 100 ? SEM.success : n >= 60 ? SEM.warning : SEM.attention);
 
 const CAT_META: Record<Category, { icon: any; color: string }> = {
   Identity: { icon: Fingerprint, color: A.blue },
@@ -3624,7 +3634,7 @@ function Card({ children, style, id }: { children: ReactNode; style?: CSSPropert
     <div
       id={id}
       className={hasPad ? "lp-card" : "lp-card lp-cardpad"}
-      style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 12, padding: 20, ...style }}
+      style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: "var(--surface-radius)", padding: 20, ...style }}
     >
       {children}
     </div>
@@ -3635,7 +3645,7 @@ function Eyebrow({ children }: { children: ReactNode }) {
     <div
       style={{
         fontVariantNumeric: "tabular-nums",
-        fontSize: 12,
+        fontSize: "var(--text-caption-md-size)",
         fontWeight: 700,
         letterSpacing: 2,
         textTransform: "uppercase",
@@ -3652,8 +3662,8 @@ function SectionHead({ title, sub }: { title: string; sub: string }) {
   if (isMobile) return <MNav title={title} aria-label={title} />;
   return (
     <div style={{ marginBottom: 24 }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, color: T.white, margin: 0, letterSpacing: -0.5 }}>{title}</h1>
-      <p className="lp-sh-sub" style={{ color: T.muted, fontSize: 14, marginTop: 8 }}>{sub}</p>
+      <h1 style={{ fontSize: "var(--text-display-md-size)", fontWeight: 700, color: T.white, margin: 0, letterSpacing: -0.5 }}>{title}</h1>
+      <p className="lp-sh-sub" style={{ color: T.muted, fontSize: "var(--text-body-md-size)", marginTop: 8 }}>{sub}</p>
     </div>
   );
 }
@@ -3693,7 +3703,7 @@ function Ring({ score, size = 56, color }: { score: number; size?: number; color
           placeItems: "center",
           fontVariantNumeric: "tabular-nums",
           fontWeight: 700,
-          fontSize: size >= 56 ? 15 : 12,
+          fontSize: size >= 56 ? "var(--text-body-md-size)" : "var(--text-caption-md-size)",
           color: T.white,
         }}
       >
@@ -3709,9 +3719,9 @@ function Stamp() {
         transform: "rotate(-9deg)",
         border: `2px solid ${T.mint}`,
         color: T.mint,
-        borderRadius: 12,
+        borderRadius: "var(--surface-radius)",
         padding: "4px 12px",
-        fontSize: 12,
+        fontSize: "var(--text-caption-md-size)",
         fontWeight: 700,
         letterSpacing: 2,
         fontVariantNumeric: "tabular-nums",
@@ -3728,10 +3738,10 @@ function MSheet({ title, onClose, children }: { title: string; onClose: () => vo
       <div className="lp-sheet" style={{ zIndex: 73, maxHeight: "82vh", overflowY: "auto" }} role="dialog" aria-label={title}>
         <div className="lp-sheet-grab" />
         <div style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 16, flex: 1 }}>{title}</b>
+          <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)", flex: 1 }}>{title}</b>
           <button
             onClick={onClose}
-            style={{ background: "none", border: "none", color: T.gold, fontWeight: 700, fontSize: 16, cursor: "pointer", padding: "8px 4px" }}
+            style={{ background: "none", border: "none", color: T.gold, fontWeight: 700, fontSize: "var(--text-body-lg-size)", cursor: "pointer", padding: "8px 4px" }}
           >
             Done
           </button>
@@ -3750,7 +3760,7 @@ function ModRing({ score, size = 58, color, children }: { score: number | null; 
         <circle cx={size / 2} cy={size / 2} r={r} stroke={T.raised} strokeWidth={sw} fill="none" />
         <circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={sw} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={off} />
       </svg>
-      <span style={{ position: "absolute", inset: 6, borderRadius: 999, background: T.panel, display: "grid", placeItems: "center" }}>{children}</span>
+      <span style={{ position: "absolute", inset: 6, borderRadius: "var(--pill-radius)", background: T.panel, display: "grid", placeItems: "center" }}>{children}</span>
     </span>
   );
 }
@@ -3762,9 +3772,9 @@ const btnGold: CSSProperties = {
   background: "var(--lpv-action)",
   color: "var(--lpv-actionink)",
   border: "none",
-  borderRadius: 12,
+  borderRadius: "var(--surface-radius)",
   padding: "12px 16px",
-  fontSize: 14,
+  fontSize: "var(--text-body-md-size)",
   fontWeight: 700,
   cursor: "pointer",
 };
@@ -3775,21 +3785,21 @@ const btnGhost: CSSProperties = {
   background: "var(--lpv-raised)",
   color: "var(--lpv-text)",
   border: "1px solid var(--lpv-border)",
-  borderRadius: 12,
+  borderRadius: "var(--surface-radius)",
   padding: "12px 16px",
-  fontSize: 14,
+  fontSize: "var(--text-body-md-size)",
   fontWeight: 500,
   cursor: "pointer",
 };
 const pill = (color: string): CSSProperties => ({
   fontVariantNumeric: "tabular-nums",
-  fontSize: 12,
+  fontSize: "var(--text-caption-md-size)",
   fontWeight: 700,
   color,
   background: color + "22",
   border: `1px solid ${color}44`,
   padding: "4px 12px",
-  borderRadius: 12,
+  borderRadius: "var(--surface-radius)",
 });
 
 /* ═══════════════ HOME (dashboard, not the package grid) ═══════════════ */
@@ -3814,7 +3824,7 @@ function Home({ store, go, toast }: any) {
             label: r.title,
             who: first,
             when: dd < 0 ? `${-dd} days overdue` : dd === 0 ? "Today" : `In ${dd} days`,
-            tone: dd < 0 ? T.coral : dd <= 7 ? T.gold : T.muted,
+            tone: dd < 0 ? SEM.attention : dd <= 7 ? SEM.warning : T.muted,
             sort: dd < 0 ? -1000 + dd : dd,
             icon: HeartPulse,
             color: A.pink,
@@ -3839,7 +3849,7 @@ function Home({ store, go, toast }: any) {
           label: `${d.docType} ${dd < 0 ? "expired" : "expires"}`,
           who: store.members.find((m2: Member) => m2.id === d.memberId)?.name.split(" ")[0],
           when: dd < 0 ? `${-dd} days ago` : `In ${dd} days`,
-          tone: dd < 0 ? T.coral : T.gold,
+          tone: dd < 0 ? SEM.attention : SEM.warning,
           sort: dd < 0 ? -500 + dd : dd,
           icon: FileText,
           color: A.blue,
@@ -3899,7 +3909,7 @@ function Home({ store, go, toast }: any) {
         id: d.id,
         label: `${d.docType} · ${store.members.find((m: Member) => m.id === d.memberId)?.name.split(" ")[0] || ""}`,
         when: n < 0 ? "expired" : `${n}d left`,
-        tone: n < 0 ? T.coral : T.gold,
+        tone: n < 0 ? SEM.attention : SEM.warning,
       };
     });
   const healthActs: Act[] = useMemo(() => {
@@ -3918,7 +3928,7 @@ function Home({ store, go, toast }: any) {
             who: first,
             whoColor: mm.color,
             when: dd < 0 ? `${-dd}d overdue` : dd === 0 ? "today" : `in ${dd}d`,
-            tone: dd < 0 ? T.coral : dd <= 7 ? T.gold : T.muted,
+            tone: dd < 0 ? SEM.attention : dd <= 7 ? SEM.warning : T.muted,
             urgency: dd < 0 ? -1000 + dd : dd,
           });
         });
@@ -4046,15 +4056,15 @@ function Home({ store, go, toast }: any) {
         style={{
           padding: 20,
           marginBottom: 16,
-          border: `1px solid ${T.gold}44`,
-          background: `linear-gradient(160deg, ${T.gold}12, ${T.panel})`,
+          border: `1px solid ${al(T.gold, 0.27)}`,
+          background: `linear-gradient(160deg, ${al(T.gold, 0.07)}, ${T.panel})`,
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
           <Sparkles size={17} color={T.gold} />
-          <b style={{ color: T.white, fontSize: 16 }}>Welcome to ReadiNes</b>
+          <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)" }}>Welcome to ReadiNes</b>
         </div>
-        <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 560 }}>
+        <p style={{ fontSize: "var(--text-body-md-size)", color: T.muted, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 560 }}>
           Add one document and the rest follows: packs start matching what you hold, and expiry dates start
           watching themselves.
         </p>
@@ -4090,10 +4100,10 @@ function Home({ store, go, toast }: any) {
           }
         />
         <div style={{ margin: "4px 0 16px" }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--lpv-bandtext)", letterSpacing: -0.3 }}>
+          <div style={{ fontSize: "var(--text-heading-md-size)", fontWeight: 700, color: "var(--lpv-bandtext)", letterSpacing: -0.3 }}>
             {hello}, {firstName}
           </div>
-          <div style={{ fontSize: 12, color: "var(--lpv-bandsub)", marginTop: 4 }}>Small steps today. A more ready tomorrow.</div>
+          <div style={{ fontSize: "var(--text-caption-md-size)", color: "var(--lpv-bandsub)", marginTop: 4 }}>Small steps today. A more ready tomorrow.</div>
         </div>
         {welcomeCard}
         {store.docs.length > 0 && (
@@ -4101,9 +4111,9 @@ function Home({ store, go, toast }: any) {
         {/* One list, ordered by how soon it matters. Every row acts where it sits. */}
         <Card style={{ padding: 0, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 16px" }}>
-            <b style={{ color: T.white, fontSize: 14 }}>Needs you</b>
+            <b style={{ color: T.white, fontSize: "var(--text-body-md-size)" }}>Needs you</b>
             {needs.length > 0 && (
-              <span style={{ marginLeft: "auto", fontSize: 12, color: T.muted }}>{needs.length}</span>
+              <span style={{ marginLeft: "auto", fontSize: "var(--text-caption-md-size)", color: T.muted }}>{needs.length}</span>
             )}
           </div>
           {needs.length === 0 ? (
@@ -4118,10 +4128,10 @@ function Home({ store, go, toast }: any) {
             >
               <CheckCircle2 size={19} color={T.mint} />
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.white }}>
+                <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white }}>
                   You are up to date
                 </span>
-                <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 4 }}>
+                <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4 }}>
                   Nothing is due, expiring, or missing.
                 </span>
               </span>
@@ -4142,7 +4152,7 @@ function Home({ store, go, toast }: any) {
                   style={{
                     width: 34,
                     height: 34,
-                    borderRadius: 12,
+                    borderRadius: "var(--surface-radius)",
                     background: n.color + "1F",
                     display: "grid",
                     placeItems: "center",
@@ -4155,18 +4165,18 @@ function Home({ store, go, toast }: any) {
                   style={{ flex: 1, minWidth: 0, cursor: n.open ? "pointer" : "default" }}
                   onClick={() => n.open?.()}
                 >
-                  <span style={{ display: "block", fontSize: 14, color: T.text, lineHeight: 1.35 }}>
+                  <span style={{ display: "block", fontSize: "var(--text-body-md-size)", color: T.text, lineHeight: 1.35 }}>
                     {n.who && <b style={{ color: T.white }}>{n.who} · </b>}
                     {n.label}
                   </span>
-                  <span style={{ display: "block", fontSize: 12, color: n.tone, marginTop: 4 }}>{n.when}</span>
+                  <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: n.tone, marginTop: 4 }}>{n.when}</span>
                 </span>
                 <button
                   onClick={n.run}
                   style={{
                     ...btnGhost,
                     padding: "8px 12px",
-                    fontSize: 12,
+                    fontSize: "var(--text-caption-md-size)",
                     minHeight: 40,
                     whiteSpace: "nowrap",
                     flexShrink: 0,
@@ -4187,9 +4197,8 @@ function Home({ store, go, toast }: any) {
                 border: "none",
                 borderTop: `1px solid ${T.border}`,
                 color: SEM.action,
-                fontSize: 14,
+                fontSize: "var(--text-body-md-size)",
                 fontWeight: 700,
-                fontFamily: "inherit",
                 cursor: "pointer",
               }}
             >
@@ -4206,7 +4215,7 @@ function Home({ store, go, toast }: any) {
             gap: 12,
             background: "none",
             border: `1px solid ${T.border}`,
-            borderRadius: 12,
+            borderRadius: "var(--surface-radius)",
             padding: "12px 16px",
             cursor: "pointer",
             textAlign: "left",
@@ -4214,7 +4223,7 @@ function Home({ store, go, toast }: any) {
           }}
         >
           <Ring score={overall} size={38} />
-          <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.muted }}>
+          <span style={{ flex: 1, minWidth: 0, fontSize: "var(--text-body-md-size)", color: T.muted }}>
             {readyPacks} of {readyPacks + nearPacks + 1} packs ready
           </span>
           <ChevronRight size={15} color={T.faint} />
@@ -4249,13 +4258,13 @@ function Home({ store, go, toast }: any) {
             width: "100%",
             marginTop: 16,
             padding: "16px 0",
-            borderRadius: 12,
+            borderRadius: "var(--surface-radius)",
             background: "var(--lpv-action)",
             color: "var(--lpv-actionink)",
-            fontSize: 16,
+            fontSize: "var(--text-body-lg-size)",
             fontWeight: 700,
             cursor: "pointer",
-            boxShadow: "0 10px 26px var(--lpv-shadow-soft)",
+            boxShadow: "var(--elevation-raised)",
           }}
         >
           <Plus size={19} /> Add a record or document
@@ -4288,15 +4297,15 @@ function Home({ store, go, toast }: any) {
           style={{
             padding: 24,
             marginBottom: 20,
-            border: `1px solid ${T.gold}44`,
-            background: `linear-gradient(160deg, ${T.gold}12, ${T.panel})`,
+            border: `1px solid ${al(T.gold, 0.27)}`,
+            background: `linear-gradient(160deg, ${al(T.gold, 0.07)}, ${T.panel})`,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
             <Sparkles size={17} color={T.gold} />
-            <b style={{ color: T.white, fontSize: 16 }}>Welcome to ReadiNes</b>
+            <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)" }}>Welcome to ReadiNes</b>
           </div>
-          <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 560 }}>
+          <p style={{ fontSize: "var(--text-body-md-size)", color: T.muted, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 560 }}>
             This vault gets smarter with every single page you give it. Add one document and watch the whole app come
             to life: readiness scores fill in, packs start matching, and the next big moment starts becoming the easy
             one.
@@ -4345,19 +4354,19 @@ function Home({ store, go, toast }: any) {
               return (
                 <Card key={id} style={{ padding: 16 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span style={{ width: 30, height: 30, borderRadius: 999, border: `2.5px solid ${T.gold}`, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700, color: T.gold }}>0%</span>
-                    <b style={{ color: T.white, fontSize: 14 }}>{title}</b>
+                    <span style={{ width: 30, height: 30, borderRadius: "var(--pill-radius)", border: `2.5px solid ${T.gold}`, display: "grid", placeItems: "center", fontSize: "var(--text-caption-md-size)", fontWeight: 700, color: T.gold }}>0%</span>
+                    <b style={{ color: T.white, fontSize: "var(--text-body-md-size)" }}>{title}</b>
                   </div>
-                  <p style={{ color: T.muted, fontSize: 12, margin: "0 0 8px" }}>Start with these three:</p>
+                  <p style={{ color: T.muted, fontSize: "var(--text-caption-md-size)", margin: "0 0 8px" }}>Start with these three:</p>
                   <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
                     {docs3.map((d) => (
-                      <div key={d} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: T.text }}>
+                      <div key={d} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--text-caption-md-size)", color: T.text }}>
                         <FileText size={12} color={T.gold} /> {d}
                       </div>
                     ))}
                   </div>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <label style={{ ...btnGold, cursor: "pointer", fontSize: 12, padding: "8px 12px" }}>
+                    <label style={{ ...btnGold, cursor: "pointer", fontSize: "var(--text-caption-md-size)", padding: "8px 12px" }}>
                       <UploadCloud size={13} /> Add these
                       <input
                         type="file"
@@ -4372,7 +4381,7 @@ function Home({ store, go, toast }: any) {
                         }}
                       />
                     </label>
-                    <button onClick={() => go("packages")} style={{ background: "none", border: "none", color: T.muted, fontSize: 12, cursor: "pointer" }}>
+                    <button onClick={() => go("packages")} style={{ background: "none", border: "none", color: T.muted, fontSize: "var(--text-caption-md-size)", cursor: "pointer" }}>
                       Full pack →
                     </button>
                   </div>
@@ -4399,7 +4408,7 @@ function Home({ store, go, toast }: any) {
               cursor: "pointer",
               background: T.panel,
               border: `1px solid ${T.border}`,
-              borderRadius: 12,
+              borderRadius: "var(--surface-radius)",
               padding: 16,
             }}
           >
@@ -4409,7 +4418,7 @@ function Home({ store, go, toast }: any) {
                 placeItems: "center",
                 width: 34,
                 height: 34,
-                borderRadius: 12,
+                borderRadius: "var(--surface-radius)",
                 background: s.c + "22",
               }}
             >
@@ -4418,7 +4427,7 @@ function Home({ store, go, toast }: any) {
             <div
               style={{
                 fontVariantNumeric: "tabular-nums",
-                fontSize: 28,
+                fontSize: "var(--text-display-md-size)",
                 fontWeight: 700,
                 color: T.white,
                 marginTop: 12,
@@ -4426,7 +4435,7 @@ function Home({ store, go, toast }: any) {
             >
               {s.value}
             </div>
-            <div style={{ fontSize: 14, color: T.muted }}>{s.label}</div>
+            <div style={{ fontSize: "var(--text-body-md-size)", color: T.muted }}>{s.label}</div>
           </button>
         ))}
       </div>
@@ -4434,11 +4443,11 @@ function Home({ store, go, toast }: any) {
         <Card style={{ padding: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 16px" }}>
             <AlertTriangle size={16} color={totalActs ? SEM.warning : T.mint} />
-            <b style={{ color: T.white, fontSize: 16 }}>Action center</b>
+            <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)" }}>Action center</b>
             <span style={{ marginLeft: "auto", ...pill(totalActs ? T.gold : T.mint) }}>{totalActs || "all clear"}</span>
           </div>
           {totalActs === 0 ? (
-            <p style={{ color: T.muted, fontSize: 14, padding: "0 16px 16px", margin: 0 }}>
+            <p style={{ color: T.muted, fontSize: "var(--text-body-md-size)", padding: "0 16px 16px", margin: 0 }}>
               Nothing pressing across documents, health, or wealth. Nicely handled.
             </p>
           ) : (
@@ -4453,7 +4462,7 @@ function Home({ store, go, toast }: any) {
                     gap: 12,
                     padding: "12px 16px",
                     borderTop: `1px solid ${T.border}`,
-                    background: T.raised + "66",
+                    background: al(T.raised, 0.4),
                     border: "none",
                     cursor: "pointer",
                     textAlign: "left",
@@ -4462,7 +4471,7 @@ function Home({ store, go, toast }: any) {
                   <g.icon size={14} color={g.color} />
                   <span
                     style={{
-                      fontSize: 12,
+                      fontSize: "var(--text-caption-md-size)",
                       fontWeight: 700,
                       letterSpacing: 1,
                       textTransform: "uppercase",
@@ -4472,7 +4481,7 @@ function Home({ store, go, toast }: any) {
                   >
                     {g.label}
                   </span>
-                  <span style={{ fontSize: 12, color: g.color, fontVariantNumeric: "tabular-nums" }}>
+                  <span style={{ fontSize: "var(--text-caption-md-size)", color: g.color, fontVariantNumeric: "tabular-nums" }}>
                     {g.acts.length}
                   </span>
                   <ChevronRight size={13} color={T.faint} style={{ marginLeft: "auto" }} />
@@ -4491,20 +4500,20 @@ function Home({ store, go, toast }: any) {
                       cursor: "pointer",
                     }}
                   >
-                    <span style={{ width: 8, height: 8, borderRadius: 12, background: a.tone, flexShrink: 0 }} />
+                    <span style={{ width: 8, height: 8, borderRadius: "var(--surface-radius)", background: a.tone, flexShrink: 0 }} />
                     {a.who && (
                       <span
                         style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 66, flexShrink: 0 }}
                       >
-                        <span style={{ width: 6, height: 6, borderRadius: 12, background: a.whoColor }} />
-                        <span style={{ fontSize: 12, color: T.muted, fontWeight: 400 }}>{a.who}</span>
+                        <span style={{ width: 6, height: 6, borderRadius: "var(--surface-radius)", background: a.whoColor }} />
+                        <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, fontWeight: 400 }}>{a.who}</span>
                       </span>
                     )}
                     <span
                       className="lp-act-label"
                       style={{
                         flex: 1,
-                        fontSize: 14,
+                        fontSize: "var(--text-body-md-size)",
                         color: T.text,
                         minWidth: 0,
                         overflow: "hidden",
@@ -4517,7 +4526,7 @@ function Home({ store, go, toast }: any) {
                     <span
                       className="lp-act-when"
                       style={{
-                        fontSize: 12,
+                        fontSize: "var(--text-caption-md-size)",
                         color: a.tone,
                         fontVariantNumeric: "tabular-nums",
                         whiteSpace: "nowrap",
@@ -4550,7 +4559,7 @@ function Home({ store, go, toast }: any) {
                       borderTop: `1px solid ${T.border}`,
                       padding: "8px 16px",
                       cursor: "pointer",
-                      fontSize: 12,
+                      fontSize: "var(--text-caption-md-size)",
                       color: T.muted,
                       textAlign: "center",
                     }}
@@ -4565,9 +4574,9 @@ function Home({ store, go, toast }: any) {
         <Card>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
             <ShieldCheck size={16} color={T.gold} />
-            <b style={{ color: T.white, fontSize: 16 }}>Connected across ReadiNes</b>
+            <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)" }}>Connected across ReadiNes</b>
           </div>
-          <p style={{ fontSize: 12, color: T.muted, margin: "0 0 12px" }}>
+          <p style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, margin: "0 0 12px" }}>
             What your modules mean together, not what they already show apart.
           </p>
           {insights.slice(0, 4).map((ins, i) => (
@@ -4596,7 +4605,7 @@ function Home({ store, go, toast }: any) {
                       placeItems: "center",
                       width: 22,
                       height: 22,
-                      borderRadius: 12,
+                      borderRadius: "var(--surface-radius)",
                       background: ins.tone + "1f",
                     }}
                   >
@@ -4604,7 +4613,7 @@ function Home({ store, go, toast }: any) {
                   </span>
                 ))}
               </span>
-              <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.text, lineHeight: 1.55 }}>{ins.text}</span>
+              <span style={{ flex: 1, minWidth: 0, fontSize: "var(--text-body-md-size)", color: T.text, lineHeight: 1.55 }}>{ins.text}</span>
               <ChevronRight size={14} color={T.faint} style={{ marginTop: 4 }} />
             </button>
           ))}
@@ -4619,7 +4628,7 @@ function Home({ store, go, toast }: any) {
             }}
           >
             <Ring score={best.score} size={40} />
-            <span style={{ flex: 1, fontSize: 12, color: T.muted }}>
+            <span style={{ flex: 1, fontSize: "var(--text-caption-md-size)", color: T.muted }}>
               Most ready: <b style={{ color: T.text }}>{best.e.name}</b>
             </span>
           </div>
@@ -4720,8 +4729,8 @@ function Packages({ store, toast }: any) {
               flex: 1,
               minWidth: 0,
               background: T.panel,
-              border: `1px solid ${q ? SEM.action + "66" : T.border}`,
-              borderRadius: 12,
+              border: `1px solid ${q ? al(SEM.action, 0.4) : T.border}`,
+              borderRadius: "var(--surface-radius)",
               padding: "8px 12px",
             }}
           >
@@ -4749,13 +4758,13 @@ function Packages({ store, toast }: any) {
                 onClick={() => setCat(c)}
                 style={{
                   padding: "8px 12px",
-                  borderRadius: 999,
-                  fontSize: 12,
+                  borderRadius: "var(--pill-radius)",
+                  fontSize: "var(--text-caption-md-size)",
                   fontWeight: 500,
                   cursor: "pointer",
                   whiteSpace: "nowrap",
                   flexShrink: 0,
-                  border: `1px solid ${on ? SEM.action + "77" : T.border}`,
+                  border: `1px solid ${on ? al(SEM.action, 0.47) : T.border}`,
                   background: on ? T.raised : "transparent",
                   color: on ? T.white : T.muted,
                 }}
@@ -4777,7 +4786,7 @@ function Packages({ store, toast }: any) {
                   cursor: "pointer",
                   background: T.panel,
                   border: `1px solid ${T.border}`,
-                  borderRadius: 12,
+                  borderRadius: "var(--surface-radius)",
                   padding: 12,
                   display: "flex",
                   alignItems: "center",
@@ -4789,13 +4798,13 @@ function Packages({ store, toast }: any) {
                 <Ring score={score} size={40} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                    <span style={{ width: 22, height: 22, borderRadius: 12, display: "grid", placeItems: "center", flexShrink: 0, background: e.accent + "1F" }}>
+                    <span style={{ width: 22, height: 22, borderRadius: "var(--surface-radius)", display: "grid", placeItems: "center", flexShrink: 0, background: e.accent + "1F" }}>
                       <e.icon size={12} color={e.accent} />
                     </span>
-                    <b style={{ color: T.white, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</b>
+                    <b style={{ color: T.white, fontSize: "var(--text-body-md-size)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</b>
                     {e.custom && <span style={pill(T.gold)}>custom</span>}
                   </div>
-                  <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>
+                  <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4 }}>
                     {score === 100 ? "Everything in place" : `${got} of ${total} ready`}
                   </div>
                 </div>
@@ -4806,7 +4815,7 @@ function Packages({ store, toast }: any) {
         </div>
         {list.length === 0 && (
           <Card style={{ textAlign: "center", padding: 24 }}>
-            <div style={{ color: T.text, fontWeight: 500, fontSize: 14 }}>
+            <div style={{ color: T.text, fontWeight: 500, fontSize: "var(--text-body-md-size)" }}>
               {cat === "My packs" && !q ? "You have not created a pack yet" : `No pack covers "${q}" yet`}
             </div>
             <button onClick={() => setCreating(true)} style={{ ...btnGold, margin: "12px auto 0" }}>
@@ -4885,8 +4894,8 @@ function Packages({ store, toast }: any) {
             flex: 1,
             minWidth: 0,
             background: T.panel,
-            border: `1px solid ${q ? SEM.action + "66" : T.border}`,
-            borderRadius: 12,
+            border: `1px solid ${q ? al(SEM.action, 0.4) : T.border}`,
+            borderRadius: "var(--surface-radius)",
             padding: "12px 16px",
           }}
         >
@@ -4895,7 +4904,7 @@ function Packages({ store, toast }: any) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Schengen visa, home loan, hospital admission, school admission, passport renewal"
-          style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: 14 }}
+          style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: "var(--text-body-md-size)" }}
         />
         {q && (
           <button
@@ -4917,11 +4926,11 @@ function Packages({ store, toast }: any) {
               onClick={() => setCat(c)}
               style={{
                 padding: "8px 16px",
-                borderRadius: 999,
-                fontSize: 12,
+                borderRadius: "var(--pill-radius)",
+                fontSize: "var(--text-caption-md-size)",
                 fontWeight: 500,
                 cursor: "pointer",
-                border: `1px solid ${on ? SEM.action + "77" : T.border}`,
+                border: `1px solid ${on ? al(SEM.action, 0.47) : T.border}`,
                 background: on ? T.raised : "transparent",
                 color: on ? T.white : T.muted,
               }}
@@ -4943,7 +4952,7 @@ function Packages({ store, toast }: any) {
                 cursor: "pointer",
                 background: T.panel,
                 border: `1px solid ${T.border}`,
-                borderRadius: 12,
+                borderRadius: "var(--surface-radius)",
                 padding: 16,
                 display: "flex",
                 alignItems: "center",
@@ -4956,10 +4965,10 @@ function Packages({ store, toast }: any) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <e.icon size={16} color={e.accent} />
-                  <b style={{ color: T.white, fontSize: 16 }}>{e.name}</b>
+                  <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)" }}>{e.name}</b>
                   {e.custom && <span style={pill(T.gold)}>custom</span>}
                 </div>
-                <div style={{ fontSize: 14, color: T.muted, marginTop: 4 }}>
+                <div style={{ fontSize: "var(--text-body-md-size)", color: T.muted, marginTop: 4 }}>
                   {score === 100 ? "Everything in place" : `${got} of ${total} ready`}
                 </div>
               </div>
@@ -4970,10 +4979,10 @@ function Packages({ store, toast }: any) {
       </div>
       {list.length === 0 && (
         <Card style={{ textAlign: "center", padding: 32 }}>
-          <div style={{ color: T.text, fontWeight: 500, fontSize: 14 }}>
+          <div style={{ color: T.text, fontWeight: 500, fontSize: "var(--text-body-md-size)" }}>
             {cat === "My packs" && !q ? "You have not created a pack yet" : `No pack covers "${q}" yet`}
           </div>
-          <div style={{ color: T.muted, fontSize: 14, marginTop: 4 }}>
+          <div style={{ color: T.muted, fontSize: "var(--text-body-md-size)", marginTop: 4 }}>
             {cat === "My packs" && !q
               ? "Custom packs you create live here, scored against your archive like any curated pack."
               : "Describe it and ReadiNes drafts the checklist for you."}
@@ -5132,14 +5141,14 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: "12px 12px",
     color: T.text,
-    fontSize: 14,
+    fontSize: "var(--text-body-md-size)",
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: 12,
+    fontSize: "var(--text-caption-md-size)",
     fontWeight: 700,
     letterSpacing: 0.5,
     textTransform: "uppercase",
@@ -5169,7 +5178,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           width: "min(480px,100%)",
           maxHeight: "92vh",
           overflowY: "auto",
@@ -5178,19 +5187,19 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
       >
         <div className="lp-sheet-grab lp-grabonly" />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 20 }}>{existing ? "Edit custom pack" : "Create a custom pack"}</b>
+          <b style={{ color: T.white, fontSize: "var(--text-heading-md-size)" }}>{existing ? "Edit custom pack" : "Create a custom pack"}</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
         {!drafted && (
           <>
-            <p style={{ fontSize: 12, color: T.muted, margin: "0 0 4px" }}>
+            <p style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, margin: "0 0 4px" }}>
               For situations the catalog does not cover.
             </p>
             <label style={lbl}>What do you need documents for?</label>
             <textarea
-              style={{ ...inp, minHeight: 72, lineHeight: 1.5, resize: "vertical", fontFamily: "inherit" }}
+              style={{ ...inp, minHeight: 72, lineHeight: 1.5, resize: "vertical" }}
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
               placeholder={"My son's school admission"}
@@ -5199,7 +5208,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         )}
         {!drafted && similar.length > 0 && (
           <div style={{ marginTop: 12 }}>
-            <div style={{ fontSize: 12, color: T.muted, marginBottom: 8 }}>
+            <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginBottom: 8 }}>
               The catalog may already cover this. Start from one, or draft fresh:
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -5212,8 +5221,8 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                     alignItems: "center",
                     gap: 8,
                     padding: "8px 12px",
-                    borderRadius: 999,
-                    fontSize: 12,
+                    borderRadius: "var(--pill-radius)",
+                    fontSize: "var(--text-caption-md-size)",
                     fontWeight: 500,
                     cursor: "pointer",
                     border: `1px solid ${T.border}`,
@@ -5246,7 +5255,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
           <>
             <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0 12px" }}>
               <span style={{ flex: 1, height: 1, background: T.border }} />
-              <span style={{ fontSize: 12, color: T.faint }}>or</span>
+              <span style={{ fontSize: "var(--text-caption-md-size)", color: T.faint }}>or</span>
               <span style={{ flex: 1, height: 1, background: T.border }} />
             </div>
             {/* Building by hand is a first-class path, not something you find by accident: plenty of
@@ -5266,24 +5275,24 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
         {drafted && (
           <>
             {loading && (
-              <div style={{ fontSize: 12, color: T.muted, margin: "4px 0" }}>
+              <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, margin: "4px 0" }}>
                 ⟳ Refining with current official sources… (up to a minute)
               </div>
             )}
             <label style={lbl}>Pack name</label>
             <input style={inp} value={name} onChange={(e) => setName(e.target.value)} placeholder="Name this pack" />
             <label style={lbl}>Documents needed</label>
-            <p style={{ fontSize: 12, color: T.muted, margin: "0 0 8px", lineHeight: 1.5 }}>
+            <p style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, margin: "0 0 8px", lineHeight: 1.5 }}>
               List what you were asked for. You can attach the actual documents once the pack is saved.
             </p>
             {meta && (
               <div
                 style={{
-                  fontSize: 12,
+                  fontSize: "var(--text-caption-md-size)",
                   color: SEM.action,
-                  background: SEM.action + "1F",
-                  border: `1px solid ${SEM.action}44`,
-                  borderRadius: 12,
+                  background: al(SEM.action, 0.12),
+                  border: `1px solid ${al(SEM.action, 0.27)}`,
+                  borderRadius: "var(--surface-radius)",
                   padding: "8px 12px",
                   marginBottom: 8,
                   lineHeight: 1.5,
@@ -5302,7 +5311,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
               return (
                 <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "center" }}>
                   <input
-                    style={{ ...inp, borderColor: onFile ? T.mint + "66" : T.border }}
+                    style={{ ...inp, borderColor: onFile ? al(T.mint, 0.4) : T.border }}
                     value={r}
                     list="lp-doc-vocab"
                     placeholder="Document name"
@@ -5313,7 +5322,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                     style={{
                       width: 20,
                       textAlign: "center",
-                      fontSize: 14,
+                      fontSize: "var(--text-body-md-size)",
                       fontWeight: 700,
                       color: onFile ? T.mint : T.faint,
                     }}
@@ -5330,18 +5339,18 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                 </div>
               );
             })}
-            <button onClick={() => setReqs([...reqs, ""])} style={{ ...btnGhost, padding: "8px 12px", fontSize: 12 }}>
+            <button onClick={() => setReqs([...reqs, ""])} style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)" }}>
               <Plus size={13} /> Add requirement
             </button>
             {drafted && reqs.some((r) => have?.has(r.trim())) && (
-              <div style={{ fontSize: 12, color: T.mint, marginTop: 8 }}>
+              <div style={{ fontSize: "var(--text-caption-md-size)", color: T.mint, marginTop: 8 }}>
                 {reqs.filter((r) => have?.has(r.trim())).length} of {reqs.filter((r) => r.trim()).length} already in
                 your archive; they will count the moment you save.
               </div>
             )}
             {meta && (
-              <div style={{ marginTop: 12, padding: 12, borderRadius: 12, background: T.navy, border: `1px solid ${T.border}` }}>
-                <div style={{ fontSize: 12, color: T.muted, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ marginTop: 12, padding: 12, borderRadius: "var(--surface-radius)", background: T.navy, border: `1px solid ${T.border}` }}>
+                <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ color: meta.dataSource === "fallback" ? T.coral : T.mint, fontWeight: 700 }}>
                     {meta.dataSource === "fallback" ? "Offline estimate" : "Live · sourced"}
                   </span>
@@ -5349,17 +5358,17 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                   {meta.lastChecked && <span>· checked {meta.lastChecked}</span>}
                 </div>
                 {meta.sources?.slice(0, 4).map((s: any, i: number) => (
-                  <a key={i} href={s.url} target="_blank" rel="noreferrer" style={{ display: "block", fontSize: 12, color: T.gold, marginTop: 4 }}>
-                    <span style={{ textTransform: "uppercase", fontSize: 12, color: T.muted, marginRight: 8 }}>{s.tier}</span>
+                  <a key={i} href={s.url} target="_blank" rel="noreferrer" style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.gold, marginTop: 4 }}>
+                    <span style={{ textTransform: "uppercase", fontSize: "var(--text-caption-md-size)", color: T.muted, marginRight: 8 }}>{s.tier}</span>
                     {s.title}
                   </a>
                 ))}
-                {meta.disclaimer && <p style={{ fontSize: 12, color: T.muted, marginTop: 8, lineHeight: 1.45 }}>{meta.disclaimer}</p>}
+                {meta.disclaimer && <p style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 8, lineHeight: 1.45 }}>{meta.disclaimer}</p>}
               </div>
             )}
             <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
               {onDelete && (
-                <button onClick={onDelete} style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55" }}>
+                <button onClick={onDelete} style={{ ...btnGhost, color: T.coral, borderColor: al(T.coral, 0.33) }}>
                   <Trash2 size={14} /> Delete
                 </button>
               )}
@@ -5580,21 +5589,21 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 placeItems: "center",
                 width: 44,
                 height: 44,
-                borderRadius: 12,
+                borderRadius: "var(--surface-radius)",
                 background: ev.accent + "22",
               }}
             >
               <ev.icon size={21} color={ev.accent} />
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: T.white, fontSize: 20, fontWeight: 700 }}>{ev.name}</div>
-              {isHome && <div style={{ color: T.muted, fontSize: 14 }}>{ev.blurb}</div>}
+              <div style={{ color: T.white, fontSize: "var(--text-heading-md-size)", fontWeight: 700 }}>{ev.name}</div>
+              {isHome && <div style={{ color: T.muted, fontSize: "var(--text-body-md-size)" }}>{ev.blurb}</div>}
             </div>
           </div>
           <div
             style={{
               marginTop: 12,
-              fontSize: 12,
+              fontSize: "var(--text-caption-md-size)",
               color: ev.custom ? T.gold : T.muted,
               fontVariantNumeric: "tabular-nums",
               display: "flex",
@@ -5609,7 +5618,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 {onEdit && (
                   <button
                     onClick={onEdit}
-                    style={{ ...btnGhost, padding: "4px 12px", fontSize: 12, marginLeft: "auto" }}
+                    style={{ ...btnGhost, padding: "4px 12px", fontSize: "var(--text-caption-md-size)", marginLeft: "auto" }}
                   >
                     <Pencil size={11} /> Edit checklist
                   </button>
@@ -5634,10 +5643,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 gap: 8,
                 marginTop: 12,
                 padding: "12px 12px",
-                borderRadius: 12,
+                borderRadius: "var(--surface-radius)",
                 border: `1px solid ${T.border}`,
                 background: T.raised,
-                fontSize: 12,
+                fontSize: "var(--text-caption-md-size)",
                 color: T.muted,
               }}
             >
@@ -5657,10 +5666,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         gap: 8,
                         maxWidth: 190,
                         padding: "4px 12px",
-                        borderRadius: 12,
+                        borderRadius: "var(--surface-radius)",
                         border: `1px solid ${T.border}`,
                         color: SEM.action,
-                        fontSize: 12,
+                        fontSize: "var(--text-caption-md-size)",
                         fontWeight: 500,
                         textDecoration: "none",
                         overflow: "hidden",
@@ -5764,7 +5773,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             {score === 100 ? (
               <Stamp />
             ) : (
-              <div style={{ color: T.muted, fontSize: 14, fontVariantNumeric: "tabular-nums" }}>
+              <div style={{ color: T.muted, fontSize: "var(--text-body-md-size)", fontVariantNumeric: "tabular-nums" }}>
                 {got} of {total} ready
               </div>
             )}
@@ -5781,10 +5790,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 gap: 12,
                 marginBottom: 12,
                 padding: "12px 12px",
-                borderRadius: 12,
-                border: `1px solid ${SEM.warning}44`,
-                background: SEM.warning + "1F",
-                fontSize: 12,
+                borderRadius: "var(--surface-radius)",
+                border: `1px solid ${al(SEM.warning, 0.27)}`,
+                background: al(SEM.warning, 0.12),
+                fontSize: "var(--text-caption-md-size)",
                 color: T.muted,
               }}
             >
@@ -5795,7 +5804,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
               <button
                 onClick={() => refresh(true)}
                 disabled={checking}
-                style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44, whiteSpace: "nowrap" }}
+                style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 44, whiteSpace: "nowrap" }}
               >
                 <RefreshCw size={13} /> {checking ? "Checking…" : `Check for ${countryName(store.country)}`}
               </button>
@@ -5804,10 +5813,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
           {!researched && (
             <Card style={{ padding: 20, marginBottom: 12, textAlign: "center" }}>
               <Globe size={20} color={T.muted} />
-              <h3 style={{ color: T.white, fontSize: 16, margin: "12px 0 8px", fontWeight: 700 }}>
+              <h3 style={{ color: T.white, fontSize: "var(--text-body-lg-size)", margin: "12px 0 8px", fontWeight: 700 }}>
                 Not checked yet
               </h3>
-              <p style={{ color: T.muted, fontSize: 14, lineHeight: 1.6, margin: "0 0 16px" }}>
+              <p style={{ color: T.muted, fontSize: "var(--text-body-md-size)", lineHeight: 1.6, margin: "0 0 16px" }}>
                 Rather than show a list that could be wrong at the counter, we will look up the official requirements.
               </p>
               <button onClick={() => refresh(true)} disabled={checking} style={{ ...btnGold, margin: "0 auto", opacity: checking ? 0.6 : 1 }}>
@@ -5822,7 +5831,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 padding: "16px 16px",
                 fontWeight: 700,
                 color: T.white,
-                fontSize: 14,
+                fontSize: "var(--text-body-md-size)",
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
@@ -5846,7 +5855,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         width: "100%",
                         textAlign: "left",
                         cursor: "pointer",
-                        background: isOpen ? T.raised + "77" : "none",
+                        background: isOpen ? al(T.raised, 0.47) : "none",
                         border: "none",
                         display: "flex",
                         alignItems: "center",
@@ -5860,14 +5869,14 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                           placeItems: "center",
                           width: 20,
                           height: 20,
-                          borderRadius: 999,
-                          background: T.mint + "26",
+                          borderRadius: "var(--pill-radius)",
+                          background: al(T.mint, 0.15),
                           flexShrink: 0,
                         }}
                       >
                         <Check size={12} color={T.mint} />
                       </span>
-                      <span style={{ flex: 1, fontSize: 14, color: T.text }}>{r.label}</span>
+                      <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text }}>{r.label}</span>
                       <ChevronRight
                         size={13}
                         color={T.muted}
@@ -5876,25 +5885,25 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                     </button>
                     {isOpen && d && (
                       <div style={{ padding: "4px 16px 12px 48px" }}>
-                        <div style={{ fontSize: 12, color: T.text, fontVariantNumeric: "tabular-nums" }}>
+                        <div style={{ fontSize: "var(--text-caption-md-size)", color: T.text, fontVariantNumeric: "tabular-nums" }}>
                           {d.name}
                         </div>
-                        <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>
+                        <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4 }}>
                           {memberName(d.memberId)}
                           {d.docType !== r.label ? ` · satisfied by ${d.docType}` : ""}
                         </div>
                         {reuse.length > 0 && (
-                          <div style={{ fontSize: 12, color: T.faint, marginTop: 8, lineHeight: 1.5 }}>
+                          <div style={{ fontSize: "var(--text-caption-md-size)", color: T.faint, marginTop: 8, lineHeight: 1.5 }}>
                             Stored once, also counts toward: {reuse.join(", ")}
                           </div>
                         )}
                         <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                          <button onClick={() => setView(d)} style={{ ...btnGhost, padding: "8px 12px", fontSize: 12 }}>
+                          <button onClick={() => setView(d)} style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)" }}>
                             View document
                           </button>
                           <button
                             onClick={() => setPickFor(r.label)}
-                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12 }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)" }}
                           >
                             Replace
                           </button>
@@ -5910,8 +5919,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             <Card style={{ padding: 0, marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 16px" }}>
                 <X size={15} color={T.muted} />
-                <b style={{ color: T.white, fontSize: 14 }}>Not needed ({skipped.length})</b>
-                <span style={{ marginLeft: "auto", fontSize: 12, color: T.muted }}>set aside by you</span>
+                <b style={{ color: T.white, fontSize: "var(--text-body-md-size)" }}>Not needed ({skipped.length})</b>
+                <span style={{ marginLeft: "auto", fontSize: "var(--text-caption-md-size)", color: T.muted }}>set aside by you</span>
               </div>
               {skipped.map((label) => (
                 <div
@@ -5925,13 +5934,13 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                     minHeight: 48,
                   }}
                 >
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.muted }}>{label}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: "var(--text-body-md-size)", color: T.muted }}>{label}</span>
                   <button
                     onClick={() => {
                       store.setPackSkip(ev.id, label, false);
                       toast(`"${label}" is needed again`);
                     }}
-                    style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44 }}
+                    style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 44 }}
                   >
                     Need it after all
                   </button>
@@ -5946,7 +5955,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                   padding: "16px 16px",
                   fontWeight: 700,
                   color: T.white,
-                  fontSize: 14,
+                  fontSize: "var(--text-body-md-size)",
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
@@ -5969,22 +5978,22 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                             placeItems: "center",
                             width: 20,
                             height: 20,
-                            borderRadius: 999,
-                            background: SEM.warning + "26",
+                            borderRadius: "var(--pill-radius)",
+                            background: al(SEM.warning, 0.15),
                             flexShrink: 0,
                           }}
                         >
                           <X size={12} color={SEM.warning} />
                         </span>
-                        <span style={{ flex: 1, fontSize: 14, color: T.text, minWidth: 0 }}>
+                        <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text, minWidth: 0 }}>
                           {r.label}
                           {cond && (
-                            <span style={{ display: "block", fontSize: 12, color: T.faint }}>
+                            <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.faint }}>
                               {need?.when || "May be required depending on your situation"}
                             </span>
                           )}
                           {!!need?.alt.length && (
-                            <span style={{ display: "block", fontSize: 12, color: T.faint }}>
+                            <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.faint }}>
                               Or {need.alt.slice(0, 4).join(", ")}
                             </span>
                           )}
@@ -5994,9 +6003,9 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                           style={{
                             ...btnGhost,
                             padding: "8px 12px",
-                            fontSize: 12,
+                            fontSize: "var(--text-caption-md-size)",
                             color: SEM.action,
-                            borderColor: SEM.action + "55",
+                            borderColor: al(SEM.action, 0.33),
                           }}
                         >
                           Add
@@ -6009,7 +6018,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                               upReq.current = r.label;
                               upRef.current?.click();
                             }}
-                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44, whiteSpace: "nowrap" }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 44, whiteSpace: "nowrap" }}
                           >
                             <UploadCloud size={13} /> Upload
                           </button>
@@ -6018,7 +6027,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                               setAddFor(null);
                               setPickFor(r.label);
                             }}
-                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44, whiteSpace: "nowrap" }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 44, whiteSpace: "nowrap" }}
                           >
                             <FolderOpen size={13} /> Pick from Documents
                           </button>
@@ -6028,7 +6037,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                               store.setPackSkip(ev.id, r.label, true);
                               toast(`"${r.label}" marked as not needed`);
                             }}
-                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44, whiteSpace: "nowrap", color: T.muted }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 44, whiteSpace: "nowrap", color: T.muted }}
                           >
                             <X size={13} /> Not needed
                           </button>
@@ -6057,8 +6066,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
             <Card style={{ padding: 0, marginBottom: 12 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px" }}>
                 <Download size={15} color={T.muted} />
-                <b style={{ color: T.white, fontSize: 14 }}>In this download</b>
-                <span style={{ marginLeft: "auto", fontSize: 12, color: T.muted }}>{included.length}</span>
+                <b style={{ color: T.white, fontSize: "var(--text-body-md-size)" }}>In this download</b>
+                <span style={{ marginLeft: "auto", fontSize: "var(--text-caption-md-size)", color: T.muted }}>{included.length}</span>
               </div>
               {matched.map((d) => (
                 <label
@@ -6086,8 +6095,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                     style={{ accentColor: SEM.action, width: 18, height: 18, flexShrink: 0 }}
                   />
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 14, color: T.text }}>{d.docType}</span>
-                    <span style={{ display: "block", fontSize: 12, color: T.faint }}>{memberName(d.memberId)}</span>
+                    <span style={{ display: "block", fontSize: "var(--text-body-md-size)", color: T.text }}>{d.docType}</span>
+                    <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.faint }}>{memberName(d.memberId)}</span>
                   </span>
                 </label>
               ))}
@@ -6103,9 +6112,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         border: "none",
                         borderTop: `1px solid ${T.border}`,
                         color: SEM.action,
-                        fontSize: 14,
+                        fontSize: "var(--text-body-md-size)",
                         fontWeight: 700,
-                        fontFamily: "inherit",
                         cursor: "pointer",
                       }}
                     >
@@ -6117,7 +6125,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         style={{
                           padding: "12px 16px 4px",
                           borderTop: `1px solid ${T.border}`,
-                          fontSize: 12,
+                          fontSize: "var(--text-caption-md-size)",
                           fontWeight: 700,
                           letterSpacing: 0.4,
                           textTransform: "uppercase",
@@ -6155,8 +6163,8 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                               style={{ accentColor: SEM.action, width: 18, height: 18, flexShrink: 0 }}
                             />
                             <span style={{ flex: 1, minWidth: 0 }}>
-                              <span style={{ display: "block", fontSize: 14, color: T.text }}>{d.docType}</span>
-                              <span style={{ display: "block", fontSize: 12, color: T.faint }}>
+                              <span style={{ display: "block", fontSize: "var(--text-body-md-size)", color: T.text }}>{d.docType}</span>
+                              <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.faint }}>
                                 {memberName(d.memberId)}
                               </span>
                             </span>
@@ -6183,7 +6191,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
           </button>
           <p
             style={{
-              fontSize: 12,
+              fontSize: "var(--text-caption-md-size)",
               color: T.muted,
               textAlign: "center",
               marginTop: 16,
@@ -6241,7 +6249,7 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           width: "min(440px,100%)",
           maxHeight: "80vh",
           display: "flex",
@@ -6250,12 +6258,12 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <b style={{ color: T.white, fontSize: 16 }}>Match a document to “{req}”</b>
+          <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)" }}>Match a document to “{req}”</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={15} />
           </button>
         </div>
-        <p style={{ fontSize: 12, color: T.muted, margin: "0 0 12px" }}>
+        <p style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, margin: "0 0 12px" }}>
           The selected document is re-tagged as {req} and reused everywhere that requirement appears.
         </p>
         <input
@@ -6266,17 +6274,17 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
           style={{
             background: T.raised,
             border: `1px solid ${T.border}`,
-            borderRadius: 12,
+            borderRadius: "var(--surface-radius)",
             padding: "8px 12px",
             color: T.text,
-            fontSize: 14,
+            fontSize: "var(--text-body-md-size)",
             outline: "none",
             marginBottom: 8,
           }}
         />
-        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", border: `1px solid ${T.border}`, borderRadius: 12 }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", border: `1px solid ${T.border}`, borderRadius: "var(--surface-radius)" }}>
           {list.length === 0 ? (
-            <div style={{ padding: 16, fontSize: 14, color: T.faint }}>No documents match.</div>
+            <div style={{ padding: 16, fontSize: "var(--text-body-md-size)", color: T.faint }}>No documents match.</div>
           ) : (
             list.map((d: Doc, i: number) => (
               <button
@@ -6292,8 +6300,8 @@ function ReqPickerModal({ req, docs, members, onClose, onPick }: any) {
                   padding: "12px 16px",
                 }}
               >
-                <div style={{ fontSize: 16, fontWeight: 500, color: T.text }}>{d.docType}</div>
-                <div style={{ fontSize: 12, color: T.faint, fontVariantNumeric: "tabular-nums" }}>
+                <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.text }}>{d.docType}</div>
+                <div style={{ fontSize: "var(--text-caption-md-size)", color: T.faint, fontVariantNumeric: "tabular-nums" }}>
                   {d.name} · {nameOf(d.memberId)}
                 </div>
               </button>
@@ -6429,11 +6437,11 @@ function Documents({ store, toast, go }: any) {
         onClick={onClick}
         style={{
           padding: "8px 16px",
-          borderRadius: 999,
-          fontSize: 12,
+          borderRadius: "var(--pill-radius)",
+          fontSize: "var(--text-caption-md-size)",
           fontWeight: 500,
           cursor: "pointer",
-          border: `1px solid ${on ? SEM.action + "77" : T.border}`,
+          border: `1px solid ${on ? al(SEM.action, 0.47) : T.border}`,
           background: on ? T.raised : "transparent",
           color: on ? T.white : T.muted,
         }}
@@ -6443,7 +6451,7 @@ function Documents({ store, toast, go }: any) {
     );
     const Sec = ({ label, children }: any) => (
       <div style={{ margin: "12px 0" }}>
-        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+        <div style={{ fontSize: "var(--text-caption-md-size)", fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{children}</div>
       </div>
     );
@@ -6464,8 +6472,8 @@ function Documents({ store, toast, go }: any) {
             alignItems: "center",
             gap: 12,
             background: T.panel,
-            border: `1px solid ${q ? SEM.action + "66" : T.border}`,
-            borderRadius: 12,
+            border: `1px solid ${q ? al(SEM.action, 0.4) : T.border}`,
+            borderRadius: "var(--surface-radius)",
             padding: "8px 12px",
             marginBottom: 12,
           }}
@@ -6484,7 +6492,7 @@ function Documents({ store, toast, go }: any) {
           )}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-          <span style={{ fontSize: 12, color: T.muted }}>
+          <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>
             {filtered.length === docs.length ? `${docs.length} documents` : `${filtered.length} of ${docs.length}`}
           </span>
           {activeChips.map((c, i) => (
@@ -6496,10 +6504,10 @@ function Documents({ store, toast, go }: any) {
                 alignItems: "center",
                 gap: 8,
                 padding: "4px 12px",
-                borderRadius: 999,
-                fontSize: 12,
+                borderRadius: "var(--pill-radius)",
+                fontSize: "var(--text-caption-md-size)",
                 fontWeight: 500,
-                border: `1px solid ${T.gold}55`,
+                border: `1px solid ${al(T.gold, 0.33)}`,
                 background: T.raised,
                 color: T.white,
                 cursor: "pointer",
@@ -6514,13 +6522,13 @@ function Documents({ store, toast, go }: any) {
               if (selMode) clearSel();
               setSelMode((v) => !v);
             }}
-            style={{ background: "none", border: "none", color: SEM.action, fontSize: 16, fontWeight: 700, cursor: "pointer", padding: "8px 8px" }}
+            style={{ background: "none", border: "none", color: SEM.action, fontSize: "var(--text-body-lg-size)", fontWeight: 700, cursor: "pointer", padding: "8px 8px" }}
           >
             {selMode ? "Done" : "Select"}
           </button>
           <button
             onClick={() => setFSheet(true)}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "none", border: "none", color: SEM.action, fontSize: 16, fontWeight: 700, cursor: "pointer", padding: "8px 4px" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "none", border: "none", color: SEM.action, fontSize: "var(--text-body-lg-size)", fontWeight: 700, cursor: "pointer", padding: "8px 4px" }}
           >
             <SlidersHorizontal size={14} /> Filter
           </button>
@@ -6530,12 +6538,12 @@ function Documents({ store, toast, go }: any) {
             docs.length === 0 ? (
               <div style={{ padding: "32px 20px", textAlign: "center" }}>
                 <span
-                  style={{ width: 52, height: 52, borderRadius: 12, background: A.blue + "1F", display: "inline-grid", placeItems: "center", marginBottom: 12 }}
+                  style={{ width: 52, height: 52, borderRadius: "var(--surface-radius)", background: al(A.blue, 0.12), display: "inline-grid", placeItems: "center", marginBottom: 12 }}
                 >
                   <FolderOpen size={22} color={A.blue} />
                 </span>
-                <div style={{ fontSize: 16, fontWeight: 700, color: T.white }}>No documents yet</div>
-                <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 280 }}>
+                <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: T.white }}>No documents yet</div>
+                <p style={{ fontSize: "var(--text-body-md-size)", color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 280 }}>
                   Add a passport, a policy, or a payslip. ReadiNes files it and watches its expiry for you.
                 </p>
                 <button onClick={() => setAddSheet(true)} style={{ ...btnGold, margin: "0 auto" }}>
@@ -6544,7 +6552,7 @@ function Documents({ store, toast, go }: any) {
               </div>
             ) : (
               <div style={{ padding: 32, textAlign: "center" }}>
-                <div style={{ color: T.muted, fontSize: 14 }}>Nothing matches these filters.</div>
+                <div style={{ color: T.muted, fontSize: "var(--text-body-md-size)" }}>Nothing matches these filters.</div>
                 <button
                   onClick={() => {
                     setQuick("all");
@@ -6587,15 +6595,15 @@ function Documents({ store, toast, go }: any) {
                     />
                   )}
                   <span
-                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 12, background: col + "22", flexShrink: 0 }}
+                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: "var(--surface-radius)", background: col + "22", flexShrink: 0 }}
                   >
                     <Ic size={15} color={col} />
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {d.docType}
                     </span>
-                    <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {nameOf(d.memberId).split(" ")[0]} · {d.expiry ? <>{expiryCell(d)}</> : fdate(d.addedAt)}
                     </span>
                   </span>
@@ -6617,17 +6625,17 @@ function Documents({ store, toast, go }: any) {
               alignItems: "center",
               gap: 12,
               background: T.raised,
-              border: `1px solid ${T.gold}55`,
-              borderRadius: 12,
+              border: `1px solid ${al(T.gold, 0.33)}`,
+              borderRadius: "var(--surface-radius)",
               padding: "12px 12px",
-              boxShadow: "0 14px 40px var(--lpv-shadow)",
+              boxShadow: "var(--elevation-overlay)",
             }}
           >
-            <b style={{ fontSize: 14, color: T.white }}>{sel.size} selected</b>
+            <b style={{ fontSize: "var(--text-body-md-size)", color: T.white }}>{sel.size} selected</b>
             <select
               onChange={(e) => e.target.value && bulkAssign(e.target.value)}
               defaultValue=""
-              style={{ flex: 1, background: T.panel, color: T.text, border: `1px solid ${T.border}`, borderRadius: 12, padding: "8px 8px", fontSize: 14 }}
+              style={{ flex: 1, background: T.panel, color: T.text, border: `1px solid ${T.border}`, borderRadius: "var(--surface-radius)", padding: "8px 8px", fontSize: "var(--text-body-md-size)" }}
             >
               <option value="" disabled>
                 Assign to…
@@ -6732,14 +6740,14 @@ function Documents({ store, toast, go }: any) {
     background: T.raised,
     color: T.text,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: "8px 12px",
-    fontSize: 14,
+    fontSize: "var(--text-body-md-size)",
     outline: "none",
   };
   const quickChips: { k: typeof quick; label: string; n: number; tone?: string }[] = [
     { k: "all", label: "All", n: docs.length },
-    { k: "expiring", label: "Expiring soon", n: expiring.length, tone: T.gold },
+    { k: "expiring", label: "Expiring soon", n: expiring.length, tone: SEM.warning },
     { k: "expired", label: "Expired", n: expired.length, tone: T.coral },
     { k: "recent", label: "Added this week", n: recent.length, tone: T.mint },
     {
@@ -6784,9 +6792,9 @@ function Documents({ store, toast, go }: any) {
                     width: 190,
                     background: T.panel,
                     border: `1px solid ${T.border}`,
-                    borderRadius: 12,
+                    borderRadius: "var(--surface-radius)",
                     padding: 8,
-                    boxShadow: "0 20px 60px var(--lpv-shadow)",
+                    boxShadow: "var(--elevation-overlay)",
                   }}
                 >
                   <label
@@ -6795,9 +6803,9 @@ function Documents({ store, toast, go }: any) {
                       alignItems: "center",
                       gap: 12,
                       padding: "12px 12px",
-                      borderRadius: 12,
+                      borderRadius: "var(--surface-radius)",
                       cursor: "pointer",
-                      fontSize: 14,
+                      fontSize: "var(--text-body-md-size)",
                       fontWeight: 500,
                       color: T.text,
                     }}
@@ -6823,9 +6831,9 @@ function Documents({ store, toast, go }: any) {
                       alignItems: "center",
                       gap: 12,
                       padding: "12px 12px",
-                      borderRadius: 12,
+                      borderRadius: "var(--surface-radius)",
                       cursor: "pointer",
-                      fontSize: 14,
+                      fontSize: "var(--text-body-md-size)",
                       fontWeight: 500,
                       color: T.text,
                     }}
@@ -6881,18 +6889,18 @@ function Documents({ store, toast, go }: any) {
                 alignItems: "center",
                 gap: 8,
                 padding: "8px 16px",
-                borderRadius: 999,
-                fontSize: 14,
+                borderRadius: "var(--pill-radius)",
+                fontSize: "var(--text-body-md-size)",
                 fontWeight: 500,
                 cursor: "pointer",
-                border: `1px solid ${on ? SEM.action + "77" : T.border}`,
+                border: `1px solid ${on ? al(SEM.action, 0.47) : T.border}`,
                 background: on ? T.raised : "transparent",
                 color: on ? T.white : T.muted,
               }}
             >
-              {c.tone && <span style={{ width: 7, height: 7, borderRadius: 12, background: c.tone }} />}
+              {c.tone && <span style={{ width: 7, height: 7, borderRadius: "var(--surface-radius)", background: c.tone }} />}
               {c.label}
-              <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 12, color: on ? T.gold : T.faint }}>
+              <span style={{ fontVariantNumeric: "tabular-nums", fontSize: "var(--text-caption-md-size)", color: on ? T.gold : T.faint }}>
                 {c.n}
               </span>
             </button>
@@ -6907,8 +6915,8 @@ function Documents({ store, toast, go }: any) {
             alignItems: "center",
             gap: 8,
             background: T.panel,
-            border: `1px solid ${q ? SEM.action + "66" : T.border}`,
-            borderRadius: 12,
+            border: `1px solid ${q ? al(SEM.action, 0.4) : T.border}`,
+            borderRadius: "var(--surface-radius)",
             padding: "8px 12px",
             flex: "1 1 220px",
             minWidth: 200,
@@ -6919,7 +6927,7 @@ function Documents({ store, toast, go }: any) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search type, file, person, notes…"
-            style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: 14 }}
+            style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: "var(--text-body-md-size)" }}
           />
           {q && (
             <button
@@ -6931,41 +6939,41 @@ function Documents({ store, toast, go }: any) {
           )}
         </div>
         <select style={selStyle} value={cat} onChange={(e) => setCat(e.target.value)}>
-          <option style={{ color: "#000" }}>All</option>
+          <option>All</option>
           {(Object.keys(CAT_META) as Category[]).map((c) => (
-            <option key={c} style={{ color: "#000" }}>
+            <option key={c}>
               {c}
             </option>
           ))}
         </select>
         <select style={selStyle} value={person} onChange={(e) => setPerson(e.target.value)}>
-          <option value="All" style={{ color: "#000" }}>
+          <option value="All">
             Everyone
           </option>
           {store.members.map((m: Member) => (
-            <option key={m.id} value={m.id} style={{ color: "#000" }}>
+            <option key={m.id} value={m.id}>
               {m.name}
             </option>
           ))}
         </select>
         <select style={selStyle} value={source} onChange={(e) => setSource(e.target.value)}>
           {["All", "Upload", "Email", "Drive", "DigiLocker"].map((sName) => (
-            <option key={sName} style={{ color: "#000" }}>
+            <option key={sName}>
               {sName}
             </option>
           ))}
         </select>
         <select style={selStyle} value={sort} onChange={(e) => setSort(e.target.value as any)}>
-          <option value="newest" style={{ color: "#000" }}>
+          <option value="newest">
             Newest first
           </option>
-          <option value="oldest" style={{ color: "#000" }}>
+          <option value="oldest">
             Oldest first
           </option>
-          <option value="name" style={{ color: "#000" }}>
+          <option value="name">
             Type A–Z
           </option>
-          <option value="expiry" style={{ color: "#000" }}>
+          <option value="expiry">
             Expiry soonest
           </option>
         </select>
@@ -6978,30 +6986,30 @@ function Documents({ store, toast, go }: any) {
             alignItems: "center",
             gap: 12,
             background: T.raised,
-            border: `1px solid ${T.gold}55`,
-            borderRadius: 12,
+            border: `1px solid ${al(T.gold, 0.33)}`,
+            borderRadius: "var(--surface-radius)",
             padding: "12px 16px",
             marginBottom: 12,
           }}
         >
-          <b style={{ color: T.white, fontSize: 14 }}>{sel.size} selected</b>
+          <b style={{ color: T.white, fontSize: "var(--text-body-md-size)" }}>{sel.size} selected</b>
           <select style={selStyle} defaultValue="" onChange={(e) => e.target.value && bulkAssign(e.target.value)}>
-            <option value="" disabled style={{ color: "#000" }}>
+            <option value="" disabled>
               Assign to…
             </option>
             {store.members.map((m: Member) => (
-              <option key={m.id} value={m.id} style={{ color: "#000" }}>
+              <option key={m.id} value={m.id}>
                 {m.name}
               </option>
             ))}
           </select>
           <button
             onClick={bulkDelete}
-            style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55", padding: "8px 12px", fontSize: 12 }}
+            style={{ ...btnGhost, color: T.coral, borderColor: al(T.coral, 0.33), padding: "8px 12px", fontSize: "var(--text-caption-md-size)" }}
           >
             <Trash2 size={13} /> Delete
           </button>
-          <button onClick={clearSel} style={{ ...btnGhost, marginLeft: "auto", padding: "8px 12px", fontSize: 12 }}>
+          <button onClick={clearSel} style={{ ...btnGhost, marginLeft: "auto", padding: "8px 12px", fontSize: "var(--text-caption-md-size)" }}>
             Clear
           </button>
         </div>
@@ -7018,7 +7026,7 @@ function Documents({ store, toast, go }: any) {
                 gap: 12,
                 alignItems: "center",
                 padding: "12px 16px",
-                fontSize: 12,
+                fontSize: "var(--text-caption-md-size)",
                 fontWeight: 700,
                 color: T.muted,
                 textTransform: "uppercase",
@@ -7043,10 +7051,10 @@ function Documents({ store, toast, go }: any) {
             {filtered.length === 0 ? (
               <div style={{ padding: "40px 16px", textAlign: "center" }}>
                 <FolderOpen size={30} color={T.faint} style={{ margin: "0 auto 10px", display: "block" }} />
-                <div style={{ color: T.text, fontWeight: 500, fontSize: 14 }}>
+                <div style={{ color: T.text, fontWeight: 500, fontSize: "var(--text-body-md-size)" }}>
                   {docs.length === 0 ? "Your vault is waiting for its first document" : "No documents match these filters"}
                 </div>
-                <div style={{ color: T.muted, fontSize: 14, marginTop: 4 }}>
+                <div style={{ color: T.muted, fontSize: "var(--text-body-md-size)", marginTop: 4 }}>
                   {docs.length === 0
                     ? "Upload a file and it files itself."
                     : "Try clearing the search or switching a filter."}
@@ -7070,7 +7078,7 @@ function Documents({ store, toast, go }: any) {
                       padding: "12px 16px",
                       borderTop: `1px solid ${T.border}`,
                       cursor: "pointer",
-                      background: active ? T.raised : sel.has(d.id) ? T.raised + "88" : "transparent",
+                      background: active ? T.raised : sel.has(d.id) ? al(T.raised, 0.53) : "transparent",
                     }}
                   >
                     <input
@@ -7087,7 +7095,7 @@ function Documents({ store, toast, go }: any) {
                           placeItems: "center",
                           width: 30,
                           height: 30,
-                          borderRadius: 12,
+                          borderRadius: "var(--surface-radius)",
                           background: col + "22",
                           flexShrink: 0,
                         }}
@@ -7098,7 +7106,7 @@ function Documents({ store, toast, go }: any) {
                         <span
                           style={{
                             display: "block",
-                            fontSize: 14,
+                            fontSize: "var(--text-body-md-size)",
                             fontWeight: 500,
                             color: T.white,
                             overflow: "hidden",
@@ -7111,7 +7119,7 @@ function Documents({ store, toast, go }: any) {
                         <span
                           style={{
                             display: "block",
-                            fontSize: 12,
+                            fontSize: "var(--text-caption-md-size)",
                             color: T.faint,
                             fontVariantNumeric: "tabular-nums",
                             overflow: "hidden",
@@ -7126,11 +7134,11 @@ function Documents({ store, toast, go }: any) {
                     <span className="lp-dc-meta">
                     <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                       <span
-                        style={{ width: 8, height: 8, borderRadius: 12, background: colorOf(d.memberId), flexShrink: 0 }}
+                        style={{ width: 8, height: 8, borderRadius: "var(--surface-radius)", background: colorOf(d.memberId), flexShrink: 0 }}
                       />
                       <span
                         style={{
-                          fontSize: 14,
+                          fontSize: "var(--text-body-md-size)",
                           color: T.text,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
@@ -7143,11 +7151,11 @@ function Documents({ store, toast, go }: any) {
                     <span>
                       <span style={pill(col)}>{d.category}</span>
                     </span>
-                    <span style={{ fontSize: 12, color: T.muted }}>{d.source}</span>
-                    <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
+                    <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>{d.source}</span>
+                    <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, fontVariantNumeric: "tabular-nums" }}>
                       {fdate(d.addedAt)}
                     </span>
-                    <span style={{ fontSize: 12, fontVariantNumeric: "tabular-nums" }}>{expiryCell(d)}</span>
+                    <span style={{ fontSize: "var(--text-caption-md-size)", fontVariantNumeric: "tabular-nums" }}>{expiryCell(d)}</span>
                     </span>
                     <ChevronRight size={15} color={active ? T.gold : T.faint} />
                   </div>
@@ -7175,7 +7183,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
   const days = d.expiry ? daysTo(d.expiry) : null;
 
   const lbl: CSSProperties = {
-    fontSize: 12,
+    fontSize: "var(--text-caption-md-size)",
     fontWeight: 700,
     letterSpacing: 1,
     textTransform: "uppercase",
@@ -7188,10 +7196,10 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: "8px 12px",
     color: T.text,
-    fontSize: 14,
+    fontSize: "var(--text-body-md-size)",
     outline: "none",
   };
   const fact = (label: string, value: ReactNode) => (
@@ -7204,10 +7212,10 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
         borderTop: `1px solid ${T.border}`,
       }}
     >
-      <span style={{ fontSize: 12, color: T.muted }}>{label}</span>
+      <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>{label}</span>
       <span
         style={{
-          fontSize: 12,
+          fontSize: "var(--text-caption-md-size)",
           color: T.text,
           fontVariantNumeric: "tabular-nums",
           textAlign: "right",
@@ -7231,7 +7239,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
           zIndex: 73,
           background: T.navy,
           borderLeft: `1px solid ${T.border}`,
-          boxShadow: "-30px 0 80px var(--lpv-shadow)",
+          boxShadow: "var(--elevation-overlay)",
           display: "flex",
           flexDirection: "column",
           animation: "lpSlideIn .22s ease",
@@ -7253,7 +7261,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
               placeItems: "center",
               width: 40,
               height: 40,
-              borderRadius: 12,
+              borderRadius: "var(--surface-radius)",
               background: col + "22",
               flexShrink: 0,
             }}
@@ -7261,10 +7269,10 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
             <Ic size={18} color={col} />
           </span>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, color: T.white }}>{d.docType}</div>
+            <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: T.white }}>{d.docType}</div>
             <div
               style={{
-                fontSize: 12,
+                fontSize: "var(--text-caption-md-size)",
                 color: T.faint,
                 fontVariantNumeric: "tabular-nums",
                 overflow: "hidden",
@@ -7285,17 +7293,17 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
             <div
               style={{
                 marginTop: 16,
-                borderRadius: 12,
-                border: `1px solid ${(days! < 0 ? T.coral : days! < 60 ? T.gold : T.mint) + "55"}`,
-                background: (days! < 0 ? T.coral : days! < 60 ? T.gold : T.mint) + "14",
+                borderRadius: "var(--surface-radius)",
+                border: `1px solid ${al(days! < 0 ? SEM.attention : days! < 60 ? SEM.warning : T.mint, 0.33)}`,
+                background: al(days! < 0 ? SEM.attention : days! < 60 ? SEM.warning : T.mint, 0.08),
                 padding: "12px 16px",
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
               }}
             >
-              <Clock size={15} color={days! < 0 ? T.coral : days! < 60 ? T.gold : T.mint} />
-              <span style={{ fontSize: 14, color: T.text }}>
+              <Clock size={15} color={days! < 0 ? SEM.attention : days! < 60 ? SEM.warning : T.mint} />
+              <span style={{ fontSize: "var(--text-body-md-size)", color: T.text }}>
                 {days! < 0 ? `Expired ${-days!} days ago` : `Valid · expires in ${days} days`}
               </span>
             </div>
@@ -7326,11 +7334,11 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
               toast(`Assigned to ${nameOf(e.target.value)}`);
             }}
           >
-            <option value="" style={{ color: "#000" }}>
+            <option value="">
               Unassigned
             </option>
             {store.members.map((m: Member) => (
-              <option key={m.id} value={m.id} style={{ color: "#000" }}>
+              <option key={m.id} value={m.id}>
                 {m.name}
               </option>
             ))}
@@ -7349,7 +7357,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
 
           <span style={lbl}>Used in packages</span>
           {usedIn.length === 0 ? (
-            <p style={{ fontSize: 12, color: T.faint, margin: 0 }}>No life-event package requires a {d.docType}.</p>
+            <p style={{ fontSize: "var(--text-caption-md-size)", color: T.faint, margin: 0 }}>No life-event package requires a {d.docType}.</p>
           ) : (
             usedIn.map((e) => (
               <div
@@ -7363,7 +7371,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
                 }}
               >
                 <e.icon size={14} color={e.accent} />
-                <span style={{ flex: 1, fontSize: 14, color: T.text }}>{e.name}</span>
+                <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text }}>{e.name}</span>
                 <span style={pill(T.mint)}>required</span>
               </div>
             ))
@@ -7384,8 +7392,8 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
                   }}
                 >
                   <Coins size={14} color={T.gold} />
-                  <span style={{ flex: 1, fontSize: 14, color: T.text }}>{h.name}</span>
-                  <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
+                  <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text }}>{h.name}</span>
+                  <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, fontVariantNumeric: "tabular-nums" }}>
                     {money(h.value || 0)}
                   </span>
                 </div>
@@ -7402,8 +7410,8 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
                   }}
                 >
                   <Receipt size={14} color={t.direction === "paid" ? T.coral : T.mint} />
-                  <span style={{ flex: 1, fontSize: 14, color: T.text }}>{t.purpose}</span>
-                  <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>
+                  <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text }}>{t.purpose}</span>
+                  <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, fontVariantNumeric: "tabular-nums" }}>
                     {money(t.amount)}
                   </span>
                 </div>
@@ -7413,7 +7421,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
 
           <span style={lbl}>Notes</span>
           <textarea
-            style={{ ...inp, minHeight: 70, resize: "vertical", fontFamily: "inherit" }}
+            style={{ ...inp, minHeight: 70, resize: "vertical" }}
             value={notes}
             placeholder="Anything your family should know about this document…"
             onChange={(e) => setNotes(e.target.value)}
@@ -7436,7 +7444,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
               toast("Document removed");
               onDeleted();
             }}
-            style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55" }}
+            style={{ ...btnGhost, color: T.coral, borderColor: al(T.coral, 0.33) }}
           >
             <Trash2 size={15} />
           </button>
@@ -7459,14 +7467,14 @@ function AddMember({ onClose, save }: any) {
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: "12px 12px",
     color: T.text,
-    fontSize: 14,
+    fontSize: "var(--text-body-md-size)",
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: 12,
+    fontSize: "var(--text-caption-md-size)",
     fontWeight: 700,
     letterSpacing: 0.5,
     textTransform: "uppercase",
@@ -7494,7 +7502,7 @@ function AddMember({ onClose, save }: any) {
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           width: "min(440px,100%)",
           maxHeight: "88vh",
           overflowY: "auto",
@@ -7502,7 +7510,7 @@ function AddMember({ onClose, save }: any) {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <b style={{ color: T.white, fontSize: 20 }}>Add a family member</b>
+          <b style={{ color: T.white, fontSize: "var(--text-heading-md-size)" }}>Add a family member</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
@@ -7519,7 +7527,7 @@ function AddMember({ onClose, save }: any) {
             <label style={lbl}>Relation</label>
             <select style={inp} value={f.relation} onChange={(e) => setF({ ...f, relation: e.target.value })}>
               {["Spouse", "Father", "Mother", "Son", "Daughter", "Sibling", "Parent", "Other"].map((r) => (
-                <option key={r} style={{ color: "#000" }}>
+                <option key={r}>
                   {r}
                 </option>
               ))}
@@ -7529,7 +7537,7 @@ function AddMember({ onClose, save }: any) {
             <label style={lbl}>Access</label>
             <select style={inp} value={f.access} onChange={(e) => setF({ ...f, access: e.target.value as Access })}>
               {(["Full member", "Emergency access", "View only"] as Access[]).map((a) => (
-                <option key={a} style={{ color: "#000" }}>
+                <option key={a}>
                   {a}
                 </option>
               ))}
@@ -7545,7 +7553,7 @@ function AddMember({ onClose, save }: any) {
             <label style={lbl}>Blood group</label>
             <select style={inp} value={f.blood} onChange={(e) => setF({ ...f, blood: e.target.value })}>
               {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((b) => (
-                <option key={b} style={{ color: "#000" }}>
+                <option key={b}>
                   {b}
                 </option>
               ))}
@@ -7585,7 +7593,7 @@ function AddMember({ onClose, save }: any) {
 function ConfirmSheet({ title, body, action, onYes, onClose }: any) {
   return (
     <MSheet title={title} onClose={onClose}>
-      <p style={{ color: T.text, fontSize: 14, lineHeight: 1.55, margin: "8px 0 20px" }}>{body}</p>
+      <p style={{ color: T.text, fontSize: "var(--text-body-md-size)", lineHeight: 1.55, margin: "8px 0 20px" }}>{body}</p>
       <div style={{ display: "flex", gap: 12 }}>
         <button onClick={onClose} style={{ ...btnGhost, flex: 1, justifyContent: "center", minHeight: 44 }}>
           Keep
@@ -7595,7 +7603,7 @@ function ConfirmSheet({ title, body, action, onYes, onClose }: any) {
             onYes();
             onClose();
           }}
-          style={{ ...btnGhost, flex: 1, justifyContent: "center", minHeight: 44, color: T.coral, borderColor: T.coral + "55" }}
+          style={{ ...btnGhost, flex: 1, justifyContent: "center", minHeight: 44, color: T.coral, borderColor: al(T.coral, 0.33) }}
         >
           {action}
         </button>
@@ -7670,7 +7678,7 @@ function Wealth({ store, go, toast }: any) {
   const linkedDoc = (h: Holding) => store.docs.find((d: Doc) => d.id === h.docId) || null;
 
   type Sev = "critical" | "important" | "info";
-  const SEVC: Record<Sev, string> = { critical: T.coral, important: T.gold, info: A.blue };
+  const SEVC: Record<Sev, string> = { critical: T.coral, important: SEM.warning, info: A.blue };
   const gaps: {
     h: Holding;
     t?: Transaction;
@@ -7804,8 +7812,8 @@ function Wealth({ store, go, toast }: any) {
 
   const stat = (label: string, val: string, color: string) => (
     <Card>
-      <div style={{ fontSize: 14, color: T.muted }}>{label}</div>
-      <div style={{ fontVariantNumeric: "tabular-nums", fontSize: 28, fontWeight: 700, color, marginTop: 8 }}>
+      <div style={{ fontSize: "var(--text-body-md-size)", color: T.muted }}>{label}</div>
+      <div style={{ fontVariantNumeric: "tabular-nums", fontSize: "var(--text-display-md-size)", fontWeight: 700, color, marginTop: 8 }}>
         {val}
       </div>
     </Card>
@@ -7834,15 +7842,15 @@ function Wealth({ store, go, toast }: any) {
             placeItems: "center",
             width: 36,
             height: 36,
-            borderRadius: 12,
+            borderRadius: "var(--surface-radius)",
             background: accent + "22",
           }}
         >
           <Ic size={16} color={accent} />
         </span>
         <div className="lp-wname" style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: 500, color: T.white }}>{h.name}</div>
-          <div style={{ fontSize: 12, color: T.muted }}>
+          <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white }}>{h.name}</div>
+          <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>
             {h.type}
             {h.institution ? ` · ${h.institution}` : ""}
             {h.accountRef ? ` ${h.accountRef}` : ""}
@@ -7868,7 +7876,7 @@ function Wealth({ store, go, toast }: any) {
                 }}
                 style={{
                   display: "block",
-                  fontSize: 12,
+                  fontSize: "var(--text-caption-md-size)",
                   color: SEM.attention,
                   marginTop: 4,
                   }}
@@ -7882,7 +7890,7 @@ function Wealth({ store, go, toast }: any) {
           className="lp-wamt"
           style={{
             fontVariantNumeric: "tabular-nums",
-            fontSize: 16,
+            fontSize: "var(--text-body-lg-size)",
             fontWeight: 700,
             color: h.kind === "liability" ? T.coral : T.text,
           }}
@@ -7969,7 +7977,7 @@ function Wealth({ store, go, toast }: any) {
             </button>
             <button
               onClick={() => setSos(true)}
-              style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "66", fontWeight: 700 }}
+              style={{ ...btnGhost, color: T.coral, borderColor: al(T.coral, 0.4), fontWeight: 700 }}
             >
               <Siren size={15} /> SOS handoff
             </button>
@@ -7981,15 +7989,15 @@ function Wealth({ store, go, toast }: any) {
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                background: T.coral + "1F",
-                border: `1px solid ${T.coral}66`,
-                borderRadius: 12,
+                background: al(T.coral, 0.12),
+                border: `1px solid ${al(T.coral, 0.4)}`,
+                borderRadius: "var(--surface-radius)",
                 padding: "12px 16px",
                 marginBottom: 16,
               }}
             >
               <Siren size={16} color={T.coral} />
-              <span style={{ flex: 1, fontSize: 14, color: T.text }}>
+              <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text }}>
                 <b style={{ color: T.coral }}>SOS handoff active</b> ({store.handoff.reason}) since{" "}
                 {new Date(store.handoff.releasedAt).toLocaleString(undefined, {
                   month: "short",
@@ -8011,9 +8019,9 @@ function Wealth({ store, go, toast }: any) {
                 style={{
                   ...btnGhost,
                   color: T.coral,
-                  borderColor: T.coral + "55",
+                  borderColor: al(T.coral, 0.33),
                   padding: "8px 12px",
-                  fontSize: 12,
+                  fontSize: "var(--text-caption-md-size)",
                 }}
               >
                 Cancel handoff
@@ -8029,16 +8037,16 @@ function Wealth({ store, go, toast }: any) {
               flexWrap: "wrap",
               border: `1px solid ${T.border}`,
               background: T.panel,
-              borderRadius: 12,
+              borderRadius: "var(--surface-radius)",
               padding: "12px 16px",
               marginBottom: 12,
             }}
           >
             <span className="lp-es-label" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
               <KeyRound size={15} color={T.muted} />
-              <b style={{ color: T.white, fontSize: 14 }}>Family access readiness</b>
+              <b style={{ color: T.white, fontSize: "var(--text-body-md-size)" }}>Family access readiness</b>
             </span>
-            <span className="lp-es-pct" style={{ fontVariantNumeric: "tabular-nums", fontSize: 28, fontWeight: 700, color: readyColor }}>
+            <span className="lp-es-pct" style={{ fontVariantNumeric: "tabular-nums", fontSize: "var(--text-display-md-size)", fontWeight: 700, color: readyColor }}>
               {readiness}%
             </span>
             <span
@@ -8047,7 +8055,7 @@ function Wealth({ store, go, toast }: any) {
                 flex: "1 1 140px",
                 minWidth: 120,
                 height: 7,
-                borderRadius: 12,
+                borderRadius: "var(--surface-radius)",
                 background: T.raised,
                 overflow: "hidden",
               }}
@@ -8058,12 +8066,12 @@ function Wealth({ store, go, toast }: any) {
                   display: "block",
                   width: `${readiness}%`,
                   height: "100%",
-                  borderRadius: 12,
+                  borderRadius: "var(--surface-radius)",
                   background: readyColor,
                 }}
               />
             </span>
-            <span className="lp-es-sum" style={{ fontSize: 12, color: T.muted, whiteSpace: "nowrap" }}>
+            <span className="lp-es-sum" style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, whiteSpace: "nowrap" }}>
               {missDoc + missAcc + missNom === 0
                 ? "everything reachable"
                 : [
@@ -8074,7 +8082,7 @@ function Wealth({ store, go, toast }: any) {
                     .filter(Boolean)
                     .join(" · ") + " missing"}
             </span>
-            <button className="lp-es-how" onClick={() => setShowMath((v) => !v)} style={{ ...btnGhost, padding: "8px 12px", fontSize: 12 }}>
+            <button className="lp-es-how" onClick={() => setShowMath((v) => !v)} style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)" }}>
               {showMath ? "Hide math" : "How?"}
             </button>
             {openTx.length > 0 && (
@@ -8090,7 +8098,7 @@ function Wealth({ store, go, toast }: any) {
                   border: "none",
                   padding: 0,
                   cursor: "pointer",
-                  fontSize: 12,
+                  fontSize: "var(--text-caption-md-size)",
                   color: T.muted,
                   whiteSpace: "nowrap",
                 }}
@@ -8116,10 +8124,10 @@ function Wealth({ store, go, toast }: any) {
                 width: "100%",
                 justifyContent: "center",
                 minHeight: 52,
-                fontSize: 16,
+                fontSize: "var(--text-body-lg-size)",
                 marginBottom: 12,
                 background: T.coral,
-                color: "#2a0806",
+                color: T.onBrand,
               }}
             >
               <Siren size={17} /> SOS handoff
@@ -8127,7 +8135,7 @@ function Wealth({ store, go, toast }: any) {
           )}
           {showMath && (
             <Card style={{ marginBottom: 12, padding: "12px 16px" }}>
-              <p style={{ fontSize: 12, color: T.muted, margin: "0 0 8px", lineHeight: 1.6 }}>
+              <p style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, margin: "0 0 8px", lineHeight: 1.6 }}>
                 Each account and policy counts as family-reachable only when all three are true: a document on file, a
                 nominee named, and access instructions written. Money lent or borrowed counts when it has evidence and a
                 contact. Weighted by amount, so the home matters more than the FD.
@@ -8139,10 +8147,10 @@ function Wealth({ store, go, toast }: any) {
                 return (
                   <div
                     key={h.id}
-                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", fontSize: 12 }}
+                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", fontSize: "var(--text-caption-md-size)" }}
                   >
                     <span
-                      style={{ width: 8, height: 8, borderRadius: 12, background: ok ? T.mint : T.coral, flexShrink: 0 }}
+                      style={{ width: 8, height: 8, borderRadius: "var(--surface-radius)", background: ok ? T.mint : T.coral, flexShrink: 0 }}
                     />
                     <span
                       style={{
@@ -8183,12 +8191,12 @@ function Wealth({ store, go, toast }: any) {
               {store.holdings.length === 0 && (
                 <Card style={{ textAlign: "center", padding: "32px 20px" }}>
                   <span
-                    style={{ width: 52, height: 52, borderRadius: 12, background: A.gold + "1F", display: "inline-grid", placeItems: "center", marginBottom: 12 }}
+                    style={{ width: 52, height: 52, borderRadius: "var(--surface-radius)", background: al(A.gold, 0.12), display: "inline-grid", placeItems: "center", marginBottom: 12 }}
                   >
                     <Wallet size={22} color={A.gold} />
                   </span>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: T.white }}>Nothing recorded yet</div>
-                  <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 300 }}>
+                  <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: T.white }}>Nothing recorded yet</div>
+                  <p style={{ fontSize: "var(--text-body-md-size)", color: T.muted, lineHeight: 1.55, margin: "6px auto 14px", maxWidth: 300 }}>
                     Add an account, a policy, or a loan. ReadiNes tracks whether your family could reach each one.
                   </p>
                   <button onClick={() => (isMobile ? setActSheet(true) : setDocPick(true))} style={{ ...btnGold, margin: "0 auto", minHeight: 44 }}>
@@ -8206,14 +8214,14 @@ function Wealth({ store, go, toast }: any) {
                         onClick={() => setWg(k as any)}
                         style={{
                           padding: "8px 12px",
-                          borderRadius: 999,
-                          fontSize: 12,
+                          borderRadius: "var(--pill-radius)",
+                          fontSize: "var(--text-caption-md-size)",
                           fontWeight: 500,
                           cursor: "pointer",
                           whiteSpace: "nowrap",
                           flexShrink: 0,
-                          border: `1px solid ${on ? SEM.action + "77" : T.border}`,
-                          background: on ? SEM.action + "1A" : "transparent",
+                          border: `1px solid ${on ? al(SEM.action, 0.47) : T.border}`,
+                          background: on ? al(SEM.action, 0.1) : "transparent",
                           color: on ? SEM.action : T.muted,
                         }}
                       >
@@ -8234,8 +8242,8 @@ function Wealth({ store, go, toast }: any) {
                         padding: "16px 16px",
                       }}
                     >
-                      <b style={{ color: T.white, fontSize: 14 }}>{label}</b>
-                      <span style={{ fontVariantNumeric: "tabular-nums", fontSize: 14, color: T.muted }}>
+                      <b style={{ color: T.white, fontSize: "var(--text-body-md-size)" }}>{label}</b>
+                      <span style={{ fontVariantNumeric: "tabular-nums", fontSize: "var(--text-body-md-size)", color: T.muted }}>
                         {money(sum(arr))}
                       </span>
                     </div>
@@ -8258,9 +8266,8 @@ function Wealth({ store, go, toast }: any) {
                           border: "none",
                           borderTop: `1px solid ${T.border}`,
                           color: SEM.action,
-                          fontSize: 14,
+                          fontSize: "var(--text-body-md-size)",
                           fontWeight: 700,
-                          fontFamily: "inherit",
                           cursor: "pointer",
                         }}
                       >
@@ -8274,17 +8281,17 @@ function Wealth({ store, go, toast }: any) {
               <Card id="lp-lentborrowed" style={{ padding: 0, scrollMarginTop: 60 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 16px" }}>
                   <Coins size={16} color={T.muted} />
-                  <b style={{ color: T.white, fontSize: 14 }}>Lent and borrowed</b>
+                  <b style={{ color: T.white, fontSize: "var(--text-body-md-size)" }}>Lent and borrowed</b>
                   {openTx.length > 0 && <span style={pill(T.muted)}>{openTx.length} open</span>}
                   <button
                     onClick={() => setAddTx(true)}
-                    style={{ ...btnGhost, marginLeft: "auto", padding: "8px 12px", fontSize: 12 }}
+                    style={{ ...btnGhost, marginLeft: "auto", padding: "8px 12px", fontSize: "var(--text-caption-md-size)" }}
                   >
                     <Plus size={13} /> Record
                   </button>
                 </div>
                 {txs.length === 0 ? (
-                  <p style={{ color: T.muted, fontSize: 14, padding: "0 16px 16px" }}>
+                  <p style={{ color: T.muted, fontSize: "var(--text-body-md-size)", padding: "0 16px 16px" }}>
                     Money lent to or borrowed from people, with the screenshot or chat that proves it. Nothing a bank
                     would ever tell your family.
                   </p>
@@ -8317,18 +8324,18 @@ function Wealth({ store, go, toast }: any) {
                             placeItems: "center",
                             width: 34,
                             height: 34,
-                            borderRadius: 12,
-                            background: (settled ? T.faint : lent ? T.mint : T.coral) + "22",
+                            borderRadius: "var(--surface-radius)",
+                            background: al(settled ? T.faint : lent ? T.mint : T.coral, 0.13),
                             flexShrink: 0,
                           }}
                         >
                           <Coins size={15} color={settled ? T.faint : lent ? T.mint : T.coral} />
                         </span>
                         <div className="lp-wname" style={{ flex: 1, minWidth: 0, opacity: settled ? 0.6 : 1 }}>
-                          <div style={{ fontSize: 16, fontWeight: 500, color: T.white }}>
+                          <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white }}>
                             {t.counterparty || (lent ? "Lent" : "Borrowed")}
                           </div>
-                          <div style={{ fontSize: 12, color: T.muted }}>
+                          <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>
                             {t.purpose}
                             {" · "}
                             {fmtDate(t.date, { day: "numeric", month: "short" })}
@@ -8348,14 +8355,14 @@ function Wealth({ store, go, toast }: any) {
                           className="lp-wamt"
                           style={{
                             fontVariantNumeric: "tabular-nums",
-                            fontSize: 14,
+                            fontSize: "var(--text-body-md-size)",
                             fontWeight: 700,
                             color: settled ? T.faint : lent ? T.mint : T.coral,
                             textDecoration: settled ? "line-through" : "none",
                           }}
                         >
                           {money(t.amount)}
-                          <span style={{ fontSize: 12, fontWeight: 700, marginLeft: 8, color: T.muted, textDecoration: "none" }}>
+                          <span style={{ fontSize: "var(--text-caption-md-size)", fontWeight: 700, marginLeft: 8, color: T.muted, textDecoration: "none" }}>
                             {settled ? "" : lent ? "owed to you" : "you owe"}
                           </span>
                         </span>
@@ -8373,7 +8380,7 @@ function Wealth({ store, go, toast }: any) {
                                   e.stopPropagation();
                                   !ev ? (ev ? setViewDoc(ev) : attachTx(t)) : setEditTx(t);
                                 }}
-                                style={{ display: "block", fontSize: 12, color: SEM.attention, marginTop: 4 }}
+                                style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: SEM.attention, marginTop: 4 }}
                               >
                                 {gaps.join(" and ")}
                               </span>
@@ -8386,7 +8393,7 @@ function Wealth({ store, go, toast }: any) {
                               store.updateTransaction(t.id, { followUpDone: false });
                               toast("Reopened");
                             }}
-                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44 }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 44 }}
                           >
                             Reopen
                           </button>
@@ -8398,7 +8405,7 @@ function Wealth({ store, go, toast }: any) {
                               store.completeFollowUp(t.id);
                               toast("Marked as settled");
                             }}
-                            style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 44 }}
+                            style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 44 }}
                           >
                             <Check size={12} /> Settled
                           </button>
@@ -8423,9 +8430,8 @@ function Wealth({ store, go, toast }: any) {
                       border: "none",
                       borderTop: `1px solid ${T.border}`,
                       color: SEM.action,
-                      fontSize: 14,
+                      fontSize: "var(--text-body-md-size)",
                       fontWeight: 700,
-                      fontFamily: "inherit",
                       cursor: "pointer",
                     }}
                   >
@@ -8470,14 +8476,14 @@ function Wealth({ store, go, toast }: any) {
               <button className="lp-sheet-item" onClick={() => pickUpRef.current?.click()}>
                 <UploadCloud size={18} color={SEM.action} />
                 <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ display: "block", fontSize: 14 }}>Scan or upload a new document</span>
-                  <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 400 }}>
+                  <span style={{ display: "block", fontSize: "var(--text-body-md-size)" }}>Scan or upload a new document</span>
+                  <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, fontWeight: 400 }}>
                     Statement, policy, or deed. It is filed in Documents and opened here.
                   </span>
                 </span>
               </button>
               {store.docs.filter((d: Doc) => ["Finance", "Insurance", "Property"].includes(d.category)).length === 0 && (
-                <p style={{ fontSize: 14, color: T.muted, padding: "8px 12px 12px" }}>
+                <p style={{ fontSize: "var(--text-body-md-size)", color: T.muted, padding: "8px 12px 12px" }}>
                   No financial documents in your vault yet.
                 </p>
               )}
@@ -8495,8 +8501,8 @@ function Wealth({ store, go, toast }: any) {
                   >
                     <FileText size={18} color={CAT_META[d.category as Category].color} />
                     <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: "block", fontSize: 14 }}>{d.docType}</span>
-                      <span style={{ display: "block", fontSize: 12, color: T.muted, fontWeight: 400 }}>
+                      <span style={{ display: "block", fontSize: "var(--text-body-md-size)" }}>{d.docType}</span>
+                      <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, fontWeight: 400 }}>
                         {store.members.find((m: Member) => m.id === d.memberId)?.name || "Unassigned"} · {d.category}
                       </span>
                     </span>
@@ -8631,7 +8637,7 @@ function Trust({ store, toast, go }: any) {
             <button
               onClick={() => go("home")}
               title="Back" aria-label="Back"
-              style={{ ...btnGhost, padding: 12, borderRadius: 999, minHeight: 40 }}
+              style={{ ...btnGhost, padding: 12, borderRadius: "var(--pill-radius)", minHeight: 40 }}
             >
               <ChevronLeft size={17} />
             </button>
@@ -8647,12 +8653,12 @@ function Trust({ store, toast, go }: any) {
       )}
       <Card style={{ padding: 0, marginBottom: 16 }}>
         <div style={{ padding: "16px 16px", display: "flex", alignItems: "center", gap: 12 }}>
-          <p style={{ flex: 1, minWidth: 0, fontSize: 12, color: T.muted, margin: 0, lineHeight: 1.5 }}>
+          <p style={{ flex: 1, minWidth: 0, fontSize: "var(--text-caption-md-size)", color: T.muted, margin: 0, lineHeight: 1.5 }}>
             The people your holdings and documents go to if you use the SOS handoff.
           </p>
           <button
             onClick={() => setSheet("add")}
-            style={{ ...btnGold, minHeight: 44, padding: "8px 12px", fontSize: 14, whiteSpace: "nowrap" }}
+            style={{ ...btnGold, minHeight: 44, padding: "8px 12px", fontSize: "var(--text-body-md-size)", whiteSpace: "nowrap" }}
           >
             <Plus size={15} /> Add person
           </button>
@@ -8680,7 +8686,7 @@ function Trust({ store, toast, go }: any) {
                     placeItems: "center",
                     width: 34,
                     height: 34,
-                    borderRadius: 12,
+                    borderRadius: "var(--surface-radius)",
                     background: m.color + "26",
                     color: inkOf(m.color),
                     fontWeight: 700,
@@ -8689,11 +8695,11 @@ function Trust({ store, toast, go }: any) {
                 >
                   {m.name[0]}
                 </span>
-                <span className="lp-wname" style={{ flex: 1, minWidth: 0, fontSize: 14, color: T.white }}>
+                <span className="lp-wname" style={{ flex: 1, minWidth: 0, fontSize: "var(--text-body-md-size)", color: T.white }}>
                   {m.name}
                   <span style={{ color: T.muted, fontWeight: 400 }}> · {m.relation}</span>
                   {primary && (
-                    <span style={{ display: "block", fontSize: 12, color: SEM.action, fontWeight: 700 }}>Primary</span>
+                    <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: SEM.action, fontWeight: 700 }}>Primary</span>
                   )}
                 </span>
                 {steps && !primary && (
@@ -8706,7 +8712,7 @@ function Trust({ store, toast, go }: any) {
                       store.updateMember(m.id, { access: "Full member" as Access });
                       toast(`${m.name.split(" ")[0]} is now primary`);
                     }}
-                    style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, minHeight: 40, whiteSpace: "nowrap" }}
+                    style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 40, whiteSpace: "nowrap" }}
                   >
                     Make primary
                   </button>
@@ -8736,7 +8742,7 @@ function Trust({ store, toast, go }: any) {
             );
           })}
         {store.members.filter((m: Member) => m.id !== "you").length === 0 && (
-          <div style={{ padding: "16px", fontSize: 14, color: T.faint }}>
+          <div style={{ padding: "16px", fontSize: "var(--text-body-md-size)", color: T.faint }}>
             Add the people who would step in. You can change or remove them any time.
           </div>
         )}
@@ -8798,15 +8804,14 @@ function PersonSheet({ person, onClose, onSave, onRemove }: any) {
     boxSizing: "border-box",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: 12,
     minHeight: 44,
     color: T.text,
-    fontSize: 16,
-    fontFamily: "inherit",
+    fontSize: "var(--text-body-lg-size)",
     outline: "none",
   };
-  const lbl: CSSProperties = { fontSize: 12, fontWeight: 700, color: T.muted, display: "block", margin: "12px 0 8px" };
+  const lbl: CSSProperties = { fontSize: "var(--text-caption-md-size)", fontWeight: 700, color: T.muted, display: "block", margin: "12px 0 8px" };
   const ok = name.trim().length > 0;
   return (
     <MSheet title={person ? "Edit person" : "Add person"} onClose={onClose}>
@@ -8830,7 +8835,7 @@ function PersonSheet({ person, onClose, onSave, onRemove }: any) {
       {onRemove && (
         <button
           onClick={onRemove}
-          style={{ ...btnGhost, width: "100%", justifyContent: "center", minHeight: 44, marginTop: 12, color: T.coral, borderColor: T.coral + "55" }}
+          style={{ ...btnGhost, width: "100%", justifyContent: "center", minHeight: 44, marginTop: 12, color: T.coral, borderColor: al(T.coral, 0.33) }}
         >
           <Trash2 size={15} /> Remove this person
         </button>
@@ -8892,13 +8897,13 @@ function SearchResults({ store, query, go }: any) {
           placeItems: "center",
           width: 32,
           height: 32,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           background: color + "22",
         }}
       >
         <Ic size={15} color={color} />
       </span>
-      <span style={{ flex: 1, fontSize: 14, color: T.text }}>
+      <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text }}>
         {title}
         <span style={{ color: T.muted }}> · {sub}</span>
       </span>
@@ -8911,7 +8916,7 @@ function SearchResults({ store, query, go }: any) {
         <div
           style={{
             padding: "12px 16px",
-            fontSize: 12,
+            fontSize: "var(--text-caption-md-size)",
             fontWeight: 700,
             color: T.muted,
             textTransform: "uppercase",
@@ -8926,12 +8931,12 @@ function SearchResults({ store, query, go }: any) {
     );
   return (
     <div>
-      <div style={{ fontSize: 14, color: T.muted, marginBottom: 16 }}>
+      <div style={{ fontSize: "var(--text-body-md-size)", color: T.muted, marginBottom: 16 }}>
         {total === 0 ? `No matches for "${query}"` : `${total} result${total > 1 ? "s" : ""} for "${query}"`}
       </div>
       {total === 0 && (
         <Card style={{ padding: 20, marginBottom: 16 }}>
-          <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.6, margin: "0 0 16px" }}>
+          <p style={{ fontSize: "var(--text-body-md-size)", color: T.muted, lineHeight: 1.6, margin: "0 0 16px" }}>
             Nothing in your vault matches that yet. You can add it, or find the situation that needs it.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -9076,8 +9081,8 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
         onClick={(e) => e.stopPropagation()}
         style={{
           background: T.panel,
-          border: `1px solid ${T.coral}55`,
-          borderRadius: 12,
+          border: `1px solid ${al(T.coral, 0.33)}`,
+          borderRadius: "var(--surface-radius)",
           width: "min(480px,100%)",
           maxHeight: "92vh",
           overflowY: "auto",
@@ -9085,20 +9090,20 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 20, display: "inline-flex", alignItems: "center", gap: 12 }}>
+          <b style={{ color: T.white, fontSize: "var(--text-heading-md-size)", display: "inline-flex", alignItems: "center", gap: 12 }}>
             <Siren size={18} color={T.coral} /> SOS handoff
           </b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
-        <p style={{ fontSize: 14, color: T.muted, margin: "0 0 16px", lineHeight: 1.55 }}>
+        <p style={{ fontSize: "var(--text-body-md-size)", color: T.muted, margin: "0 0 16px", lineHeight: 1.55 }}>
           Sends your holdings register, wealth documents, and access instructions to the people below. Once sent, it
           cannot be taken back.
         </p>
         <div
           style={{
-            fontSize: 12,
+            fontSize: "var(--text-caption-md-size)",
             fontWeight: 700,
             letterSpacing: 0.5,
             textTransform: "uppercase",
@@ -9111,7 +9116,7 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
         </div>
         {recipients.length === 0 ? (
           <div>
-            <p style={{ fontSize: 14, color: T.muted, lineHeight: 1.6, margin: "0 0 12px" }}>
+            <p style={{ fontSize: "var(--text-body-md-size)", color: T.muted, lineHeight: 1.6, margin: "0 0 12px" }}>
               Nobody can step in yet. Give someone Emergency or Full access and they will appear here.
             </p>
             <button
@@ -9149,16 +9154,16 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
                   placeItems: "center",
                   width: 30,
                   height: 30,
-                  borderRadius: 12,
+                  borderRadius: "var(--surface-radius)",
                   background: m.color + "26",
                   color: inkOf(m.color),
                   fontWeight: 700,
-                  fontSize: 14,
+                  fontSize: "var(--text-body-md-size)",
                 }}
               >
                 {m.name[0]}
               </span>
-              <span style={{ flex: 1, fontSize: 14, color: T.text }}>
+              <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text }}>
                 {m.name}
                 <span style={{ color: T.muted }}> · {m.relation}</span>
               </span>
@@ -9169,11 +9174,11 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
         <div
           style={{
             marginTop: 16,
-            borderRadius: 12,
+            borderRadius: "var(--surface-radius)",
             border: `1px solid ${T.border}`,
             background: T.raised,
             padding: "12px 16px",
-            fontSize: 12,
+            fontSize: "var(--text-caption-md-size)",
             lineHeight: 1.7,
           }}
         >
@@ -9191,7 +9196,7 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
             alignItems: "flex-start",
             gap: 12,
             marginTop: 12,
-            fontSize: 12,
+            fontSize: "var(--text-caption-md-size)",
             color: T.muted,
             cursor: "pointer",
             lineHeight: 1.5,
@@ -9210,15 +9215,15 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
             style={{
               marginTop: 16,
               padding: "16px 16px",
-              borderRadius: 12,
-              border: `1px solid ${T.coral}55`,
-              background: T.coral + "1F",
+              borderRadius: "var(--surface-radius)",
+              border: `1px solid ${al(T.coral, 0.33)}`,
+              background: al(T.coral, 0.12),
             }}
           >
-            <b style={{ color: T.white, fontSize: 14, display: "block", marginBottom: 4 }}>
+            <b style={{ color: T.white, fontSize: "var(--text-body-md-size)", display: "block", marginBottom: 4 }}>
               Send to {chosen.size} {chosen.size === 1 ? "person" : "people"} now?
             </b>
-            <p style={{ fontSize: 12, color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>
+            <p style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, margin: "0 0 12px", lineHeight: 1.5 }}>
               This cannot be undone.
             </p>
             <div style={{ display: "flex", gap: 8 }}>
@@ -9296,14 +9301,14 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: "12px 12px",
     color: T.text,
-    fontSize: 14,
+    fontSize: "var(--text-body-md-size)",
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: 12,
+    fontSize: "var(--text-caption-md-size)",
     fontWeight: 700,
     letterSpacing: 0.5,
     textTransform: "uppercase",
@@ -9331,7 +9336,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           width: "min(440px,100%)",
           maxHeight: "92vh",
           overflowY: "auto",
@@ -9339,12 +9344,12 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <b style={{ color: T.white, fontSize: 20 }}>{transaction ? "Edit money lent or borrowed" : "Record money lent or borrowed"}</b>
+          <b style={{ color: T.white, fontSize: "var(--text-heading-md-size)" }}>{transaction ? "Edit money lent or borrowed" : "Record money lent or borrowed"}</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
-        <p style={{ fontSize: 12, color: T.muted, margin: "0 0 16px" }}>
+        <p style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, margin: "0 0 16px" }}>
           Attach the UPI screenshot, chat, or statement line, confirm who and how much, done. Cash with no record is fine too; say so.
         </p>
         <label
@@ -9354,9 +9359,9 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
             alignItems: "center",
             gap: 8,
             padding: evidence ? "14px" : "22px 14px",
-            borderRadius: 12,
-            border: `1.5px dashed ${evidence ? T.mint + "77" : T.border}`,
-            background: evidence ? T.mint + "1F" : T.raised,
+            borderRadius: "var(--surface-radius)",
+            border: `1.5px dashed ${evidence ? al(T.mint, 0.47) : T.border}`,
+            background: evidence ? al(T.mint, 0.12) : T.raised,
             cursor: "pointer",
             textAlign: "center",
           }}
@@ -9364,16 +9369,16 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
           {evidence ? (
             <>
               <CheckCircle2 size={20} color={T.mint} />
-              <span style={{ fontSize: 14, color: T.text, fontWeight: 500, wordBreak: "break-all" }}>
+              <span style={{ fontSize: "var(--text-body-md-size)", color: T.text, fontWeight: 500, wordBreak: "break-all" }}>
                 {evidence.name}
               </span>
-              <span style={{ fontSize: 12, color: T.muted }}>Tap to replace</span>
+              <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>Tap to replace</span>
             </>
           ) : (
             <>
               <Paperclip size={20} color={T.gold} />
-              <span style={{ fontSize: 14, color: T.text, fontWeight: 500 }}>Photo · screenshot · receipt · PDF</span>
-              <span style={{ fontSize: 12, color: T.muted }}>
+              <span style={{ fontSize: "var(--text-body-md-size)", color: T.text, fontWeight: 500 }}>Photo · screenshot · receipt · PDF</span>
+              <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>
                 The proof is the record; it files into Documents too
               </span>
             </>
@@ -9414,25 +9419,25 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
                 setFx(rateBetween(e.target.value, homeCurrency));
               }}
             >
-              {CURRENCIES.map((c) => <option key={c} value={c} style={{ color: "#000" }}>{c}</option>)}
+              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         </div>
         {foreign && (
           <div style={{ marginTop: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: T.muted }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--text-caption-md-size)", color: T.muted }}>
               <span>1 {f.origCurrency} =</span>
               <input
                 type="number"
                 step="0.01"
                 value={fx}
                 onChange={(e) => setFx(Math.max(0, parseFloat(e.target.value) || 0))}
-                style={{ ...inp, width: 88, padding: "8px 8px", fontSize: 14 }}
+                style={{ ...inp, width: 88, padding: "8px 8px", fontSize: "var(--text-body-md-size)" }}
               />
               <span>{homeCurrency}</span>
               <b style={{ marginLeft: "auto", color: T.text, fontVariantNumeric: "tabular-nums" }}>= {formatMoney(homeAmount, homeCurrency, false)}</b>
             </div>
-            <div style={{ fontSize: 12, color: T.faint, marginTop: 4 }}>{RATES_NOTE}. Edit it to match your bank's rate.</div>
+            <div style={{ fontSize: "var(--text-caption-md-size)", color: T.faint, marginTop: 4 }}>{RATES_NOTE}. Edit it to match your bank's rate.</div>
           </div>
         )}
         <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
@@ -9443,10 +9448,10 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
               value={f.direction}
               onChange={(e) => setF({ ...f, direction: e.target.value as "paid" | "received" })}
             >
-              <option value="paid" style={{ color: "#000" }}>
+              <option value="paid">
                 I lent
               </option>
-              <option value="received" style={{ color: "#000" }}>
+              <option value="received">
                 I borrowed
               </option>
             </select>
@@ -9463,7 +9468,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
             border: "none",
             cursor: "pointer",
             color: T.muted,
-            fontSize: 12,
+            fontSize: "var(--text-caption-md-size)",
             fontWeight: 400,
             padding: 0,
             marginTop: 12,
@@ -9546,7 +9551,7 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
         {onDelete && (
           <button
             onClick={onDelete}
-            style={{ ...btnGhost, width: "100%", justifyContent: "center", marginTop: 12, minHeight: 44, color: T.coral, borderColor: T.coral + "55" }}
+            style={{ ...btnGhost, width: "100%", justifyContent: "center", marginTop: 12, minHeight: 44, color: T.coral, borderColor: al(T.coral, 0.33) }}
           >
             <Trash2 size={14} /> Remove this entry
           </button>
@@ -9603,14 +9608,14 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: "12px 12px",
     color: T.text,
-    fontSize: 14,
+    fontSize: "var(--text-body-md-size)",
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: 12,
+    fontSize: "var(--text-caption-md-size)",
     fontWeight: 700,
     letterSpacing: 0.5,
     textTransform: "uppercase",
@@ -9647,7 +9652,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           width: "min(500px,100%)",
           padding: 24,
           maxHeight: "90vh",
@@ -9655,7 +9660,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <b style={{ color: T.white, fontSize: 20 }}>{holding ? "Edit holding" : "Add holding"}</b>
+          <b style={{ color: T.white, fontSize: "var(--text-heading-md-size)" }}>{holding ? "Edit holding" : "Add holding"}</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
@@ -9669,19 +9674,19 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
               gap: 12,
               padding: "12px 12px",
               marginBottom: 16,
-              borderRadius: 12,
+              borderRadius: "var(--surface-radius)",
               border: `1px solid ${T.border}`,
               background: T.raised,
             }}
           >
             <FileText size={16} color={T.muted} />
-            <span style={{ flex: "1 1 180px", fontSize: 12, color: fill.note ? T.text : T.muted }}>
+            <span style={{ flex: "1 1 180px", fontSize: "var(--text-caption-md-size)", color: fill.note ? T.text : T.muted }}>
               {fill.note || "Linked to a document. Read it once to fill what it states."}
             </span>
             <button
               onClick={fillFromDoc}
               disabled={fill.busy}
-              style={{ ...btnGhost, padding: "8px 12px", fontSize: 12, color: SEM.action, whiteSpace: "nowrap", opacity: fill.busy ? 0.6 : 1 }}
+              style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", color: SEM.action, whiteSpace: "nowrap", opacity: fill.busy ? 0.6 : 1 }}
             >
               {fill.busy ? "Reading…" : fill.note ? "Read again" : "Fill from this document"}
             </button>
@@ -9699,7 +9704,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
             <label style={lbl}>Kind</label>
             <select style={inp} value={f.kind} onChange={(e) => set("kind", e.target.value)}>
               {["asset", "liability", "cover"].map((k) => (
-                <option key={k} style={{ color: "#000" }}>
+                <option key={k}>
                   {k}
                 </option>
               ))}
@@ -9757,32 +9762,32 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
                 setHfx(rateBetween(e.target.value, getCurrency()));
               }}
             >
-              {CURRENCIES.map((c) => <option key={c} value={c} style={{ color: "#000" }}>{c}</option>)}
+              {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         </div>
         {hForeign && (
           <div style={{ marginTop: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: T.muted }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--text-caption-md-size)", color: T.muted }}>
               <span>1 {hCur} =</span>
               <input
                 type="number"
                 step="0.01"
                 value={hfx}
                 onChange={(e) => setHfx(Math.max(0, parseFloat(e.target.value) || 0))}
-                style={{ ...inp, width: 88, padding: "8px 8px", fontSize: 14 }}
+                style={{ ...inp, width: 88, padding: "8px 8px", fontSize: "var(--text-body-md-size)" }}
               />
               <span>{getCurrency()}</span>
               <b style={{ marginLeft: "auto", color: T.text, fontVariantNumeric: "tabular-nums" }}>= {formatMoney(hHome, getCurrency(), false)}</b>
             </div>
-            <div style={{ fontSize: 12, color: T.faint, marginTop: 4 }}>{RATES_NOTE}. Edit it to match your bank's rate.</div>
+            <div style={{ fontSize: "var(--text-caption-md-size)", color: T.faint, marginTop: 4 }}>{RATES_NOTE}. Edit it to match your bank's rate.</div>
           </div>
         )}
         <div style={{ marginTop: 12 }}>
           <label style={lbl}>Owner</label>
           <select style={inp} value={f.memberId} onChange={(e) => set("memberId", e.target.value)}>
             {members.map((m: Member) => (
-              <option key={m.id} value={m.id} style={{ color: "#000" }}>
+              <option key={m.id} value={m.id}>
                 {m.name}
               </option>
             ))}
@@ -9814,7 +9819,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
           <label style={lbl}>{f.kind === "liability" ? "Closure instructions for the family" : "Access instructions for the family"}</label>
           <textarea
             ref={accessRef}
-            style={{ ...inp, minHeight: 58, resize: "vertical", fontFamily: "inherit" }}
+            style={{ ...inp, minHeight: 58, resize: "vertical" }}
             value={f.accessNote || ""}
             onChange={(e) => set("accessNote", e.target.value)}
             placeholder={f.kind === "liability" ? "Who to contact, account details, and how to close or take over the loan" : "Where it is, who to contact, how to claim (locker no., agent, portal)"}
@@ -9824,7 +9829,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
           <div style={{ marginTop: 12 }}>
             <label style={lbl}>Access instructions for the family</label>
             <textarea
-              style={{ ...inp, minHeight: 58, resize: "vertical", fontFamily: "inherit" }}
+              style={{ ...inp, minHeight: 58, resize: "vertical" }}
               value={f.accessNote || ""}
               onChange={(e) => set("accessNote", e.target.value)}
               placeholder="Where it is, who to contact, how to claim (locker no., agent, portal)"
@@ -9834,7 +9839,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
         {canNominee && (
           <div style={{ marginTop: 16, display: "flex", gap: 12, alignItems: "center" }}>
             <label
-              style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 14, color: T.text }}
+              style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: "var(--text-body-md-size)", color: T.text }}
             >
               <input type="checkbox" checked={!!f.nominee} onChange={(e) => set("nominee", e.target.checked)} /> Nominee
               named
@@ -9870,7 +9875,7 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
             <button
               onClick={onDelete}
               title="Remove" aria-label="Remove"
-              style={{ ...btnGhost, color: T.coral, borderColor: T.coral + "55", padding: "12px 16px" }}
+              style={{ ...btnGhost, color: T.coral, borderColor: al(T.coral, 0.33), padding: "12px 16px" }}
             >
               <Trash2 size={15} />
             </button>
@@ -9887,10 +9892,10 @@ function NomineeModal({ holding, onClose, onSave }: any) {
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: "12px 12px",
     color: T.text,
-    fontSize: 14,
+    fontSize: "var(--text-body-md-size)",
     outline: "none",
   };
   return (
@@ -9912,7 +9917,7 @@ function NomineeModal({ holding, onClose, onSave }: any) {
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           width: "min(420px,100%)",
           maxHeight: "88vh",
           overflowY: "auto",
@@ -9920,12 +9925,12 @@ function NomineeModal({ holding, onClose, onSave }: any) {
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-          <b style={{ color: T.white, fontSize: 16 }}>Name a nominee</b>
+          <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)" }}>Name a nominee</b>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
-        <p style={{ fontSize: 14, color: T.muted, marginBottom: 16 }}>
+        <p style={{ fontSize: "var(--text-body-md-size)", color: T.muted, marginBottom: 16 }}>
           Who should receive {holding.name} ({holding.institution || holding.type})?
         </p>
         <input
@@ -9987,7 +9992,7 @@ function EstateSheet({ store, onClose, toast }: any) {
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           width: "min(680px,100%)",
           maxHeight: "88vh",
           display: "flex",
@@ -10000,7 +10005,7 @@ function EstateSheet({ store, onClose, toast }: any) {
             <div
               style={{
                 fontVariantNumeric: "tabular-nums",
-                fontSize: 12,
+                fontSize: "var(--text-caption-md-size)",
                 letterSpacing: 1.5,
                 textTransform: "uppercase",
                 color: T.gold,
@@ -10009,14 +10014,14 @@ function EstateSheet({ store, onClose, toast }: any) {
             >
               What your family would need
             </div>
-            <b style={{ color: T.white, fontSize: 20 }}>Family summary</b>
+            <b style={{ color: T.white, fontSize: "var(--text-heading-md-size)" }}>Family summary</b>
           </div>
           <button onClick={onClose} style={{ ...btnGhost, padding: 8 }}>
             <X size={16} />
           </button>
         </div>
         <div
-          style={{ flex: 1, minHeight: 0, overflow: "auto", background: "#eef0f3", borderRadius: 12, padding: 12 }}
+          style={{ flex: 1, minHeight: 0, overflow: "auto", background: T.raised, borderRadius: "var(--surface-radius)", padding: 12 }}
           dangerouslySetInnerHTML={{ __html: html }}
         />
         <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
@@ -10033,6 +10038,9 @@ function EstateSheet({ store, onClose, toast }: any) {
 }
 
 function buildEstate(store: any): string {
+  // Standalone printable document: it leaves the app, so it carries the light-theme values inline.
+  const P = { ink: "#1B1626", body: "#2A2435", muted: "#5D5869", danger: "#A8232B", band: "#EEEFF5", paper: "#FFFFFF", brand: "#5E3A99" }; /* token-source */
+  const F = { title: "20px", big: "22px", stat: "18px", h3: "14px", body: "13px", table: "12.5px", note: "12px" };
   const H: Holding[] = store.holdings;
   const m2 = (v?: number) => formatMoney(v || 0, getCurrency(), false);
   const A_ = H.filter((h) => h.kind === "asset"),
@@ -10042,29 +10050,29 @@ function buildEstate(store: any): string {
   const net = s(A_) - s(L_);
   const dn = (id?: string) => store.docs.find((d: Doc) => d.id === id)?.name || "\u2014 not attached \u2014";
   const trusted = store.members.filter((mm: Member) => mm.access === "Full member" || mm.access === "Emergency access");
-  const th = (t: string) => `<th style="text-align:left;padding:6px 10px;font-size:12px;color:#6b7280">${t}</th>`;
+  const th = (t: string) => `<th style="text-align:left;padding:6px 10px;font-size:${F.note};color:${P.muted}">${t}</th>`;
   const secTable = (title: string, arr: Holding[], showNom: boolean) =>
-    `<h3 style="margin:18px 0 6px;font-size:14px;color:#111827">${title}</h3><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Holding")}${th("Type")}${th("Where")}${th("Value")}${showNom ? th("Nominee") : ""}${th("Document")}${th("How to access")}</tr>${arr.map((h) => `<tr><td style="padding:6px 10px;font-weight:500">${h.name}</td><td style="padding:6px 10px">${h.type}</td><td style="padding:6px 10px;color:#6b7280">${h.institution || ""} ${h.accountRef || ""}</td><td style="padding:6px 10px">${m2(h.value)}</td>${showNom ? `<td style="padding:6px 10px;color:${h.nominee ? "#111827" : "#b91c1c"};font-weight:${h.nominee ? 400 : 700}">${h.nominee ? h.nomineeName || "named" : "NOT NAMED"}</td>` : ""}<td style="padding:6px 10px;color:#6b7280">${dn(h.docId)}</td><td style="padding:6px 10px;color:#374151">${h.accessNote || "\u2014"}</td></tr>`).join("") || `<tr><td colspan="6" style="padding:6px 10px;color:#6b7280">None</td></tr>`}</table>`;
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Family Summary</title></head><body style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111827;max-width:760px;margin:20px auto;padding:0 20px;background:#fff">
-  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #D8B25A;padding-bottom:12px"><div><div style="font-weight:700;font-size:20px">ReadiNes · Family Summary</div><div style="color:#6b7280;font-size:13px">What your family would need to find and claim everything</div></div><div style="text-align:right;color:#6b7280;font-size:12px">Prepared ${new Date().toLocaleString()}</div></div>
+    `<h3 style="margin:18px 0 6px;font-size:${F.h3};color:${P.ink}">${title}</h3><table style="width:100%;border-collapse:collapse;font-size:${F.table}"><tr style="background:${P.band}">${th("Holding")}${th("Type")}${th("Where")}${th("Value")}${showNom ? th("Nominee") : ""}${th("Document")}${th("How to access")}</tr>${arr.map((h) => `<tr><td style="padding:6px 10px;font-weight:500">${h.name}</td><td style="padding:6px 10px">${h.type}</td><td style="padding:6px 10px;color:${P.muted}">${h.institution || ""} ${h.accountRef || ""}</td><td style="padding:6px 10px">${m2(h.value)}</td>${showNom ? `<td style="padding:6px 10px;color:${h.nominee ? "${P.ink}" : "${P.danger}"};font-weight:${h.nominee ? 400 : 700}">${h.nominee ? h.nomineeName || "named" : "NOT NAMED"}</td>` : ""}<td style="padding:6px 10px;color:${P.muted}">${dn(h.docId)}</td><td style="padding:6px 10px;color:${P.body}">${h.accessNote || "\u2014"}</td></tr>`).join("") || `<tr><td colspan="6" style="padding:6px 10px;color:${P.muted}">None</td></tr>`}</table>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Family Summary</title></head><body style="color:${P.ink};max-width:760px;margin:20px auto;padding:0 20px;background:${P.paper}">
+  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid ${P.brand};padding-bottom:12px"><div><div style="font-weight:700;font-size:${F.title}">ReadiNes · Family Summary</div><div style="color:${P.muted};font-size:${F.body}">What your family would need to find and claim everything</div></div><div style="text-align:right;color:${P.muted};font-size:${F.note}">Prepared ${new Date().toLocaleString()}</div></div>
   <div style="display:flex;gap:26px;margin-top:16px">
-    <div><div style="font-size:12px;color:#6b7280">Net worth (documented)</div><div style="font-size:22px;font-weight:700">${m2(net)}</div></div>
-    <div><div style="font-size:12px;color:#6b7280">Assets</div><div style="font-size:18px;font-weight:700">${m2(s(A_))}</div></div>
-    <div><div style="font-size:12px;color:#6b7280">Liabilities</div><div style="font-size:18px;font-weight:700">${m2(s(L_))}</div></div>
-    <div><div style="font-size:12px;color:#6b7280">Protection</div><div style="font-size:18px;font-weight:700">${m2(s(C_))}</div></div>
+    <div><div style="font-size:${F.note};color:${P.muted}">Net worth (documented)</div><div style="font-size:${F.big};font-weight:700">${m2(net)}</div></div>
+    <div><div style="font-size:${F.note};color:${P.muted}">Assets</div><div style="font-size:${F.stat};font-weight:700">${m2(s(A_))}</div></div>
+    <div><div style="font-size:${F.note};color:${P.muted}">Liabilities</div><div style="font-size:${F.stat};font-weight:700">${m2(s(L_))}</div></div>
+    <div><div style="font-size:${F.note};color:${P.muted}">Protection</div><div style="font-size:${F.stat};font-weight:700">${m2(s(C_))}</div></div>
   </div>
   ${secTable("Accounts and investments", A_, true)}
   ${secTable("Loans", L_, false)}
   ${secTable("Insurance", C_, true)}
-  <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">Money between people</h3>
-  <table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6">${th("Who")}${th("What for")}${th("Amount")}${th("Direction")}${th("Evidence")}</tr>${(store.transactions || []).filter((t: Transaction) => !t.followUpDone).map((t: Transaction) => `<tr><td style="padding:6px 10px;font-weight:500">${t.counterparty || "\u2014"}</td><td style="padding:6px 10px">${t.purpose}</td><td style="padding:6px 10px">${m2(t.amount)}</td><td style="padding:6px 10px">${t.direction === "paid" ? "owed to the family" : "the family owes"}</td><td style="padding:6px 10px;color:${t.docId ? "#111827" : "#b91c1c"};font-weight:${t.docId ? 400 : 700}">${t.docId ? dn(t.docId) : "NONE"}</td></tr>`).join("") || `<tr><td colspan="5" style="padding:6px 10px;color:#6b7280">None recorded</td></tr>`}</table>
-  <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">If something happens: first steps for the family</h3>
-  <ol style="margin:0;padding-left:18px;line-height:1.8;color:#374151;font-size:13px">
-    ${C_.map((c) => `<li>File the ${c.type.toLowerCase()} claim with <b>${c.institution || "the insurer"}</b>${c.accessNote ? ` — ${c.accessNote}` : ""}${c.nominee ? ` (nominee: ${c.nomineeName || "named"})` : ` <span style="color:#b91c1c;font-weight:700">(no nominee — expect a legal-heir process)</span>`}</li>`).join("")}
+  <h3 style="margin:18px 0 6px;font-size:${F.h3};color:${P.ink}">Money between people</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:${F.table}"><tr style="background:${P.band}">${th("Who")}${th("What for")}${th("Amount")}${th("Direction")}${th("Evidence")}</tr>${(store.transactions || []).filter((t: Transaction) => !t.followUpDone).map((t: Transaction) => `<tr><td style="padding:6px 10px;font-weight:500">${t.counterparty || "\u2014"}</td><td style="padding:6px 10px">${t.purpose}</td><td style="padding:6px 10px">${m2(t.amount)}</td><td style="padding:6px 10px">${t.direction === "paid" ? "owed to the family" : "the family owes"}</td><td style="padding:6px 10px;color:${t.docId ? "${P.ink}" : "${P.danger}"};font-weight:${t.docId ? 400 : 700}">${t.docId ? dn(t.docId) : "NONE"}</td></tr>`).join("") || `<tr><td colspan="5" style="padding:6px 10px;color:${P.muted}">None recorded</td></tr>`}</table>
+  <h3 style="margin:18px 0 6px;font-size:${F.h3};color:${P.ink}">If something happens: first steps for the family</h3>
+  <ol style="margin:0;padding-left:18px;line-height:1.8;color:${P.body};font-size:${F.body}">
+    ${C_.map((c) => `<li>File the ${c.type.toLowerCase()} claim with <b>${c.institution || "the insurer"}</b>${c.accessNote ? ` — ${c.accessNote}` : ""}${c.nominee ? ` (nominee: ${c.nomineeName || "named"})` : ` <span style="color:${P.danger};font-weight:700">(no nominee — expect a legal-heir process)</span>`}</li>`).join("")}
     ${[...new Set(A_.map((h) => h.institution).filter(Boolean))].map((inst) => `<li>Visit or contact <b>${inst}</b> with the death certificate, ID proof, and the account references above</li>`).join("")}
     <li>Documents attached in the handoff pack: ${A_.concat(C_).filter((h) => h.docId).length} of ${A_.concat(C_).length} holdings have proof on file${
       A_.concat(C_).filter((h) => !h.docId).length
-        ? ` — <span style="color:#b91c1c;font-weight:700">${A_.concat(C_)
+        ? ` — <span style="color:${P.danger};font-weight:700">${A_.concat(C_)
             .filter((h) => !h.docId)
             .map((h) => h.name)
             .join(", ")} missing</span>`
@@ -10072,8 +10080,8 @@ function buildEstate(store: any): string {
     }</li>
     ${L_.length ? `<li>Outstanding liabilities to settle or transfer: ${L_.map((l) => `${l.name} (${l.institution || ""})`).join(", ")}</li>` : ""}
   </ol>
-  <h3 style="margin:18px 0 6px;font-size:14px;color:#111827">Who can help</h3><ul style="margin:0;padding-left:18px;line-height:1.7;color:#374151;font-size:13px">${trusted.map((mm: Member) => `<li>${mm.name} \u2014 ${mm.relation} (${mm.access})</li>`).join("") || "<li>No trusted contacts set</li>"}</ul>
-  <p style="margin-top:22px;font-size:12px;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:10px">Prepared by ReadiNes from your own records. Account references are masked. This is an organizational summary \u2014 not a will, and not legal, tax, or financial advice. Confirm nominee and succession details with each institution and a professional.</p>
+  <h3 style="margin:18px 0 6px;font-size:${F.h3};color:${P.ink}">Who can help</h3><ul style="margin:0;padding-left:18px;line-height:1.7;color:${P.body};font-size:${F.body}">${trusted.map((mm: Member) => `<li>${mm.name} \u2014 ${mm.relation} (${mm.access})</li>`).join("") || "<li>No trusted contacts set</li>"}</ul>
+  <p style="margin-top:22px;font-size:${F.note};color:${P.muted};border-top:1px solid ${P.band};padding-top:10px">Prepared by ReadiNes from your own records. Account references are masked. This is an organizational summary \u2014 not a will, and not legal, tax, or financial advice. Confirm nominee and succession details with each institution and a professional.</p>
   </body></html>`;
 }
 
@@ -10118,13 +10126,13 @@ function DesignSystem({ store }: any) {
   const isMobile = useIsMobile();
   const Sw = ({ c, l }: { c: string; l: string }) => (
     <span style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      <span style={{ width: 44, height: 44, borderRadius: 12, background: c, border: `1px solid ${T.border}` }} />
-      <span style={{ fontSize: 12, color: T.muted }}>{l}</span>
+      <span style={{ width: 44, height: 44, borderRadius: "var(--surface-radius)", background: c, border: `1px solid ${T.border}` }} />
+      <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>{l}</span>
     </span>
   );
   const Sec = ({ t, children }: any) => (
     <Card style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 12 }}>{t}</div>
+      <div style={{ fontSize: "var(--text-caption-md-size)", fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 12 }}>{t}</div>
       {children}
     </Card>
   );
@@ -10132,7 +10140,7 @@ function DesignSystem({ store }: any) {
     <div>
       {isMobile && <MNav title="Design system" aria-label="Design system" />}
       <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "4px 0 16px" }}>
-        {!isMobile && <b style={{ fontSize: 20, fontWeight: 700, color: T.white }}>Design system</b>}
+        {!isMobile && <b style={{ fontSize: "var(--text-heading-md-size)", fontWeight: 700, color: T.white }}>Design system</b>}
         <span style={{ flex: 1 }} />
         {(["dark", "light"] as const).map((t) => (
           <button
@@ -10140,12 +10148,12 @@ function DesignSystem({ store }: any) {
             onClick={() => store.setTheme(t)}
             style={{
               padding: "8px 16px",
-              borderRadius: 999,
-              fontSize: 12,
+              borderRadius: "var(--pill-radius)",
+              fontSize: "var(--text-caption-md-size)",
               fontWeight: 700,
               cursor: "pointer",
               border: `1px solid ${store.theme === t ? SEM.action : T.border}`,
-              background: store.theme === t ? SEM.action + "1F" : "transparent",
+              background: store.theme === t ? al(SEM.action, 0.12) : "transparent",
               color: store.theme === t ? SEM.action : T.muted,
             }}
           >
@@ -10182,7 +10190,7 @@ function DesignSystem({ store }: any) {
             ["Body", DS.type.body, 400],
             ["Small", DS.type.small, 400],
             ["Caption", DS.type.caption, 400],
-          ] as [string, number, number][]
+          ] as [string, string, number][]
         ).map(([l, sz, w]) => (
           <div key={l} style={{ fontSize: sz, fontWeight: w, color: T.text, lineHeight: 1.3, marginBottom: 8 }}>
             {l} · {sz}px
@@ -10193,8 +10201,8 @@ function DesignSystem({ store }: any) {
         <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
           {DS.space.map((v) => (
             <span key={v} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-              <span style={{ width: 14, height: v, background: SEM.action + "55", borderRadius: 12 }} />
-              <span style={{ fontSize: 12, color: T.faint }}>{v}</span>
+              <span style={{ width: 14, height: v, background: al(SEM.action, 0.33), borderRadius: "var(--surface-radius)" }} />
+              <span style={{ fontSize: "var(--text-caption-md-size)", color: T.faint }}>{v}</span>
             </span>
           ))}
         </div>
@@ -10203,15 +10211,15 @@ function DesignSystem({ store }: any) {
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           {Object.entries(DS.radius).map(([k, v]) => (
             <span key={k} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 52, height: 40, borderRadius: v, border: `1.5px solid ${SEM.action}`, background: SEM.action + "22" }} />
-              <span style={{ fontSize: 12, color: T.muted }}>{k} · {v}</span>
+              <span style={{ width: 52, height: 40, borderRadius: v, border: `1.5px solid ${SEM.action}`, background: al(SEM.action, 0.13) }} />
+              <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>{k} · {v}</span>
             </span>
           ))}
         </div>
       </Sec>
       <Sec t="Buttons">
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-          <button style={{ padding: "12px 20px", borderRadius: DS.radius.control, border: "none", background: SEM.action, color: "var(--lpv-actionink)", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
+          <button style={{ padding: "12px 20px", borderRadius: DS.radius.control, border: "none", background: SEM.action, color: "var(--lpv-actionink)", fontSize: "var(--text-body-lg-size)", fontWeight: 700, cursor: "pointer" }}>
             Primary action
           </button>
           <button style={{ ...btnGold, cursor: "pointer" }}>Readiness moment</button>
@@ -10228,7 +10236,7 @@ function DesignSystem({ store }: any) {
               ["On track", SEM.info],
             ] as [string, string][]
           ).map(([l, c]) => (
-            <span key={l} style={{ padding: "8px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: c, background: c + "1C" }}>
+            <span key={l} style={{ padding: "8px 12px", borderRadius: "var(--pill-radius)", fontSize: "var(--text-caption-md-size)", fontWeight: 700, color: c, background: c + "1C" }}>
               {l}
             </span>
           ))}
@@ -10236,18 +10244,18 @@ function DesignSystem({ store }: any) {
       </Sec>
       <Sec t="List item">
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ width: 36, height: 36, borderRadius: 12, background: A.pink + "1F", display: "grid", placeItems: "center" }}>
+          <span style={{ width: 36, height: 36, borderRadius: "var(--surface-radius)", background: al(A.pink, 0.12), display: "grid", placeItems: "center" }}>
             <HeartPulse size={16} color={A.pink} />
           </span>
           <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.white }}>Annual health checkup</span>
-            <span style={{ display: "block", fontSize: 12, color: T.muted }}>Nov 21 · Dr. Reyes</span>
+            <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white }}>Annual health checkup</span>
+            <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted }}>Nov 21 · Dr. Reyes</span>
           </span>
-          <span style={{ padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: SEM.success, background: SEM.success + "1C" }}>in 69d</span>
+          <span style={{ padding: "4px 12px", borderRadius: "var(--pill-radius)", fontSize: "var(--text-caption-md-size)", fontWeight: 700, color: SEM.success, background: al(SEM.success, 0.11) }}>in 69d</span>
           <ChevronRight size={15} color={T.faint} />
         </div>
       </Sec>
-      <p style={{ fontSize: 12, color: T.faint, lineHeight: 1.6 }}>
+      <p style={{ fontSize: "var(--text-caption-md-size)", color: T.faint, lineHeight: 1.6 }}>
         Roles are locked; hex values tune against real UI. Gold appears only where readiness is the message. Changes land at the
         highest reusable level: token → theme → component → pattern → screen.
       </p>
@@ -10277,8 +10285,8 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
           alignItems: "center",
           gap: 8,
           background: T.panel,
-          border: `1px solid ${open ? T.gold + "66" : T.border}`,
-          borderRadius: 999,
+          border: `1px solid ${open ? al(T.gold, 0.4) : T.border}`,
+          borderRadius: "var(--pill-radius)",
           padding: "8px 12px 8px 8px",
           cursor: "pointer",
         }}
@@ -10289,11 +10297,11 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
             placeItems: "center",
             width: 30,
             height: 30,
-            borderRadius: 999,
-            background: T.gold + "26",
+            borderRadius: "var(--pill-radius)",
+            background: al(T.gold, 0.15),
             color: T.gold,
             fontWeight: 700,
-            fontSize: 14,
+            fontSize: "var(--text-body-md-size)",
           }}
         >
           {initial}
@@ -10301,7 +10309,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
         <span
           className="lp-pm-name"
           style={{
-            fontSize: 14,
+            fontSize: "var(--text-body-md-size)",
             fontWeight: 500,
             color: T.text,
             maxWidth: 120,
@@ -10326,8 +10334,8 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
               width: 264,
               background: T.panel,
               border: `1px solid ${T.border}`,
-              borderRadius: 12,
-              boxShadow: "0 24px 60px rgba(0,0,0,.55)",
+              borderRadius: "var(--surface-radius)",
+              boxShadow: "var(--elevation-overlay)",
               overflow: "hidden",
             }}
           >
@@ -10338,11 +10346,11 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                   placeItems: "center",
                   width: 40,
                   height: 40,
-                  borderRadius: 12,
-                  background: T.gold + "26",
+                  borderRadius: "var(--surface-radius)",
+                  background: al(T.gold, 0.15),
                   color: T.gold,
                   fontWeight: 700,
-                  fontSize: 16,
+                  fontSize: "var(--text-body-lg-size)",
                 }}
               >
                 {initial}
@@ -10350,7 +10358,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
               <div style={{ minWidth: 0 }}>
                 <div
                   style={{
-                    fontSize: 14,
+                    fontSize: "var(--text-body-md-size)",
                     fontWeight: 700,
                     color: T.white,
                     overflow: "hidden",
@@ -10362,7 +10370,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                 </div>
                 <div
                   style={{
-                    fontSize: 12,
+                    fontSize: "var(--text-caption-md-size)",
                     color: T.muted,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -10376,7 +10384,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
             <div style={{ padding: "8px 12px", borderTop: `1px solid ${T.border}` }}>
               <div
                 style={{
-                  fontSize: 12,
+                  fontSize: "var(--text-caption-md-size)",
                   fontWeight: 700,
                   letterSpacing: 1,
                   textTransform: "uppercase",
@@ -10404,7 +10412,7 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                       alignItems: "center",
                       gap: 12,
                       padding: "12px 12px",
-                      borderRadius: 12,
+                      borderRadius: "var(--surface-radius)",
                       cursor: "pointer",
                       border: "none",
                       background: on ? T.raised : "transparent",
@@ -10418,8 +10426,8 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                         placeItems: "center",
                         width: 26,
                         height: 26,
-                        borderRadius: 12,
-                        background: (mode === "sample" ? A.purple : T.mint) + "22",
+                        borderRadius: "var(--surface-radius)",
+                        background: al(mode === "sample" ? A.purple : T.mint, 0.13),
                       }}
                     >
                       {mode === "sample" ? (
@@ -10429,8 +10437,8 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                       )}
                     </span>
                     <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.text }}>{label}</span>
-                      <span style={{ display: "block", fontSize: 12, color: T.muted }}>{sub}</span>
+                      <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.text }}>{label}</span>
+                      <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted }}>{sub}</span>
                     </span>
                     {on && <Check size={15} color={T.gold} />}
                   </button>
@@ -10455,12 +10463,12 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                     alignItems: "center",
                     gap: 12,
                     padding: "12px 12px",
-                    borderRadius: 12,
+                    borderRadius: "var(--surface-radius)",
                     cursor: "pointer",
                     border: "none",
                     background: "transparent",
                     color: T.text,
-                    fontSize: 14,
+                    fontSize: "var(--text-body-md-size)",
                     fontWeight: 500,
                     textAlign: "left",
                   }}
@@ -10476,12 +10484,12 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
                   alignItems: "center",
                   gap: 12,
                   padding: "12px 12px",
-                  borderRadius: 12,
+                  borderRadius: "var(--surface-radius)",
                   cursor: "pointer",
                   border: "none",
                   background: "transparent",
                   color: T.coral,
-                  fontSize: 14,
+                  fontSize: "var(--text-body-md-size)",
                   fontWeight: 500,
                   textAlign: "left",
                 }}
@@ -10501,7 +10509,7 @@ function CatalogueReview({ Overlay }: any) {
   const review = useMemo(() => catalogueReview(), []);
   return (
     <Overlay title="Catalogue review" aria-label="Catalogue review">
-      <div style={{ fontSize: 14, color: T.text }}>
+      <div style={{ fontSize: "var(--text-body-md-size)", color: T.text }}>
         {review.fresh} of {review.total} packs checked in the last year
       </div>
       {review.overdue.length > 0 && (
@@ -10509,10 +10517,10 @@ function CatalogueReview({ Overlay }: any) {
           {review.overdue.map((r) => (
             <div
               key={r.id}
-              style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: `1px solid ${T.border}`, fontSize: 14 }}
+              style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: `1px solid ${T.border}`, fontSize: "var(--text-body-md-size)" }}
             >
               <span style={{ flex: 1, color: T.text, minWidth: 0 }}>{r.name}</span>
-              <span style={{ color: r.state === "stale" ? SEM.warning : T.muted, fontSize: 12, whiteSpace: "nowrap" }}>
+              <span style={{ color: r.state === "stale" ? SEM.warning : T.muted, fontSize: "var(--text-caption-md-size)", whiteSpace: "nowrap" }}>
                 {r.state === "never" ? "Never checked" : `${r.days} days ago`}
               </span>
             </div>
@@ -10590,20 +10598,20 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         style={{
           width: 32,
           height: 32,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           display: "grid",
           placeItems: "center",
           flexShrink: 0,
-          background: (danger ? T.coral : SEM.action) + "1F",
+          background: al(danger ? T.coral : SEM.action, 0.12),
         }}
       >
         <Ic size={15} color={danger ? T.coral : SEM.action} />
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: danger ? T.coral : T.text }}>
+        <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: danger ? T.coral : T.text }}>
           {label}
         </span>
-        {sub && <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 4 }}>{sub}</span>}
+        {sub && <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4 }}>{sub}</span>}
       </span>
       <ChevronRight size={14} color={T.faint} />
     </button>
@@ -10611,10 +10619,10 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
   const inp: CSSProperties = {
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: "12px 12px",
     color: T.text,
-    fontSize: 14,
+    fontSize: "var(--text-body-md-size)",
     outline: "none",
   };
   const Overlay = ({ children, title }: any) => (
@@ -10636,7 +10644,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         style={{
           background: T.panel,
           border: `1px solid ${T.border}`,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           width: "min(480px,100%)",
           maxHeight: "86vh",
           overflowY: "auto",
@@ -10644,7 +10652,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <b style={{ color: T.white, fontSize: 16 }}>{title}</b>
+          <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)" }}>{title}</b>
           <button onClick={() => setModal(null)} style={{ ...btnGhost, padding: 8 }}>
             <X size={15} />
           </button>
@@ -10659,7 +10667,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
     <div style={{ marginBottom: 20 }}>
       <div
         style={{
-          fontSize: 12,
+          fontSize: "var(--text-caption-md-size)",
           fontWeight: 700,
           letterSpacing: 1.2,
           textTransform: "uppercase",
@@ -10693,22 +10701,22 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         style={{
           width: 32,
           height: 32,
-          borderRadius: 12,
+          borderRadius: "var(--surface-radius)",
           display: "grid",
           placeItems: "center",
           flexShrink: 0,
-          background: (danger ? T.coral : SEM.action) + "1F",
+          background: al(danger ? T.coral : SEM.action, 0.12),
         }}
       >
         <Ic size={15} color={danger ? T.coral : SEM.action} />
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: danger ? T.coral : T.text }}>
+        <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: danger ? T.coral : T.text }}>
           {label}
         </span>
-        {sub && <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 4 }}>{sub}</span>}
+        {sub && <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4 }}>{sub}</span>}
       </span>
-      {value && <span style={{ fontSize: 12, color: T.muted, fontVariantNumeric: "tabular-nums" }}>{value}</span>}
+      {value && <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, fontVariantNumeric: "tabular-nums" }}>{value}</span>}
       {onClick && <ChevronRight size={14} color={T.faint} />}
     </button>
   );
@@ -10725,11 +10733,11 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                   placeItems: "center",
                   width: 44,
                   height: 44,
-                  borderRadius: 12,
-                  background: T.gold + "22",
+                  borderRadius: "var(--surface-radius)",
+                  background: al(T.gold, 0.13),
                   color: T.gold,
                   fontWeight: 700,
-                  fontSize: 20,
+                  fontSize: "var(--text-heading-md-size)",
                 }}
               >
                 {(name || "?")[0]}
@@ -10743,7 +10751,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                     borderBottom: `1px solid ${T.border}`,
                     padding: "4px 0 8px",
                     color: T.white,
-                    fontSize: 16,
+                    fontSize: "var(--text-body-lg-size)",
                     fontWeight: 500,
                     outline: "none",
                   }}
@@ -10751,7 +10759,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                   onChange={(e) => setName(e.target.value)}
                   onBlur={saveName}
                 />
-                <div style={{ fontSize: 12, color: T.muted, marginTop: 8 }}>
+                <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 8 }}>
                   {account?.email || "Not signed in · changes are saved on this device"}
                 </div>
               </div>
@@ -10769,8 +10777,8 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 16px", borderTop: `1px solid ${T.border}` }}>
               <Coins size={16} color={SEM.action} />
               <span style={{ flex: 1 }}>
-                <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.text }}>Home currency</span>
-                <span style={{ display: "block", fontSize: 12, color: T.muted }}>{RATES_NOTE}</span>
+                <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.text }}>Home currency</span>
+                <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted }}>{RATES_NOTE}</span>
               </span>
               <select
                 aria-label="Home currency"
@@ -10779,26 +10787,26 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                   store.setCurrency(e.target.value);
                   toast(`Home currency changed to ${e.target.value}`);
                 }}
-                style={{ background: T.raised, color: T.text, border: `1px solid ${T.border}`, borderRadius: 12, minHeight: 44, padding: "0 12px", fontSize: 14 }}
+                style={{ background: T.raised, color: T.text, border: `1px solid ${T.border}`, borderRadius: "var(--surface-radius)", minHeight: 44, padding: "0 12px", fontSize: "var(--text-body-md-size)" }}
               >
-                {CURRENCIES.map((c) => <option key={c} value={c} style={{ color: "#000" }}>{c}</option>)}
+                {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 16px" }}>
               <span
-                style={{ width: 32, height: 32, borderRadius: 12, display: "grid", placeItems: "center", flexShrink: 0, background: SEM.action + "1F" }}
+                style={{ width: 32, height: 32, borderRadius: "var(--surface-radius)", display: "grid", placeItems: "center", flexShrink: 0, background: al(SEM.action, 0.12) }}
               >
                 {store.theme === "dark" ? <Moon size={15} color={SEM.action} /> : <Sun size={15} color={SEM.action} />}
               </span>
-              <span style={{ flex: 1, fontSize: 16, fontWeight: 500, color: T.text }}>Appearance</span>
-              <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden" }}>
+              <span style={{ flex: 1, fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.text }}>Appearance</span>
+              <div style={{ display: "flex", border: `1px solid ${T.border}`, borderRadius: "var(--surface-radius)", overflow: "hidden" }}>
                 {(["dark", "light"] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => store.setTheme(t)}
                     style={{
                       padding: "8px 16px",
-                      fontSize: 12,
+                      fontSize: "var(--text-caption-md-size)",
                       fontWeight: 700,
                       border: "none",
                       cursor: "pointer",
@@ -10822,17 +10830,17 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
             >
               <BellIcon size={16} color={store.notifications ? T.gold : T.muted} />
               <span style={{ flex: 1 }}>
-                <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: T.text }}>Notifications</span>
-                <span style={{ display: "block", fontSize: 12, color: T.muted }}>Reminder alerts on this device</span>
+                <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.text }}>Notifications</span>
+                <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted }}>Reminder alerts on this device</span>
               </span>
               <button
                 onClick={toggleNotifications}
                 style={{
                   width: 42,
                   height: 24,
-                  borderRadius: 999,
+                  borderRadius: "var(--pill-radius)",
                   border: `1px solid ${store.notifications ? T.gold : T.border}`,
-                  background: store.notifications ? T.gold + "55" : T.raised,
+                  background: store.notifications ? al(T.gold, 0.33) : T.raised,
                   cursor: "pointer",
                   position: "relative",
                 }}
@@ -10844,7 +10852,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                     left: store.notifications ? 20 : 2,
                     width: 18,
                     height: 18,
-                    borderRadius: 999,
+                    borderRadius: "var(--pill-radius)",
                     background: store.notifications ? T.gold : T.muted,
                     transition: "left .15s",
                   }}
@@ -10879,7 +10887,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           <div style={{ marginBottom: 20 }}>
             <div
               style={{
-                fontSize: 12,
+                fontSize: "var(--text-caption-md-size)",
                 fontWeight: 700,
                 letterSpacing: 1.2,
                 textTransform: "uppercase",
@@ -10890,7 +10898,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
             >
               Danger zone
             </div>
-            <Card style={{ padding: 0, overflow: "hidden", border: `1px solid ${T.coral}44` }}>
+            <Card style={{ padding: 0, overflow: "hidden", border: `1px solid ${al(T.coral, 0.27)}` }}>
               <Row icon={LogOut} label="Sign out" sub="Your archive stays on this device" onClick={onSignOut} first />
               <Row
                 icon={Trash2}
@@ -10908,8 +10916,8 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         <Overlay title="What's new" aria-label="What's new">
           {CHANGELOG.map(([t, b], i) => (
             <div key={i} style={{ padding: "12px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{t}</div>
-              <div style={{ fontSize: 12, color: T.muted, marginTop: 4, lineHeight: 1.55 }}>{b}</div>
+              <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: T.text }}>{t}</div>
+              <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4, lineHeight: 1.55 }}>{b}</div>
             </div>
           ))}
         </Overlay>
@@ -10918,8 +10926,8 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         <Overlay title="Help and FAQs" aria-label="Help and FAQs">
           {FAQS.map(([q, a], i) => (
             <div key={i} style={{ padding: "12px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
-              <div style={{ fontSize: 16, fontWeight: 700, color: T.text }}>{q}</div>
-              <div style={{ fontSize: 12, color: T.muted, marginTop: 4, lineHeight: 1.6 }}>{a}</div>
+              <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: T.text }}>{q}</div>
+              <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4, lineHeight: 1.6 }}>{a}</div>
             </div>
           ))}
         </Overlay>
@@ -10931,7 +10939,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
             value={fb}
             onChange={(e) => setFb(e.target.value)}
             placeholder="What is broken, missing, or confusing?"
-            style={{ ...inp, width: "100%", minHeight: 110, resize: "vertical", fontFamily: "inherit" }}
+            style={{ ...inp, width: "100%", minHeight: 110, resize: "vertical" }}
           />
           <button
             disabled={!fb.trim()}
@@ -10947,19 +10955,19 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           >
             Send
           </button>
-          <p style={{ fontSize: 12, color: T.faint, marginTop: 8 }}>
+          <p style={{ fontSize: "var(--text-caption-md-size)", color: T.faint, marginTop: 8 }}>
             Prototype note: feedback is recorded on this device for the team to collect.
           </p>
         </Overlay>
       )}
       {modal === "about" && (
         <Overlay title="About ReadiNes" aria-label="About ReadiNes">
-          <p style={{ fontSize: 14, color: T.text, lineHeight: 1.7, margin: 0 }}>
+          <p style={{ fontSize: "var(--text-body-md-size)", color: T.text, lineHeight: 1.7, margin: 0 }}>
             ReadiNes keeps your family ready for life's important moments: it understands the documents you save, knows
             what a hundred real-world situations require, shows how ready you already are, and assembles the pack when
             the moment comes.
           </p>
-          <p style={{ fontSize: 12, color: T.muted, marginTop: 12 }}>
+          <p style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 12 }}>
             Version 0.9 ·{" "}
             <button
               onClick={() => {
@@ -10967,19 +10975,19 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
                 store.setDataMode(next);
                 toast(next === "sample" ? "Showing the sample family" : "Showing your archive");
               }}
-              style={{ background: "none", border: "none", color: T.faint, fontSize: 12, cursor: "pointer", padding: 0, textDecoration: "underline", marginRight: 8 }}
+              style={{ background: "none", border: "none", color: T.faint, fontSize: "var(--text-caption-md-size)", cursor: "pointer", padding: 0, textDecoration: "underline", marginRight: 8 }}
             >
               {store.dataMode === "sample" ? "Use my archive" : "Use sample family"}
             </button>
             <button
               onClick={() => go("design")}
-              style={{ background: "none", border: "none", color: T.faint, fontSize: 12, cursor: "pointer", padding: 0, textDecoration: "underline" }}
+              style={{ background: "none", border: "none", color: T.faint, fontSize: "var(--text-caption-md-size)", cursor: "pointer", padding: 0, textDecoration: "underline" }}
             >
               Design system
             </button>
             <button
               onClick={() => setModal("catalogue")}
-              style={{ background: "none", border: "none", color: T.faint, fontSize: 12, cursor: "pointer", padding: 0, textDecoration: "underline", marginLeft: 8 }}
+              style={{ background: "none", border: "none", color: T.faint, fontSize: "var(--text-caption-md-size)", cursor: "pointer", padding: 0, textDecoration: "underline", marginLeft: 8 }}
             >
               Catalogue review
             </button>
@@ -10991,7 +10999,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         <Overlay title="Change email" aria-label="Change email">
           <input value={f1} onChange={(e) => setF1(e.target.value)} placeholder="New email" style={inp} />
           <input value={f2} onChange={(e) => setF2(e.target.value)} placeholder="Current password" type="password" style={{ ...inp, marginTop: 12 }} />
-          {fErr && <div style={{ color: T.coral, fontSize: 12, marginTop: 8 }}>{fErr}</div>}
+          {fErr && <div style={{ color: T.coral, fontSize: "var(--text-caption-md-size)", marginTop: 8 }}>{fErr}</div>}
           <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
             <button
               onClick={() => {
@@ -11016,7 +11024,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           <input value={f1} onChange={(e) => setF1(e.target.value)} placeholder="Current password" type="password" style={inp} />
           <input value={f2} onChange={(e) => setF2(e.target.value)} placeholder="New password" type="password" style={{ ...inp, marginTop: 12 }} />
           <input value={f3} onChange={(e) => setF3(e.target.value)} placeholder="Repeat new password" type="password" style={{ ...inp, marginTop: 12 }} />
-          {fErr && <div style={{ color: T.coral, fontSize: 12, marginTop: 8 }}>{fErr}</div>}
+          {fErr && <div style={{ color: T.coral, fontSize: "var(--text-caption-md-size)", marginTop: 8 }}>{fErr}</div>}
           <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
             <button
               onClick={() => {
@@ -11038,22 +11046,22 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
       )}
       {modal === "privacy" && (
         <Overlay title="Privacy and terms" aria-label="Privacy and terms">
-          <p style={{ fontSize: 14, color: T.text, lineHeight: 1.7, margin: 0 }}>
+          <p style={{ fontSize: "var(--text-body-md-size)", color: T.text, lineHeight: 1.7, margin: 0 }}>
             Your documents are encrypted on your device with keys that never leave it. ReadiNes reads your documents to
             classify them and to check them against life moments, and it never sells, shares, or trains on your data.
             You can export your archive at any time, and deleting your account removes it from this device.
           </p>
-          <p style={{ fontSize: 12, color: T.muted, marginTop: 12 }}>
+          <p style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 12 }}>
             The full privacy policy and terms of service are published with the app in the store listing.
           </p>
         </Overlay>
       )}
       {modal === "delete" && (
         <Overlay title="Delete account?" aria-label="Delete account?">
-          <p style={{ fontSize: 14, color: T.text, lineHeight: 1.6, margin: 0 }}>
+          <p style={{ fontSize: "var(--text-body-md-size)", color: T.text, lineHeight: 1.6, margin: 0 }}>
             This erases everything on this device: documents, holdings, packs. There is no undo.
           </p>
-          <label style={{ display: "block", fontSize: 12, color: T.muted, margin: "16px 0 8px" }}>
+          <label style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, margin: "16px 0 8px" }}>
             Type <b style={{ color: T.text }}>delete</b> to confirm
           </label>
           <input
@@ -11065,13 +11073,12 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
               width: "100%",
               background: T.raised,
               border: `1px solid ${T.border}`,
-              borderRadius: 12,
+              borderRadius: "var(--surface-radius)",
               padding: "12px 12px",
               color: T.text,
-              fontSize: 16,
+              fontSize: "var(--text-body-lg-size)",
               minHeight: 44,
               outline: "none",
-              fontFamily: "inherit",
             }}
           />
           <button
@@ -11112,10 +11119,10 @@ function AuthScreen({
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: "12px 16px",
     color: T.white,
-    fontSize: 16,
+    fontSize: "var(--text-body-lg-size)",
     outline: "none",
     marginTop: 12,
   };
@@ -11161,7 +11168,7 @@ function AuthScreen({
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 24 }}>
           <BrandMark size={48} color={T.white} />
           <BrandWordmark size={22} color={T.white} />
-          <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>
+          <div style={{ fontSize: "var(--text-body-md-size)", color: T.muted, textAlign: "center", marginTop: 4 }}>
             Be ready for life's important moments.
           </div>
         </div>
@@ -11169,7 +11176,7 @@ function AuthScreen({
           style={{
             display: "flex",
             border: `1px solid ${T.border}`,
-            borderRadius: 12,
+            borderRadius: "var(--surface-radius)",
             overflow: "hidden",
             marginBottom: 16,
           }}
@@ -11185,7 +11192,7 @@ function AuthScreen({
               style={{
                 flex: 1,
                 padding: "12px 0",
-                fontSize: 14,
+                fontSize: "var(--text-body-md-size)",
                 fontWeight: 700,
                 cursor: "pointer",
                 border: "none",
@@ -11219,7 +11226,7 @@ function AuthScreen({
             onKeyDown={(e) => e.key === "Enter" && submit()}
           />
         )}
-        {err && <div style={{ color: T.coral, fontSize: 12, marginTop: 12 }}>{err}</div>}
+        {err && <div style={{ color: T.coral, fontSize: "var(--text-caption-md-size)", marginTop: 12 }}>{err}</div>}
         <button onClick={submit} style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 16, padding: "16px 16px" }}>
           {mode === "signin" ? "Sign in" : "Create account"} <ArrowRight size={15} />
         </button>
@@ -11230,12 +11237,12 @@ function AuthScreen({
             width: "100%",
             marginTop: 12,
             padding: "12px 0",
-            borderRadius: 12,
+            borderRadius: "var(--surface-radius)",
             border: `1.5px solid ${T.gold}`,
-            background: T.gold + "1F",
+            background: al(T.gold, 0.12),
             color: T.gold,
             fontWeight: 700,
-            fontSize: 14,
+            fontSize: "var(--text-body-md-size)",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
@@ -11245,7 +11252,7 @@ function AuthScreen({
         >
           Skip sign-in (testing) <ArrowRight size={16} />
         </button>
-        <p style={{ fontSize: 12, color: T.faint, textAlign: "center", marginTop: 16, lineHeight: 1.5 }}>
+        <p style={{ fontSize: "var(--text-caption-md-size)", color: T.faint, textAlign: "center", marginTop: 16, lineHeight: 1.5 }}>
           Your documents stay encrypted on your device.
         </p>
       </div>
@@ -11292,12 +11299,11 @@ function OnboardingWizard({ store, onDone }: any) {
     width: "100%",
     background: T.raised,
     border: `1px solid ${T.border}`,
-    borderRadius: 12,
+    borderRadius: "var(--surface-radius)",
     padding: "12px 16px",
     color: T.white,
-    fontSize: 14,
+    fontSize: "var(--text-body-md-size)",
     outline: "none",
-    fontFamily: "inherit",
     textAlign: "center",
   };
   return (
@@ -11322,13 +11328,13 @@ function OnboardingWizard({ store, onDone }: any) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <button
             onClick={() => setStep((v) => Math.max(0, v - 1))}
-            style={{ visibility: step === 1 ? "visible" : "hidden", background: "none", border: "none", color: T.muted, fontSize: 12, cursor: "pointer" }}
+            style={{ visibility: step === 1 ? "visible" : "hidden", background: "none", border: "none", color: T.muted, fontSize: "var(--text-caption-md-size)", cursor: "pointer" }}
           >
             ← Back
           </button>
           <button
             onClick={finish}
-            style={{ visibility: step < 2 ? "visible" : "hidden", background: "none", border: "none", color: T.muted, fontSize: 12, cursor: "pointer" }}
+            style={{ visibility: step < 2 ? "visible" : "hidden", background: "none", border: "none", color: T.muted, fontSize: "var(--text-caption-md-size)", cursor: "pointer" }}
           >
             Skip setup
           </button>
@@ -11337,16 +11343,16 @@ function OnboardingWizard({ store, onDone }: any) {
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              style={{ width: 26, height: 4, borderRadius: 12, background: i <= step ? T.gold : T.raised }}
+              style={{ width: 26, height: 4, borderRadius: "var(--surface-radius)", background: i <= step ? T.gold : T.raised }}
             />
           ))}
         </div>
         {step === 1 && (
           <div style={{ textAlign: "center" }}>
-            <h2 style={{ color: T.white, fontSize: 20, margin: 0 }}>
+            <h2 style={{ color: T.white, fontSize: "var(--text-heading-md-size)", margin: 0 }}>
               {name.trim() ? `Nice to meet you, ${name.trim().split(" ")[0]}. What's coming up?` : "What is coming up in your life?"}
             </h2>
-            <p style={{ color: T.muted, fontSize: 14, margin: "8px 0 20px" }}>
+            <p style={{ color: T.muted, fontSize: "var(--text-body-md-size)", margin: "8px 0 20px" }}>
               This chooses which curated packs we spotlight first. Nothing is locked out; every pack stays available.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -11367,16 +11373,16 @@ function OnboardingWizard({ store, onDone }: any) {
                       display: "flex",
                       alignItems: "center",
                       gap: 12,
-                      background: on ? `${T.gold}18` : T.raised,
+                      background: on ? `${al(T.gold, 0.09)}` : T.raised,
                       border: `1px solid ${on ? T.gold : T.border}`,
-                      borderRadius: 12,
+                      borderRadius: "var(--surface-radius)",
                       padding: "12px 12px",
                       cursor: "pointer",
                       textAlign: "left",
                     }}
                   >
                     <Ic size={16} color={on ? T.gold : T.muted} />
-                    <span style={{ fontSize: 16, fontWeight: 500, color: T.white }}>{label}</span>
+                    <span style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white }}>{label}</span>
                   </button>
                 );
               })}
@@ -11392,8 +11398,8 @@ function OnboardingWizard({ store, onDone }: any) {
         )}
         {step === 0 && (
           <div style={{ textAlign: "center" }}>
-            <h2 style={{ color: T.white, fontSize: 20, margin: 0 }}>Welcome. What should we call you?</h2>
-            <p style={{ color: T.muted, fontSize: 14, margin: "8px 0 20px" }}>
+            <h2 style={{ color: T.white, fontSize: "var(--text-heading-md-size)", margin: 0 }}>Welcome. What should we call you?</h2>
+            <p style={{ color: T.muted, fontSize: "var(--text-body-md-size)", margin: "8px 0 20px" }}>
               This names your vault. It stays on this device, and everything in it starts empty and private.
             </p>
             <input
@@ -11418,7 +11424,7 @@ function OnboardingWizard({ store, onDone }: any) {
               <BrandMark size={56} color={T.white} />
               <BrandWordmark size={24} color={T.white} />
             </div>
-            <h2 style={{ color: T.white, fontSize: 20, margin: "0 0 16px" }}>
+            <h2 style={{ color: T.white, fontSize: "var(--text-heading-md-size)", margin: "0 0 16px" }}>
               {name.trim() ? `Sealing ${name.trim().split(" ")[0]}'s family vault` : "Sealing your vault"}
             </h2>
             <div style={{ display: "grid", gap: 12, maxWidth: 360, margin: "0 auto", textAlign: "left" }}>
@@ -11432,14 +11438,14 @@ function OnboardingWizard({ store, onDone }: any) {
                     opacity: sealPhase >= i ? 1 : 0.25,
                     transition: "opacity .4s",
                     color: sealPhase >= i ? T.text : T.muted,
-                    fontSize: 14,
+                    fontSize: "var(--text-body-md-size)",
                   }}
                 >
                   <span
                     style={{
                       width: 18,
                       height: 18,
-                      borderRadius: 999,
+                      borderRadius: "var(--pill-radius)",
                       background: sealPhase >= i ? T.gold : T.raised,
                       display: "grid",
                       placeItems: "center",
@@ -11575,7 +11581,7 @@ export default function App() {
         <div style={{ width: "min(400px,100%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, color: T.white, animation: "lp-pulse 1.6s ease-in-out infinite" }}>
           <BrandMark size={48} color={T.white} />
           <BrandWordmark size={22} color={T.white} />
-          <div style={{ fontSize: 14, color: T.muted, textAlign: "center", marginTop: 4 }}>Be ready for life's important moments.</div>
+          <div style={{ fontSize: "var(--text-body-md-size)", color: T.muted, textAlign: "center", marginTop: 4 }}>Be ready for life's important moments.</div>
         </div>
       </div>
       </ThemeProvider>
@@ -11609,7 +11615,6 @@ export default function App() {
         display: "flex",
         minHeight: "100vh",
         background: T.navy,
-        fontFamily: "var(--font-family-ui)",
         color: T.text,
       }}
     >
@@ -11664,8 +11669,8 @@ export default function App() {
                   justifyContent: navOpen ? "flex-start" : "center",
                   gap: navOpen ? 12 : 0,
                   padding: navOpen ? "10px 12px" : "10px 0",
-                  borderRadius: 12,
-                  fontSize: 14,
+                  borderRadius: "var(--surface-radius)",
+                  fontSize: "var(--text-body-md-size)",
                   fontWeight: 500,
                   textAlign: "left",
                   cursor: "pointer",
@@ -11690,12 +11695,12 @@ export default function App() {
             justifyContent: "center",
             gap: 8,
             padding: "12px 0",
-            borderRadius: 12,
+            borderRadius: "var(--surface-radius)",
             border: `1px solid ${T.border}`,
             background: T.panel,
             color: T.muted,
             cursor: "pointer",
-            fontSize: 12,
+            fontSize: "var(--text-caption-md-size)",
             fontWeight: 500,
           }}
         >
@@ -11723,8 +11728,8 @@ export default function App() {
                 alignItems: "center",
                 gap: 8,
                 background: T.panel,
-                border: `1px solid ${query ? T.gold + "66" : T.border}`,
-                borderRadius: 12,
+                border: `1px solid ${query ? al(T.gold, 0.4) : T.border}`,
+                borderRadius: "var(--surface-radius)",
                 padding: "8px 12px",
               }}
             >
@@ -11733,7 +11738,7 @@ export default function App() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search…"
-                style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: 14 }}
+                style={{ flex: 1, background: "none", border: "none", outline: "none", color: T.text, fontSize: "var(--text-body-md-size)" }}
               />
               {query && (
                 <button
@@ -11757,9 +11762,9 @@ export default function App() {
                   overflowY: "auto",
                   background: T.navy,
                   border: `1px solid ${T.border}`,
-                  borderRadius: 12,
+                  borderRadius: "var(--surface-radius)",
                   padding: 12,
-                  boxShadow: "0 24px 70px rgba(0,0,0,.55)",
+                  boxShadow: "var(--elevation-overlay)",
                 }}
               >
                 <SearchResults
@@ -11780,12 +11785,12 @@ export default function App() {
                 style={{
                   width: 38,
                   height: 38,
-                  borderRadius: 999,
-                  border: `1px solid ${route === "settings" ? T.gold + "88" : T.border}`,
-                  background: T.gold + "1F",
+                  borderRadius: "var(--pill-radius)",
+                  border: `1px solid ${route === "settings" ? al(T.gold, 0.53) : T.border}`,
+                  background: al(T.gold, 0.12),
                   color: T.gold,
                   fontWeight: 700,
-                  fontSize: 14,
+                  fontSize: "var(--text-body-md-size)",
                   cursor: "pointer",
                   flexShrink: 0,
                 }}
@@ -11804,12 +11809,12 @@ export default function App() {
                 style={{
                   width: 38,
                   height: 38,
-                  borderRadius: 999,
-                  border: `1px solid ${route === "settings" ? T.gold + "88" : T.border}`,
-                  background: T.gold + "1F",
+                  borderRadius: "var(--pill-radius)",
+                  border: `1px solid ${route === "settings" ? al(T.gold, 0.53) : T.border}`,
+                  background: al(T.gold, 0.12),
                   color: T.gold,
                   fontWeight: 700,
-                  fontSize: 14,
+                  fontSize: "var(--text-body-md-size)",
                   cursor: "pointer",
                   flexShrink: 0,
                 }}
@@ -11876,8 +11881,8 @@ export default function App() {
                 alignItems: "center",
                 gap: 12,
                 background: T.panel,
-                border: `1px solid ${T.gold}55`,
-                borderRadius: 12,
+                border: `1px solid ${al(T.gold, 0.33)}`,
+                borderRadius: "var(--surface-radius)",
                 padding: "8px 12px",
               }}
             >
@@ -11909,7 +11914,7 @@ export default function App() {
               />
             ) : (
               <div style={{ padding: "20px 4px 0" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, marginBottom: 12 }}>Try</div>
+                <div style={{ fontSize: "var(--text-caption-md-size)", fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, marginBottom: 12 }}>Try</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {["Passport", "Insurance", "Bank statement", "Home loan", "Nominee", "Prescription"].map((q) => (
                     <button
@@ -11922,19 +11927,19 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, margin: "24px 0 12px" }}>Recently added</div>
+                <div style={{ fontSize: "var(--text-caption-md-size)", fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, margin: "24px 0 12px" }}>Recently added</div>
                 {store.docs.slice(0, 5).map((d: Doc) => (
                   <button
                     key={d.id}
                     onClick={() => setQuery(d.docType)}
-                    style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", background: "none", border: "none", borderTop: `1px solid ${T.border}`, padding: "12px 4px", color: T.text, fontSize: 14, cursor: "pointer", minHeight: 44 }}
+                    style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", background: "none", border: "none", borderTop: `1px solid ${T.border}`, padding: "12px 4px", color: T.text, fontSize: "var(--text-body-md-size)", cursor: "pointer", minHeight: 44 }}
                   >
                     <FileText size={15} color={T.muted} />
                     <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.docType}</span>
-                    <span style={{ fontSize: 12, color: T.muted }}>{d.category}</span>
+                    <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>{d.category}</span>
                   </button>
                 ))}
-                {store.docs.length === 0 && <div style={{ fontSize: 14, color: T.muted, padding: "8px 4px" }}>Nothing in the vault yet.</div>}
+                {store.docs.length === 0 && <div style={{ fontSize: "var(--text-body-md-size)", color: T.muted, padding: "8px 4px" }}>Nothing in the vault yet.</div>}
               </div>
             )}
           </div>
@@ -11978,13 +11983,13 @@ export default function App() {
             border: `1px solid ${T.border}`,
             color: T.text,
             padding: "12px 20px",
-            borderRadius: 12,
-            fontSize: 14,
+            borderRadius: "var(--surface-radius)",
+            fontSize: "var(--text-body-md-size)",
             fontWeight: 500,
             display: "flex",
             alignItems: "center",
             gap: 12,
-            boxShadow: "0 16px 50px rgba(0,0,0,.5)",
+            boxShadow: "var(--elevation-overlay)",
           }}
         >
           <CheckCircle2 size={17} color={T.mint} /> {toastMsg}
