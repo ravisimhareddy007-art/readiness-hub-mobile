@@ -214,6 +214,11 @@
   --color-overlay-scrim: rgba(23, 20, 31, 0.6);
   --color-overlay-highlight: rgba(23, 20, 31, 0.05);
   --color-logo-default: #1B1626;
+  --color-chart-line: var(--color-action-primary-default);
+  --color-chart-line-alt: var(--color-status-info-icon);
+  --color-chart-grid: var(--color-border-subtle);
+  --color-chart-axis: var(--color-text-tertiary);
+  --color-chart-fill: var(--color-selection-surface);
 }
 
 :root[data-theme="dark"] {
