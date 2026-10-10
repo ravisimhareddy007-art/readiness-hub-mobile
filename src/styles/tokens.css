@@ -214,6 +214,8 @@
   --color-overlay-scrim: rgba(23, 20, 31, 0.6);
   --color-overlay-highlight: rgba(23, 20, 31, 0.05);
   --color-logo-default: #1B1626;
+  --color-shadow-strong: rgba(23, 20, 31, 0.18);
+  --color-shadow-soft: rgba(23, 20, 31, 0.08);
   --color-chart-line: var(--color-action-primary-default);
   --color-chart-line-alt: var(--color-status-info-icon);
   --color-chart-grid: var(--color-border-subtle);
@@ -304,6 +306,8 @@
   --color-overlay-scrim: rgba(0, 0, 0, 0.7);
   --color-overlay-highlight: rgba(255, 255, 255, 0.06);
   --color-logo-default: #F5F3F9;
+  --color-shadow-strong: rgba(0, 0, 0, 0.55);
+  --color-shadow-soft: rgba(0, 0, 0, 0.35);
   --color-chart-line: var(--color-action-primary-default);
   --color-chart-line-alt: var(--color-status-info-icon);
   --color-chart-grid: var(--color-border-subtle);

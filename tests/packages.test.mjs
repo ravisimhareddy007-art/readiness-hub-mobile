@@ -118,7 +118,7 @@ t("gold is not used for a selected state or a focus ring", () => {
 });
 t("a missing requirement is amber, not gold", () => {
   assert.ok(!/background: T\.gold \+ "26"/.test(pkg));
-  assert.ok(/SEM\.warning \+ "26"/.test(pkg));
+  assert.ok(/al\(SEM\.warning, 0\.15\)/.test(pkg));
 });
 t("the action on a missing requirement is teal", () => {
   assert.ok(!/color: T\.gold,\s*\n\s*borderColor: T\.gold/.test(pkg));
