@@ -1665,8 +1665,8 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
 const CSS = `
 @media(max-width:819px){.rn-authside{display:none!important}}
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
-.lp-root{background:${C.paper};color:${C.ink};font-family:'Inter',system-ui,sans-serif;overflow-x:hidden}
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+.lp-root{background:${C.paper};color:${C.ink};font-family:var(--font-family-ui);overflow-x:hidden}
 .lp-root *{box-sizing:border-box}
 .lp-root a{text-decoration:none;color:inherit}
 .lp-wrap{max-width:1120px;margin:0 auto;padding:0 24px}

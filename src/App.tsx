@@ -11609,7 +11609,7 @@ export default function App() {
         display: "flex",
         minHeight: "100vh",
         background: T.navy,
-        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        fontFamily: "var(--font-family-ui)",
         color: T.text,
       }}
     >

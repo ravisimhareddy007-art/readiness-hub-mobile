@@ -2,9 +2,6 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import "@fontsource/inter/latin-400.css";
-@import "@fontsource/inter/latin-500.css";
-@import "@fontsource/inter/latin-700.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -169,7 +166,7 @@
     margin: 0;
     background: #F3F5FB;
     color: #1B2335;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-family-ui);
   }
 }
 
