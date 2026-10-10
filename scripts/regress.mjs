@@ -67,6 +67,76 @@ const fontFiles = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((en
 });
 ban("external fonts (platform font only)", externalFontPattern, fontFiles("."));
 
+// Design-system sweep: every colour, size, radius, shadow and font comes from src/styles/tokens.css.
+// The Inter ban above already covers the font name; it is not repeated here.
+let dsFiles = 0, dsViolations = 0;
+{
+  const textFile = /\.(tsx?|jsx?|mjs|css|html|json|svg|md)$/;
+  const walkAll = (d, out = []) => {
+    for (const f of readdirSync(d)) {
+      const p = join(d, f);
+      if (statSync(p).isDirectory()) walkAll(p, out);
+      else if (textFile.test(f)) out.push(p);
+    }
+    return out;
+  };
+  const norm = (p) => p.split(sep).join("/");
+  const files = walkAll("src").filter((p) => {
+    const n = norm(p);
+    return n !== "src/styles/tokens.css" && !n.startsWith("src/design-system-showcase/");
+  });
+  const rules = [
+    ["literal colour", [/(?<!&)#[0-9a-f]{3}([0-9a-f]{3})?\b/gi, /\brgba?\(/gi, /\bhsla?\(/gi], true],
+    ["literal font size", [/font-size\s*:\s*\d/gi, /fontSize\s*:\s*['"]?\d/gi, /text-\[\d/gi]],
+    ["literal radius or shadow", [/border-radius\s*:\s*\d/gi, /borderRadius\s*:\s*['"]?\d/gi, /box-shadow\s*:\s*\d/gi, /rounded-\[/gi]],
+    ["literal font family", [/font-family\s*:/gi, /fontFamily\s*:/gi, /fonts\.googleapis/gi]],
+    ["font size below 12px", [/font-?size[^\n]*?(?<![\d.])(1[01]|[1-9])px\b/gi]],
+    ["tappable height below 44", [/(?<!line)(?<!line-)height\s*:\s*(2[0-9]|3[0-9]|4[0-3])px/gi], false, /button|onClick|role="button"/i],
+  ];
+  const hits = [];
+  for (const p of files) {
+    dsFiles++;
+    readFileSync(p, "utf8").split("\n").forEach((line, i) => {
+      for (const [name, res, allowTokenSource, mustAlsoMatch] of rules) {
+        if (allowTokenSource && line.includes("/* token-source */")) continue;
+        if (mustAlsoMatch && !mustAlsoMatch.test(line)) continue;
+        for (const re of res) {
+          re.lastIndex = 0;
+          for (const m of line.matchAll(re)) hits.push(`${norm(p)}:${i + 1}: [${name}] ${m[0].trim()}`);
+        }
+      }
+    });
+  }
+  // Positive checks.
+  const missing = [];
+  const styles = readFileSync("src/styles.css", "utf8");
+  if (!/^@import\s+"\.\/styles\/tokens\.css";/m.test(styles)) missing.push('src/styles.css: missing @import "./styles/tokens.css";');
+  const css = readFileSync("src/styles/tokens.css", "utf8");
+  const blockOf = (selector) => {
+    const start = css.indexOf(selector);
+    if (start < 0) return null;
+    const open = css.indexOf("{", start);
+    let depth = 0;
+    for (let i = open; i < css.length; i++) {
+      if (css[i] === "{") depth++;
+      else if (css[i] === "}" && --depth === 0) return css.slice(open, i);
+    }
+    return null;
+  };
+  for (const [label, selector] of [[":root", ":root {"], [':root[data-theme="dark"]', ':root[data-theme="dark"]']]) {
+    const b = blockOf(selector);
+    if (!b || !/--color-action-primary-default\s*:/.test(b)) missing.push(`src/styles/tokens.css: --color-action-primary-default not defined in ${label}`);
+  }
+  dsViolations = hits.length + missing.length;
+  if (dsViolations) {
+    status = 1;
+    console.log(`FAIL design-system sweep (${dsViolations})`);
+    hits.forEach((h) => console.log("  " + h));
+    missing.forEach((h) => console.log("  " + h));
+  } else console.log("ok   design-system sweep");
+}
+
+
 // Dead code and orphaned data: a store function nothing calls, or rows left behind by a delete.
 {
   const hits = [];
@@ -301,5 +371,6 @@ if (!dev) console.log("ok   none");
 step("production build");
 run(npx, ["vite", "build"], true) && console.log("ok   build");
 
+console.log(`\nDesign-system sweep: ${dsFiles} files checked, ${dsViolations} violations.`);
 console.log(`\n== result: ${status ? "FAIL" : "PASS"} ==`);
 process.exit(status);
