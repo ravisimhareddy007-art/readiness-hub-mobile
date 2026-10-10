@@ -259,7 +259,7 @@ let dsFiles = 0, dsViolations = 0;
   const TYPE = [12, 13, 14, 15, 16, 20, 28];
   const SPACE = [0, 4, 8, 12, 16, 20, 24, 32, 40, 48];
   const RADIUS = [12, 999];
-  const WEIGHT = [400, 500, 700];
+  const WEIGHT = [400, 500, 600, 700];
   for (const p of all) {
     if (p.endsWith("ds.ts")) continue;
     const src = readFileSync(p, "utf8");

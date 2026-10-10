@@ -180,7 +180,7 @@ button,input,select,textarea{font:inherit}
 @keyframes lp-sheet-up{from{transform:translateY(36px);opacity:.6}to{transform:translateY(0);opacity:1}}
 @keyframes lp-fade{from{opacity:0}to{opacity:1}}
 @keyframes lp-pulse{0%,100%{opacity:1}50%{opacity:.55}}
-@keyframes lp-screen{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes lp-screen{from{opacity:0}to{opacity:1}}
 .lp-scrim{animation:lp-fade var(--m-std) ease}
 .lp-screen{animation:lp-screen var(--m-std) cubic-bezier(.22,.9,.3,1)}
 .lp-tab{transition:background var(--m-std) ease,color var(--m-std) ease,transform var(--m-fast) ease}
@@ -199,7 +199,7 @@ button,input,select,textarea{font:inherit}
 .lp-tap{position:relative;cursor:pointer}
 .lp-tap::after{content:"";position:absolute;inset:-8px}
 .lp-iconbtn{min-width:44px;min-height:44px;display:inline-grid;place-items:center}
-.lp-fab{position:fixed;right:16px;bottom:calc(94px + env(safe-area-inset-bottom));z-index:55;width:56px;height:56px;border-radius:var(--pill-radius);border:none;display:grid;place-items:center;background:var(--lpv-action);box-shadow:var(--elevation-overlay);cursor:pointer}
+.lp-fab{position:fixed;right:16px;bottom:calc(var(--tabbar-height) + 16px + env(safe-area-inset-bottom,0px));z-index:55;width:56px;height:56px;border-radius:var(--pill-radius);border:none;display:grid;place-items:center;background:var(--color-action-primary-default);color:var(--color-text-on-brand);box-shadow:var(--elevation-overlay);cursor:pointer}
 @media(max-width:767px){
 .lp-tabbar{display:grid}
 .lp-main{padding:14px 14px calc(86px + env(safe-area-inset-bottom));max-width:100%;overflow-x:clip}
@@ -4130,10 +4130,10 @@ function Home({ store, go, toast }: any) {
             >
               <CheckCircle2 size={19} color={T.mint} />
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white }}>
+                <span style={{ display: "block", fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white }}>
                   You are up to date
                 </span>
-                <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4 }}>
+                <span style={{ display: "block", fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4 }}>
                   Nothing is due, expiring, or missing.
                 </span>
               </span>
@@ -4167,11 +4167,11 @@ function Home({ store, go, toast }: any) {
                   style={{ flex: 1, minWidth: 0, cursor: n.open ? "pointer" : "default" }}
                   onClick={() => n.open?.()}
                 >
-                  <span style={{ display: "block", fontSize: "var(--text-body-md-size)", color: T.text, lineHeight: 1.35 }}>
-                    {n.who && <b style={{ color: T.white }}>{n.who} · </b>}
+                  <span style={{ display: "block", fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white, lineHeight: 1.3 }}>
+                    {n.who && <b style={{ color: T.white, fontWeight: 600 }}>{n.who} · </b>}
                     {n.label}
                   </span>
-                  <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: n.tone, marginTop: 4 }}>{n.when}</span>
+                  <span style={{ display: "block", fontSize: "var(--text-body-sm-size)", color: n.tone, marginTop: 4 }}>{n.when}</span>
                 </span>
                 <button
                   onClick={n.run}
@@ -4803,10 +4803,10 @@ function Packages({ store, toast }: any) {
                     <span style={{ width: 22, height: 22, borderRadius: "var(--surface-radius)", display: "grid", placeItems: "center", flexShrink: 0, background: al(e.accent, 0.12) }}>
                       <e.icon size={12} color={e.accent} />
                     </span>
-                    <b style={{ color: T.white, fontSize: "var(--text-body-md-size)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</b>
+                    <b style={{ color: T.white, fontSize: "var(--text-label-lg-size)", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</b>
                     {e.custom && <span style={pill(T.gold)}>custom</span>}
                   </div>
-                  <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4 }}>
+                  <div style={{ fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4 }}>
                     {score === 100 ? "Everything in place" : `${got} of ${total} ready`}
                   </div>
                 </div>
@@ -4967,10 +4967,10 @@ function Packages({ store, toast }: any) {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <e.icon size={16} color={e.accent} />
-                  <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)" }}>{e.name}</b>
+                  <b style={{ color: T.white, fontSize: "var(--text-label-lg-size)", fontWeight: 500 }}>{e.name}</b>
                   {e.custom && <span style={pill(T.gold)}>custom</span>}
                 </div>
-                <div style={{ fontSize: "var(--text-body-md-size)", color: T.muted, marginTop: 4 }}>
+                <div style={{ fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4 }}>
                   {score === 100 ? "Everything in place" : `${got} of ${total} ready`}
                 </div>
               </div>
@@ -5890,7 +5890,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         <div style={{ fontSize: "var(--text-caption-md-size)", color: T.text, fontVariantNumeric: "tabular-nums" }}>
                           {d.name}
                         </div>
-                        <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4 }}>
+                        <div style={{ fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4 }}>
                           {memberName(d.memberId)}
                           {d.docType !== r.label ? ` · satisfied by ${d.docType}` : ""}
                         </div>
@@ -6602,10 +6602,10 @@ function Documents({ store, toast, go }: any) {
                     <Ic size={15} color={col} />
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "block", fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {d.docType}
                     </span>
-                    <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <span style={{ display: "block", fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {nameOf(d.memberId).split(" ")[0]} · {d.expiry ? <>{expiryCell(d)}</> : fdate(d.addedAt)}
                     </span>
                   </span>
@@ -7851,8 +7851,8 @@ function Wealth({ store, go, toast }: any) {
           <Ic size={16} color={accent} />
         </span>
         <div className="lp-wname" style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white }}>{h.name}</div>
-          <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>
+          <div style={{ fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white }}>{h.name}</div>
+          <div style={{ fontSize: "var(--text-body-sm-size)", color: T.muted }}>
             {h.type}
             {h.institution ? ` · ${h.institution}` : ""}
             {h.accountRef ? ` ${h.accountRef}` : ""}
@@ -8334,7 +8334,7 @@ function Wealth({ store, go, toast }: any) {
                           <Coins size={15} color={settled ? T.faint : lent ? T.mint : T.coral} />
                         </span>
                         <div className="lp-wname" style={{ flex: 1, minWidth: 0, opacity: settled ? 0.6 : 1 }}>
-                          <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white }}>
+                          <div style={{ fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white }}>
                             {t.counterparty || (lent ? "Lent" : "Borrowed")}
                           </div>
                           <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted }}>
@@ -10250,7 +10250,7 @@ function DesignSystem({ store }: any) {
             <HeartPulse size={16} color={A.pink} />
           </span>
           <span style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white }}>Annual health checkup</span>
+            <span style={{ display: "block", fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white }}>Annual health checkup</span>
             <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted }}>Nov 21 · Dr. Reyes</span>
           </span>
           <span style={{ padding: "4px 12px", borderRadius: "var(--pill-radius)", fontSize: "var(--text-caption-md-size)", fontWeight: 700, color: SEM.success, background: al(SEM.success, 0.11) }}>in 69d</span>
@@ -10613,7 +10613,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: danger ? T.coral : T.text }}>
           {label}
         </span>
-        {sub && <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4 }}>{sub}</span>}
+        {sub && <span style={{ display: "block", fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4 }}>{sub}</span>}
       </span>
       <ChevronRight size={14} color={T.faint} />
     </button>
@@ -10716,7 +10716,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
         <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: danger ? T.coral : T.text }}>
           {label}
         </span>
-        {sub && <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4 }}>{sub}</span>}
+        {sub && <span style={{ display: "block", fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4 }}>{sub}</span>}
       </span>
       {value && <span style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, fontVariantNumeric: "tabular-nums" }}>{value}</span>}
       {onClick && <ChevronRight size={14} color={T.faint} />}
@@ -10919,7 +10919,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           {CHANGELOG.map(([t, b], i) => (
             <div key={i} style={{ padding: "12px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
               <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: T.text }}>{t}</div>
-              <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4, lineHeight: 1.55 }}>{b}</div>
+              <div style={{ fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4, lineHeight: 1.55 }}>{b}</div>
             </div>
           ))}
         </Overlay>
@@ -10929,7 +10929,7 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           {FAQS.map(([q, a], i) => (
             <div key={i} style={{ padding: "12px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
               <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: T.text }}>{q}</div>
-              <div style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, marginTop: 4, lineHeight: 1.6 }}>{a}</div>
+              <div style={{ fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4, lineHeight: 1.6 }}>{a}</div>
             </div>
           ))}
         </Overlay>
@@ -11384,7 +11384,7 @@ function OnboardingWizard({ store, onDone }: any) {
                     }}
                   >
                     <Ic size={16} color={on ? T.gold : T.muted} />
-                    <span style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: T.white }}>{label}</span>
+                    <span style={{ fontSize: "var(--text-label-lg-size)", fontWeight: 500, color: T.white }}>{label}</span>
                   </button>
                 );
               })}
