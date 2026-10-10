@@ -3788,6 +3788,7 @@ const btnGhost: CSSProperties = {
   border: "1px solid var(--lpv-border)",
   borderRadius: "var(--surface-radius)",
   padding: "12px 16px",
+  minHeight: "var(--control-size-default)",
   fontSize: "var(--text-body-md-size)",
   fontWeight: 500,
   cursor: "pointer",
