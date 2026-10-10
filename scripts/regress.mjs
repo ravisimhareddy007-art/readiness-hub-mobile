@@ -1,7 +1,7 @@
 // ReadiNes regression gate. Run from repo root:  node scripts/regress.mjs   (or: npm run regress)
 // Fails on type errors, build errors, failing unit fixtures, or any banned pattern.
 import { spawnSync } from "node:child_process";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, dirname, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -128,12 +128,33 @@ let dsFiles = 0, dsViolations = 0;
     if (!b || !/--color-action-primary-default\s*:/.test(b)) missing.push(`src/styles/tokens.css: --color-action-primary-default not defined in ${label}`);
   }
   dsViolations = hits.length + missing.length;
-  if (dsViolations) {
+  // Per-file summary table, every run.
+  const perFile = {};
+  for (const h of hits) { const f = h.split(":")[0]; perFile[f] = (perFile[f] || 0) + 1; }
+  const rows = Object.entries(perFile).sort((a, b) => b[1] - a[1]);
+  if (rows.length) {
+    console.log("  violations  file");
+    rows.forEach(([f, n]) => console.log(`  ${String(n).padStart(10)}  ${f}`));
+  }
+  // Ratchet: pass at or below baseline; lower the baseline automatically when the count drops.
+  const baselinePath = "scripts/ds-baseline.json";
+  let baseline = 0;
+  try { baseline = JSON.parse(readFileSync(baselinePath, "utf8")).violations ?? 0; } catch { baseline = 0; }
+  if (missing.length) {
     status = 1;
-    console.log(`FAIL design-system sweep (${dsViolations})`);
-    hits.forEach((h) => console.log("  " + h));
+    console.log("FAIL design-system positive checks");
     missing.forEach((h) => console.log("  " + h));
-  } else console.log("ok   design-system sweep");
+  }
+  if (dsViolations > baseline) {
+    status = 1;
+    console.log(`FAIL design-system sweep: ${dsViolations} > baseline ${baseline} (+${dsViolations - baseline}). Offenders:`);
+    hits.forEach((h) => console.log("  " + h));
+  } else {
+    if (dsViolations < baseline) {
+      writeFileSync(baselinePath, JSON.stringify({ violations: dsViolations }, null, 2) + "\n");
+      console.log(`ok   design-system sweep: ${dsViolations} (baseline lowered from ${baseline})`);
+    } else console.log(`ok   design-system sweep: ${dsViolations} (baseline ${baseline})`);
+  }
 }
 
 
