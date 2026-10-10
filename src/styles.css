@@ -1,4 +1,4 @@
-@import "./tokens.css";
+@import "./styles/tokens.css";
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
