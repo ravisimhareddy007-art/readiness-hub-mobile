@@ -371,5 +371,6 @@ if (!dev) console.log("ok   none");
 step("production build");
 run(npx, ["vite", "build"], true) && console.log("ok   build");
 
+console.log(`\nDesign-system sweep: ${dsFiles} files checked, ${dsViolations} violations.`);
 console.log(`\n== result: ${status ? "FAIL" : "PASS"} ==`);
 process.exit(status);
