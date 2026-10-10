@@ -1,31 +1,56 @@
 import { Children, useState, type CSSProperties, type ReactNode } from "react";
 import { ChevronRight, X } from "lucide-react";
-import { tokens, typeStyle, useTheme } from "@/lib/tokens";
 
-const S = tokens.space;
-const R = tokens.radius;
-const TAP = tokens.tap;
-const LEADING = 38;
-const LINE = 1;
+/* All values come from src/styles/tokens.css (CSS variables and .t-* type classes). */
+const v = (name: string) => `var(--${name})`;
+const SP = {
+  xs: v("space-050"), sm: v("space-100"), md: v("space-150"), lg: v("space-200"),
+  xl: v("space-250"), xxl: v("space-300"), xxxl: v("space-400"),
+};
+const C = {
+  canvas: v("color-surface-canvas"),
+  surface: v("color-surface-default"),
+  sunken: v("color-surface-inset"),
+  border: v("color-border-subtle"),
+  textPrimary: v("color-text-primary"),
+  textTertiary: v("color-text-tertiary"),
+  icon: v("color-icon-secondary"),
+  action: v("color-action-primary-default"),
+  onAction: v("color-text-on-brand"),
+  attention: v("color-status-warning-text"),
+  danger: v("color-action-destructive-default"),
+  disabledSurface: v("color-surface-disabled"),
+  disabledText: v("color-text-disabled"),
+  chartLine: v("color-chart-line"),
+  chartGrid: v("color-chart-grid"),
+  chartAxis: v("color-chart-axis"),
+  chartFill: v("color-chart-fill"),
+};
+const RADIUS = v("control-radius");
+const ROUND = v("pill-radius");
+const TAP = v("control-size-default");
+const LINE = `${v("divider-width")} solid ${C.border}`;
+const ICON: CSSProperties = { width: v("icon-size-md"), height: v("icon-size-md"), flexShrink: 0 };
 
 const clip: CSSProperties = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 };
 
 /* 1. Screen */
 export function Screen({ children, tabBar = true }: { children: ReactNode; tabBar?: boolean }) {
-  const { t } = useTheme();
   return (
     <div
       style={{
-        background: t("canvas"),
-        color: t("textBody"),
-        fontFamily: tokens.font,
+        background: C.canvas,
+        color: C.textPrimary,
+        fontFamily: v("font-family-ui"),
         overflowY: "auto",
         overflowX: "hidden",
         maxWidth: "100%",
-        paddingTop: `calc(${S.lg}px + env(safe-area-inset-top))`,
-        paddingLeft: `calc(${tokens.gutter}px + env(safe-area-inset-left))`,
-        paddingRight: `calc(${tokens.gutter}px + env(safe-area-inset-right))`,
-        paddingBottom: `calc(${tabBar ? TAP + S.xxxl + S.xxl : S.xxl}px + env(safe-area-inset-bottom))`,
+        paddingTop: `calc(${SP.lg} + env(safe-area-inset-top))`,
+        paddingLeft: `calc(${v("layout-gutter")} + env(safe-area-inset-left))`,
+        paddingRight: `calc(${v("layout-gutter")} + env(safe-area-inset-right))`,
+        paddingBottom: tabBar
+          ? `calc(${v("tabbar-height")} + ${SP.xxl} + env(safe-area-inset-bottom))`
+          : `calc(${SP.xxl} + env(safe-area-inset-bottom))`,
       }}
     >
       {children}
@@ -35,21 +60,19 @@ export function Screen({ children, tabBar = true }: { children: ReactNode; tabBa
 
 /* 2. ScreenTitle */
 export function ScreenTitle({ children, sub }: { children: ReactNode; sub?: string }) {
-  const { t } = useTheme();
   return (
     <div style={{ minWidth: 0 }}>
-      <h1 style={{ ...typeStyle("display"), ...clip, color: t("textPrimary"), margin: 0 }}>{children}</h1>
-      {sub && <div style={{ ...typeStyle("secondary"), ...clip, color: t("textSecondary"), marginTop: S.xs }}>{sub}</div>}
+      <h1 className="t-heading-xl" style={{ ...clip, color: C.textPrimary, margin: 0 }}>{children}</h1>
+      {sub && <div className="t-body-sm" style={{ ...clip, color: C.textTertiary, marginTop: SP.xs }}>{sub}</div>}
     </div>
   );
 }
 
 /* 3. Section */
 export function Section({ title, children }: { title: string; children: ReactNode }) {
-  const { t } = useTheme();
   return (
-    <section style={{ marginTop: S.xxl }}>
-      <div style={{ ...typeStyle("label"), ...clip, textTransform: "uppercase", color: t("textSecondary"), marginBottom: S.sm }}>{title}</div>
+    <section style={{ marginTop: SP.xxl }}>
+      <div className="t-caption-md" style={{ ...clip, textTransform: "uppercase", color: C.textTertiary, marginBottom: SP.sm }}>{title}</div>
       {children}
     </section>
   );
@@ -62,48 +85,45 @@ export function Row({
   leading?: ReactNode; title: string; meta?: string; alert?: string; value?: string;
   action?: { label: string; onPress: () => void }; onPress?: () => void; chevron?: boolean;
 }) {
-  const { t } = useTheme();
   return (
     <div
       role={onPress ? "button" : undefined}
       tabIndex={onPress ? 0 : undefined}
       onClick={onPress}
       onKeyDown={(e) => { if (onPress && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); onPress(); } }}
-      style={{ display: "flex", alignItems: "center", gap: S.md, minHeight: TAP, paddingTop: S.md, paddingBottom: S.md, cursor: onPress ? "pointer" : undefined, minWidth: 0 }}
+      style={{ display: "flex", alignItems: "center", gap: SP.md, minHeight: TAP, paddingTop: SP.md, paddingBottom: SP.md, cursor: onPress ? "pointer" : undefined, minWidth: 0 }}
     >
       {leading && (
-        <div style={{ width: LEADING, height: LEADING, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: R.round, background: t("surfaceSunken"), color: t("textSecondary"), overflow: "hidden" }}>
+        <div style={{ width: v("icon-size-xl"), height: v("icon-size-xl"), flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: ROUND, background: C.sunken, color: C.icon, overflow: "hidden" }}>
           {leading}
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-        <div style={{ ...typeStyle("body"), ...clip, color: t("textPrimary") }}>{title}</div>
-        {meta && <div style={{ ...typeStyle("secondary"), ...clip, color: t("textSecondary") }}>{meta}</div>}
-        {alert && <div style={{ ...typeStyle("secondary"), ...clip, color: t("attention") }}>{alert}</div>}
+        <div className="t-body-md" style={{ ...clip, color: C.textPrimary }}>{title}</div>
+        {meta && <div className="t-body-sm" style={{ ...clip, color: C.textTertiary }}>{meta}</div>}
+        {alert && <div className="t-body-sm" style={{ ...clip, color: C.attention }}>{alert}</div>}
       </div>
-      {value && <div style={{ ...typeStyle("body"), flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", color: t("money") }}>{value}</div>}
+      {value && <div className="t-body-md" style={{ flexShrink: 0, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums", color: C.textPrimary }}>{value}</div>}
       {action && (
         <div style={{ flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
           <Button variant="secondary" size="sm" onPress={action.onPress}>{action.label}</Button>
         </div>
       )}
-      {chevron && <ChevronRight size={S.xl} color={t("textMuted")} style={{ flexShrink: 0 }} />}
+      {chevron && <ChevronRight color={C.icon} style={ICON} />}
     </div>
   );
 }
 
 /* 5. RowGroup — owns disclosure */
 export function RowGroup({ children, initial = 3 }: { children: ReactNode; initial?: number }) {
-  const { t } = useTheme();
   const [open, setOpen] = useState(false);
   const items = Children.toArray(children);
   const shown = open ? items : items.slice(0, initial);
-  const line = `${LINE}px solid ${t("border")}`;
   return (
     <div>
-      {shown.map((child, i) => <div key={i} style={{ borderTop: i ? line : undefined }}>{child}</div>)}
+      {shown.map((child, i) => <div key={i} style={{ borderTop: i ? LINE : undefined }}>{child}</div>)}
       {items.length > initial && (
-        <div style={{ borderTop: line }}>
+        <div style={{ borderTop: LINE }}>
           <Button variant="secondary" size="md" full onPress={() => setOpen(!open)}>
             {open ? "Show less" : `Show all ${items.length}`}
           </Button>
@@ -115,11 +135,10 @@ export function RowGroup({ children, initial = 3 }: { children: ReactNode; initi
 
 /* 6. Field */
 export function Field({ label, value }: { label: string; value: ReactNode }) {
-  const { t } = useTheme();
   return (
-    <div style={{ paddingTop: S.sm, paddingBottom: S.sm, minWidth: 0 }}>
-      <div style={{ ...typeStyle("label"), ...clip, textTransform: "uppercase", color: t("textSecondary") }}>{label}</div>
-      <div style={{ ...typeStyle("body"), color: t("textBody"), marginTop: S.xs, overflowWrap: "anywhere" }}>{value ?? "—"}</div>
+    <div style={{ paddingTop: SP.sm, paddingBottom: SP.sm, minWidth: 0 }}>
+      <div className="t-caption-md" style={{ ...clip, textTransform: "uppercase", color: C.textTertiary }}>{label}</div>
+      <div className="t-body-md" style={{ color: C.textPrimary, marginTop: SP.xs, overflowWrap: "anywhere" }}>{value ?? "—"}</div>
     </div>
   );
 }
@@ -131,33 +150,31 @@ type InputProps =
   | { variant: "toggle"; label: string; value: boolean; onChange: (v: boolean) => void };
 
 export function Input(p: InputProps) {
-  const { t } = useTheme();
   const control: CSSProperties = {
-    ...typeStyle("body"),
     width: "100%", boxSizing: "border-box", minHeight: TAP,
-    paddingLeft: S.md, paddingRight: S.md, paddingTop: S.sm, paddingBottom: S.sm,
-    borderRadius: R.box, border: `${LINE}px solid ${t("border")}`,
-    background: t("surface"), color: t("textPrimary"), outline: "none",
+    paddingLeft: SP.md, paddingRight: SP.md, paddingTop: SP.sm, paddingBottom: SP.sm,
+    borderRadius: RADIUS, border: LINE,
+    background: C.surface, color: C.textPrimary, outline: "none", fontFamily: "inherit",
   };
   let body: ReactNode;
   if (p.variant === "toggle") {
     body = (
-      <button type="button" role="switch" aria-checked={p.value} onClick={() => p.onChange(!p.value)}
+      <button type="button" role="switch" aria-checked={p.value} onClick={() => p.onChange(!p.value)} className="t-body-md"
         style={{ ...control, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer" }}>
         <span style={{ ...clip }}>{p.value ? "On" : "Off"}</span>
-        <span style={{ width: TAP, height: S.xxl, borderRadius: R.round, background: p.value ? t("action") : t("surfaceSunken"), display: "flex", alignItems: "center", justifyContent: p.value ? "flex-end" : "flex-start", padding: S.xs, boxSizing: "border-box", flexShrink: 0 }}>
-          <span style={{ width: S.lg, height: S.lg, borderRadius: R.round, background: p.value ? t("actionInk") : t("textMuted") }} />
+        <span style={{ width: TAP, height: SP.xxl, borderRadius: ROUND, background: p.value ? C.action : C.sunken, display: "flex", alignItems: "center", justifyContent: p.value ? "flex-end" : "flex-start", padding: SP.xs, boxSizing: "border-box", flexShrink: 0 }}>
+          <span style={{ width: SP.lg, height: SP.lg, borderRadius: ROUND, background: p.value ? C.onAction : C.textTertiary }} />
         </span>
       </button>
     );
   } else if (p.variant === "choice") {
     body = (
-      <div role="radiogroup" style={{ display: "flex", gap: S.xs, padding: S.xs, borderRadius: R.box, background: t("surfaceSunken"), minWidth: 0 }}>
+      <div role="radiogroup" style={{ display: "flex", gap: SP.xs, padding: SP.xs, borderRadius: RADIUS, background: C.sunken, minWidth: 0 }}>
         {p.options.map((o) => {
           const on = o === p.value;
           return (
-            <button key={o} type="button" role="radio" aria-checked={on} onClick={() => p.onChange(o)}
-              style={{ ...typeStyle("secondary"), ...clip, flex: 1, minHeight: TAP - S.sm, border: "none", borderRadius: R.box, cursor: "pointer", background: on ? t("surface") : "transparent", color: on ? t("textPrimary") : t("textSecondary") }}>
+            <button key={o} type="button" role="radio" aria-checked={on} onClick={() => p.onChange(o)} className="t-body-sm"
+              style={{ ...clip, flex: 1, minHeight: TAP, border: "none", borderRadius: RADIUS, cursor: "pointer", fontFamily: "inherit", background: on ? C.surface : "transparent", color: on ? C.textPrimary : C.textTertiary }}>
               {o}
             </button>
           );
@@ -166,29 +183,28 @@ export function Input(p: InputProps) {
     );
   } else if (p.variant === "select") {
     body = (
-      <select value={p.value} onChange={(e) => p.onChange(e.target.value)} style={control}>
+      <select value={p.value} onChange={(e) => p.onChange(e.target.value)} className="t-body-md" style={control}>
         {p.options.map((o) => <option key={o} value={o}>{o}</option>)}
       </select>
     );
   } else if (p.variant === "textarea") {
-    body = <textarea value={p.value} placeholder={p.placeholder} onChange={(e) => p.onChange(e.target.value)} rows={3} style={{ ...control, resize: "vertical" }} />;
+    body = <textarea value={p.value} placeholder={p.placeholder} onChange={(e) => p.onChange(e.target.value)} rows={3} className="t-body-md" style={{ ...control, resize: "vertical" }} />;
   } else {
-    body = <input type={p.variant as string} value={p.value as string} placeholder={"placeholder" in p ? p.placeholder : undefined} onChange={(e) => p.onChange(e.target.value)}
+    body = <input type={p.variant as string} value={p.value as string} placeholder={"placeholder" in p ? p.placeholder : undefined} onChange={(e) => p.onChange(e.target.value)} className="t-body-md"
       style={{ ...control, fontVariantNumeric: p.variant === "number" ? "tabular-nums" : undefined }} />;
   }
   return (
-    <label style={{ display: "block", minWidth: 0, marginBottom: S.lg }}>
-      <div style={{ ...typeStyle("label"), ...clip, textTransform: "uppercase", color: t("textSecondary"), marginBottom: S.sm }}>{p.label}</div>
+    <label style={{ display: "block", minWidth: 0, marginBottom: SP.lg }}>
+      <div className="t-caption-md" style={{ ...clip, textTransform: "uppercase", color: C.textTertiary, marginBottom: SP.sm }}>{p.label}</div>
       {body}
     </label>
   );
 }
 
 /* 8. Button — label states the action, never a count.
-   Disabled removes the fill entirely: surfaceSunken, textMuted at half opacity,
-   never a lighter tint of the enabled colour. */
-const HEIGHT = { lg: 48, md: TAP, sm: 40 } as const;
-const LABEL = { lg: 15, md: 14, sm: 13 } as const;
+   Disabled removes the fill entirely, never a lighter tint of the enabled colour. */
+const HEIGHT = { lg: v("control-size-large"), md: TAP, sm: TAP } as const;
+const LABEL = { lg: "t-label-lg", md: "t-label-md", sm: "t-label-md" } as const;
 
 export function Button({
   children, variant = "primary", size = "md", onPress, disabled, full, block,
@@ -196,24 +212,22 @@ export function Button({
   children: ReactNode; variant?: "primary" | "secondary" | "danger"; size?: "lg" | "md" | "sm";
   onPress?: () => void; disabled?: boolean; full?: boolean; block?: boolean;
 }) {
-  const { t } = useTheme();
   const look: Record<string, CSSProperties> = {
-    primary: { background: t("action"), color: t("actionInk"), border: `${LINE}px solid ${t("action")}` },
-    secondary: { background: t("surfaceSunken"), color: t("textPrimary"), border: `${LINE}px solid ${t("border")}` },
-    danger: { background: t("danger"), color: t("dangerInk"), border: `${LINE}px solid ${t("danger")}` },
+    primary: { background: C.action, color: C.onAction, border: `${v("control-border-width")} solid ${C.action}` },
+    secondary: { background: C.sunken, color: C.textPrimary, border: LINE },
+    danger: { background: C.danger, color: C.onAction, border: `${v("control-border-width")} solid ${C.danger}` },
   };
-  const idle = disabled
-    ? { background: t("surfaceSunken"), color: t("textMuted"), border: `${LINE}px solid ${t("surfaceSunken")}` }
+  const idle: CSSProperties = disabled
+    ? { background: C.disabledSurface, color: C.disabledText, border: `${v("control-border-width")} solid ${C.disabledSurface}` }
     : look[variant];
   return (
-    <button type="button" onClick={onPress} disabled={disabled}
+    <button type="button" onClick={onPress} disabled={disabled} className={LABEL[size]}
       style={{
-        ...typeStyle("secondary"), ...idle, ...clip,
-        fontSize: LABEL[size], fontWeight: 500, lineHeight: 1.1,
+        ...idle, ...clip, fontFamily: "inherit",
         height: HEIGHT[size],
         width: full || (size === "lg" && block) ? "100%" : undefined, maxWidth: "100%",
-        paddingLeft: S.lg, paddingRight: S.lg, borderRadius: R.box,
-        cursor: disabled ? "not-allowed" : "pointer", opacity: disabled ? 0.5 : 1,
+        paddingLeft: SP.lg, paddingRight: SP.lg, borderRadius: RADIUS,
+        cursor: disabled ? "not-allowed" : "pointer",
         position: "relative",
       }}>
       {children}
@@ -225,26 +239,26 @@ export function Button({
 export function Sheet({
   title, children, footer, onClose, inline,
 }: { title: string; children: ReactNode; footer?: ReactNode; onClose?: () => void; inline?: boolean }) {
-  const { t } = useTheme();
+  const R = v("overlay-radius");
   const panel = (
-    <div style={{ background: t("surface"), color: t("textBody"), borderTopLeftRadius: R.box, borderTopRightRadius: R.box, borderRadius: inline ? R.box : undefined, border: `${LINE}px solid ${t("border")}`, display: "flex", flexDirection: "column", maxHeight: inline ? undefined : "88vh", width: "100%", boxSizing: "border-box", overflow: "hidden" }}>
-      <div style={{ display: "flex", justifyContent: "center", paddingTop: S.sm }}>
-        <span style={{ width: S.xxxl + S.sm, height: S.xs, borderRadius: R.round, background: t("border") }} />
+    <div style={{ background: C.surface, color: C.textPrimary, borderTopLeftRadius: R, borderTopRightRadius: R, borderRadius: inline ? R : undefined, boxShadow: v("elevation-overlay"), display: "flex", flexDirection: "column", maxHeight: inline ? undefined : "88vh", width: "100%", boxSizing: "border-box", overflow: "hidden" }}>
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: SP.sm }}>
+        <span style={{ width: v("sheet-handle-width"), height: v("sheet-handle-height"), borderRadius: ROUND, background: C.border }} />
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: S.sm, paddingLeft: S.lg, paddingRight: S.xs, minWidth: 0 }}>
-        <div style={{ ...typeStyle("title"), ...clip, flex: 1, color: t("textPrimary") }}>{title}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: SP.sm, paddingLeft: SP.lg, paddingRight: SP.xs, minWidth: 0 }}>
+        <div className="t-heading-md" style={{ ...clip, flex: 1, color: C.textPrimary }}>{title}</div>
         <button type="button" aria-label="Close" onClick={onClose}
-          style={{ width: TAP, height: TAP, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", color: t("textSecondary") }}>
-          <X size={S.xl} />
+          style={{ width: TAP, height: TAP, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", color: C.icon }}>
+          <X style={ICON} />
         </button>
       </div>
-      <div style={{ overflowY: "auto", paddingLeft: S.lg, paddingRight: S.lg, paddingBottom: S.lg }}>{children}</div>
-      {footer && <div style={{ padding: S.lg, borderTop: `${LINE}px solid ${t("border")}` }}>{footer}</div>}
+      <div style={{ overflowY: "auto", paddingLeft: SP.lg, paddingRight: SP.lg, paddingBottom: SP.lg }}>{children}</div>
+      {footer && <div style={{ padding: SP.lg, borderTop: LINE }}>{footer}</div>}
     </div>
   );
   if (inline) return panel;
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "flex-end", background: `color-mix(in srgb, ${t("canvas")} 70%, transparent)` }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "flex-end", background: v("color-overlay-scrim") }}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", paddingBottom: "env(safe-area-inset-bottom)" }}>{panel}</div>
     </div>
   );
@@ -252,76 +266,74 @@ export function Sheet({
 
 /* 10. Stat */
 export function Stat({ value, unit, label, size = "title" }: { value: ReactNode; unit?: string; label?: string; size?: "title" | "display" }) {
-  const { t } = useTheme();
   return (
     <div style={{ minWidth: 0 }}>
-      <div style={{ display: "flex", alignItems: "baseline", gap: S.xs, minWidth: 0 }}>
-        <span style={{ ...typeStyle(size), ...clip, fontVariantNumeric: "tabular-nums", color: t("textPrimary") }}>{value}</span>
-        {unit && <span style={{ ...typeStyle("secondary"), color: t("textSecondary") }}>{unit}</span>}
+      <div style={{ display: "flex", alignItems: "baseline", gap: SP.xs, minWidth: 0 }}>
+        <span className={size === "display" ? "t-numeric-lg" : "t-numeric-md"} style={{ ...clip, color: C.textPrimary }}>{value}</span>
+        {unit && <span className="t-body-sm" style={{ color: C.textTertiary }}>{unit}</span>}
       </div>
-      {label && <div style={{ ...typeStyle("secondary"), ...clip, color: t("textSecondary") }}>{label}</div>}
+      {label && <div className="t-body-sm" style={{ ...clip, color: C.textTertiary }}>{label}</div>}
     </div>
   );
 }
 
 /* 11. Progress — linear, one colour, no rings */
 export function Progress({ value, max, caption }: { value: number; max: number; caption?: string }) {
-  const { t } = useTheme();
   const pct = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
   return (
     <div style={{ minWidth: 0 }}>
       <div role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={max}
-        style={{ height: S.sm, borderRadius: R.round, background: t("surfaceSunken"), overflow: "hidden" }}>
-        <div style={{ width: `${pct * 100}%`, height: "100%", background: t("action"), borderRadius: R.round }} />
+        style={{ height: SP.sm, borderRadius: ROUND, background: C.sunken, overflow: "hidden" }}>
+        <div style={{ width: `${pct * 100}%`, height: "100%", background: C.action, borderRadius: ROUND }} />
       </div>
-      {caption && <div style={{ ...typeStyle("secondary"), ...clip, color: t("textSecondary"), marginTop: S.xs }}>{caption}</div>}
+      {caption && <div className="t-body-sm" style={{ ...clip, color: C.textTertiary, marginTop: SP.xs }}>{caption}</div>}
     </div>
   );
 }
 
-/* 12. Chart — line or bar, single series, legible in both themes */
+/* 12. Chart — line or bar, single series, legible in both themes.
+   Geometry below is SVG viewBox units, not CSS sizes. */
 export function Chart({
   data, type = "line", height = 160, empty = "Nothing recorded yet",
 }: { data: { label: string; value: number }[]; type?: "line" | "bar"; height?: number; empty?: string }) {
-  const { t } = useTheme();
   if (!data.length)
     return (
-      <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: R.box, border: `${LINE}px dashed ${t("chartGrid")}`, ...typeStyle("secondary"), color: t("chartAxis") }}>
+      <div className="t-body-sm" style={{ height, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: RADIUS, border: `${v("divider-width")} dashed ${C.chartGrid}`, color: C.chartAxis }}>
         {empty}
       </div>
     );
-  const W = 320, padL = S.xxxl, padB = S.xl, padT = S.sm, padR = S.sm;
+  const W = 320, padL = 32, padB = 20, padT = 8, padR = 8, tick = 4;
   const ch = height - padB - padT, cw = W - padL - padR;
   const vals = data.map((d) => d.value);
   const lo = Math.min(0, ...vals), hi = Math.max(...vals, lo + 1);
-  const y = (v: number) => padT + ch - ((v - lo) / (hi - lo)) * ch;
+  const y = (n: number) => padT + ch - ((n - lo) / (hi - lo)) * ch;
   const step = cw / Math.max(1, type === "bar" ? data.length : data.length - 1);
   const x = (i: number) => padL + (type === "bar" ? step * i + step / 2 : data.length === 1 ? cw / 2 : step * i);
   const ticks = [lo, (lo + hi) / 2, hi];
   const fmt = (n: number) => (Math.abs(n) >= 1000 ? `${Math.round(n / 100) / 10}k` : `${Math.round(n * 10) / 10}`);
-  const axis = { fill: t("chartAxis"), fontSize: tokens.type.label.size, fontFamily: tokens.font };
+  const axis: CSSProperties = { fill: C.chartAxis, fontSize: v("text-caption-md-size"), fontFamily: v("font-family-ui") };
   const pts = data.map((d, i) => `${x(i)},${y(d.value)}`).join(" ");
   return (
     <svg viewBox={`0 0 ${W} ${height}`} width="100%" height={height} preserveAspectRatio="none" style={{ display: "block" }}>
-      {ticks.map((v, i) => (
+      {ticks.map((n, i) => (
         <g key={i}>
-          <line x1={padL} x2={W - padR} y1={y(v)} y2={y(v)} stroke={t("chartGrid")} strokeWidth={LINE} />
-          <text x={padL - S.xs} y={y(v) + S.xs} textAnchor="end" {...axis}>{fmt(v)}</text>
+          <line x1={padL} x2={W - padR} y1={y(n)} y2={y(n)} style={{ stroke: C.chartGrid, strokeWidth: 1 }} />
+          <text x={padL - tick} y={y(n) + tick} textAnchor="end" style={axis}>{fmt(n)}</text>
         </g>
       ))}
       {type === "bar"
         ? data.map((d, i) => (
-            <rect key={i} x={x(i) - step * 0.3} width={step * 0.6} y={y(Math.max(0, d.value))} height={Math.abs(y(d.value) - y(0))} rx={S.xs} fill={t("chartLine")} />
+            <rect key={i} x={x(i) - step * 0.3} width={step * 0.6} y={y(Math.max(0, d.value))} height={Math.abs(y(d.value) - y(0))} rx={tick} style={{ fill: C.chartLine }} />
           ))
         : (
           <>
-            <polygon points={`${x(0)},${y(lo)} ${pts} ${x(data.length - 1)},${y(lo)}`} fill={t("chartFill")} />
-            <polyline points={pts} fill="none" stroke={t("chartLine")} strokeWidth={2} strokeLinejoin="round" />
-            {data.map((d, i) => <circle key={i} cx={x(i)} cy={y(d.value)} r={3} fill={t("chartLine")} />)}
+            <polygon points={`${x(0)},${y(lo)} ${pts} ${x(data.length - 1)},${y(lo)}`} style={{ fill: C.chartFill }} />
+            <polyline points={pts} style={{ fill: "none", stroke: C.chartLine, strokeWidth: 2, strokeLinejoin: "round" }} />
+            {data.map((d, i) => <circle key={i} cx={x(i)} cy={y(d.value)} r={3} style={{ fill: C.chartLine }} />)}
           </>
         )}
       {data.map((d, i) => (
-        <text key={i} x={x(i)} y={height - S.xs} textAnchor="middle" {...axis}>{d.label}</text>
+        <text key={i} x={x(i)} y={height - tick} textAnchor="middle" style={axis}>{d.label}</text>
       ))}
     </svg>
   );
