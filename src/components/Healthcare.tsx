@@ -45,48 +45,34 @@ import DocViewer from "./DocViewer";
 import type { Doc, Member, LabLog, Medication, ReminderKind, ReminderRepeat } from "../lib/types";
 
 /* ── theme ──
-   The same values as the app's shared tokens (docs/READINES_DESIGN_SYSTEM.md). Health keeps a local
-   object only because its styles are inline; the numbers are not its own. Semantic roles come from
-   the constitution: action is teal, warnings are amber, gold is reserved for readiness and identity. */
-const C_DARK = {
-  panel: "#131C2E",
-  panel2: "#1B2740",
-  border: "#27324A",
-  text: "#E6EBF5",
-  sub: "#8A97AE",
-  faint: "rgba(230,235,245,0.40)",
-  gold: "#D9B86A",
-  action: "#35A7A0",
-  warning: "#D98A2B",
-  emerald: "#2FB68A",
-  red: "#E8736A",
-  violet: "#A78BFA",
-  pink: "#F472B6",
-  cyan: "#5B8DEF",
+   Every value resolves through src/styles/tokens.css (ReadiNes DS 1.0). C holds CSS variable
+   references only; light and dark are both authored in tokens.css and switched by data-theme. */
+const C = {
+  panel: "var(--color-surface-default)",
+  panel2: "var(--color-surface-secondary)",
+  border: "var(--color-border-subtle)",
+  text: "var(--color-text-primary)",
+  sub: "var(--color-text-secondary)",
+  faint: "var(--color-text-tertiary)",
+  heading: "var(--color-text-heading)",
+  gold: "var(--color-text-interactive)",
+  action: "var(--color-action-primary-default)",
+  onAction: "var(--color-text-on-brand)",
+  warning: "var(--color-status-warning-icon)",
+  emerald: "var(--color-status-success-icon)",
+  red: "var(--color-status-danger-icon)",
+  violet: "var(--color-icon-interactive)",
+  pink: "var(--color-icon-interactive)",
+  cyan: "var(--color-status-info-icon)",
+  chart1: "var(--color-chart-line)",
+  chart2: "var(--color-chart-line-alt)",
 };
-const C_LIGHT = {
-  panel: "#FFFFFF",
-  panel2: "#EAECF0",
-  border: "#E3E6EA",
-  text: "#1B2431",
-  sub: "#5E6674",
-  faint: "#666D7A",
-  gold: "#866318",
-  action: "#077480",
-  warning: "#935D19",
-  emerald: "#277759",
-  red: "#A25146",
-  violet: "#7256C9",
-  pink: "#AF416E",
-  cyan: "#366E94",
-};
-const C: typeof C_DARK = { ...C_DARK };
+/* Tinted fill from a token: al(C.action, 0.12) → 12% of the colour over transparent. */
+const al = (c: string, a: number) => `color-mix(in srgb, ${c} ${Math.round(a * 100)}%, transparent)`;
 let _cTheme = "";
-export const inkOf = (c: string) => (_cTheme === "light" ? `color-mix(in srgb, ${c} 62%, #1B2431)` : c);
+export const inkOf = (c: string) => c;
 function applyC(theme: string) {
-  if (theme === _cTheme) return;
   _cTheme = theme;
-  Object.assign(C, theme === "light" ? C_LIGHT : C_DARK);
 }
 /* Sheets rise on a phone, boxes scale on a desktop. */
 const isMobileView = () => typeof window !== "undefined" && window.matchMedia("(max-width:767px)").matches;
@@ -450,10 +436,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         {isMobile && <MNav title="Health" aria-label="Health" />}
         <div className="lh-card" style={{ padding: 24, textAlign: "center", marginTop: 12 }}>
           <Users size={22} color={C.sub} />
-          <h2 className="lh-h2" style={{ fontSize: 16, margin: "12px 0 8px" }}>
+          <h2 className="lh-h2" style={{ fontSize: "var(--text-body-lg-size)", margin: "12px 0 8px" }}>
             Add the first person
           </h2>
-          <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, margin: "0 0 16px" }}>
+          <p style={{ color: C.sub, fontSize: "var(--text-body-md-size)", lineHeight: 1.6, margin: "0 0 16px" }}>
             Health keeps records, readings, medicines, and an emergency card for each person in your family. Start with
             yourself or whoever you look after.
           </p>
@@ -502,11 +488,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 background: "none",
                 border: "none",
                 color: C.sub,
-                fontSize: 14,
+                fontSize: "var(--text-body-md-size)",
                 fontWeight: 400,
                 cursor: "pointer",
                 padding: "8px 8px 8px 0",
-                fontFamily: "inherit",
               }}
             >
               <ChevronRight size={16} style={{ transform: "rotate(180deg)" }} /> Health
@@ -516,13 +501,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         <h1 className="lh-h1" style={{ marginBottom: 4 }}>
           Family
         </h1>
-        <p style={{ color: C.sub, fontSize: 14, margin: "0 0 16px", lineHeight: 1.5 }}>
+        <p style={{ color: C.sub, fontSize: "var(--text-body-md-size)", margin: "0 0 16px", lineHeight: 1.5 }}>
           Everyone whose health records you keep. Tap a person to edit their details, conditions, allergies, and doctor.
         </p>
         <div className="lh-card" style={{ padding: 0, overflow: "hidden", marginBottom: 16 }}>
           {s.members.length === 0 && (
             <div style={{ padding: "24px 16px", textAlign: "center" }}>
-              <p style={{ fontSize: 14, color: C.sub, lineHeight: 1.6, margin: "0 0 16px" }}>
+              <p style={{ fontSize: "var(--text-body-md-size)", color: C.sub, lineHeight: 1.6, margin: "0 0 16px" }}>
                 Add the people whose health records you keep. Each one gets their own records, readings, medicines, and
                 emergency information.
               </p>
@@ -562,7 +547,6 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     padding: 0,
                     cursor: "pointer",
                     textAlign: "left",
-                    fontFamily: "inherit",
                   }}
                 >
                   <span
@@ -572,11 +556,11 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     {mm.name[0]}
                   </span>
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 16, fontWeight: 700, color: C.text }}>{mm.name}</span>
+                    <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: C.text }}>{mm.name}</span>
                     <span
                       style={{
                         display: "block",
-                        fontSize: 12,
+                        fontSize: "var(--text-caption-md-size)",
                         marginTop: 4,
                         color: C.sub,
                         overflow: "hidden",
@@ -592,7 +576,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   <button
                     onClick={() => setConfirmDel(mm)}
                     className="lh-x"
-                    style={{ color: C.red, borderColor: C.red + "55", flexShrink: 0 }}
+                    style={{ color: C.red, borderColor: al(C.red, 0.33), flexShrink: 0 }}
                     title={`Remove ${mm.name.split(" ")[0]}`} aria-label={`Remove ${mm.name.split(" ")[0]}`}
                   >
                     <Trash2 size={15} />
@@ -720,7 +704,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               : "Everyone is up to date"}
           </span>
         </div>
-        <p style={{ color: C.sub, fontSize: 14, marginTop: 4 }}>
+        <p style={{ color: C.sub, fontSize: "var(--text-body-md-size)", marginTop: 4 }}>
           Keep the whole family visit-ready. ReadiNes reads your records to organize and surface them. It reports what
           they say and never diagnoses.
         </p>
@@ -766,10 +750,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           {m.name[0]}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h2 className="lh-h2" style={{ fontSize: 20 }}>
+          <h2 className="lh-h2" style={{ fontSize: "var(--text-heading-md-size)" }}>
             {m.name}
           </h2>
-          <div style={{ fontSize: 12, color: C.sub, display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+          <div style={{ fontSize: "var(--text-caption-md-size)", color: C.sub, display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
             <span>{m.relation}</span>
             {age(m.dob) != null && <span>· {age(m.dob)}</span>}
             {m.bloodGroup && <span>· {m.bloodGroup}</span>}
@@ -827,13 +811,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         <div className="lh-pane">
           {seriesOrder.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 12, color: C.sub }}>
+              <span style={{ fontSize: "var(--text-caption-md-size)", color: C.sub }}>
                 Showing {visibleSeries.length} of {seriesOrder.length} tracked test
                 {seriesOrder.length === 1 ? "" : "s"}
               </span>
               <button
                 className="lh-lnk"
-                style={{ fontSize: 16, fontWeight: 700, marginLeft: "auto" }}
+                style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700, marginLeft: "auto" }}
                 onClick={() => setPickSeries(true)}
               >
                 Choose tests
@@ -841,7 +825,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               {seriesOrder.length > visibleSeries.length && (
                 <button
                   className="lh-lnk"
-                  style={{ fontSize: 16, fontWeight: 700 }}
+                  style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 700 }}
                   onClick={() => setShownSeries(new Set(seriesOrder))}
                 >
                   Show all
@@ -852,7 +836,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
           <div className="lh-vitals" style={{ marginBottom: 16 }}>
             {Object.keys(vitals).length === 0 && (
               <div className="lh-card" style={{ padding: 20, textAlign: "center" }}>
-                <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, margin: "0 0 16px" }}>
+                <p style={{ color: C.sub, fontSize: "var(--text-body-md-size)", lineHeight: 1.6, margin: "0 0 16px" }}>
                   Upload a lab report and its values arrive here with the ranges printed beside them, or log a reading
                   yourself.
                 </p>
@@ -879,7 +863,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               return (
                 <div key={k} className="lh-card" style={{ padding: 16 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 14, color: C.sub }}>
+                    <span style={{ fontSize: "var(--text-body-md-size)", color: C.sub }}>
                       {k}
                       {isPaired(l) ? " · systolic trend" : ""}
                     </span>
@@ -887,11 +871,11 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   </div>
                   <div
                     className="lh-h2"
-                    style={{ fontSize: 28, margin: "8px 0 4px", display: "flex", alignItems: "baseline", gap: 8 }}
+                    style={{ fontSize: "var(--text-display-md-size)", margin: "8px 0 4px", display: "flex", alignItems: "baseline", gap: 8 }}
                   >
                     {readingText(l)}
-                    <span style={{ fontSize: 14, color: C.sub, fontWeight: 400 }}>{seriesUnit(arr)}</span>
-                    <span style={{ display: "block", fontSize: 12, color: C.faint, fontWeight: 400, marginTop: 4 }}>
+                    <span style={{ fontSize: "var(--text-body-md-size)", color: C.sub, fontWeight: 400 }}>{seriesUnit(arr)}</span>
+                    <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: C.faint, fontWeight: 400, marginTop: 4 }}>
                       {rangeText(l)}
                     </span>
                     <Tr size={14} color={delta === 0 ? C.faint : delta > 0 ? C.red : C.emerald} />
@@ -899,7 +883,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   <MiniChart arr={arr} metric={k} color={SM[st].c === C.faint ? C.cyan : SM[st].c} />
                   <button
                     className="lh-lnk"
-                    style={{ fontSize: 12, marginTop: 8 }}
+                    style={{ fontSize: "var(--text-caption-md-size)", marginTop: 8 }}
                     onClick={() => {
                       const last = arr[arr.length - 1];
                       if (!last) return;
@@ -915,7 +899,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                       alignItems: "center",
                       gap: 8,
                       marginTop: 12,
-                      fontSize: 12,
+                      fontSize: "var(--text-caption-md-size)",
                       color: C.faint,
                     }}
                   >
@@ -933,7 +917,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         >
                           Source: {srcDoc.name} · {fmt(srcDoc.docDate || srcDoc.addedAt)}
                         </span>
-                        <button className="lh-lnk" style={{ fontSize: 12 }} onClick={() => setViewDoc(srcDoc)}>
+                        <button className="lh-lnk" style={{ fontSize: "var(--text-caption-md-size)" }} onClick={() => setViewDoc(srcDoc)}>
                           View report
                         </button>
                       </>
@@ -968,24 +952,23 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   <>
                     <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                       <span
-                        style={{ fontVariantNumeric: "tabular-nums", fontSize: 28, fontWeight: 700, color: pc }}
+                        style={{ fontVariantNumeric: "tabular-nums", fontSize: "var(--text-display-md-size)", fontWeight: 700, color: pc }}
                       >
                         {pct}%
                       </span>
-                      <span style={{ fontSize: 12, color: C.faint }}>document completeness, not a health score</span>
+                      <span style={{ fontSize: "var(--text-caption-md-size)", color: C.faint }}>document completeness, not a health score</span>
                       <button
                         onClick={() => setShowWhy((v) => !v)}
                         style={{
                           marginLeft: "auto",
                           minHeight: 34,
                           padding: "8px 12px",
-                          borderRadius: 12,
+                          borderRadius: "var(--surface-radius)",
                           border: `1px solid ${C.border}`,
                           background: C.panel2,
                           color: C.sub,
-                          fontSize: 12,
+                          fontSize: "var(--text-caption-md-size)",
                           fontWeight: 500,
-                          fontFamily: "inherit",
                           cursor: "pointer",
                           whiteSpace: "nowrap",
                         }}
@@ -996,17 +979,17 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     <div
                       style={{
                         height: 6,
-                        borderRadius: 12,
+                        borderRadius: "var(--surface-radius)",
                         background: "var(--lpv-raised)",
                         margin: "12px 0 12px",
                         overflow: "hidden",
                       }}
                     >
-                      <div style={{ width: `${pct}%`, height: "100%", background: pc, borderRadius: 12, transition: "width 600ms cubic-bezier(.22,.9,.3,1)" }} />
+                      <div style={{ width: `${pct}%`, height: "100%", background: pc, borderRadius: "var(--surface-radius)", transition: "width 600ms cubic-bezier(.22,.9,.3,1)" }} />
                     </div>
                     {/* Closed, the missing ones still speak: a complete profile needs no list. */}
                     {!showWhy && done < items.length && (
-                      <div style={{ fontSize: 12, color: C.sub, marginBottom: 4 }}>
+                      <div style={{ fontSize: "var(--text-caption-md-size)", color: C.sub, marginBottom: 4 }}>
                         Still needed: {items.filter(([, ok]) => !ok).map(([label]) => label.replace(/ (answered|on file)$/, "")).join(", ")}
                       </div>
                     )}
@@ -1014,7 +997,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                       items.map(([label, ok]) => (
                       <div
                         key={label}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", fontSize: 12 }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", fontSize: "var(--text-caption-md-size)" }}
                       >
                         <span style={{ color: ok ? C.emerald : C.red, fontWeight: 700, width: 14 }}>
                           {ok ? "✓" : "✗"}
@@ -1068,7 +1051,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               <div style={{ marginBottom: 16 }}>
                 <div
                   style={{
-                    fontSize: 12,
+                    fontSize: "var(--text-caption-md-size)",
                     fontWeight: 700,
                     letterSpacing: 0.5,
                     textTransform: "uppercase",
@@ -1091,8 +1074,8 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     }}
                   >
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 16, fontWeight: 500, color: C.text }}>{r.title}</div>
-                      <div style={{ fontSize: 12, color: C.sub }}>
+                      <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: C.text }}>{r.title}</div>
+                      <div style={{ fontSize: "var(--text-caption-md-size)", color: C.sub }}>
                         {[fmt(r.due), r.time, r.repeat && r.repeat !== "once" ? r.repeat : ""].filter(Boolean).join(" · ")}
                       </div>
                     </div>
@@ -1118,7 +1101,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             )}
             {timeline.length === 0 ? (
               <div style={{ padding: "20px 4px", textAlign: "center" }}>
-                <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, margin: "0 0 12px" }}>
+                <p style={{ color: C.sub, fontSize: "var(--text-body-md-size)", lineHeight: 1.6, margin: "0 0 12px" }}>
                   No history yet. Records you add and readings you log appear here in order, newest first.
                 </p>
                 <button
@@ -1148,12 +1131,12 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                           <Ic size={15} color={K.c} />
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 16, fontWeight: 500, color: C.text }}>{e.title}</div>
-                          <div style={{ fontSize: 12, color: C.faint }}>
+                          <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: C.text }}>{e.title}</div>
+                          <div style={{ fontSize: "var(--text-caption-md-size)", color: C.faint }}>
                             {K.label} · {e.detail}
                           </div>
                         </div>
-                        <span style={{ fontSize: 12, color: C.faint, whiteSpace: "nowrap" }}>{fmt(e.date)}</span>
+                        <span style={{ fontSize: "var(--text-caption-md-size)", color: C.faint, whiteSpace: "nowrap" }}>{fmt(e.date)}</span>
                       </div>
                     </div>
                   );
@@ -1176,7 +1159,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             </div>
             {meds.length === 0 ? (
               <div style={{ padding: "16px 4px", textAlign: "center" }}>
-                <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, margin: "0 0 12px" }}>
+                <p style={{ color: C.sub, fontSize: "var(--text-body-md-size)", lineHeight: 1.6, margin: "0 0 12px" }}>
                   No medicines recorded. Upload a prescription and they are read from it.
                 </p>
                 <button className="lh-btn-g" style={{ margin: "0 auto" }} onClick={() => setModal("med")}>
@@ -1200,13 +1183,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                   return (
                     <div key={med.id} className="lh-med" style={{ opacity: stopped ? 0.6 : 1 }}>
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                        <span className="lh-ic" style={{ background: (stopped ? C.faint : C.violet) + "22", flexShrink: 0 }}>
+                        <span className="lh-ic" style={{ background: al(stopped ? C.faint : C.violet, 0.13), flexShrink: 0 }}>
                           <PillIcon size={16} color={stopped ? C.faint : C.violet} />
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div
                             style={{
-                              fontSize: 14,
+                              fontSize: "var(--text-body-md-size)",
                               fontWeight: 500,
                               color: C.text,
                               lineHeight: 1.35,
@@ -1216,7 +1199,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                             {med.name}
                             {med.dose && <span style={{ color: C.sub, fontWeight: 400 }}> {med.dose}</span>}
                           </div>
-                          <div style={{ fontSize: 12, color: C.sub, marginTop: 4 }}>
+                          <div style={{ fontSize: "var(--text-caption-md-size)", color: C.sub, marginTop: 4 }}>
                             {stopped
                               ? `Stopped ${med.stoppedOn ? fmt(med.stoppedOn) : ""}${med.stoppedNote ? ` · ${med.stoppedNote}` : ""}`
                               : [scheduleText(med.freq), med.timing].filter(Boolean).join(" · ")}
@@ -1224,7 +1207,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                           {!stopped && (
                             <div
                               style={{
-                                fontSize: 12,
+                                fontSize: "var(--text-caption-md-size)",
                                 color: stale ? C.warning : C.faint,
                                 marginTop: 4,
                               }}
@@ -1249,7 +1232,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                               <button
                                 className="lh-btn-g"
-                                style={{ padding: "8px 12px", fontSize: 12, minHeight: 40 }}
+                                style={{ padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 40 }}
                                 onClick={() => {
                                   s.confirmMed(med.id);
                                   toast(`${med.name} confirmed`);
@@ -1259,7 +1242,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                               </button>
                               <button
                                 className="lh-btn-g"
-                                style={{ padding: "8px 12px", fontSize: 12, minHeight: 40, color: C.sub }}
+                                style={{ padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 40, color: C.sub }}
                                 onClick={() => setStopping(med)}
                               >
                                 Stopped
@@ -1322,7 +1305,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             </div>
             {records.length === 0 ? (
               <div style={{ padding: "20px 4px", textAlign: "center" }}>
-                <p style={{ color: C.sub, fontSize: 14, lineHeight: 1.6, margin: "0 0 12px" }}>
+                <p style={{ color: C.sub, fontSize: "var(--text-body-md-size)", lineHeight: 1.6, margin: "0 0 12px" }}>
                   No records yet. Add a prescription or lab report and it is filed here automatically. and
                   ranges printed on it, and notes the doctor and hospital. A copy lands in Documents too.
                 </p>
@@ -1353,7 +1336,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                           top: 14,
                           width: 9,
                           height: 9,
-                          borderRadius: 12,
+                          borderRadius: "var(--surface-radius)",
                           background: K.c,
                           boxShadow: `0 0 7px ${K.c}`,
                         }}
@@ -1364,7 +1347,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div
                           style={{
-                            fontSize: 14,
+                            fontSize: "var(--text-body-md-size)",
                             fontWeight: 500,
                             color: C.text,
                             overflow: "hidden",
@@ -1376,7 +1359,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         </div>
                         <div
                           style={{
-                            fontSize: 12,
+                            fontSize: "var(--text-caption-md-size)",
                             color: C.faint,
                             overflow: "hidden",
                             textOverflow: "ellipsis",
@@ -1407,10 +1390,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
               transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
             >
-              <h3 className="lh-h2" style={{ fontSize: 20, marginBottom: 4 }}>
+              <h3 className="lh-h2" style={{ fontSize: "var(--text-heading-md-size)", marginBottom: 4 }}>
                 Which tests to chart
               </h3>
-              <p style={{ fontSize: 14, color: C.sub, margin: "0 0 16px" }}>
+              <p style={{ fontSize: "var(--text-body-md-size)", color: C.sub, margin: "0 0 16px" }}>
                 Every test read from {m.name.split(" ")[0]}'s reports. Nothing is hidden, only unpinned from this screen.
               </p>
               <div style={{ maxHeight: "46vh", overflowY: "auto" }}>
@@ -1437,14 +1420,13 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         borderTop: `1px solid ${C.border}`,
                         cursor: "pointer",
                         textAlign: "left",
-                        fontFamily: "inherit",
                       }}
                     >
                       <span
                         style={{
                           width: 20,
                           height: 20,
-                          borderRadius: 12,
+                          borderRadius: "var(--surface-radius)",
                           flexShrink: 0,
                           display: "grid",
                           placeItems: "center",
@@ -1456,16 +1438,16 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                         {on ? <Check size={13} /> : null}
                       </span>
                       <span style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: C.text }}>
+                        <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: C.text }}>
                           {seriesName(arr)}
                         </span>
-                        <span style={{ display: "block", fontSize: 12, color: C.sub, marginTop: 4 }}>
+                        <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: C.sub, marginTop: 4 }}>
                           {arr.length} reading{arr.length === 1 ? "" : "s"} · latest {readingText(arr[arr.length - 1])}{" "}
                           {seriesUnit(arr)}
                         </span>
                       </span>
                       {statusOfReading(arr[arr.length - 1]) === "out" && (
-                        <span className="lh-chip" style={{ fontSize: 12, color: C.red, whiteSpace: "nowrap" }}>
+                        <span className="lh-chip" style={{ fontSize: "var(--text-caption-md-size)", color: C.red, whiteSpace: "nowrap" }}>
                           outside range
                         </span>
                       )}
@@ -1516,10 +1498,10 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
               animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
               transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
             >
-              <h3 className="lh-h2" style={{ fontSize: 20, marginBottom: 4 }}>
+              <h3 className="lh-h2" style={{ fontSize: "var(--text-heading-md-size)", marginBottom: 4 }}>
                 Add to Health
               </h3>
-              <p style={{ fontSize: 14, color: C.sub, margin: "0 0 16px" }}>For {m.name.split(" ")[0]}</p>
+              <p style={{ fontSize: "var(--text-body-md-size)", color: C.sub, margin: "0 0 16px" }}>For {m.name.split(" ")[0]}</p>
               {[
                 {
                   icon: Upload,
@@ -1559,13 +1541,12 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                     borderTop: `1px solid ${C.border}`,
                     cursor: "pointer",
                     textAlign: "left",
-                    fontFamily: "inherit",
                   }}
                 >
                   <o.icon size={18} color={C.action} />
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ display: "block", fontSize: 16, fontWeight: 500, color: C.text }}>{o.label}</span>
-                    <span style={{ display: "block", fontSize: 12, color: C.sub, marginTop: 4 }}>{o.sub}</span>
+                    <span style={{ display: "block", fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: C.text }}>{o.label}</span>
+                    <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: C.sub, marginTop: 4 }}>{o.sub}</span>
                   </span>
                   <ChevronRight size={15} color={C.faint} />
                 </button>
@@ -1606,7 +1587,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
         )}
         {stopping && (
           <Modal title={`Stopped ${stopping.name}?`} onClose={() => setStopping(null)}>
-            <p style={{ fontSize: 14, color: C.sub, margin: "0 0 16px", lineHeight: 1.5 }}>
+            <p style={{ fontSize: "var(--text-body-md-size)", color: C.sub, margin: "0 0 16px", lineHeight: 1.5 }}>
               It stays on file with the date, so a doctor can see what changed.
             </p>
             <Lbl>Why, if you know</Lbl>
@@ -1731,7 +1712,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
 }
 
 /* ── small components ── */
-const Empty = ({ t }: any) => <div style={{ fontSize: 14, color: C.faint, padding: "12px 0" }}>{t}</div>;
+const Empty = ({ t }: any) => <div style={{ fontSize: "var(--text-body-md-size)", color: C.faint, padding: "12px 0" }}>{t}</div>;
 const Stat = ({ n, label, c }: any) => (
   <div className="lh-stat">
     <span className="lh-statn" style={{ color: c }}>
@@ -1742,8 +1723,8 @@ const Stat = ({ n, label, c }: any) => (
 );
 const Info2 = ({ label, val, warn }: any) => (
   <div className="lh-info">
-    <span style={{ fontSize: 14, color: C.faint }}>{label}</span>
-    <span style={{ fontSize: 14, color: warn ? C.red : C.text, fontWeight: warn ? 600 : 500, textAlign: "right" }}>
+    <span style={{ fontSize: "var(--text-body-md-size)", color: C.faint }}>{label}</span>
+    <span style={{ fontSize: "var(--text-body-md-size)", color: warn ? C.red : C.text, fontWeight: warn ? 600 : 500, textAlign: "right" }}>
       {val}
     </span>
   </div>
@@ -1846,13 +1827,13 @@ const StatusPill = ({ s }: { s: Status }) => (
   <span
     style={{
       fontVariantNumeric: "tabular-nums",
-      fontSize: 12,
+      fontSize: "var(--text-caption-md-size)",
       fontWeight: 500,
       color: SM[s].c,
       background: SM[s].c + "20",
       border: `1px solid ${SM[s].c}33`,
       padding: "4px 12px",
-      borderRadius: 12,
+      borderRadius: "var(--surface-radius)",
     }}
   >
     {SM[s].label}
@@ -1869,7 +1850,7 @@ function Modal({ title, onClose, children }: any) {
         transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-          <h3 className="lh-h2" style={{ fontSize: 20 }}>
+          <h3 className="lh-h2" style={{ fontSize: "var(--text-heading-md-size)" }}>
             {title}
           </h3>
           <button className="lh-x" onClick={onClose} title="Close" aria-label="Close">
@@ -1899,7 +1880,7 @@ function SheetModal({ title, onClose, html, onExport, onPrint, primary }: any) {
             <div className="lh-eyebrow" style={{ marginBottom: 4 }}>
               One tap · assembled from your archive
             </div>
-            <h3 className="lh-h2" style={{ fontSize: 20 }}>
+            <h3 className="lh-h2" style={{ fontSize: "var(--text-heading-md-size)" }}>
               {title}
             </h3>
           </div>
@@ -1972,7 +1953,7 @@ function LogReading({ member, vitals, onClose, save }: any) {
           </div>
         </div>
       )}
-      <button className="lh-lnk" style={{ fontSize: 12, marginTop: 8 }} onClick={() => setNewTest((x) => !x)}>
+      <button className="lh-lnk" style={{ fontSize: "var(--text-caption-md-size)", marginTop: 8 }} onClick={() => setNewTest((x) => !x)}>
         {newTest && existing.length > 0 ? "Pick a test already on file" : "Add a test not listed"}
       </button>
       <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
@@ -2006,7 +1987,7 @@ function LogReading({ member, vitals, onClose, save }: any) {
           </div>
         </div>
       )}
-      <div style={{ fontSize: 12, color: C.faint, marginTop: 12 }}>
+      <div style={{ fontSize: "var(--text-caption-md-size)", color: C.faint, marginTop: 12 }}>
         Copy the test name, value, unit, and reference range from your report. ReadiNes supplies none of them, so a
         reading with no range is recorded without a status.
       </div>
@@ -2056,7 +2037,7 @@ function EditRecord({ doc, labs, onClose, onSave, onRemoveReading }: any) {
   const mine = labs.filter((l: LabLog) => l.sourceDocId === doc.id);
   return (
     <Modal title="Correct this record" onClose={onClose}>
-      <p style={{ fontSize: 14, color: C.sub, margin: "0 0 16px", lineHeight: 1.5 }}>
+      <p style={{ fontSize: "var(--text-body-md-size)", color: C.sub, margin: "0 0 16px", lineHeight: 1.5 }}>
         {doc.readAt
           ? "These were read from the document. Fix anything that came out wrong: a visit is assembled from them."
           : "Nothing was read from this document. Fill in what it says so it can be found later."}
@@ -2090,13 +2071,13 @@ function EditRecord({ doc, labs, onClose, onSave, onRemoveReading }: any) {
       {mine.length > 0 && (
         <div style={{ marginTop: 20 }}>
           <Lbl>Readings taken from this record</Lbl>
-          <div style={{ border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ border: `1px solid ${C.border}`, borderRadius: "var(--surface-radius)", overflow: "hidden" }}>
             {mine.map((l: LabLog, i: number) => (
               <div
                 key={l.id}
                 style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 12px", borderTop: i ? `1px solid ${C.border}` : "none" }}
               >
-                <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: C.text }}>
+                <span style={{ flex: 1, minWidth: 0, fontSize: "var(--text-body-md-size)", color: C.text }}>
                   {l.metric}{" "}
                   <b>
                     {l.qualifier || ""}
@@ -2116,7 +2097,7 @@ function EditRecord({ doc, labs, onClose, onSave, onRemoveReading }: any) {
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 12, color: C.faint, marginTop: 8, lineHeight: 1.5 }}>
+          <p style={{ fontSize: "var(--text-caption-md-size)", color: C.faint, marginTop: 8, lineHeight: 1.5 }}>
             A value that was misread should be removed here and logged by hand with the number printed on the report.
           </p>
         </div>
@@ -2152,10 +2133,10 @@ function ConfirmRemove({ member, onClose, onYes }: any) {
         animate={isMobileView() ? { y: 0, opacity: 1 } : { scale: 1, opacity: 1 }}
         transition={{ duration: 0.24, ease: [0.2, 0.9, 0.3, 1.08] }}
       >
-        <h3 className="lh-h2" style={{ fontSize: 20, marginBottom: 8 }}>
+        <h3 className="lh-h2" style={{ fontSize: "var(--text-heading-md-size)", marginBottom: 8 }}>
           Remove {first}?
         </h3>
-        <p style={{ fontSize: 14, color: C.sub, lineHeight: 1.6, margin: "0 0 20px" }}>
+        <p style={{ fontSize: "var(--text-body-md-size)", color: C.sub, lineHeight: 1.6, margin: "0 0 20px" }}>
           {first}'s readings, medicines, and reminders are removed with them. Their documents stay in your vault, no
           longer assigned to anyone, so nothing is lost.
         </p>
@@ -2165,7 +2146,7 @@ function ConfirmRemove({ member, onClose, onYes }: any) {
           </button>
           <button
             className="lh-btn-g"
-            style={{ flex: 1, justifyContent: "center", color: C.red, borderColor: C.red + "55" }}
+            style={{ flex: 1, justifyContent: "center", color: C.red, borderColor: al(C.red, 0.33) }}
             onClick={onYes}
           >
             Remove
@@ -2178,7 +2159,7 @@ function ConfirmRemove({ member, onClose, onYes }: any) {
 
 function AddMember({ onClose, save }: any) {
   const [f, setF] = useState({ name: "", relation: "Parent", dob: "1960-01-01", bloodGroup: "O+" });
-  const colors = [C.cyan, C.emerald, C.pink, C.violet, C.gold];
+  const colors = [C.chart1, C.chart2, C.emerald, C.warning, C.red];
   return (
     <Modal title="Add a family member" aria-label="Add a family member" onClose={onClose}>
       <Lbl>Name</Lbl>
@@ -2278,13 +2259,12 @@ function AddMed({ onClose, save }: any) {
                   style={{
                     flex: 1,
                     minHeight: 44,
-                    borderRadius: 12,
+                    borderRadius: "var(--surface-radius)",
                     border: `1px solid ${on ? C.action : C.border}`,
-                    background: on ? C.action + "1F" : C.panel2,
+                    background: on ? al(C.action, 0.12) : C.panel2,
                     color: on ? C.action : C.sub,
-                    fontSize: 12,
+                    fontSize: "var(--text-caption-md-size)",
                     fontWeight: 500,
-                    fontFamily: "inherit",
                     cursor: "pointer",
                   }}
                 >
@@ -2314,13 +2294,12 @@ function AddMed({ onClose, save }: any) {
               style={{
                 minHeight: 44,
                 padding: "0 12px",
-                borderRadius: 12,
+                borderRadius: "var(--surface-radius)",
                 border: `1px solid ${f.timing === t ? C.action : C.border}`,
-                background: f.timing === t ? C.action + "1F" : C.panel2,
+                background: f.timing === t ? al(C.action, 0.12) : C.panel2,
                 color: f.timing === t ? C.action : C.sub,
-                fontSize: 12,
+                fontSize: "var(--text-caption-md-size)",
                 fontWeight: 500,
-                fontFamily: "inherit",
                 cursor: "pointer",
                 textTransform: "capitalize",
               }}
@@ -2330,7 +2309,7 @@ function AddMed({ onClose, save }: any) {
           ))}
         </div>
       </div>
-      <p style={{ fontSize: 12, color: C.faint, marginTop: 12 }}>Repeat date is optional.</p>
+      <p style={{ fontSize: "var(--text-caption-md-size)", color: C.faint, marginTop: 12 }}>Repeat date is optional.</p>
       <button
         className="lh-btn"
         style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
@@ -2376,13 +2355,12 @@ function AddReminder({ onClose, save }: any) {
               style={{
                 minHeight: 44,
                 padding: "0 12px",
-                borderRadius: 12,
+                borderRadius: "var(--surface-radius)",
                 border: `1px solid ${f.kind === k ? C.action : C.border}`,
-                background: f.kind === k ? C.action + "1F" : C.panel2,
+                background: f.kind === k ? al(C.action, 0.12) : C.panel2,
                 color: f.kind === k ? C.action : C.sub,
-                fontSize: 12,
+                fontSize: "var(--text-caption-md-size)",
                 fontWeight: 500,
-                fontFamily: "inherit",
                 cursor: "pointer",
               }}
             >
@@ -2420,13 +2398,12 @@ function AddReminder({ onClose, save }: any) {
               style={{
                 minHeight: 44,
                 padding: "0 12px",
-                borderRadius: 12,
+                borderRadius: "var(--surface-radius)",
                 border: `1px solid ${f.repeat === r ? C.action : C.border}`,
-                background: f.repeat === r ? C.action + "1F" : C.panel2,
+                background: f.repeat === r ? al(C.action, 0.12) : C.panel2,
                 color: f.repeat === r ? C.action : C.sub,
-                fontSize: 12,
+                fontSize: "var(--text-caption-md-size)",
                 fontWeight: 500,
-                fontFamily: "inherit",
                 cursor: "pointer",
               }}
             >
@@ -2509,7 +2486,7 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
           onChange={(e) => setNoCond(e.target.checked)}
           style={{ width: 18, height: 18, accentColor: C.action }}
         />
-        <span style={{ fontSize: 14, color: cond.length > 0 ? C.faint : C.text }}>No known conditions</span>
+        <span style={{ fontSize: "var(--text-body-md-size)", color: cond.length > 0 ? C.faint : C.text }}>No known conditions</span>
       </label>
       <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
         <div style={{ flex: 2 }}>
@@ -2540,7 +2517,7 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
           onChange={(e) => setNoAll(e.target.checked)}
           style={{ width: 18, height: 18, accentColor: C.action }}
         />
-        <span style={{ fontSize: 14, color: allergies.trim() ? C.faint : C.text }}>No known allergies</span>
+        <span style={{ fontSize: "var(--text-body-md-size)", color: allergies.trim() ? C.faint : C.text }}>No known allergies</span>
       </label>
       </div>
       <div style={{ marginTop: 12 }}>
@@ -2578,13 +2555,12 @@ function EditProfile({ member, care, onClose, save, family = [], onMemberPhone }
                 style={{
                   minHeight: 36,
                   padding: "8px 12px",
-                  borderRadius: 12,
+                  borderRadius: "var(--surface-radius)",
                   border: `1px solid ${emFrom === o.id ? C.action : C.border}`,
-                  background: emFrom === o.id ? C.action + "1F" : C.panel2,
+                  background: emFrom === o.id ? al(C.action, 0.12) : C.panel2,
                   color: emFrom === o.id ? C.action : C.sub,
-                  fontSize: 12,
+                  fontSize: "var(--text-caption-md-size)",
                   fontWeight: 500,
-                  fontFamily: "inherit",
                   cursor: "pointer",
                 }}
               >
@@ -2638,6 +2614,9 @@ function buildVisitCover(
   included: Doc[],
   visitLabel: string,
 ) {
+  // Standalone printable document: it leaves the app, so it carries the light-theme values inline.
+  const P = { ink: "#1B1626", muted: "#5D5869", danger: "#C62F38", band: "#EEEFF5", paper: "#FFFFFF", onDanger: "#FFFFFF" }; /* token-source */
+  const F = { title: "18px", name: "15px", h3: "13.5px", body: "13px", table: "12.5px", note: "12px" };
   const a = age(m.dob);
   const srcFor = (date: string) =>
     records
@@ -2648,21 +2627,21 @@ function buildVisitCover(
       const l = vitals[k][vitals[k].length - 1];
       const val = readingText(l);
       const src = srcFor(l.date);
-      return `<tr><td style="padding:5px 10px">${seriesName(vitals[k])}</td><td style="padding:5px 10px;font-weight:700">${val} ${seriesUnit(vitals[k])}</td><td style="padding:5px 10px;color:#6b7280">${fmt(l.date)}</td><td style="padding:5px 10px;color:#6b7280">${src ? src.name : "manually logged"}</td></tr>`;
+      return `<tr><td style="padding:5px 10px">${seriesName(vitals[k])}</td><td style="padding:5px 10px;font-weight:700">${val} ${seriesUnit(vitals[k])}</td><td style="padding:5px 10px;color:${P.muted}">${fmt(l.date)}</td><td style="padding:5px 10px;color:${P.muted}">${src ? src.name : "manually logged"}</td></tr>`;
     })
     .join("");
   const sec = (t: string, body: string) =>
-    `<h3 style="margin:16px 0 6px;font-size:13.5px;color:#111827">${t}</h3>${body}`;
-  return `<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111827;background:#fff;padding:24px;max-width:680px;margin:0 auto">
-  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #D8B25A;padding-bottom:10px">
-    <div><div style="font-weight:700;font-size:18px">ReadiNes · Visit Pack</div><div style="color:#6b7280;font-size:12.5px">${visitLabel}</div></div>
-    <div style="text-align:right"><div style="font-weight:700;font-size:15px">${m.name}</div><div style="color:#6b7280;font-size:12px">${m.relation}${a != null ? ` · ${a}y` : ""}${m.bloodGroup ? ` · ${m.bloodGroup}` : ""}</div></div>
+    `<h3 style="margin:16px 0 6px;font-size:${F.h3};color:${P.ink}">${t}</h3>${body}`;
+  return `<div style="color:${P.ink};background:${P.paper};padding:24px;max-width:680px;margin:0 auto">
+  <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid ${P.ink};padding-bottom:10px">
+    <div><div style="font-weight:700;font-size:${F.title}">ReadiNes · Visit Pack</div><div style="color:${P.muted};font-size:${F.table}">${visitLabel}</div></div>
+    <div style="text-align:right"><div style="font-weight:700;font-size:${F.name}">${m.name}</div><div style="color:${P.muted};font-size:${F.note}">${m.relation}${a != null ? ` · ${a}y` : ""}${m.bloodGroup ? ` · ${m.bloodGroup}` : ""}</div></div>
   </div>
-  ${sec("Critical", `<div style="font-size:13px;line-height:1.7"><b style="color:#b91c1c">Allergies:</b> ${care.allergies || "None recorded"}<br/><b>Conditions:</b> ${(care.conditions || []).join(", ") || "None recorded"}<br/><b>Primary physician:</b> ${care.doctor || "—"}${care.hospital ? `<br/><b>Preferred hospital:</b> ${care.hospital}` : ""}</div>`)}
-  ${sec("Current medications", meds.length ? `<ul style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">${meds.map((x) => `<li>${[x.name, x.dose, x.freq].filter(Boolean).join(" · ")}${x.refillBy ? ` · refill by ${fmt(x.refillBy)}` : ""}</li>`).join("")}</ul>` : `<div style="color:#6b7280;font-size:13px">None recorded</div>`)}
-  ${sec("Latest readings (with source document)", readingRows ? `<table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="background:#f3f4f6"><th style="text-align:left;padding:5px 10px;font-size:12px;color:#6b7280">Metric</th><th style="text-align:left;padding:5px 10px;font-size:12px;color:#6b7280">Value</th><th style="text-align:left;padding:5px 10px;font-size:12px;color:#6b7280">Date</th><th style="text-align:left;padding:5px 10px;font-size:12px;color:#6b7280">Source</th></tr>${readingRows}</table>` : `<div style="color:#6b7280;font-size:13px">No readings tracked</div>`)}
-  ${sec(`Documents in this pack (${included.length})`, included.length ? `<ol style="margin:0;padding-left:18px;line-height:1.7;font-size:13px">${included.map((d) => `<li>${d.docType} · ${d.name} · ${fmt(d.docDate || d.addedAt)}</li>`).join("")}</ol>` : `<div style="color:#6b7280;font-size:13px">None selected</div>`)}
-  <p style="margin-top:20px;font-size:12px;color:#6b7280;border-top:1px solid #e5e7eb;padding-top:9px">Assembled from ${m.name.split(" ")[0]}'s own records on ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}. Facts only — no diagnosis, no medical advice.</p>
+  ${sec("Critical", `<div style="font-size:${F.body};line-height:1.7"><b style="color:${P.danger}">Allergies:</b> ${care.allergies || "None recorded"}<br/><b>Conditions:</b> ${(care.conditions || []).join(", ") || "None recorded"}<br/><b>Primary physician:</b> ${care.doctor || "—"}${care.hospital ? `<br/><b>Preferred hospital:</b> ${care.hospital}` : ""}</div>`)}
+  ${sec("Current medications", meds.length ? `<ul style="margin:0;padding-left:18px;line-height:1.7;font-size:${F.body}">${meds.map((x) => `<li>${[x.name, x.dose, x.freq].filter(Boolean).join(" · ")}${x.refillBy ? ` · refill by ${fmt(x.refillBy)}` : ""}</li>`).join("")}</ul>` : `<div style="color:${P.muted};font-size:${F.body}">None recorded</div>`)}
+  ${sec("Latest readings (with source document)", readingRows ? `<table style="width:100%;border-collapse:collapse;font-size:${F.table}"><tr style="background:${P.band}"><th style="text-align:left;padding:5px 10px;font-size:${F.note};color:${P.muted}">Metric</th><th style="text-align:left;padding:5px 10px;font-size:${F.note};color:${P.muted}">Value</th><th style="text-align:left;padding:5px 10px;font-size:${F.note};color:${P.muted}">Date</th><th style="text-align:left;padding:5px 10px;font-size:${F.note};color:${P.muted}">Source</th></tr>${readingRows}</table>` : `<div style="color:${P.muted};font-size:${F.body}">No readings tracked</div>`)}
+  ${sec(`Documents in this pack (${included.length})`, included.length ? `<ol style="margin:0;padding-left:18px;line-height:1.7;font-size:${F.body}">${included.map((d) => `<li>${d.docType} · ${d.name} · ${fmt(d.docDate || d.addedAt)}</li>`).join("")}</ol>` : `<div style="color:${P.muted};font-size:${F.body}">None selected</div>`)}
+  <p style="margin-top:20px;font-size:${F.note};color:${P.muted};border-top:1px solid ${P.band};padding-top:9px">Assembled from ${m.name.split(" ")[0]}'s own records on ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}. Facts only — no diagnosis, no medical advice.</p>
   </div>`;
 }
 
@@ -2757,7 +2736,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
             <div className="lh-eyebrow" style={{ marginBottom: 4 }}>
               Your own records, filtered for this visit
             </div>
-            <h3 className="lh-h2" style={{ fontSize: 20 }}>
+            <h3 className="lh-h2" style={{ fontSize: "var(--text-heading-md-size)" }}>
               Prepare for a visit
             </h3>
           </div>
@@ -2784,7 +2763,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                 placeholder="Search doctors, specialisations, hospitals"
               />
             </div>
-            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
+            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: "var(--surface-radius)" }}>
               {(["doctor", "specialisation", "hospital", "general"] as const).map((kind) => {
                 const group = targets
                   .map((t, i) => ({ t, i }))
@@ -2797,7 +2776,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                   <div key={kind}>
                     <div
                       style={{
-                        fontSize: 12,
+                        fontSize: "var(--text-caption-md-size)",
                         fontWeight: 700,
                         letterSpacing: 0.5,
                         textTransform: "uppercase",
@@ -2830,13 +2809,12 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                             borderTop: `1px solid ${C.border}`,
                             cursor: "pointer",
                             textAlign: "left",
-                            fontFamily: "inherit",
                           }}
                         >
-                          <span style={{ flex: 1, minWidth: 0, fontSize: 14, color: C.text, fontWeight: chosen === i ? 700 : 500 }}>
+                          <span style={{ flex: 1, minWidth: 0, fontSize: "var(--text-body-md-size)", color: C.text, fontWeight: chosen === i ? 700 : 500 }}>
                             {targetLabel(t)}
                           </span>
-                          <span style={{ fontSize: 12, color: C.sub, whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: "var(--text-caption-md-size)", color: C.sub, whiteSpace: "nowrap" }}>
                             {count} doc{count === 1 ? "" : "s"}
                           </span>
                           {chosen === i && <Check size={15} color={C.action} />}
@@ -2847,7 +2825,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                 );
               })}
               {targets.filter((t) => !q.trim() || targetLabel(t).toLowerCase().includes(q.trim().toLowerCase())).length === 0 && (
-                <div style={{ padding: 20, fontSize: 14, color: C.faint }}>Nothing matches that.</div>
+                <div style={{ padding: 20, fontSize: "var(--text-body-md-size)", color: C.faint }}>Nothing matches that.</div>
               )}
             </div>
           </>
@@ -2863,15 +2841,14 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                 minHeight: 52,
                 padding: "12px 16px",
                 marginBottom: 12,
-                borderRadius: 12,
+                borderRadius: "var(--surface-radius)",
                 border: `1px solid ${C.border}`,
                 background: C.panel2,
                 cursor: "pointer",
                 textAlign: "left",
-                fontFamily: "inherit",
               }}
             >
-              <span style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span style={{ flex: 1, minWidth: 0, fontSize: "var(--text-body-lg-size)", fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {curLabel}
               </span>
               <span
@@ -2881,10 +2858,10 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                   gap: 4,
                   flexShrink: 0,
                   padding: "8px 12px",
-                  borderRadius: 12,
-                  background: C.action + "1F",
+                  borderRadius: "var(--surface-radius)",
+                  background: al(C.action, 0.12),
                   color: C.action,
-                  fontSize: 14,
+                  fontSize: "var(--text-body-md-size)",
                   fontWeight: 700,
                 }}
               >
@@ -2894,9 +2871,9 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
           </>
         )}
         {!picking && (
-        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 12 }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: "var(--surface-radius)" }}>
           {packDocs.length === 0 ? (
-            <div style={{ padding: 20, fontSize: 14, color: C.faint }}>
+            <div style={{ padding: 20, fontSize: "var(--text-body-md-size)", color: C.faint }}>
               No records yet. The cover sheet still travels.
             </div>
           ) : (
@@ -2912,7 +2889,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                 {firstOther && (
                   <div
                     style={{
-                      fontSize: 12,
+                      fontSize: "var(--text-caption-md-size)",
                       fontWeight: 700,
                       letterSpacing: 0.5,
                       textTransform: "uppercase",
@@ -2953,10 +2930,10 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                     <Ic size={15} color={c} />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 16, fontWeight: 500, color: C.text }}>{d.docType}</div>
+                    <div style={{ fontSize: "var(--text-body-lg-size)", fontWeight: 500, color: C.text }}>{d.docType}</div>
                     <div
                       style={{
-                        fontSize: 12,
+                        fontSize: "var(--text-caption-md-size)",
                         color: C.faint,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -2977,7 +2954,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
         </div>
         )}
         {!picking && (
-        <button className="lh-lnk" style={{ marginTop: 12, fontSize: 12 }} onClick={previewCover}>
+        <button className="lh-lnk" style={{ marginTop: 12, fontSize: "var(--text-caption-md-size)" }} onClick={previewCover}>
           Preview cover sheet
         </button>
         )}
@@ -3001,14 +2978,17 @@ function insuranceOf(member: Member | undefined, docs: Doc[]) {
   return docs.find((d) => d.docType === "Health Insurance" && (d.memberId === member?.id || d.memberId === "you"));
 }
 function buildEmergency(m: Member | undefined, care: any, meds: Medication[], docs: Doc[]) {
+  // Standalone printable document: it leaves the app, so it carries the light-theme values inline.
+  const P = { ink: "#1B1626", muted: "#5D5869", danger: "#C62F38", band: "#EEEFF5", paper: "#FFFFFF", onDanger: "#FFFFFF" }; /* token-source */
+  const F = { title: "18px", name: "15px", h3: "13.5px", body: "13px", table: "12.5px", note: "12px" };
   if (!m) return "";
   const ins = insuranceOf(m, docs);
   const medDocs = docs.filter((d) => d.category === "Medical" && d.memberId === m.id).length;
   const row = (a: string, b: string, warn?: boolean) =>
-    `<tr><td style="padding:7px 12px;color:#6b7280;font-size:12px;width:140px">${a}</td><td style="padding:7px 12px;font-weight:700;font-size:14px;color:${warn ? "#b91c1c" : "#111827"}">${b}</td></tr>`;
-  return `<div style="font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:460px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #e5e7eb">
-  <div style="background:#b91c1c;color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
-    <div style="font-weight:700;font-size:15px;letter-spacing:1px">EMERGENCY INFO</div><div style="font-size:12px;opacity:.9">ReadiNes</div>
+    `<tr><td style="padding:7px 12px;color:${P.muted};font-size:${F.note};width:140px">${a}</td><td style="padding:7px 12px;font-weight:700;font-size:${F.h3};color:${warn ? "${P.danger}" : "${P.ink}"}">${b}</td></tr>`;
+  return `<div style="max-width:460px;margin:0 auto;background:${P.paper};border-radius:${F.note};overflow:hidden;border:1px solid ${P.band}">
+  <div style="background:${P.danger};color:${P.onDanger};padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+    <div style="font-weight:700;font-size:${F.name};letter-spacing:1px">EMERGENCY INFO</div><div style="font-size:${F.note};opacity:.9">ReadiNes</div>
   </div>
   <div style="padding:6px 4px"><table style="width:100%;border-collapse:collapse">
     ${row("Name", m.name)}
@@ -3022,7 +3002,7 @@ function buildEmergency(m: Member | undefined, care: any, meds: Medication[], do
     ${row("Insurance", ins ? ins.name : "—")}
     ${row("Medical documents", `${medDocs} on file in ReadiNes`)}
   </table></div>
-  <div style="padding:10px 16px;background:#f9fafb;color:#6b7280;font-size:12px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between"><span>Assembled facts only · no diagnosis.</span><span>Generated ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span></div>
+  <div style="padding:10px 16px;background:${P.band};color:${P.muted};font-size:${F.note};border-top:1px solid ${P.band};display:flex;justify-content:space-between"><span>Assembled facts only · no diagnosis.</span><span>Generated ${new Date().toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}</span></div>
   </div>`;
 }
 
@@ -3031,108 +3011,108 @@ const CSS = () => `
 .lh-root{font-variant-numeric:tabular-nums;color:${C.text}}
 .lh-root *{box-sizing:border-box}
 .lh-head{margin-bottom:18px}
-.lh-eyebrow{font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:${C.gold};margin-bottom:8px}
-.lh-h1{letter-spacing:-0.015em;font-weight:700;font-size:27px;letter-spacing:-.5px;margin:0;color:${C.text}}
+.lh-eyebrow{font-size:var(--text-caption-md-size);font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:${C.gold};margin-bottom:8px}
+.lh-h1{letter-spacing:-0.015em;font-weight:700;font-size:var(--text-display-md-size);letter-spacing:-.5px;margin:0;color:${C.text}}
 .lh-h2{letter-spacing:-0.015em;font-weight:700;margin:0;color:${C.text}}
-.lh-card{background:${C.panel};border:1px solid ${C.border};border-radius:16px}
+.lh-card{background:${C.panel};border:1px solid ${C.border};border-radius:var(--tile-radius)}
 .lh-switch{display:flex;align-items:center;gap:16px;overflow-x:auto;padding:2px 2px 16px}
 .lh-mm{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;cursor:pointer;flex-shrink:0;padding:0}
-.lh-av{position:relative;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:700;font-size:18px;border:2px solid transparent;letter-spacing:-0.015em;transition:.15s}
+.lh-av{position:relative;width:42px;height:42px;border-radius:var(--surface-radius);display:grid;place-items:center;font-weight:700;font-size:var(--text-heading-sm-size);border:2px solid transparent;letter-spacing:-0.015em;transition:.15s}
 .lh-mm.on .lh-av{transform:translateY(-1px)}
-.lh-av.lg{width:52px;height:52px;font-size:22px}
-.lh-dot{position:absolute;top:-2px;right:-2px;width:11px;height:11px;border-radius:9px;border:2px solid var(--lpv-panel)}
-.lh-nm{font-size:12.5px;font-weight:500;white-space:nowrap}
+.lh-av.lg{width:52px;height:52px;font-size:var(--text-heading-lg-size)}
+.lh-dot{position:absolute;top:-2px;right:-2px;width:11px;height:11px;border-radius:var(--control-radius);border:2px solid var(--lpv-panel)}
+.lh-nm{font-size:var(--text-body-sm-size);font-weight:500;white-space:nowrap}
 .lh-addm .lh-av{background:${C.panel2}}
 .lh-famline{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:0 2px;margin-bottom:2px}
-.lh-famtitle{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:${C.text}}
-.lh-famsum{font-size:12.5px;color:${C.sub};white-space:nowrap}
-.lh-hero{background:linear-gradient(180deg,rgba(216,178,90,.05),${C.panel});border:1px solid ${C.border};border-radius:16px;padding:18px;margin-bottom:20px}
+.lh-famtitle{display:inline-flex;align-items:center;gap:8px;font-size:var(--text-body-md-size);font-weight:500;color:${C.text}}
+.lh-famsum{font-size:var(--text-body-sm-size);color:${C.sub};white-space:nowrap}
+.lh-hero{background:linear-gradient(180deg,${al(C.action, 0.05)},${C.panel});border:1px solid ${C.border};border-radius:var(--tile-radius);padding:18px;margin-bottom:20px}
 .lh-herotop{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .lh-heronext{display:flex;align-items:center;gap:9px;margin-top:16px;padding-top:14px;border-top:1px solid ${C.border}}
-.lh-herometa{font-size:13px;color:${C.sub};margin-top:8px;line-height:1.5}
+.lh-herometa{font-size:var(--text-body-sm-size);color:${C.sub};margin-top:8px;line-height:1.5}
 .lh-headrow{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-.lh-pillm{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:7px 14px;cursor:pointer;font-family:inherit;flex-shrink:0}
-.lh-pillm.on{color:${C.text};border-color:${C.action}66;background:${C.action}14}
-.lh-cdot{width:8px;height:8px;border-radius:9px;flex-shrink:0}
-.lh-attndot{width:6px;height:6px;border-radius:9px;background:${C.warning}}
+.lh-pillm{display:inline-flex;align-items:center;gap:8px;font-size:var(--text-body-sm-size);font-weight:500;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:var(--overlay-radius);padding:7px 14px;cursor:pointer;font:inherit;flex-shrink:0}
+.lh-pillm.on{color:${C.text};border-color:${al(C.action, 0.4)};background:${al(C.action, 0.08)}}
+.lh-cdot{width:8px;height:8px;border-radius:var(--control-radius);flex-shrink:0}
+.lh-attndot{width:6px;height:6px;border-radius:var(--control-radius);background:${C.warning}}
 .lh-addpill{border-style:dashed}
 .lh-vitals{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px}
 .lh-attnrow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
-.lh-chip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:6px 12px;cursor:pointer;font-family:inherit}
+.lh-chip{display:inline-flex;align-items:center;gap:7px;font-size:var(--text-body-sm-size);color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:var(--overlay-radius);padding:6px 12px;cursor:pointer;font:inherit}
 .lh-chip:hover{background:var(--lpv-raised)}
 .lh-mhead{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
-.lh-btn{display:inline-flex;align-items:center;gap:7px;background:${C.action};color:var(--lpv-actionink);font-weight:500;font-size:14px;border:0;border-radius:11px;padding:10px 16px;min-height:44px;cursor:pointer;font-family:inherit;transition:.15s}
+.lh-btn{display:inline-flex;align-items:center;gap:7px;background:${C.action};color:var(--lpv-actionink);font-weight:500;font-size:var(--text-body-md-size);border:0;border-radius:var(--surface-radius);padding:10px 16px;min-height:44px;cursor:pointer;font:inherit;transition:.15s}
 .lh-btn:hover{filter:brightness(1.06)}.lh-btn:disabled{opacity:.4;cursor:not-allowed}
-.lh-btn-g{display:inline-flex;align-items:center;gap:7px;background:${C.panel2};color:${C.text};font-weight:500;font-size:14px;border:1px solid ${C.border};border-radius:11px;padding:10px 14px;min-height:44px;cursor:pointer;font-family:inherit}
+.lh-btn-g{display:inline-flex;align-items:center;gap:7px;background:${C.panel2};color:${C.text};font-weight:500;font-size:var(--text-body-md-size);border:1px solid ${C.border};border-radius:var(--surface-radius);padding:10px 14px;min-height:44px;cursor:pointer;font:inherit}
 .lh-btn-g:hover{background:var(--lpv-raised)}
 .lh-tabs{display:flex;gap:6px;border-bottom:1px solid ${C.border};margin-bottom:18px;overflow-x:auto;scrollbar-width:none}
 .lh-tabs::-webkit-scrollbar{display:none}
-.lh-tab{display:inline-flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;color:${C.sub};font-size:14px;font-weight:500;padding:10px 12px;cursor:pointer;font-family:inherit;white-space:nowrap;margin-bottom:-1px}
+.lh-tab{display:inline-flex;align-items:center;gap:7px;background:none;border:0;border-bottom:2px solid transparent;color:${C.sub};font-size:var(--text-body-md-size);font-weight:500;padding:10px 12px;cursor:pointer;font:inherit;white-space:nowrap;margin-bottom:-1px}
 .lh-tab.on{color:${C.text};border-bottom-color:${C.action}}
-.lh-tc{font-size:12px;background:${C.panel2};border-radius:9px;padding:1px 6px;color:${C.sub}}
+.lh-tc{font-size:var(--text-caption-md-size);background:${C.panel2};border-radius:var(--control-radius);padding:1px 6px;color:${C.sub}}
 .lh-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .lh-grid-2-1{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px}
-.lh-sechead{display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:700;color:${C.text};margin-bottom:12px}
-.lh-mini{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:500;color:${C.gold};background:${C.gold}18;border:1px solid ${C.gold}33;border-radius:8px;padding:4px 9px;cursor:pointer;font-family:inherit}
+.lh-sechead{display:flex;align-items:center;gap:8px;font-size:var(--text-body-md-size);font-weight:700;color:${C.text};margin-bottom:12px}
+.lh-mini{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:var(--text-body-sm-size);font-weight:500;color:${C.gold};background:${al(C.gold, 0.09)};border:1px solid ${al(C.gold, 0.2)};border-radius:var(--control-radius);padding:4px 9px;cursor:pointer;font:inherit}
 .lh-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid ${C.border}}
 .lh-row:first-of-type{border-top:0}
-.lh-ic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
-.lh-ib{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;border:1px solid ${C.border};background:transparent;cursor:pointer;flex-shrink:0}
+.lh-ic{width:32px;height:32px;border-radius:var(--control-radius);display:grid;place-items:center;flex-shrink:0}
+.lh-ib{width:28px;height:28px;border-radius:var(--control-radius);display:grid;place-items:center;border:1px solid ${C.border};background:transparent;cursor:pointer;flex-shrink:0}
 .lh-ib:hover{background:var(--lpv-raised)}
-.lh-tag{font-size:12px;font-weight:500;padding:2px 7px;border-radius:20px}
+.lh-tag{font-size:var(--text-caption-md-size);font-weight:500;padding:2px 7px;border-radius:var(--overlay-radius)}
 .lh-info{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid ${C.border}}
 .lh-info:first-of-type{border-top:0}
 .lh-med{padding:12px 0;border-top:1px solid ${C.border}}
 .lh-med:first-of-type{border-top:0}
 .lh-adhere{display:flex;align-items:center;gap:12px;margin-top:9px;padding-left:43px;flex-wrap:wrap}
-.lh-take{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;color:${C.emerald};background:${C.emerald}18;border:1px solid ${C.emerald}33;border-radius:8px;padding:5px 10px;cursor:pointer;font-family:inherit}
-.lh-taken{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;color:${C.emerald}}
-.lh-lnk{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:${C.sub};background:none;border:0;cursor:pointer;font-family:inherit}
+.lh-take{display:inline-flex;align-items:center;gap:5px;font-size:var(--text-body-sm-size);font-weight:500;color:${C.emerald};background:${al(C.emerald, 0.09)};border:1px solid ${al(C.emerald, 0.2)};border-radius:var(--control-radius);padding:5px 10px;cursor:pointer;font:inherit}
+.lh-taken{display:inline-flex;align-items:center;gap:5px;font-size:var(--text-body-sm-size);font-weight:500;color:${C.emerald}}
+.lh-lnk{display:inline-flex;align-items:center;gap:5px;font-size:var(--text-body-sm-size);color:${C.sub};background:none;border:0;cursor:pointer;font:inherit}
 .lh-lnk:hover{color:${C.text}}
 .lh-uprow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-.lh-up{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:11px;padding:11px 15px;cursor:pointer;font-family:inherit}
-.lh-up:hover{background:var(--lpv-raised);border-color:${C.action}55}
+.lh-up{display:inline-flex;align-items:center;gap:8px;font-size:var(--text-body-sm-size);font-weight:500;color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:var(--surface-radius);padding:11px 15px;cursor:pointer;font:inherit}
+.lh-up:hover{background:var(--lpv-raised);border-color:${al(C.action, 0.33)}}
 .lh-rec{position:relative;display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid ${C.border}}
 .lh-rec:first-of-type{border-top:0}
 .lh-tl{position:relative;padding-left:20px}
 .lh-tl:before{content:"";position:absolute;left:5px;top:24px;bottom:8px;width:1px;background:${C.border}}
-.lh-tlmon{font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:${C.gold};margin:14px 0 6px}
+.lh-tlmon{font-size:var(--text-caption-md-size);font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:${C.gold};margin:14px 0 6px}
 .lh-tlrow{position:relative;display:flex;align-items:center;gap:11px;padding:8px 0}
-.lh-tldot{position:absolute;left:-15px;top:18px;width:9px;height:9px;border-radius:9px}
-.lh-lbl{font-size:12px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};margin-bottom:5px}
-.lh-in{width:100%;background:${C.panel2};border:1px solid ${C.border};border-radius:10px;padding:11px;min-height:44px;color:${C.text};font-size:16px;outline:none;font-family:inherit}
+.lh-tldot{position:absolute;left:-15px;top:18px;width:9px;height:9px;border-radius:var(--control-radius)}
+.lh-lbl{font-size:var(--text-caption-md-size);font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:${C.faint};margin-bottom:5px}
+.lh-in{width:100%;background:${C.panel2};border:1px solid ${C.border};border-radius:var(--control-radius);padding:11px;min-height:44px;color:${C.text};font-size:var(--text-body-lg-size);outline:none;font:inherit}
 .lh-in:focus{border-color:${C.action}}
 .lh-overlay{position:fixed;inset:0;z-index:72;background:var(--lpv-scrim);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:18px;overscroll-behavior:contain}
-.lh-modal{background:var(--lpv-panel);border:1px solid ${C.border};border-radius:18px;width:min(460px,100%);padding:22px;max-height:90vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.lh-modal{background:var(--lpv-panel);border:1px solid ${C.border};border-radius:var(--tile-radius);width:min(460px,100%);padding:22px;max-height:90vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 @media(max-width:767px){
 .lh-overlay{align-items:flex-end;padding:0}
-.lh-modal{width:100% !important;max-width:100% !important;max-height:88vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:24px 24px 0 0;border-bottom:0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
-.lh-modal::before{content:"";display:block;width:38px;height:4px;border-radius:99px;background:${C.border};margin:0 auto 14px}
+.lh-modal{width:100% !important;max-width:100% !important;max-height:88vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:var(--overlay-radius) var(--overlay-radius) 0 0;border-bottom:0;padding:16px 16px calc(20px + env(safe-area-inset-bottom))}
+.lh-modal::before{content:"";display:block;width:38px;height:4px;border-radius:var(--pill-radius);background:${C.border};margin:0 auto 14px}
 }
-.lh-preview{background:#f3f4f6;border-radius:10px;padding:10px}
-.lh-x{width:44px;height:44px;border-radius:9px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};cursor:pointer;display:grid;place-items:center}
+.lh-preview{background:${C.panel2};border-radius:var(--control-radius);padding:10px}
+.lh-x{width:44px;height:44px;border-radius:var(--control-radius);border:1px solid ${C.border};background:${C.panel2};color:${C.text};cursor:pointer;display:grid;place-items:center}
 .lh-pick{display:flex;flex-wrap:wrap;gap:6px}
-.lh-pk{font-size:12.5px;font-weight:500;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit}
+.lh-pk{font-size:var(--text-body-sm-size);font-weight:500;color:${C.sub};background:${C.panel2};border:1px solid ${C.border};border-radius:var(--control-radius);padding:6px 10px;cursor:pointer;font:inherit}
 .lh-pk.on{color:var(--lpv-actionink);background:${C.action};border-color:${C.action}}
-.lh-cond{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:20px;padding:4px 10px}
+.lh-cond{display:inline-flex;align-items:center;gap:5px;font-size:var(--text-body-sm-size);color:${C.text};background:${C.panel2};border:1px solid ${C.border};border-radius:var(--overlay-radius);padding:4px 10px}
 .lh-cond button{background:0;border:0;color:${C.faint};cursor:pointer;display:inline-flex}
-.lh-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;background:var(--lpv-panel);border:1px solid ${C.border};color:${C.text};padding:12px 20px;border-radius:12px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 16px 50px rgba(0,0,0,.5)}
+.lh-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:80;background:var(--lpv-panel);border:1px solid ${C.border};color:${C.text};padding:12px 20px;border-radius:var(--surface-radius);font-size:var(--text-body-md-size);font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:var(--elevation-overlay)}
 .lh-pbar{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:14px;padding:2px}
 .lh-actcard{margin-bottom:16px;padding:0}
 .lh-actrow{display:flex;align-items:center;gap:11px;border-top:1px solid ${C.border};padding:10px 16px;cursor:pointer}
 .lh-actrow:hover{background:var(--lpv-raised)}
 .lh-famgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-bottom:18px}
-.lh-famcard{display:flex;align-items:center;gap:10px;text-align:left;background:${C.panel};border:1px solid ${C.border};border-radius:13px;padding:11px 12px;cursor:pointer;font-family:inherit;transition:.15s}
+.lh-famcard{display:flex;align-items:center;gap:10px;text-align:left;background:${C.panel};border:1px solid ${C.border};border-radius:var(--surface-radius);padding:11px 12px;cursor:pointer;font:inherit;transition:.15s}
 .lh-famcard:hover{background:${C.panel2}}
-.lh-famcard.on{border-color:${C.action}77;background:${C.panel}}
+.lh-famcard.on{border-color:${al(C.action, 0.47)};background:${C.panel}}
 .lh-swrail{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:10px 0 12px;margin:0 -2px}
 .lh-swrail::-webkit-scrollbar{display:none}
-.lh-sw{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px;min-height:66px;background:none;border:none;padding:2px;cursor:pointer;font-family:inherit}
-.lh-swav{width:40px;height:40px;border-radius:99px;display:grid;place-items:center;font-weight:700;font-size:15px;border:2px solid transparent}
-.lh-swnm{font-size:12px;font-weight:500;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lh-famav{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-weight:700;font-size:15px;letter-spacing:-0.015em;flex-shrink:0}
-.lh-famnm{display:block;font-size:13.5px;font-weight:700;color:${C.text};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lh-famst{display:block;font-size:12px;font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lh-sw{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px;min-height:66px;background:none;border:none;padding:2px;cursor:pointer;font:inherit}
+.lh-swav{width:40px;height:40px;border-radius:var(--pill-radius);display:grid;place-items:center;font-weight:700;font-size:var(--text-body-md-size);border:2px solid transparent}
+.lh-swnm{font-size:var(--text-caption-md-size);font-weight:500;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lh-famav{width:36px;height:36px;border-radius:var(--surface-radius);display:grid;place-items:center;font-weight:700;font-size:var(--text-body-md-size);letter-spacing:-0.015em;flex-shrink:0}
+.lh-famnm{display:block;font-size:var(--text-body-sm-size);font-weight:700;color:${C.text};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lh-famst{display:block;font-size:var(--text-caption-md-size);font-weight:500;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #lh-print{display:none}
 @media(max-width:900px){.lh-grid3{grid-template-columns:minmax(0,1fr)}.lh-grid-2-1{grid-template-columns:minmax(0,1fr)}.lh-vgrid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:767px){
@@ -3141,14 +3121,14 @@ const CSS = () => `
 .lh-pbar>div>div{row-gap:2px}
 .lh-pbar .lh-btn-g{flex:1 1 45%;justify-content:center;min-height:44px}
 .lh-root input,.lh-root select,.lh-root textarea{min-width:0}
-.lh-h2{font-size:17px !important;letter-spacing:-0.015em}
-.lh-tab{font-size:13px;padding:9px 8px;gap:0}
-.lh-fab{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:40;width:56px;height:56px;border-radius:99px;display:grid;place-items:center;border:0;background:${C.action};color:#04221f;box-shadow:0 8px 24px rgba(0,0,0,.34);cursor:pointer}
+.lh-h2{font-size:var(--text-body-lg-size) !important;letter-spacing:-0.015em}
+.lh-tab{font-size:var(--text-body-sm-size);padding:9px 8px;gap:0}
+.lh-fab{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:40;width:56px;height:56px;border-radius:var(--pill-radius);display:grid;place-items:center;border:0;background:${C.action};color:var(--color-text-on-brand);box-shadow:var(--elevation-overlay);cursor:pointer}
 .lh-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0 4px}
-.lh-act{display:flex;align-items:center;gap:9px;min-height:52px;padding:10px 12px;border-radius:12px;border:1px solid ${C.border};background:${C.panel2};color:${C.text};font-size:13.5px;font-weight:500;font-family:inherit;cursor:pointer;text-align:left}
+.lh-act{display:flex;align-items:center;gap:9px;min-height:52px;padding:10px 12px;border-radius:var(--surface-radius);border:1px solid ${C.border};background:${C.panel2};color:${C.text};font-size:var(--text-body-sm-size);font-weight:500;font:inherit;cursor:pointer;text-align:left}
 .lh-act span{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.lh-act-on{background:${C.action};border-color:${C.action};color:#04221f}
-.lh-act-wide{grid-column:1 / -1;min-height:56px;font-size:15px}
+.lh-act-on{background:${C.action};border-color:${C.action};color:var(--color-text-on-brand)}
+.lh-act-wide{grid-column:1 / -1;min-height:56px;font-size:var(--text-body-md-size)}
 .lh-tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--lpv-bg);margin:0 -14px 14px;padding:6px 14px 0}
 .lh-tab>svg{display:none}
 .lh-pane .lh-card{padding:14px !important}
