@@ -92,7 +92,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#131019" }, /* token-source */ // meta tags cannot read CSS; this is color/surface/canvas (dark),
+      { name: "theme-color", content: "#121216" }, /* token-source */ // meta tags cannot read CSS; this is color/surface/canvas (dark),
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: "ReadiNes" },
       { name: "application-name", content: "ReadiNes" },
