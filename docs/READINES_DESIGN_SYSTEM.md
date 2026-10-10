@@ -1,6 +1,5 @@
 # ReadiNes Design System 1.0
 
-# ReadiNes Design System 1.0
 
 Single source of truth for every ReadiNes screen on web and in the app. Lineage: foundation, token architecture and governance rules inherited from AppViewX DS 3.0; colour, type scale, control sizes and the component set re-authored for a consumer phone app used by every age group.
 
