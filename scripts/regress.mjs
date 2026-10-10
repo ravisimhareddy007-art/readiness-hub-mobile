@@ -52,6 +52,7 @@ ban("hard-coded dollar formatting (use formatMoney)", /`\$\$\{/, all);
 ban("font size below 12px", /fontSize: (10|11)(\.[0-9])?[,} ]/, all);
 ban("gold used on warning icon (use SEM.warning)", /AlertTriangle[^/]*color=\{T\.gold\}/, all);
 ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
+ban("Inter font (platform font only)", /@fontsource\/inter|['"]Inter['"]|font-family:\s*Inter\b|Inter,Arial/, walk("src"));
 
 // Dead code and orphaned data: a store function nothing calls, or rows left behind by a delete.
 {

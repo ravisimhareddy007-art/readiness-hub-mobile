@@ -46,7 +46,7 @@ export const tokens = {
   radius: { box: 12, round: 999 },
   tap: 44,
   gutter: 18,
-  font: "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+  font: "var(--font-family-ui)",
 };
 
 export type Theme = "dark" | "light";
