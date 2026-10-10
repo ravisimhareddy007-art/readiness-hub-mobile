@@ -304,6 +304,11 @@
   --color-overlay-scrim: rgba(0, 0, 0, 0.7);
   --color-overlay-highlight: rgba(255, 255, 255, 0.06);
   --color-logo-default: #F5F3F9;
+  --color-chart-line: var(--color-action-primary-default);
+  --color-chart-line-alt: var(--color-status-info-icon);
+  --color-chart-grid: var(--color-border-subtle);
+  --color-chart-axis: var(--color-text-tertiary);
+  --color-chart-fill: var(--color-selection-surface);
 }
 
 html, body { background: var(--color-surface-canvas); color: var(--color-text-primary); font-family: var(--font-family-ui); -webkit-font-smoothing: antialiased; }
