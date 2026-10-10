@@ -44,6 +44,11 @@
   --list-row-default: 56px;
   --list-row-comfortable: 64px;
   --list-row-tall: 72px;
+  --list-row-icon: 36px;
+  --tile-icon: 36px;
+  --tile-min-height: 112px;
+  --fab-size: 56px;
+  --empty-icon-size: 56px;
   --tabbar-height: 56px;
   --appbar-height: 56px;
   --sheet-handle-width: 36px;
