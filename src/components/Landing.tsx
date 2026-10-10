@@ -122,7 +122,7 @@ function Bar({ label, score, delay, color }: { label: string; score: number; del
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 7 }}>
         <span style={{ fontSize: 13.5, fontWeight: 600, color: C.ink }}>{label}</span>
-        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12.5, color: C.muted }}>{score}%</span>
+        <span style={{ fontFamily: "var(--font-family-ui)", fontSize: 12.5, color: C.muted }}>{score}%</span>
       </div>
       <div style={{ height: 7, borderRadius: 6, background: C.paperDeep, overflow: "hidden" }}>
         <motion.div
@@ -142,7 +142,7 @@ function ReadinessMock() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
         <span
           style={{
-            fontFamily: "'JetBrains Mono',monospace",
+            fontFamily: "var(--font-family-ui)",
             fontSize: 10.5,
             letterSpacing: 2,
             color: C.muted,
@@ -164,7 +164,7 @@ function ReadinessMock() {
             fontSize: 10.5,
             fontWeight: 800,
             letterSpacing: 1.5,
-            fontFamily: "'JetBrains Mono',monospace",
+            fontFamily: "var(--font-family-ui)",
           }}
         >
           <Stamp size={12} /> READY
@@ -199,7 +199,7 @@ function PackDetail() {
         </span>
         <div>
           <div style={{ fontSize: 15, fontWeight: 700, color: C.ink }}>US visa pack</div>
-          <div style={{ fontSize: 12, color: C.muted, fontFamily: "'JetBrains Mono',monospace" }}>4 of 5 ready</div>
+          <div style={{ fontSize: 12, color: C.muted, fontFamily: "var(--font-family-ui)" }}>4 of 5 ready</div>
         </div>
       </div>
       <div style={{ display: "grid", gap: 6 }}>
@@ -260,7 +260,7 @@ function PackDetail() {
               +
             </span>
             <span style={{ fontSize: 13, color: C.ink }}>{x}</span>
-            <span style={{ marginLeft: "auto", fontSize: 11, color: C.clay, fontFamily: "'JetBrains Mono',monospace" }}>
+            <span style={{ marginLeft: "auto", fontSize: 11, color: C.clay, fontFamily: "var(--font-family-ui)" }}>
               to add
             </span>
           </div>
@@ -282,7 +282,7 @@ function DocGraph() {
     <div className="lp-mock" style={{ padding: 18 }}>
       <div
         style={{
-          fontFamily: "'JetBrains Mono',monospace",
+          fontFamily: "var(--font-family-ui)",
           fontSize: 10.5,
           letterSpacing: 2,
           color: C.muted,
@@ -300,7 +300,7 @@ function DocGraph() {
           >
             <div style={{ width: 8, height: 8, borderRadius: 9, background: x.c, marginBottom: 9 }} />
             <div style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{x.n}</div>
-            <div style={{ fontSize: 11.5, color: C.muted, fontFamily: "'JetBrains Mono',monospace" }}>{x.d} docs</div>
+            <div style={{ fontSize: 11.5, color: C.muted, fontFamily: "var(--font-family-ui)" }}>{x.d} docs</div>
           </div>
         ))}
       </div>
@@ -318,7 +318,7 @@ function WealthMock() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 14 }}>
         <div>
           <div style={{ fontSize: 12, color: C.muted }}>Documented value</div>
-          <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26, fontWeight: 700, color: C.ink }}>
+          <div style={{ fontFamily: "var(--font-family-ui)", fontSize: 26, fontWeight: 700, color: C.ink }}>
             $32.7M
           </div>
         </div>
@@ -331,7 +331,7 @@ function WealthMock() {
             border: `1px solid ${C.clay}33`,
             borderRadius: 20,
             padding: "4px 10px",
-            fontFamily: "'JetBrains Mono',monospace",
+            fontFamily: "var(--font-family-ui)",
           }}
         >
           1 nominee gap
@@ -364,13 +364,13 @@ function WealthMock() {
               <Wallet size={14} color={C.gold} />
             </span>
             <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: C.ink }}>{r.n}</span>
-            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: C.body }}>{r.v}</span>
+            <span style={{ fontFamily: "var(--font-family-ui)", fontSize: 13, color: C.body }}>{r.v}</span>
             <span
               style={{
                 fontSize: 10.5,
                 fontWeight: 700,
                 color: r.ok ? C.emerald : C.clay,
-                fontFamily: "'JetBrains Mono',monospace",
+                fontFamily: "var(--font-family-ui)",
               }}
             >
               {r.ok ? "nominee" : "add"}
@@ -397,7 +397,7 @@ function HealthMock() {
         <span style={{ fontSize: 13, color: C.muted }}>HbA1c · recent trend</span>
         <span
           style={{
-            fontFamily: "'JetBrains Mono',monospace",
+            fontFamily: "var(--font-family-ui)",
             fontSize: 10.5,
             fontWeight: 600,
             color: C.red,
@@ -410,7 +410,7 @@ function HealthMock() {
           above range
         </span>
       </div>
-      <div style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 26, fontWeight: 700, color: C.ink }}>
+      <div style={{ fontFamily: "var(--font-family-ui)", fontSize: 26, fontWeight: 700, color: C.ink }}>
         7.2<span style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}> %</span>
       </div>
       <svg viewBox="0 0 300 60" style={{ width: "100%", height: 60, marginTop: 6 }}>
@@ -429,7 +429,7 @@ function HealthMock() {
           strokeLinejoin="round"
         />
         <circle cx={300} cy={26} r={3.5} fill={C.red} />
-        <text x={298} y={34} textAnchor="end" fontSize="8" fill={C.emerald} fontFamily="'JetBrains Mono',monospace">
+        <text x={298} y={34} textAnchor="end" fontSize="8" fill={C.emerald} fontFamily="var(--font-family-ui)">
           normal ≤ 5.7
         </text>
       </svg>
@@ -756,7 +756,7 @@ function MomentCard({ m, i }: { m: (typeof MOMENTS)[number]; i: number }) {
             <span style={{ color: C.muted, fontWeight: 700 }}>{m.state === "configured" ? "configured" : "ready"}</span>
           )}
         </span>
-        <div style={{ fontFamily: "'Space Grotesk'", fontWeight: 700, fontSize: 16.5, color: C.ink, marginTop: 9 }}>{m.title}</div>
+        <div style={{ fontFamily: "var(--font-family-ui)", fontWeight: 700, fontSize: 16.5, color: C.ink, marginTop: 9 }}>{m.title}</div>
         <p style={{ margin: "6px 0 0", fontSize: 13.5, lineHeight: 1.6, color: C.body }}>{m.body}</p>
       </div>
     </motion.div>
@@ -904,7 +904,7 @@ function AuthModal({
       >
         <div style={{ flex: 1, padding: 26, minWidth: 0 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <b style={{ fontFamily: "'Space Grotesk'", fontSize: 20, color: C.ink }}>
+            <b style={{ fontFamily: "var(--font-family-ui)", fontSize: 20, color: C.ink }}>
               {screen === "mfa"
                 ? "Secure your account"
                 : screen === "otp"
@@ -1096,7 +1096,7 @@ function AuthModal({
                 </button>
               </div>
               <input
-                style={{ ...inp, textAlign: "center", letterSpacing: 8, fontFamily: "ui-monospace, monospace", fontSize: 18 }}
+                style={{ ...inp, textAlign: "center", letterSpacing: 8, fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", fontSize: 18 }}
                 inputMode="numeric"
                 placeholder="000000"
                 value={otp}
@@ -1138,7 +1138,7 @@ function AuthModal({
               flexShrink: 0,
             }}
           >
-            <b style={{ color: "#F3EEE2", fontSize: 17, fontFamily: "'Space Grotesk'", lineHeight: 1.35 }}>
+            <b style={{ color: "#F3EEE2", fontSize: 17, fontFamily: "var(--font-family-ui)", lineHeight: 1.35 }}>
               Security you can verify. Privacy you don't have to trust us for.
             </b>
             <div style={{ display: "grid", gap: 10 }}>
@@ -1400,11 +1400,11 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
                   >
                     <s.icon size={20} color={C.gold} />
                   </span>
-                  <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, color: C.muted }}>{s.n}</span>
+                  <span style={{ fontFamily: "var(--font-family-ui)", fontSize: 13, color: C.muted }}>{s.n}</span>
                 </div>
                 <h4
                   style={{
-                    fontFamily: "'Space Grotesk'",
+                    fontFamily: "var(--font-family-ui)",
                     fontSize: 18,
                     fontWeight: 700,
                     color: C.ink,
@@ -1470,7 +1470,7 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
             </div>
             <div style={{ padding: "22px 26px 26px" }}>
               <div style={{ textAlign: "center", marginBottom: 6, paddingTop: 47 }}>
-                <span style={{ fontFamily: "'Space Grotesk'", fontSize: 44, fontWeight: 700, color: C.ink }}>₹0</span>
+                <span style={{ fontFamily: "var(--font-family-ui)", fontSize: 44, fontWeight: 700, color: C.ink }}>₹0</span>
                 <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>Everything you need to try the idea</div>
               </div>
               <div style={{ display: "grid", gap: 8, margin: "18px 0 20px" }}>
@@ -1519,7 +1519,7 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
                 <div style={{ textAlign: "center", marginBottom: 6 }}>
                   {founder ? (
                     <>
-                      <span style={{ fontFamily: "'Space Grotesk'", fontSize: 44, fontWeight: 700, color: C.ink }}>₹1,499</span>
+                      <span style={{ fontFamily: "var(--font-family-ui)", fontSize: 44, fontWeight: 700, color: C.ink }}>₹1,499</span>
                       <span style={{ fontSize: 15, color: C.muted }}> /year</span>
                       <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>
                         Early member price · standard <s style={{ opacity: 0.7 }}>₹1,999</s>
@@ -1527,7 +1527,7 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
                     </>
                   ) : (
                     <>
-                      <span style={{ fontFamily: "'Space Grotesk'", fontSize: 44, fontWeight: 700, color: C.ink }}>₹1,999</span>
+                      <span style={{ fontFamily: "var(--font-family-ui)", fontSize: 44, fontWeight: 700, color: C.ink }}>₹1,999</span>
                       <span style={{ fontSize: 15, color: C.muted }}> /year</span>
                       <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>About ₹167 a month, billed yearly</div>
                     </>
@@ -1541,7 +1541,7 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
                 </div>
               ) : (
                 <div style={{ textAlign: "center", marginBottom: 6 }}>
-                  <span style={{ fontFamily: "'Space Grotesk'", fontSize: 44, fontWeight: 700, color: C.ink }}>₹249</span>
+                  <span style={{ fontFamily: "var(--font-family-ui)", fontSize: 44, fontWeight: 700, color: C.ink }}>₹249</span>
                   <span style={{ fontSize: 15, color: C.muted }}> /month</span>
                   <div style={{ fontSize: 12.5, color: C.muted, marginTop: 4 }}>Cancel anytime · annual saves ₹989 a year</div>
                 </div>
@@ -1642,7 +1642,7 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
           </div>
           <span style={{ fontSize: 13, color: C.muted }}>A private, ready archive for your whole family.</span>
           <span
-            style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11.5, letterSpacing: 1.5, color: C.muted }}
+            style={{ fontFamily: "var(--font-family-ui)", fontSize: 11.5, letterSpacing: 1.5, color: C.muted }}
           >
             PRIVATE BY DESIGN · ENCRYPTED · NO ADS, EVER
           </span>
@@ -1665,15 +1665,14 @@ export default function Landing({ onEnter }: { onEnter: () => void }) {
 const CSS = `
 @media(max-width:819px){.rn-authside{display:none!important}}
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 .lp-root{background:${C.paper};color:${C.ink};font-family:var(--font-family-ui);overflow-x:hidden}
 .lp-root *{box-sizing:border-box}
 .lp-root a{text-decoration:none;color:inherit}
 .lp-wrap{max-width:1120px;margin:0 auto;padding:0 24px}
-.lp-eyebrow{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:${C.gold}}
-.lp-h1{font-family:'Space Grotesk';font-weight:700;font-size:56px;line-height:1.04;letter-spacing:-1.6px;color:${C.ink};margin:20px 0 0}
-.lp-h2{font-family:'Space Grotesk';font-weight:700;font-size:29px;line-height:1.24;letter-spacing:-.5px;color:${C.ink};margin:10px 0 0}
-.lp-h3{font-family:'Space Grotesk';font-weight:700;font-size:27px;line-height:1.15;letter-spacing:-.5px;color:${C.ink};margin:8px 0 0}
+.lp-eyebrow{font-family:var(--font-family-ui);font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:${C.gold}}
+.lp-h1{font-family:var(--font-family-ui);font-weight:700;font-size:56px;line-height:1.04;letter-spacing:-1.6px;color:${C.ink};margin:20px 0 0}
+.lp-h2{font-family:var(--font-family-ui);font-weight:700;font-size:29px;line-height:1.24;letter-spacing:-.5px;color:${C.ink};margin:10px 0 0}
+.lp-h3{font-family:var(--font-family-ui);font-weight:700;font-size:27px;line-height:1.15;letter-spacing:-.5px;color:${C.ink};margin:8px 0 0}
 .lp-body{color:${C.body};font-size:15.5px;line-height:1.66}
 .lp-tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:${C.body};background:${C.panel2};border:1px solid ${C.border};border-radius:8px;padding:5px 9px}
 .lp-nav{position:sticky;top:0;z-index:50;background:${C.paper}d9;backdrop-filter:blur(12px);border-bottom:1px solid ${C.border}}
@@ -1685,12 +1684,12 @@ const CSS = `
 .lp-hero{position:relative;padding:60px 0 40px;overflow:hidden}
 .lp-herobg{position:absolute;inset:0;pointer-events:none}
 .lp-heroinner{position:relative;max-width:1120px;margin:0 auto;padding:0 24px;display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center}
-.lp-badge{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:${C.gold};background:${C.goldSoft};border:1px solid ${C.gold}44;border-radius:20px;padding:6px 13px}
+.lp-badge{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-family-ui);font-size:11.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:${C.gold};background:${C.goldSoft};border:1px solid ${C.gold}44;border-radius:20px;padding:6px 13px}
 .lp-sub{color:${C.body};font-size:17.5px;line-height:1.6;margin-top:22px;max-width:540px}
 .lp-herocta{display:flex;gap:18px;align-items:center;margin-top:30px;flex-wrap:wrap}
 .lp-cta{display:inline-flex;align-items:center;gap:9px;background:${C.goldFill};color:#3A2E12;font-weight:700;font-size:15.5px;border:0;border-radius:12px;padding:14px 24px;cursor:pointer;font-family:inherit;box-shadow:0 14px 36px ${C.goldFill}66}
 .lp-cta:hover{filter:brightness(1.04);transform:translateY(-1px)}
-.lp-trust{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.4px;color:${C.muted}}
+.lp-trust{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-family-ui);font-size:12px;letter-spacing:.4px;color:${C.muted}}
 .lp-heromock{position:relative}
 .lp-mock{background:${C.panel};border:1px solid ${C.border};border-radius:18px;box-shadow:0 30px 70px rgba(80,60,30,.16)}
 .lp-heromock:before{content:"";position:absolute;inset:-30px;background:radial-gradient(circle at 60% 45%,${C.goldFill}44,transparent 66%);filter:blur(30px);z-index:-1}
@@ -1703,7 +1702,7 @@ const CSS = `
 .lp-momentimg>div{transition:transform .35s ease}
 .lp-moment:hover .lp-momentimg>div{transform:scale(1.028)}
 @media(max-width:640px){.lp-momentimg{height:150px}}
-.lp-momentchip{display:inline-flex;align-items:center;gap:7px;background:#FBF7EC;border:1px solid #E4DAC4;border-radius:99px;padding:4px 11px;font-size:11px;font-weight:800;color:#221E17;font-family:'JetBrains Mono',monospace}
+.lp-momentchip{display:inline-flex;align-items:center;gap:7px;background:#FBF7EC;border:1px solid #E4DAC4;border-radius:99px;padding:4px 11px;font-size:11px;font-weight:800;color:#221E17;font-family:var(--font-family-ui)}
 .lp-band{padding:84px 0}
 .lp-band:nth-of-type(even){background:${C.paperDeep}}
 .lp-features{padding:92px 24px;display:grid;gap:104px}

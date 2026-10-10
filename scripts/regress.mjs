@@ -52,7 +52,20 @@ ban("hard-coded dollar formatting (use formatMoney)", /`\$\$\{/, all);
 ban("font size below 12px", /fontSize: (10|11)(\.[0-9])?[,} ]/, all);
 ban("gold used on warning icon (use SEM.warning)", /AlertTriangle[^/]*color=\{T\.gold\}/, all);
 ban("Tax documents offered as Wealth holdings", /"Property", "Tax"\]/, all);
-ban("Inter font (platform font only)", /@fontsource\/inter|['"]Inter['"]|font-family:\s*Inter\b|Inter,Arial/, walk("src"));
+ban("Inter font (platform font only)", /['"]Inter['"]|font-family:\s*Inter\b|Inter,Arial/, walk("src"));
+const externalFontPattern = new RegExp([
+  "fonts\\.googleapis" + "\\.com",
+  "fonts\\.gstatic" + "\\.com",
+  "@" + "fontsource",
+  "Space" + " Grotesk",
+  "JetBrains" + " Mono",
+].join("|"));
+const fontFiles = (dir) => readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+  if (["node_modules", ".git", ".output", "dist", ".tanstack"].includes(entry.name)) return [];
+  const path = join(dir, entry.name);
+  return entry.isDirectory() ? fontFiles(path) : /\.(tsx?|jsx?|mjs|css|html|json|md|lock)$/.test(entry.name) ? [path] : [];
+});
+ban("external fonts (platform font only)", externalFontPattern, fontFiles("."));
 
 // Dead code and orphaned data: a store function nothing calls, or rows left behind by a delete.
 {
