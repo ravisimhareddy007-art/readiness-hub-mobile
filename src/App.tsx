@@ -282,7 +282,7 @@ const origLine = (r: { origAmount?: number; origCurrency?: string; fxRate?: numb
 /* The only place a readiness score becomes a colour. Green means done, not nearly
    done: 94% ready for a visa appointment still means being turned away. Amber
    means the gap is small and closable. Red means materially unprepared. */
-export const toneFor = (n: number) => (n >= 100 ? SEM.success : n >= 60 ? SEM.warning : SEM.attention);
+export const toneFor = (n: number) => (n >= 100 ? SEM.success : n >= 50 ? SEM.warning : SEM.attention);
 
 const CAT_META: Record<Category, { icon: any; color: string }> = {
   Identity: { icon: Fingerprint, color: A.blue },
@@ -290,7 +290,7 @@ const CAT_META: Record<Category, { icon: any; color: string }> = {
   Finance: { icon: Landmark, color: A.gold },
   Insurance: { icon: Shield, color: A.teal },
   Property: { icon: HomeIcon, color: A.pink },
-  Medical: { icon: HeartPulse, color: A.green },
+  Medical: { icon: HeartPulse, color: A.pink },
 };
 
 /* ── life-event packages ── */
@@ -306,7 +306,7 @@ const satisfyingDoc = (req: string, docs: Doc[], country = "IN"): Doc | undefine
 const PACK_CAT_META: Record<string, { color: string; icon: any }> = {
   "Travel & Immigration": { color: A.blue, icon: Plane },
   "Identity & Civic": { color: A.teal, icon: IdCard },
-  "Money & Tax": { color: A.green, icon: Landmark },
+  "Money & Tax": { color: A.teal, icon: Landmark },
   "Jobs & Employment": { color: A.purple, icon: Briefcase },
   Education: { color: A.gold, icon: GraduationCap },
   Health: { color: A.pink, icon: HeartPulse },
@@ -3774,6 +3774,7 @@ const btnGold: CSSProperties = {
   border: "none",
   borderRadius: "var(--surface-radius)",
   padding: "12px 16px",
+  minHeight: "var(--control-size-default)",
   fontSize: "var(--text-body-md-size)",
   fontWeight: 700,
   cursor: "pointer",
@@ -3796,8 +3797,8 @@ const pill = (color: string): CSSProperties => ({
   fontSize: "var(--text-caption-md-size)",
   fontWeight: 700,
   color,
-  background: color + "22",
-  border: `1px solid ${color}44`,
+  background: al(color, 0.13),
+  border: `1px solid ${al(color, 0.27)}`,
   padding: "4px 12px",
   borderRadius: "var(--surface-radius)",
 });
@@ -4026,7 +4027,7 @@ function Home({ store, go, toast }: any) {
     }
   }
   const groups: { key: string; label: string; icon: any; color: string; to: string; acts: Act[] }[] = [
-    { key: "health", label: "Health", icon: HeartPulse, color: A.green, to: "health", acts: healthActs },
+    { key: "health", label: "Health", icon: HeartPulse, color: A.pink, to: "health", acts: healthActs },
     { key: "documents", label: "Documents", icon: FolderOpen, color: A.blue, to: "documents", acts: docActs },
     { key: "wealth", label: "Wealth", icon: Wallet, color: T.gold, to: "wealth", acts: wealthActs },
   ].filter((g) => g.acts.length > 0);
@@ -4034,7 +4035,7 @@ function Home({ store, go, toast }: any) {
   const hello = useGreeting();
   const stats = [
     { label: "Documents", value: store.docs.length, icon: FolderOpen, c: A.blue, to: "documents" },
-    { label: "Overall readiness", value: `${overall}%`, icon: ShieldCheck, c: A.green, to: "packages" },
+    { label: "Overall readiness", value: `${overall}%`, icon: ShieldCheck, c: toneFor(overall), to: "packages" },
     { label: "Expiring < 60d", value: expiring.length, icon: Clock, c: A.gold, to: "documents" },
     { label: "Needs attention", value: totalActs, icon: Bell, c: A.pink, to: "health" },
   ];
@@ -4153,7 +4154,7 @@ function Home({ store, go, toast }: any) {
                     width: 34,
                     height: 34,
                     borderRadius: "var(--surface-radius)",
-                    background: n.color + "1F",
+                    background: al(n.color, 0.12),
                     display: "grid",
                     placeItems: "center",
                     flexShrink: 0,
@@ -4177,7 +4178,7 @@ function Home({ store, go, toast }: any) {
                     ...btnGhost,
                     padding: "8px 12px",
                     fontSize: "var(--text-caption-md-size)",
-                    minHeight: 40,
+                    minHeight: "var(--control-size-default)",
                     whiteSpace: "nowrap",
                     flexShrink: 0,
                   }}
@@ -4419,7 +4420,7 @@ function Home({ store, go, toast }: any) {
                 width: 34,
                 height: 34,
                 borderRadius: "var(--surface-radius)",
-                background: s.c + "22",
+                background: al(s.c, 0.13),
               }}
             >
               <s.icon size={17} color={s.c} />
@@ -4606,7 +4607,7 @@ function Home({ store, go, toast }: any) {
                       width: 22,
                       height: 22,
                       borderRadius: "var(--surface-radius)",
-                      background: ins.tone + "1f",
+                      background: al(ins.tone, 0.12),
                     }}
                   >
                     <Ic size={12} color={ins.tone} />
@@ -4798,7 +4799,7 @@ function Packages({ store, toast }: any) {
                 <Ring score={score} size={40} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                    <span style={{ width: 22, height: 22, borderRadius: "var(--surface-radius)", display: "grid", placeItems: "center", flexShrink: 0, background: e.accent + "1F" }}>
+                    <span style={{ width: 22, height: 22, borderRadius: "var(--surface-radius)", display: "grid", placeItems: "center", flexShrink: 0, background: al(e.accent, 0.12) }}>
                       <e.icon size={12} color={e.accent} />
                     </span>
                     <b style={{ color: T.white, fontSize: "var(--text-body-md-size)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</b>
@@ -5590,7 +5591,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                 width: 44,
                 height: 44,
                 borderRadius: "var(--surface-radius)",
-                background: ev.accent + "22",
+                background: al(ev.accent, 0.13),
               }}
             >
               <ev.icon size={21} color={ev.accent} />
@@ -6595,7 +6596,7 @@ function Documents({ store, toast, go }: any) {
                     />
                   )}
                   <span
-                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: "var(--surface-radius)", background: col + "22", flexShrink: 0 }}
+                    style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: "var(--surface-radius)", background: al(col, 0.13), flexShrink: 0 }}
                   >
                     <Ic size={15} color={col} />
                   </span>
@@ -7096,7 +7097,7 @@ function Documents({ store, toast, go }: any) {
                           width: 30,
                           height: 30,
                           borderRadius: "var(--surface-radius)",
-                          background: col + "22",
+                          background: al(col, 0.13),
                           flexShrink: 0,
                         }}
                       >
@@ -7262,7 +7263,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
               width: 40,
               height: 40,
               borderRadius: "var(--surface-radius)",
-              background: col + "22",
+              background: al(col, 0.13),
               flexShrink: 0,
             }}
           >
@@ -7462,7 +7463,7 @@ function AddMember({ onClose, save }: any) {
     blood: "O+",
     dob: "1960-01-01",
   });
-  const colors = [A.blue, A.purple, A.green, A.pink, A.gold, A.teal];
+  const colors = ["var(--color-person-1)", "var(--color-person-2)", "var(--color-person-3)", "var(--color-person-4)", "var(--color-person-5)", "var(--color-chart-line-alt)"];
   const inp: CSSProperties = {
     width: "100%",
     background: T.raised,
@@ -7843,7 +7844,7 @@ function Wealth({ store, go, toast }: any) {
             width: 36,
             height: 36,
             borderRadius: "var(--surface-radius)",
-            background: accent + "22",
+            background: al(accent, 0.13),
           }}
         >
           <Ic size={16} color={accent} />
@@ -8637,7 +8638,7 @@ function Trust({ store, toast, go }: any) {
             <button
               onClick={() => go("home")}
               title="Back" aria-label="Back"
-              style={{ ...btnGhost, padding: 12, borderRadius: "var(--pill-radius)", minHeight: 40 }}
+              style={{ ...btnGhost, padding: 12, borderRadius: "var(--pill-radius)", minHeight: "var(--control-size-default)" }}
             >
               <ChevronLeft size={17} />
             </button>
@@ -8687,7 +8688,7 @@ function Trust({ store, toast, go }: any) {
                     width: 34,
                     height: 34,
                     borderRadius: "var(--surface-radius)",
-                    background: m.color + "26",
+                    background: al(m.color, 0.15),
                     color: inkOf(m.color),
                     fontWeight: 700,
                     flexShrink: 0,
@@ -8712,7 +8713,7 @@ function Trust({ store, toast, go }: any) {
                       store.updateMember(m.id, { access: "Full member" as Access });
                       toast(`${m.name.split(" ")[0]} is now primary`);
                     }}
-                    style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: 40, whiteSpace: "nowrap" }}
+                    style={{ ...btnGhost, padding: "8px 12px", fontSize: "var(--text-caption-md-size)", minHeight: "var(--control-size-default)", whiteSpace: "nowrap" }}
                   >
                     Make primary
                   </button>
@@ -8898,7 +8899,7 @@ function SearchResults({ store, query, go }: any) {
           width: 32,
           height: 32,
           borderRadius: "var(--surface-radius)",
-          background: color + "22",
+          background: al(color, 0.13),
         }}
       >
         <Ic size={15} color={color} />
@@ -9155,7 +9156,7 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
                   width: 30,
                   height: 30,
                   borderRadius: "var(--surface-radius)",
-                  background: m.color + "26",
+                  background: al(m.color, 0.15),
                   color: inkOf(m.color),
                   fontWeight: 700,
                   fontSize: "var(--text-body-md-size)",
@@ -10236,7 +10237,7 @@ function DesignSystem({ store }: any) {
               ["On track", SEM.info],
             ] as [string, string][]
           ).map(([l, c]) => (
-            <span key={l} style={{ padding: "8px 12px", borderRadius: "var(--pill-radius)", fontSize: "var(--text-caption-md-size)", fontWeight: 700, color: c, background: c + "1C" }}>
+            <span key={l} style={{ padding: "8px 12px", borderRadius: "var(--pill-radius)", fontSize: "var(--text-caption-md-size)", fontWeight: 700, color: c, background: al(c, 0.11) }}>
               {l}
             </span>
           ))}
@@ -11921,7 +11922,7 @@ export default function App() {
                       key={q}
                       onClick={() => setQuery(q)}
                       className="lp-chip"
-                      style={{ background: T.raised, color: T.text, border: `1px solid ${T.border}`, minHeight: 36, padding: "0 12px", fontWeight: 500, cursor: "pointer" }}
+                      style={{ background: T.raised, color: T.text, border: `1px solid ${T.border}`, minHeight: "var(--control-size-default)", padding: "0 12px", fontWeight: 500, cursor: "pointer" }}
                     >
                       {q}
                     </button>

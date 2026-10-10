@@ -216,6 +216,11 @@
   --color-logo-default: #1B1626;
   --color-shadow-strong: rgba(23, 20, 31, 0.18);
   --color-shadow-soft: rgba(23, 20, 31, 0.08);
+  --color-person-1: #2F6FDB;
+  --color-person-2: #5E3A99;
+  --color-person-3: #0F7F7A;
+  --color-person-4: #B8386F;
+  --color-person-5: #9A6B00;
   --color-chart-line: var(--color-action-primary-default);
   --color-chart-line-alt: var(--color-status-info-icon);
   --color-chart-grid: var(--color-border-subtle);
@@ -308,6 +313,11 @@
   --color-logo-default: #F5F3F9;
   --color-shadow-strong: rgba(0, 0, 0, 0.55);
   --color-shadow-soft: rgba(0, 0, 0, 0.35);
+  --color-person-1: #7FA8EC;
+  --color-person-2: #B79BE6;
+  --color-person-3: #5FC4BE;
+  --color-person-4: #F08CB4;
+  --color-person-5: #E0B45A;
   --color-chart-line: var(--color-action-primary-default);
   --color-chart-line-alt: var(--color-status-info-icon);
   --color-chart-grid: var(--color-border-subtle);

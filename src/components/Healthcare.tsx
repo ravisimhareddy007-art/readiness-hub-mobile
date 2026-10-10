@@ -551,7 +551,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                 >
                   <span
                     className="lh-famav"
-                    style={{ background: mm.color + "26", color: inkOf(mm.color), border: `1.5px solid ${mm.color}55` }}
+                    style={{ background: al(mm.color, 0.15), color: inkOf(mm.color), border: `1.5px solid ${al(mm.color, 0.33)}` }}
                   >
                     {mm.name[0]}
                   </span>
@@ -728,7 +728,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
             >
               <span
                 className="lh-famav"
-                style={{ background: mm.color + "26", color: inkOf(mm.color), border: `1.5px solid ${mm.color}55` }}
+                style={{ background: al(mm.color, 0.15), color: inkOf(mm.color), border: `1.5px solid ${al(mm.color, 0.33)}` }}
               >
                 {mm.name[0]}
               </span>
@@ -746,7 +746,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
 
       {/* selected member — slim identity bar; actions live with their context */}
       <div className="lh-pbar">
-        <span className="lh-av" style={{ background: m.color + "26", color: inkOf(m.color), borderColor: m.color + "55" }}>
+        <span className="lh-av" style={{ background: al(m.color, 0.15), color: inkOf(m.color), borderColor: al(m.color, 0.33) }}>
           {m.name[0]}
         </span>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -1127,7 +1127,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                       {showMon && <div className="lh-tlmon">{mon(e.date)}</div>}
                       <div className="lh-tlrow">
                         <span className="lh-tldot" style={{ background: K.c, boxShadow: `0 0 7px ${K.c}` }} />
-                        <span className="lh-ic" style={{ background: K.c + "22" }}>
+                        <span className="lh-ic" style={{ background: al(K.c, 0.13) }}>
                           <Ic size={15} color={K.c} />
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -1341,7 +1341,7 @@ export default function Healthcare({ toast: extToast }: { toast?: (m: string) =>
                           boxShadow: `0 0 7px ${K.c}`,
                         }}
                       />
-                      <span className="lh-ic" style={{ background: K.c + "22" }}>
+                      <span className="lh-ic" style={{ background: al(K.c, 0.13) }}>
                         <Ic size={15} color={K.c} />
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -1749,7 +1749,7 @@ function Spark({ arr, c }: { arr: LabLog[]; c: string }) {
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
-        style={{ filter: `drop-shadow(0 0 3px ${c}88)` }}
+        style={{ filter: `drop-shadow(0 0 3px ${al(c, 0.53)})` }}
       />
     </svg>
   );
@@ -1830,8 +1830,8 @@ const StatusPill = ({ s }: { s: Status }) => (
       fontSize: "var(--text-caption-md-size)",
       fontWeight: 500,
       color: SM[s].c,
-      background: SM[s].c + "20",
-      border: `1px solid ${SM[s].c}33`,
+      background: al(SM[s].c, 0.13),
+      border: `1px solid ${al(SM[s].c, 0.2)}`,
       padding: "4px 12px",
       borderRadius: "var(--surface-radius)",
     }}
@@ -2926,7 +2926,7 @@ function VisitPrep({ appts, member, care, meds, vitals, records, docs, onView, t
                     }
                     style={{ accentColor: C.action, cursor: "pointer", flexShrink: 0 }}
                   />
-                  <span className="lh-ic" style={{ background: c + "22" }}>
+                  <span className="lh-ic" style={{ background: al(c, 0.13) }}>
                     <Ic size={15} color={c} />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>

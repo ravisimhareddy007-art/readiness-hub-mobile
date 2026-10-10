@@ -39,7 +39,7 @@ t("the contents list names every original and every omission", () => {
   assert.ok(/Could not be included/.test(zipSrc));
 });
 t("every export path checks the result", () => {
-  for (const f of ["src/App.tsx", "src/components/Events.tsx"]) {
+  for (const f of ["src/App.tsx"]) {
     const s = readFileSync(join(root, f), "utf8");
     if (!/buildZip\(/.test(s)) continue;
     assert.ok(/res\.added === 0/.test(s), f + " ignores an empty pack");

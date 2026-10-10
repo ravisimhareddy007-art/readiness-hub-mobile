@@ -31,7 +31,7 @@ export function MNav({ title, left, right }: { title?: ReactNode; left?: ReactNo
           style={{
             flex: 1,
             minWidth: 0,
-            fontSize: 20,
+            fontSize: "var(--text-heading-md-size)",
             fontWeight: 700,
             color: t.white,
             letterSpacing: -0.3,
@@ -55,7 +55,7 @@ export function MNav({ title, left, right }: { title?: ReactNode; left?: ReactNo
         style={{
           width: 38,
           height: 38,
-          borderRadius: 999,
+          borderRadius: "var(--pill-radius)",
           display: "grid",
           placeItems: "center",
           background: t.panel,
