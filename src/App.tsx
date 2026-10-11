@@ -4052,25 +4052,17 @@ function Home({ store, go, toast }: any) {
      date will fix, like a holding with no access note. Two lists of the same thing read as random. */
   const [allDue, setAllDue] = useState(false);
   const welcomeCard =
-    store.docs.length === 0 ? (
-      <Card
-        style={{
-          padding: 20,
-          marginBottom: 16,
-          border: `1px solid ${al(T.gold, 0.27)}`,
-          background: `linear-gradient(160deg, ${al(T.gold, 0.07)}, ${T.panel})`,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-          <Sparkles size={17} color={T.gold} />
-          <b style={{ color: T.white, fontSize: "var(--text-body-lg-size)" }}>Welcome to ReadiNes</b>
-        </div>
-        <p style={{ fontSize: "var(--text-body-md-size)", color: T.muted, lineHeight: 1.6, margin: "0 0 16px", maxWidth: 560 }}>
-          Add one document and the rest follows: packs start matching what you hold, and expiry dates start
-          watching themselves.
+    store.docs.length === 0 ? (() => {
+      const you = store.members.find((m: Member) => m.id === "you");
+      const first = (you?.name || "").trim().split(" ")[0];
+      return (
+      <Card style={{ padding: 20, marginBottom: 16, background: T.panel }}>
+        <div className="t-heading-md" style={{ color: T.white, marginBottom: 4 }}>{first ? `Welcome, ${first}` : "Welcome"}</div>
+        <p className="t-body-md" style={{ color: T.muted, margin: "0 0 16px", maxWidth: 560 }}>
+          Your vault is empty and private. Add anything you keep: an ID, a payslip, a bill, a photo of a certificate. ReadiNes files it, and packs and expiry dates follow from what you hold.
         </p>
-        <label style={{ ...btnGold, cursor: "pointer" }}>
-          <UploadCloud size={15} /> Add your first document
+        <label style={{ ...btnGold, width: "100%", justifyContent: "center", minHeight: "var(--control-size-large)", cursor: "pointer" }}>
+          <UploadCloud size={16} /> Add a document
           <input
             type="file"
             multiple
@@ -4085,7 +4077,8 @@ function Home({ store, go, toast }: any) {
           />
         </label>
       </Card>
-    ) : null;
+      );
+    })() : null;
 
   if (isMobile) {
     const readyPacks = scored.filter((x: any) => x.score === 100).length;
@@ -4614,15 +4607,17 @@ type AnyPack = {
   custom?: boolean;
   desc?: string;
 };
+/* Order of the catalogue on the Packages screen. Government identity first, since nearly every other pack
+   reuses those documents; travel last. It is an order, not a recommendation: every pack is one tap away. */
 const PACK_CATS = [
-  "Travel & Immigration",
   "Identity & Civic",
   "Money & Tax",
-  "Jobs & Employment",
-  "Education",
   "Health",
-  "Home & Property",
   "Family & Life",
+  "Home & Property",
+  "Education",
+  "Jobs & Employment",
+  "Travel & Immigration",
 ];
 /* Choosing where documents are being prepared. Used by Settings, which owns the setting, and by
    Packages, which is where it visibly takes effect. */
@@ -4723,8 +4718,21 @@ function Packages({ store, toast }: any) {
             );
           })}
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 8 }}>
-          {list.map((e) => {
+        {(() => {
+          const grouped = cat === "All" && !needle;
+          const groups: [string, typeof list][] = grouped
+            ? [
+                ...PACK_CATS.map((c) => [c, list.filter((e) => e.cat === c)] as [string, typeof list]).filter(([, g]) => g.length),
+                ...([["My packs", list.filter((e) => e.custom)]] as [string, typeof list][]).filter(([, g]) => g.length),
+              ]
+            : [["", list]];
+          return groups.map(([title, rows]) => (
+            <div key={title || "all"} style={{ marginBottom: title ? 20 : 0 }}>
+              {title && (
+                <div className="t-heading-xs" style={{ color: T.white, margin: "4px 0 8px" }}>{title}</div>
+              )}
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 8 }}>
+          {rows.map((e) => {
             const { score, got, total } = evalEvent(e, have, country);
             return (
               <ListRow
@@ -4740,7 +4748,10 @@ function Packages({ store, toast }: any) {
               />
             );
           })}
-        </div>
+              </div>
+            </div>
+          ));
+        })()}
         {list.length === 0 && (
           <Card style={{ textAlign: "center", padding: 24 }}>
             <div style={{ color: T.text, fontWeight: 500, fontSize: "var(--text-body-md-size)" }}>
@@ -11171,10 +11182,10 @@ function OnboardingWizard({ store, onDone }: any) {
         {step === 1 && (
           <div style={{ textAlign: "center" }}>
             <h2 style={{ color: T.white, fontSize: "var(--text-heading-md-size)", margin: 0 }}>
-              {name.trim() ? `Nice to meet you, ${name.trim().split(" ")[0]}. What's coming up?` : "What is coming up in your life?"}
+              {name.trim() ? `Thanks, ${name.trim().split(" ")[0]}. Anything coming up?` : "Anything coming up?"}
             </h2>
             <p style={{ color: T.muted, fontSize: "var(--text-body-md-size)", margin: "8px 0 20px" }}>
-              This chooses which curated packs we spotlight first. Nothing is locked out; every pack stays available.
+              Optional. If something is on the horizon, tap it and its pack will be waiting on Home. Otherwise skip this.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {INTERESTS.map(([id, label, Ic]) => {
