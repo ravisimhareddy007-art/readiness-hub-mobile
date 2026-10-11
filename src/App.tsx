@@ -3647,11 +3647,9 @@ function Eyebrow({ children }: { children: ReactNode }) {
     <div
       style={{
         fontVariantNumeric: "tabular-nums",
-        fontSize: "var(--text-caption-md-size)",
-        fontWeight: 700,
-        letterSpacing: 2,
-        textTransform: "uppercase",
-        color: T.gold,
+        fontSize: "var(--text-heading-xs-size)",
+        fontWeight: 600,
+        color: T.white,
         marginBottom: 8,
       }}
     >
@@ -4426,11 +4424,9 @@ function Home({ store, go, toast }: any) {
                   <g.icon size={14} color={g.color} />
                   <span
                     style={{
-                      fontSize: "var(--text-caption-md-size)",
-                      fontWeight: 700,
-                      letterSpacing: 1,
-                      textTransform: "uppercase",
-                      color: T.muted,
+                      fontSize: "var(--text-label-md-size)",
+                      fontWeight: 500,
+                      color: T.text,
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
@@ -5080,11 +5076,9 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: "var(--text-caption-md-size)",
-    fontWeight: 700,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    color: T.muted,
+    fontSize: "var(--text-label-md-size)",
+    fontWeight: 500,
+    color: T.text,
     fontVariantNumeric: "tabular-nums",
     margin: "12px 0 8px",
     display: "block",
@@ -5291,7 +5285,7 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
                 </div>
                 {meta.sources?.slice(0, 4).map((s: any, i: number) => (
                   <a key={i} href={s.url} target="_blank" rel="noreferrer" style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.gold, marginTop: 4 }}>
-                    <span style={{ textTransform: "uppercase", fontSize: "var(--text-caption-md-size)", color: T.muted, marginRight: 8 }}>{s.tier}</span>
+                    <span style={{ fontSize: "var(--text-label-md-size)", color: T.text, marginRight: 8 }}>{s.tier}</span>
                     {s.title}
                   </a>
                 ))}
@@ -5808,7 +5802,7 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                       >
                         <Check size={12} color={T.mint} />
                       </span>
-                      <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text }}>{r.label}</span>
+                      <span className="t-label-lg" style={{ flex: 1, minWidth: 0, color: T.white, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label}</span>
                       <ChevronRight
                         size={13}
                         color={T.muted}
@@ -5917,10 +5911,10 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         >
                           <X size={12} color={SEM.warning} />
                         </span>
-                        <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text, minWidth: 0 }}>
+                        <span className="t-label-lg" style={{ flex: 1, color: T.white, minWidth: 0 }}>
                           {r.label}
                           {cond && (
-                            <span style={{ display: "block", fontSize: "var(--text-caption-md-size)", color: T.faint }}>
+                            <span className="t-body-sm" style={{ display: "block", color: T.muted, marginTop: 4 }}>
                               {need?.when || "May be required depending on your situation"}
                             </span>
                           )}
@@ -6057,11 +6051,9 @@ function PackageDetail({ ev, store, onClose, onEdit, toast }: any) {
                         style={{
                           padding: "12px 16px 4px",
                           borderTop: `1px solid ${T.border}`,
-                          fontSize: "var(--text-caption-md-size)",
-                          fontWeight: 700,
-                          letterSpacing: 0.4,
-                          textTransform: "uppercase",
-                          color: T.faint,
+                          fontSize: "var(--text-heading-xs-size)",
+                          fontWeight: 600,
+                          color: T.white,
                         }}
                       >
                         Anything else in your vault
@@ -6383,7 +6375,7 @@ function Documents({ store, toast, go }: any) {
     );
     const Sec = ({ label, children }: any) => (
       <div style={{ margin: "12px 0" }}>
-        <div style={{ fontSize: "var(--text-caption-md-size)", fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+        <div style={{ fontSize: "var(--text-heading-xs-size)", fontWeight: 600, color: T.white, marginBottom: 8 }}>{label}</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>{children}</div>
       </div>
     );
@@ -6942,11 +6934,9 @@ function Documents({ store, toast, go }: any) {
                 gap: 12,
                 alignItems: "center",
                 padding: "12px 16px",
-                fontSize: "var(--text-caption-md-size)",
-                fontWeight: 700,
-                color: T.muted,
-                textTransform: "uppercase",
-                letterSpacing: 1,
+                fontSize: "var(--text-label-md-size)",
+                fontWeight: 500,
+                color: T.text,
                 fontVariantNumeric: "tabular-nums",
               }}
             >
@@ -7099,11 +7089,9 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
   const days = d.expiry ? daysTo(d.expiry) : null;
 
   const lbl: CSSProperties = {
-    fontSize: "var(--text-caption-md-size)",
-    fontWeight: 700,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    color: T.muted,
+    fontSize: "var(--text-label-md-size)",
+    fontWeight: 500,
+    color: T.text,
     fontVariantNumeric: "tabular-nums",
     margin: "16px 0 8px",
     display: "block",
@@ -7288,7 +7276,7 @@ function DocContextPanel({ d, store, toast, onClose, onPreview, onDeleted }: any
               >
                 <e.icon size={14} color={e.accent} />
                 <span style={{ flex: 1, fontSize: "var(--text-body-md-size)", color: T.text }}>{e.name}</span>
-                <span style={pill(T.mint)}>required</span>
+                <span style={pill(T.muted)}>required</span>
               </div>
             ))
           )}
@@ -7390,11 +7378,9 @@ function AddMember({ onClose, save }: any) {
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: "var(--text-caption-md-size)",
-    fontWeight: 700,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    color: T.muted,
+    fontSize: "var(--text-label-md-size)",
+    fontWeight: 500,
+    color: T.text,
     fontVariantNumeric: "tabular-nums",
     marginBottom: 8,
     display: "block",
@@ -8770,11 +8756,9 @@ function SearchResults({ store, query, go }: any) {
         <div
           style={{
             padding: "12px 16px",
-            fontSize: "var(--text-caption-md-size)",
-            fontWeight: 700,
-            color: T.muted,
-            textTransform: "uppercase",
-            letterSpacing: 1,
+            fontSize: "var(--text-label-md-size)",
+            fontWeight: 500,
+            color: T.text,
             fontVariantNumeric: "tabular-nums",
           }}
         >
@@ -8957,11 +8941,9 @@ function SOSHandoffModal({ store, toast, onClose, go }: any) {
         </p>
         <div
           style={{
-            fontSize: "var(--text-caption-md-size)",
-            fontWeight: 700,
-            letterSpacing: 0.5,
-            textTransform: "uppercase",
-            color: T.muted,
+            fontSize: "var(--text-label-md-size)",
+            fontWeight: 500,
+            color: T.text,
             fontVariantNumeric: "tabular-nums",
             marginBottom: 8,
           }}
@@ -9162,11 +9144,9 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: "var(--text-caption-md-size)",
-    fontWeight: 700,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    color: T.muted,
+    fontSize: "var(--text-label-md-size)",
+    fontWeight: 500,
+    color: T.text,
     fontVariantNumeric: "tabular-nums",
     margin: "12px 0 8px",
     display: "block",
@@ -9469,11 +9449,9 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: "var(--text-caption-md-size)",
-    fontWeight: 700,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    color: T.muted,
+    fontSize: "var(--text-label-md-size)",
+    fontWeight: 500,
+    color: T.text,
     fontVariantNumeric: "tabular-nums",
     marginBottom: 8,
     display: "block",
@@ -9859,10 +9837,8 @@ function EstateSheet({ store, onClose, toast }: any) {
             <div
               style={{
                 fontVariantNumeric: "tabular-nums",
-                fontSize: "var(--text-caption-md-size)",
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-                color: T.gold,
+                fontSize: "var(--text-heading-xs-size)",
+                color: T.white,
                 marginBottom: 4,
               }}
             >
@@ -9986,7 +9962,7 @@ function DesignSystem({ store }: any) {
   );
   const Sec = ({ t, children }: any) => (
     <Card style={{ marginBottom: 16 }}>
-      <div style={{ fontSize: "var(--text-caption-md-size)", fontWeight: 700, letterSpacing: 0.5, color: T.faint, textTransform: "uppercase", marginBottom: 12 }}>{t}</div>
+      <div style={{ fontSize: "var(--text-heading-xs-size)", fontWeight: 600, color: T.white, marginBottom: 12 }}>{t}</div>
       {children}
     </Card>
   );
@@ -10235,11 +10211,9 @@ function ProfileMenu({ store, account, go, onSignOut, toast }: any) {
             <div style={{ padding: "8px 12px", borderTop: `1px solid ${T.border}` }}>
               <div
                 style={{
-                  fontSize: "var(--text-caption-md-size)",
-                  fontWeight: 700,
-                  letterSpacing: 1,
-                  textTransform: "uppercase",
-                  color: T.faint,
+                  fontSize: "var(--text-heading-xs-size)",
+                  fontWeight: 600,
+                  color: T.white,
                   fontVariantNumeric: "tabular-nums",
                   marginBottom: 8,
                 }}
@@ -10518,11 +10492,9 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
     <div style={{ marginBottom: 20 }}>
       <div
         style={{
-          fontSize: "var(--text-caption-md-size)",
-          fontWeight: 700,
-          letterSpacing: 1.2,
-          textTransform: "uppercase",
-          color: T.faint,
+          fontSize: "var(--text-heading-xs-size)",
+          fontWeight: 600,
+          color: T.white,
           fontVariantNumeric: "tabular-nums",
           margin: "0 0 8px 4px",
         }}
@@ -10738,10 +10710,8 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
           <div style={{ marginBottom: 20 }}>
             <div
               style={{
-                fontSize: "var(--text-caption-md-size)",
-                fontWeight: 700,
-                letterSpacing: 1.2,
-                textTransform: "uppercase",
+                fontSize: "var(--text-label-md-size)",
+                fontWeight: 500,
                 color: T.coral,
                 fontVariantNumeric: "tabular-nums",
                 margin: "0 0 8px 4px",
@@ -11765,7 +11735,7 @@ export default function App() {
               />
             ) : (
               <div style={{ padding: "20px 4px 0" }}>
-                <div style={{ fontSize: "var(--text-caption-md-size)", fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, marginBottom: 12 }}>Try</div>
+                <div style={{ fontSize: "var(--text-heading-xs-size)", fontWeight: 600, color: T.white, marginBottom: 12 }}>Try</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                   {["Passport", "Insurance", "Bank statement", "Home loan", "Nominee", "Prescription"].map((q) => (
                     <button
@@ -11778,7 +11748,7 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                <div style={{ fontSize: "var(--text-caption-md-size)", fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: T.faint, margin: "24px 0 12px" }}>Recently added</div>
+                <div style={{ fontSize: "var(--text-heading-xs-size)", fontWeight: 600, color: T.white, margin: "24px 0 12px" }}>Recently added</div>
                 {store.docs.slice(0, 5).map((d: Doc) => (
                   <button
                     key={d.id}
