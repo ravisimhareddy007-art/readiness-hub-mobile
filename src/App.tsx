@@ -5076,11 +5076,9 @@ function CustomPackModal({ existing, have, catalog, onClose, onSave, onDelete }:
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: "var(--text-caption-md-size)",
-    fontWeight: 700,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    color: T.muted,
+    fontSize: "var(--text-label-md-size)",
+    fontWeight: 500,
+    color: T.text,
     fontVariantNumeric: "tabular-nums",
     margin: "12px 0 8px",
     display: "block",
@@ -7380,11 +7378,9 @@ function AddMember({ onClose, save }: any) {
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: "var(--text-caption-md-size)",
-    fontWeight: 700,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    color: T.muted,
+    fontSize: "var(--text-label-md-size)",
+    fontWeight: 500,
+    color: T.text,
     fontVariantNumeric: "tabular-nums",
     marginBottom: 8,
     display: "block",
@@ -9148,11 +9144,9 @@ function TransactionModal({ transaction, currency, members, onClose, onSave, onD
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: "var(--text-caption-md-size)",
-    fontWeight: 700,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    color: T.muted,
+    fontSize: "var(--text-label-md-size)",
+    fontWeight: 500,
+    color: T.text,
     fontVariantNumeric: "tabular-nums",
     margin: "12px 0 8px",
     display: "block",
@@ -9455,11 +9449,9 @@ function HoldingModal({ holding, members, onClose, onSave, onDelete, initial, st
     outline: "none",
   };
   const lbl: CSSProperties = {
-    fontSize: "var(--text-caption-md-size)",
-    fontWeight: 700,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    color: T.muted,
+    fontSize: "var(--text-label-md-size)",
+    fontWeight: 500,
+    color: T.text,
     fontVariantNumeric: "tabular-nums",
     marginBottom: 8,
     display: "block",
