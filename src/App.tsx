@@ -65,8 +65,6 @@ import {
   Sparkles,
   HardDrive,
   RefreshCw,
-  Baby,
-  Gem,
 } from "lucide-react";
 import { useStore, getCurrency } from "@/lib/store";
 import { formatMoney, rateBetween, CURRENCIES, RATES_NOTE } from "@/lib/currency";
@@ -284,7 +282,9 @@ const origLine = (r: { origAmount?: number; origCurrency?: string; fxRate?: numb
 /* The only place a readiness score becomes a colour. Green means done, not nearly
    done: 94% ready for a visa appointment still means being turned away. Amber
    means the gap is small and closable. Red means materially unprepared. */
-export const toneFor = (n: number) => (n >= 100 ? SEM.success : n >= 50 ? SEM.warning : SEM.attention);
+/* Readiness bands: 100 ready, 50 to 99 in progress, 1 to 49 needs work. Zero is "not started" and stays neutral:
+   a new account is not in trouble, it is empty. */
+export const toneFor = (n: number) => (n >= 100 ? SEM.success : n >= 50 ? SEM.warning : n > 0 ? SEM.attention : T.faint);
 
 const CAT_META: Record<Category, { icon: any; color: string }> = {
   Identity: { icon: Fingerprint, color: A.blue },
@@ -4170,7 +4170,7 @@ function Home({ store, go, toast }: any) {
         >
           <Ring score={overall} size={38} />
           <span style={{ flex: 1, minWidth: 0, fontSize: "var(--text-body-md-size)", color: T.muted }}>
-            {readyPacks} of {readyPacks + nearPacks + 1} packs ready
+            {readyPacks + nearPacks === 0 && store.docs.length === 0 ? "No packs started yet" : `${readyPacks} of ${readyPacks + nearPacks + 1} packs ready`}
           </span>
           <ChevronRight size={15} color={T.faint} />
         </button>
@@ -4195,6 +4195,7 @@ function Home({ store, go, toast }: any) {
             }}
           />
         )}
+        {store.docs.length > 0 && (
         <label
           style={{
             display: "flex",
@@ -4227,6 +4228,7 @@ function Home({ store, go, toast }: any) {
             }}
           />
         </label>
+        )}
       </div>
     );
   }
@@ -4278,65 +4280,6 @@ function Home({ store, go, toast }: any) {
           </div>
         </Card>
       )}
-      {store.docs.length === 0 && (() => {
-        let picked: string[] = [];
-        try { picked = JSON.parse(localStorage.getItem("rn-moments") || "[]"); } catch {}
-        const STARTERS: Record<string, [string, string[]]> = {
-          schengen: ["A visa or trip abroad", ["Passport", "Bank statements (6 months)", "Passport photos"]],
-          "home-buy": ["Buying a home", ["PAN card", "Salary slips (3 months)", "Bank statements"]],
-          "home-loan": ["A home loan", ["Form 16", "Salary slips (3 months)", "Property papers"]],
-          baby: ["A new baby", ["Health insurance policy", "Aadhaar (both parents)", "Hospital records"]],
-          wedding: ["A wedding", ["Birth certificate", "Aadhaar", "Passport photos"]],
-          tax: ["Tax season", ["Form 16", "Investment proofs", "Rent receipts"]],
-          "school-adm": ["Kids' school or exams", ["Birth certificate", "Previous marksheets", "Address proof"]],
-          onboarding: ["A job change", ["PAN card", "Educational certificates", "Relieving letter"]],
-        };
-        const cards = picked.filter((id) => STARTERS[id]);
-        if (!cards.length) return null;
-        return (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(240px,100%),1fr))", gap: 12, marginBottom: 20 }}>
-            {cards.map((id) => {
-              const [title, docs3] = STARTERS[id];
-              return (
-                <Card key={id} style={{ padding: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span style={{ width: 30, height: 30, borderRadius: "var(--pill-radius)", border: `2.5px solid ${T.gold}`, display: "grid", placeItems: "center", fontSize: "var(--text-caption-md-size)", fontWeight: 700, color: T.gold }}>0%</span>
-                    <b style={{ color: T.white, fontSize: "var(--text-body-md-size)" }}>{title}</b>
-                  </div>
-                  <p style={{ color: T.muted, fontSize: "var(--text-caption-md-size)", margin: "0 0 8px" }}>Start with these three:</p>
-                  <div style={{ display: "grid", gap: 8, marginBottom: 12 }}>
-                    {docs3.map((d) => (
-                      <div key={d} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "var(--text-caption-md-size)", color: T.text }}>
-                        <FileText size={12} color={T.gold} /> {d}
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <label style={{ ...btnGold, cursor: "pointer", fontSize: "var(--text-caption-md-size)", padding: "8px 12px" }}>
-                      <UploadCloud size={13} /> Add these
-                      <input
-                        type="file"
-                        multiple
-                        hidden
-                        onChange={(e) => {
-                          if (e.target.files?.length) {
-                            store.addFiles(e.target.files);
-                            toast(`${e.target.files.length} document(s) added`);
-                          }
-                          e.currentTarget.value = "";
-                        }}
-                      />
-                    </label>
-                    <button onClick={() => go("packages")} style={{ background: "none", border: "none", color: T.muted, fontSize: "var(--text-caption-md-size)", cursor: "pointer" }}>
-                      Full pack →
-                    </button>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        );
-      })()}
       <div
         style={{
           display: "grid",
@@ -4742,7 +4685,7 @@ function Packages({ store, toast }: any) {
                 className="lp-packrow"
                 leading={<Ring score={score} size={40} />}
                 title={<span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0, maxWidth: "100%" }}><IconWell size="sm" color={e.accent}><e.icon size={12} /></IconWell><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</span>{e.custom && <span style={pill(T.gold)}>custom</span>}</span>}
-                subtitle={score === 100 ? "Everything in place" : `${got} of ${total} ready`}
+                subtitle={score === 100 ? "Everything in place" : got === 0 ? `Not started · ${total} document${total === 1 ? "" : "s"}` : `${got} of ${total} ready`}
                 trailing={score === 100 ? <Stamp /> : undefined}
                 chevron={score !== 100}
               />
@@ -4908,7 +4851,7 @@ function Packages({ store, toast }: any) {
                   {e.custom && <span style={pill(T.gold)}>custom</span>}
                 </div>
                 <div style={{ fontSize: "var(--text-body-sm-size)", color: T.muted, marginTop: 4 }}>
-                  {score === 100 ? "Everything in place" : `${got} of ${total} ready`}
+                  {score === 100 ? "Everything in place" : got === 0 ? `Not started · ${total} document${total === 1 ? "" : "s"}` : `${got} of ${total} ready`}
                 </div>
               </div>
               {score === 100 ? <Stamp /> : <ChevronRight size={18} color={T.muted} />}
@@ -7943,7 +7886,9 @@ function Wealth({ store, go, toast }: any) {
               />
             </span>
             <span className="lp-es-sum" style={{ fontSize: "var(--text-caption-md-size)", color: T.muted, whiteSpace: "nowrap" }}>
-              {missDoc + missAcc + missNom === 0
+              {H.length === 0
+                ? "nothing recorded yet"
+                : missDoc + missAcc + missNom === 0
                 ? "everything reachable"
                 : [
                     missDoc ? `${missDoc} doc${missDoc > 1 ? "s" : ""}` : "",
@@ -10937,8 +10882,11 @@ function SettingsPage({ store, account, go, toast, onSignOut, onDeleteAccount, o
 function AuthScreen({
   defaultMode,
   onAuthed,
+  onDevSkip,
 }: {
   defaultMode: "signin" | "signup";
+  /** DEV ONLY — remove before release. sample=true opens the seeded family; false opens a fresh account and the setup flow. */
+  onDevSkip?: (sample: boolean) => void;
   onAuthed: (a: Account, isNew: boolean) => void;
 }) {
   const [mode, setMode] = useState<"signin" | "signup">(defaultMode);
@@ -10960,7 +10908,23 @@ function AuthScreen({
   };
   /* DEV ONLY — remove before release: one-tap test session */
   const DEV_MAIL = ["dev", "readines.app"].join("@");
+  const [devSample, setDevSample] = useState<boolean>(() => {
+    try { return localStorage.getItem("lp-dev-sample") !== "0"; } catch { return true; }
+  });
+  const toggleDevSample = () => {
+    const next = !devSample;
+    setDevSample(next);
+    try { localStorage.setItem("lp-dev-sample", next ? "1" : "0"); } catch {}
+  };
   const devSkip = () => {
+    if (!devSample) {
+      /* Fresh account every time: a new email, so the setup flow and the empty vault are exactly what a new user gets. */
+      const su = signup("Tester", `dev+${Date.now()}@readines.app`, "readines-dev");
+      if (su.ok) return onAuthed(su.account, true);
+      setErr(su.error);
+      return;
+    }
+    onDevSkip?.(true);
     const r = login(DEV_MAIL, "readines-dev");
     if (r.ok) return onAuthed(r.account, false);
     const su = signup("Ravi", DEV_MAIL, "readines-dev");
@@ -11084,6 +11048,19 @@ function AuthScreen({
         >
           Skip sign-in (testing) <ArrowRight size={16} />
         </button>
+        {/* DEV ONLY — remove before release: choose what the skip opens */}
+        <button
+          type="button"
+          role="switch"
+          aria-checked={devSample}
+          onClick={toggleDevSample}
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, width: "100%", marginTop: 8, minHeight: "var(--control-size-default)", padding: "0 4px", background: "none", border: "none", cursor: "pointer", color: T.muted, fontSize: "var(--text-body-sm-size)", textAlign: "left" }}
+        >
+          <span>{devSample ? "Opens the sample family" : "Opens a new account and the setup flow"}</span>
+          <span style={{ width: 48, height: 28, borderRadius: "var(--pill-radius)", background: devSample ? SEM.action : "var(--color-action-neutral-default)", position: "relative", flexShrink: 0 }}>
+            <span style={{ position: "absolute", top: 3, left: devSample ? 23 : 3, width: 22, height: 22, borderRadius: "var(--pill-radius)", background: "var(--color-text-on-brand)", transition: "left var(--motion-duration-fast)" }} />
+          </span>
+        </button>
         <p style={{ fontSize: "var(--text-caption-md-size)", color: T.faint, textAlign: "center", marginTop: 16, lineHeight: 1.5 }}>
           Your documents stay encrypted on your device.
         </p>
@@ -11097,15 +11074,16 @@ function OnboardingWizard({ store, onDone }: any) {
   const [name, setName] = useState("");
   const [picks, setPicks] = useState<Set<string>>(new Set());
   const [sealPhase, setSealPhase] = useState(0);
+  /* Generic life areas, the same ones the pack catalogue uses. Nothing here assumes anything about the person. */
   const INTERESTS = [
-    ["schengen", "A visa or trip abroad", Plane],
-    ["home-buy", "Buying a home", HomeIcon],
-    ["home-loan", "A home loan", Wallet],
-    ["baby", "A new baby", Baby],
-    ["wedding", "A wedding", Gem],
-    ["tax", "Tax season", FileText],
-    ["school-adm", "Kids' school or exams", GraduationCap],
-    ["onboarding", "A job change", Briefcase],
+    ["ids", "Identity documents", IdCard],
+    ["money", "Money and tax", Wallet],
+    ["health", "Health", HeartPulse],
+    ["home", "Home and property", HomeIcon],
+    ["education", "Education", GraduationCap],
+    ["work", "Work", Briefcase],
+    ["travel", "Travel", Plane],
+    ["family", "Family records", FileText],
   ] as const;
   const finish = () => {
     try { localStorage.setItem("rn-moments", JSON.stringify([...picks])); } catch {}
@@ -11182,10 +11160,10 @@ function OnboardingWizard({ store, onDone }: any) {
         {step === 1 && (
           <div style={{ textAlign: "center" }}>
             <h2 style={{ color: T.white, fontSize: "var(--text-heading-md-size)", margin: 0 }}>
-              {name.trim() ? `Thanks, ${name.trim().split(" ")[0]}. Anything coming up?` : "Anything coming up?"}
+              {name.trim() ? `Thanks, ${name.trim().split(" ")[0]}. What will you keep here?` : "What will you keep here?"}
             </h2>
             <p style={{ color: T.muted, fontSize: "var(--text-body-md-size)", margin: "8px 0 20px" }}>
-              Optional. If something is on the horizon, tap it and its pack will be waiting on Home. Otherwise skip this.
+              Optional. Tap any that apply. You can add any document at any time, whatever you choose.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {INTERESTS.map(([id, label, Ic]) => {
@@ -11223,7 +11201,7 @@ function OnboardingWizard({ store, onDone }: any) {
               onClick={() => setStep(2)}
               style={{ ...btnGold, width: "100%", justifyContent: "center", marginTop: 16 }}
             >
-              {picks.size > 0 ? `Prepare me for ${picks.size === 1 ? "this" : `these ${picks.size}`}` : "I will decide later"}{" "}
+              {picks.size > 0 ? "Continue" : "Skip for now"}{" "}
               <ArrowRight size={15} />
             </button>
           </div>
@@ -11424,6 +11402,13 @@ export default function App() {
       <div style={{ minHeight: "100vh", background: T.navy }}>
         <style>{APPCSS}</style>
         <AuthScreen
+          onDevSkip={(sample: boolean) => {
+            if (sample) {
+              store.setDataMode("sample");
+              store.setOnboarded(true);
+              setFreshAccount(false);
+            }
+          }}
           defaultMode="signin"
           onAuthed={(a: Account, isNew: boolean) => {
             if (isNew) {

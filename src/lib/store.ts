@@ -616,7 +616,7 @@ const SAMPLE: Omit<State, "theme" | "notifications" | "onboarded" | "dataMode" |
 };
 const DEFAULT: State = {
   onboarded: true,
-  dataMode: "empty",
+  dataMode: "sample",
   members: seedMembers,
   docs: seedDocs,
   labs: seedLabs,
